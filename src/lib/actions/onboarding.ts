@@ -81,9 +81,7 @@ export async function completeOnboardingWithSignup(
     ) {
       return { error: "이미 사용 중인 아이디예요." };
     }
-    return {
-      error: `회원가입에 실패했어요. (${signUpError.status ?? "?"} ${signUpError.code ?? signUpError.message})`,
-    };
+    return { error: "회원가입에 실패했어요. 다시 시도해주세요." };
   }
 
   const result = await applySetup(payload);
