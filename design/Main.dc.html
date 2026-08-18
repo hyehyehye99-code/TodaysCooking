@@ -1,0 +1,396 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    body { margin: 0; background: transparent; }
+    * { box-sizing: border-box; }
+    a { color: #C1502E; }
+    a:hover { color: #8A3A20; }
+    .dc-scroll::-webkit-scrollbar { display: none; }
+    .dc-scroll { scrollbar-width: none; }
+  </style>
+</helmet>
+
+<div style="width:390px;height:844px;border-radius:40px;overflow:hidden;background:radial-gradient(120% 90% at 15% 8%, rgba(193,80,46,0.38), transparent 60%),radial-gradient(110% 90% at 88% 14%, rgba(243,217,139,0.45), transparent 55%),radial-gradient(130% 100% at 46% 105%, rgba(63,107,78,0.32), transparent 60%),#FBF4EC;box-shadow:0 30px 60px -20px rgba(43,36,32,0.35);display:flex;flex-direction:column;font-family:'Manrope',system-ui,sans-serif;color:#2A2420;">
+
+  <div class="dc-scroll" style="flex:1;overflow-y:auto;padding:28px 20px 16px 20px;">
+
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:22px;">
+      <div style="position:relative;width:34px;height:22px;flex:none;">
+        <div style="position:absolute;left:0;top:0;width:22px;height:22px;border-radius:999px;background:{{accent}};color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;border:2px solid #FBF4EC;">민</div>
+        <div style="position:absolute;left:14px;top:0;width:22px;height:22px;border-radius:999px;background:#3F6B4E;color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;border:2px solid #FBF4EC;">지</div>
+      </div>
+      <span style="font-size:12px;font-weight:700;letter-spacing:0.06em;color:#9C8E7C;">둘의 부엌</span>
+    </div>
+
+    <sc-if value="{{isRecipeTab}}" hint-placeholder-val="{{true}}">
+      <div>
+        <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:4px;">
+          <h1 style="font-family:'Instrument Serif',serif;font-size:30px;font-weight:400;margin:0;">레시피</h1>
+        </div>
+        <div style="width:26px;height:3px;border-radius:999px;background:{{accent}};margin-bottom:16px;"></div>
+
+        <div style="background:rgba(193,80,46,0.15);backdrop-filter:blur(16px) saturate(180%);-webkit-backdrop-filter:blur(16px) saturate(180%);border:1px solid rgba(255,255,255,0.45);border-radius:16px;padding:14px 16px;margin-bottom:18px;">
+          <div style="font-size:14px;font-weight:700;color:#8A3A20;margin-bottom:2px;">{{recipeStatText}}</div>
+          <div style="font-size:12px;color:#8F5638;line-height:1.5;">재료가 부족한 레시피는 바로 장보기에 담을 수 있어요</div>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:14px;">
+          <sc-for list="{{recipeItems}}" as="item" hint-placeholder-count="4">
+            <div style="background:rgba(255,255,255,0.5);backdrop-filter:blur(20px) saturate(180%);-webkit-backdrop-filter:blur(20px) saturate(180%);border:1px solid rgba(255,255,255,0.6);box-shadow:0 8px 24px -14px rgba(43,36,32,0.25);border-radius:18px;padding:16px;display:flex;flex-direction:column;gap:12px;">
+              <div style="display:flex;gap:12px;">
+                <div style="width:64px;height:64px;border-radius:14px;flex:none;display:flex;align-items:center;justify-content:center;box-shadow:inset 0 0 0 1px rgba(255,255,255,0.35);{{item.thumbStyle}}">
+                  <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="#ffffff" stroke-opacity="0.55" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M4 5.5c2.2-1 5.2-1 8 0 2.8-1 5.8-1 8 0v13c-2.2-1-5.2-1-8 0-2.8-1-5.8-1-8 0z"/>
+                    <path d="M12 5.5v13"/>
+                  </svg>
+                </div>
+                <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:4px;">
+                  <div style="font-size:16px;font-weight:700;">{{item.title}}</div>
+                  <div style="font-size:12px;color:#9C8E7C;">{{item.meta}}</div>
+                </div>
+              </div>
+
+              <div>
+                <div style="display:flex;justify-content:space-between;font-size:12px;color:#8C7B68;margin-bottom:6px;">
+                  <span>{{item.haveText}}</span>
+                </div>
+                <div style="height:6px;border-radius:999px;background:rgba(120,100,80,0.15);overflow:hidden;">
+                  <div style="height:100%;border-radius:999px;background:#3F6B4E;{{item.progressStyle}}"></div>
+                </div>
+              </div>
+
+              <sc-if value="{{item.makeable}}" hint-placeholder-val="{{true}}">
+                <div style="display:flex;align-items:center;gap:8px;background:rgba(63,107,78,0.16);backdrop-filter:blur(12px) saturate(180%);-webkit-backdrop-filter:blur(12px) saturate(180%);border:1px solid rgba(255,255,255,0.4);border-radius:12px;padding:10px 12px;">
+                  <svg viewBox="0 0 14 14" width="14" height="14" fill="none" stroke="#2F5A3F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 7.5l3 3 6-7"/></svg>
+                  <span style="font-size:13px;font-weight:700;color:#2F5A3F;">바로 만들 수 있어요</span>
+                </div>
+              </sc-if>
+
+              <sc-if value="{{item.showButton}}" hint-placeholder-val="{{false}}">
+                <div style="display:flex;flex-direction:column;gap:10px;">
+                  <div style="display:flex;flex-wrap:wrap;gap:6px;">
+                    <sc-for list="{{item.missingList}}" as="ing" hint-placeholder-count="2">
+                      <span style="font-size:12px;font-weight:600;color:#8A5C13;background:rgba(166,116,28,0.16);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,0.4);border-radius:999px;padding:5px 11px;">{{ing.name}}</span>
+                    </sc-for>
+                  </div>
+                  <sc-if value="{{item.buttonDisabled}}" hint-placeholder-val="{{false}}">
+                    <div style="display:flex;align-items:center;justify-content:center;gap:6px;background:rgba(255,255,255,0.35);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,0.5);border-radius:12px;padding:10px;">
+                      <svg viewBox="0 0 14 14" width="13" height="13" fill="none" stroke="#9C8E7C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 7.5l3 3 6-7"/></svg>
+                      <span style="font-size:13px;font-weight:700;color:#9C8E7C;">{{item.buttonLabel}}</span>
+                    </div>
+                  </sc-if>
+                  <sc-if value="{{item.buttonEnabled}}" hint-placeholder-val="{{true}}">
+                    <div onClick="{{item.addClick}}" style="display:flex;align-items:center;justify-content:center;gap:6px;background:{{accent}};border-radius:12px;padding:10px;">
+                      <span style="font-size:13px;font-weight:700;color:#ffffff;">{{item.buttonLabel}}</span>
+                    </div>
+                  </sc-if>
+                </div>
+              </sc-if>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{isFridgeTab}}" hint-placeholder-val="{{false}}">
+      <div>
+        <h1 style="font-family:'Instrument Serif',serif;font-size:30px;font-weight:400;margin:0 0 4px 0;">냉장고</h1>
+        <div style="width:26px;height:3px;border-radius:999px;background:{{accent}};margin-bottom:16px;"></div>
+
+        <div style="background:rgba(63,107,78,0.15);backdrop-filter:blur(16px) saturate(180%);-webkit-backdrop-filter:blur(16px) saturate(180%);border:1px solid rgba(255,255,255,0.45);border-radius:16px;padding:14px 16px;margin-bottom:20px;">
+          <div style="font-size:14px;font-weight:700;color:#2F5A3F;margin-bottom:2px;">{{fridgeStatText}}</div>
+          <div style="font-size:12px;color:#436B4F;line-height:1.5;">가지고 있는 재료를 탭해서 표시해두면 레시피에 바로 반영돼요</div>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:22px;">
+          <sc-for list="{{categoryItems}}" as="cat" hint-placeholder-count="4">
+            <div>
+              <div style="font-size:13px;font-weight:700;color:#8C7B68;letter-spacing:0.02em;margin-bottom:10px;">{{cat.name}}</div>
+              <div style="display:flex;flex-wrap:wrap;gap:8px;">
+                <sc-for list="{{cat.items}}" as="item" hint-placeholder-count="5">
+                  <div onClick="{{item.toggle}}" style="display:inline-flex;align-items:center;gap:5px;padding:9px 14px;border-radius:999px;border:1.5px solid;font-size:13px;font-weight:600;{{item.chipStyle}}">
+                    <sc-if value="{{item.selected}}" hint-placeholder-val="{{false}}">
+                      <svg viewBox="0 0 14 14" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 7.5l3 3 6-7"/></svg>
+                    </sc-if>
+                    <span>{{item.name}}</span>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{isBookmarkTab}}" hint-placeholder-val="{{false}}">
+      <div>
+        <h1 style="font-family:'Instrument Serif',serif;font-size:30px;font-weight:400;margin:0 0 4px 0;">북마크</h1>
+        <div style="width:26px;height:3px;border-radius:999px;background:{{accent}};margin-bottom:16px;"></div>
+
+        <div style="display:flex;align-items:center;gap:8px;background:rgba(255,255,255,0.4);backdrop-filter:blur(16px) saturate(180%);-webkit-backdrop-filter:blur(16px) saturate(180%);border:1px solid rgba(255,255,255,0.55);border-radius:14px;padding:12px 14px;margin-bottom:20px;">
+          <span style="flex:1;font-size:13px;color:#B7AA98;">링크를 붙여넣어 저장하세요</span>
+          <div style="background:{{accent}};border-radius:9px;padding:7px 14px;">
+            <span style="font-size:12px;font-weight:700;color:#ffffff;">저장</span>
+          </div>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:12px;">
+          <sc-for list="{{bookmarks}}" as="item" hint-placeholder-count="3">
+            <div style="display:flex;gap:12px;background:rgba(255,255,255,0.5);backdrop-filter:blur(18px) saturate(180%);-webkit-backdrop-filter:blur(18px) saturate(180%);border:1px solid rgba(255,255,255,0.6);box-shadow:0 6px 18px -12px rgba(43,36,32,0.2);border-radius:16px;padding:10px;">
+              <div style="width:88px;height:72px;border-radius:11px;flex:none;display:flex;align-items:center;justify-content:center;box-shadow:inset 0 0 0 1px rgba(255,255,255,0.35);{{item.thumbStyle}}">
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#ffffff" stroke-opacity="0.6" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M6 3.5h12a.5.5 0 0 1 .5.5v17l-6.5-4-6.5 4v-17a.5.5 0 0 1 .5-.5z"/>
+                </svg>
+              </div>
+              <div style="flex:1;min-width:0;display:flex;flex-direction:column;justify-content:center;gap:6px;">
+                <div style="font-size:13px;font-weight:700;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">{{item.title}}</div>
+                <div style="display:flex;align-items:center;gap:4px;">
+                  <svg viewBox="0 0 16 16" width="11" height="11" fill="none" stroke="#B7AA98" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4H4a1 1 0 0 0-1 1v7a1 1 0 0 0 1 1h7a1 1 0 0 0 1-1v-2"/><path d="M9 3h4v4"/><path d="M7 9l6-6"/></svg>
+                  <span style="font-size:11px;color:#B7AA98;">{{item.domain}} · {{item.saved}}</span>
+                </div>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{isShoppingTab}}" hint-placeholder-val="{{false}}">
+      <div>
+        <h1 style="font-family:'Instrument Serif',serif;font-size:30px;font-weight:400;margin:0 0 4px 0;">장보기</h1>
+        <div style="width:26px;height:3px;border-radius:999px;background:{{accent}};margin-bottom:16px;"></div>
+
+        <div style="background:rgba(255,255,255,0.5);backdrop-filter:blur(18px) saturate(180%);-webkit-backdrop-filter:blur(18px) saturate(180%);border:1px solid rgba(255,255,255,0.6);border-radius:16px;padding:14px 16px;margin-bottom:18px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+            <span style="font-size:13px;font-weight:700;color:#2A2420;">이번 장보기</span>
+            <span style="font-size:12px;font-weight:700;color:{{accent}};">{{shoppingProgressText}}</span>
+          </div>
+          <div style="height:8px;border-radius:999px;background:rgba(120,100,80,0.15);overflow:hidden;">
+            <div style="height:100%;border-radius:999px;{{shoppingProgressStyle}}"></div>
+          </div>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:2px;">
+          <sc-for list="{{shoppingList}}" as="item" hint-placeholder-count="4">
+            <div onClick="{{item.toggle}}" style="display:flex;align-items:center;gap:12px;padding:12px 4px;border-bottom:1px solid rgba(120,100,80,0.15);">
+              <div style="width:22px;height:22px;border-radius:7px;border:1.5px solid;flex:none;display:flex;align-items:center;justify-content:center;{{item.boxStyle}}">
+                <sc-if value="{{item.showCheckIcon}}" hint-placeholder-val="{{false}}">
+                  <svg viewBox="0 0 14 14" width="13" height="13" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 7.5l3 3 6-7"/></svg>
+                </sc-if>
+              </div>
+              <div style="flex:1;">
+                <div style="font-size:14px;font-weight:600;{{item.rowTextStyle}}">{{item.name}}</div>
+                <div style="font-size:11px;color:#B7AA98;margin-top:1px;">{{item.recipeTag}} 재료</div>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </sc-if>
+
+  </div>
+
+  <div style="flex:none;display:flex;align-items:stretch;background:rgba(255,253,249,0.55);backdrop-filter:blur(28px) saturate(180%);-webkit-backdrop-filter:blur(28px) saturate(180%);border-top:1px solid rgba(255,255,255,0.5);box-shadow:0 -8px 24px -18px rgba(43,36,32,0.2);padding:10px 8px 22px 8px;">
+    <div onClick="{{goRecipe}}" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;color:{{recipeTabColor}};">
+      <svg viewBox="0 0 24 24" width="23" height="23" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M4 5.5c2.2-1 5.2-1 8 0 2.8-1 5.8-1 8 0v13c-2.2-1-5.2-1-8 0-2.8-1-5.8-1-8 0z"/>
+        <path d="M12 5.5v13"/>
+      </svg>
+      <span style="font-size:10.5px;font-weight:{{recipeTabWeight}};">레시피</span>
+    </div>
+    <div onClick="{{goFridge}}" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;color:{{fridgeTabColor}};">
+      <svg viewBox="0 0 24 24" width="23" height="23" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="5" y="2" width="14" height="20" rx="2"/>
+        <path d="M5 9h14"/>
+        <path d="M8 5v2"/>
+        <path d="M8 12v2"/>
+      </svg>
+      <span style="font-size:10.5px;font-weight:{{fridgeTabWeight}};">냉장고</span>
+    </div>
+    <div onClick="{{goBookmark}}" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;color:{{bookmarkTabColor}};">
+      <svg viewBox="0 0 24 24" width="23" height="23" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M6 3.5h12a.5.5 0 0 1 .5.5v17l-6.5-4-6.5 4v-17a.5.5 0 0 1 .5-.5z"/>
+      </svg>
+      <span style="font-size:10.5px;font-weight:{{bookmarkTabWeight}};">북마크</span>
+    </div>
+    <div onClick="{{goShopping}}" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;color:{{shoppingTabColor}};">
+      <svg viewBox="0 0 24 24" width="23" height="23" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M6.5 8h11l-.9 12.1a1 1 0 0 1-1 .9H8.4a1 1 0 0 1-1-.9L6.5 8z"/>
+        <path d="M9 8V6.5a3 3 0 0 1 6 0V8"/>
+      </svg>
+      <span style="font-size:10.5px;font-weight:{{shoppingTabWeight}};">장보기</span>
+    </div>
+  </div>
+
+</div>
+
+</x-dc>
+<script data-dc-script data-props='{"accent":{"editor":"color","default":"#C1502E","options":["#C1502E","#B9704A","#8A6D3B","#3F6B4E"]}}'>
+const CATEGORIES = [
+  { name: '채소', items: ['양파','대파','마늘','애호박','당근','감자'] },
+  { name: '육류·해산물', items: ['돼지고기','소고기','닭가슴살','새우'] },
+  { name: '유제품·기타', items: ['계란','우유','버터','치즈','두부'] },
+  { name: '양념·주식', items: ['김치','고추장','된장','참기름','밥'] },
+];
+
+const RECIPES = [
+  { id: 'kimchi', title: '김치찌개', subtitle: '얼큰하고 진한 국물 요리', time: '35분', from: '#E8C4A0', to: '#C1502E', ingredients: ['김치','돼지고기','두부','대파','마늘','고추장'] },
+  { id: 'doenjang', title: '된장찌개', subtitle: '구수한 집밥 메뉴', time: '30분', from: '#D9CBA0', to: '#8A6D3B', ingredients: ['된장','두부','애호박','감자','양파','대파'] },
+  { id: 'friedrice', title: '계란볶음밥', subtitle: '간단하고 든든한 한 그릇', time: '15분', from: '#F3D98B', to: '#C1892F', ingredients: ['계란','밥','대파','당근','참기름'] },
+  { id: 'pasta', title: '크림새우파스타', subtitle: '주말 브런치로 좋은 메뉴', time: '25분', from: '#F0DCC8', to: '#B97A5A', ingredients: ['새우','우유','버터','치즈','마늘'] },
+];
+
+const RECIPE_LABEL = { 돼지고기: '김치찌개', 고추장: '김치찌개', 된장: '된장찌개', 애호박: '된장찌개', 새우: '크림새우파스타', 치즈: '크림새우파스타' };
+const SHOPPING_ORDER = ['돼지고기','고추장','된장','애호박','새우','치즈'];
+
+const BOOKMARKS = [
+  { title: '집밥 백선생 - 김치찜 황금레시피', domain: 'youtube.com', saved: '3일 전', from: '#F1C7B3', to: '#C1502E' },
+  { title: '냉장고 파먹기 일주일 식단표', domain: 'blog.naver.com', saved: '1주 전', from: '#DDE3CE', to: '#3F6B4E' },
+  { title: '에어프라이어 감자튀김 꿀팁', domain: 'instagram.com', saved: '2주 전', from: '#F3E1B8', to: '#C1892F' },
+];
+
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = {
+      activeTab: 'recipe',
+      fridge: {
+        양파: true, 대파: true, 마늘: true, 감자: true, 당근: true, 계란: true,
+        밥: true, 참기름: true, 우유: true, 버터: true, 두부: true, 김치: true,
+        애호박: false, 돼지고기: false, 소고기: false, 닭가슴살: false, 새우: false, 치즈: false, 고추장: false, 된장: false,
+      },
+      shoppingAdded: { 돼지고기: true, 고추장: true, 된장: true, 애호박: true },
+      shoppingChecked: { 된장: true },
+    };
+  }
+
+  setTab(tab) {
+    this.setState({ activeTab: tab });
+  }
+
+  toggleFridge(name) {
+    const next = Object.assign({}, this.state.fridge);
+    next[name] = !next[name];
+    this.setState({ fridge: next });
+  }
+
+  toggleShoppingChecked(name) {
+    const next = Object.assign({}, this.state.shoppingChecked);
+    next[name] = !next[name];
+    this.setState({ shoppingChecked: next });
+  }
+
+  addMissingToShopping(names) {
+    const next = Object.assign({}, this.state.shoppingAdded);
+    names.forEach((n) => { next[n] = true; });
+    this.setState({ shoppingAdded: next });
+  }
+
+  renderVals() {
+    const accent = this.props.accent ?? '#C1502E';
+    const activeTab = this.state.activeTab;
+    const fridge = this.state.fridge;
+    const shoppingAdded = this.state.shoppingAdded;
+    const shoppingChecked = this.state.shoppingChecked;
+
+    const recipeItems = RECIPES.map((r) => {
+      const missing = r.ingredients.filter((n) => !fridge[n]);
+      const haveCount = r.ingredients.length - missing.length;
+      const total = r.ingredients.length;
+      const pct = Math.round((haveCount / total) * 100);
+      const makeable = missing.length === 0;
+      const allAdded = missing.length > 0 && missing.every((n) => !!shoppingAdded[n]);
+      return {
+        id: r.id,
+        title: r.title,
+        meta: r.subtitle + ' · ' + r.time,
+        thumbStyle: 'background:linear-gradient(135deg, ' + r.from + ', ' + r.to + ');',
+        haveText: '보유 재료 ' + haveCount + '/' + total,
+        progressStyle: 'width:' + pct + '%;',
+        makeable: makeable,
+        missingList: missing.map((n) => ({ name: n })),
+        showButton: !makeable,
+        buttonLabel: allAdded ? '장보기에 담겨 있어요' : '부족한 재료 장보기 담기',
+        buttonDisabled: allAdded,
+        buttonEnabled: !allAdded,
+        addClick: allAdded ? (() => {}) : (() => this.addMissingToShopping(missing)),
+      };
+    });
+    const makeableCount = recipeItems.filter((r) => r.makeable).length;
+
+    const ownedCount = Object.keys(fridge).filter((k) => fridge[k]).length;
+    const totalIngredients = Object.keys(fridge).length;
+    const categoryItems = CATEGORIES.map((c) => ({
+      name: c.name,
+      items: c.items.map((n) => {
+        const sel = !!fridge[n];
+        return {
+          name: n,
+          selected: sel,
+          chipStyle: sel
+            ? 'background:rgba(63,107,78,0.22);backdrop-filter:blur(10px) saturate(180%);-webkit-backdrop-filter:blur(10px) saturate(180%);border-color:rgba(63,107,78,0.45);color:#1F4A30;'
+            : 'background:rgba(255,255,255,0.4);backdrop-filter:blur(10px) saturate(180%);-webkit-backdrop-filter:blur(10px) saturate(180%);border-color:rgba(255,255,255,0.55);color:#71624F;',
+          toggle: () => this.toggleFridge(n),
+        };
+      }),
+    }));
+
+    const shoppingList = SHOPPING_ORDER.filter((n) => shoppingAdded[n]).map((n) => {
+      const checked = !!shoppingChecked[n];
+      return {
+        name: n,
+        recipeTag: RECIPE_LABEL[n],
+        checked: checked,
+        rowTextStyle: checked ? 'color:#B7AA98;text-decoration:line-through;' : 'color:#2A2420;',
+        boxStyle: checked ? 'background:#3F6B4E;border-color:#3F6B4E;' : 'background:rgba(255,255,255,0.4);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-color:rgba(120,100,80,0.35);',
+        showCheckIcon: checked,
+        toggle: () => this.toggleShoppingChecked(n),
+      };
+    });
+    const doneCount = shoppingList.filter((i) => i.checked).length;
+    const totalShopping = shoppingList.length;
+    const shoppingPct = totalShopping ? Math.round((doneCount / totalShopping) * 100) : 0;
+
+    return {
+      accent: accent,
+      isRecipeTab: activeTab === 'recipe',
+      isFridgeTab: activeTab === 'fridge',
+      isBookmarkTab: activeTab === 'bookmark',
+      isShoppingTab: activeTab === 'shopping',
+      recipeTabColor: activeTab === 'recipe' ? accent : '#9C8E7C',
+      fridgeTabColor: activeTab === 'fridge' ? accent : '#9C8E7C',
+      bookmarkTabColor: activeTab === 'bookmark' ? accent : '#9C8E7C',
+      shoppingTabColor: activeTab === 'shopping' ? accent : '#9C8E7C',
+      recipeTabWeight: activeTab === 'recipe' ? '700' : '500',
+      fridgeTabWeight: activeTab === 'fridge' ? '700' : '500',
+      bookmarkTabWeight: activeTab === 'bookmark' ? '700' : '500',
+      shoppingTabWeight: activeTab === 'shopping' ? '700' : '500',
+      goRecipe: () => this.setTab('recipe'),
+      goFridge: () => this.setTab('fridge'),
+      goBookmark: () => this.setTab('bookmark'),
+      goShopping: () => this.setTab('shopping'),
+
+      recipeItems: recipeItems,
+      recipeStatText: '지금 만들 수 있는 레시피 ' + makeableCount + '개',
+      fridgeStatText: ownedCount + '개 재료 보유 중',
+      categoryItems: categoryItems,
+      shoppingList: shoppingList,
+      shoppingProgressText: doneCount + '/' + totalShopping + ' 완료',
+      shoppingProgressStyle: 'width:' + shoppingPct + '%; background:' + accent + ';',
+      bookmarks: BOOKMARKS.map((b) => Object.assign({}, b, { thumbStyle: 'background:linear-gradient(135deg, ' + b.from + ', ' + b.to + ');' })),
+    };
+  }
+}
+</script>
+</body>
+</html>

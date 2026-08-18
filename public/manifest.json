@@ -1,0 +1,10 @@
+{
+  "name": "오늘은 내가 요리할게!",
+  "short_name": "오내요",
+  "description": "부부/커플이 함께 쓰는 레시피 · 냉장고 · 장보기 앱",
+  "start_url": "/recipes",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#ffffff",
+  "icons": []
+}
