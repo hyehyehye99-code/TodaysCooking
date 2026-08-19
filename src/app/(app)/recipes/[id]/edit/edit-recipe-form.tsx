@@ -6,6 +6,7 @@ import { updateRecipe } from "@/lib/actions/recipes";
 import { GlassCard } from "@/components/ui";
 import { EmojiPicker } from "@/components/EmojiPicker";
 import { TagPicker } from "@/components/TagPicker";
+import { PhotoPicker } from "@/components/PhotoPicker";
 import type { RecipeWithIngredients } from "@/lib/types";
 
 export function EditRecipeForm({
@@ -94,16 +95,10 @@ export function EditRecipeForm({
         <GlassCard className="bg-white p-4">
           <p className="mb-3 text-[13px] font-bold">사진 또는 이모지</p>
           <div className="flex flex-col gap-3">
-            {recipe.cover_photo_url && (
-              <div className="h-14 w-14 overflow-hidden rounded-2xl bg-surface">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={recipe.cover_photo_url} alt="" className="h-full w-full object-cover" />
-              </div>
-            )}
-            <label className="flex flex-col gap-1.5">
-              <span className="text-xs text-ink-soft">사진 바꾸기 (선택)</span>
-              <input type="file" name="photo" accept="image/*" className="text-xs text-ink-soft" />
-            </label>
+            <div className="flex flex-col gap-1.5">
+              <span className="text-xs text-ink-soft">사진 (선택, 1장)</span>
+              <PhotoPicker name="photo" defaultPreviewUrl={recipe.cover_photo_url} />
+            </div>
             <label className="flex flex-col gap-1.5">
               <span className="text-xs text-ink-soft">아이콘 이모지 (사진이 없을 때 표시돼요)</span>
               <EmojiPicker name="iconEmoji" defaultValue={recipe.icon_emoji} />

@@ -6,6 +6,7 @@ import { createRecipe } from "@/lib/actions/recipes";
 import { GlassCard } from "@/components/ui";
 import { EmojiPicker } from "@/components/EmojiPicker";
 import { TagPicker } from "@/components/TagPicker";
+import { PhotoPicker } from "@/components/PhotoPicker";
 
 export function NewRecipeForm({ existingTags }: { existingTags: string[] }) {
   const [state, formAction, pending] = useActionState(createRecipe, undefined);
@@ -76,10 +77,10 @@ export function NewRecipeForm({ existingTags }: { existingTags: string[] }) {
         <GlassCard className="bg-white p-4">
           <p className="mb-3 text-[13px] font-bold">사진 또는 이모지</p>
           <div className="flex flex-col gap-3">
-            <label className="flex flex-col gap-1.5">
-              <span className="text-xs text-ink-soft">사진 (선택)</span>
-              <input type="file" name="photo" accept="image/*" className="text-xs text-ink-soft" />
-            </label>
+            <div className="flex flex-col gap-1.5">
+              <span className="text-xs text-ink-soft">사진 (선택, 1장)</span>
+              <PhotoPicker name="photo" />
+            </div>
             <label className="flex flex-col gap-1.5">
               <span className="text-xs text-ink-soft">아이콘 이모지 (사진이 없을 때 표시돼요)</span>
               <EmojiPicker name="iconEmoji" />
