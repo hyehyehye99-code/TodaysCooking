@@ -87,6 +87,7 @@ export function AppHeader({
                     <input type="hidden" name="householdId" value={h.id} />
                     <button
                       type="submit"
+                      onClick={() => setOpen(false)}
                       className="w-full rounded-xl px-3 py-2.5 text-left text-sm font-semibold text-ink"
                     >
                       {h.name}

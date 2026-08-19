@@ -127,7 +127,7 @@ export function OnboardingWizard({ authed }: { authed: boolean }) {
 
             <div className="flex flex-1 flex-col justify-center">
               <h1 className="mb-1 text-[22px] font-bold">요리책을 준비해볼까요?</h1>
-              <p className="mb-6 text-sm text-ink-soft">새로 만들거나, 코드로 기존 요리책에 들어갈 수 있어요.</p>
+              <p className="mb-10 text-sm text-ink-soft">새로 만들거나, 코드로 기존 요리책에 들어갈 수 있어요.</p>
 
               <div className="mb-5 flex rounded-xl border border-transparent bg-surface p-1">
                 <button
@@ -150,7 +150,7 @@ export function OnboardingWizard({ authed }: { authed: boolean }) {
                 <input
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder="예) 민지네 요리책"
+                  placeholder="예) 혜동이의 요리책"
                   className="rounded-xl border border-transparent bg-surface px-4 py-3.5 text-sm outline-none focus:border-accent"
                 />
               ) : (
