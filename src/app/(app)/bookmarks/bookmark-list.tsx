@@ -67,7 +67,7 @@ function BookmarkNote({ id, note }: { id: string; note: string | null }) {
     <button
       type="button"
       onClick={() => setEditing(true)}
-      className="w-fit border-t border-border pt-2 text-xs font-semibold text-accent"
+      className="w-fit border-t border-border pt-2 text-xs font-semibold text-ink-soft"
     >
       + 메모 추가
     </button>
