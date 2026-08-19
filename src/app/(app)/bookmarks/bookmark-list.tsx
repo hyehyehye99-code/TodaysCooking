@@ -118,9 +118,9 @@ function DeleteBookmarkButton({
         <div className="fixed inset-0 z-50 flex items-center justify-center px-6">
           <div className="absolute inset-0 bg-black/40" onClick={() => setConfirming(false)} />
           <div className="relative w-full max-w-[360px] rounded-2xl bg-white p-5 shadow-xl">
-            <p className="text-sm font-bold text-ink">레시피에서도 사라져요</p>
+            <p className="text-sm font-bold text-ink">요리책에서도 사라져요</p>
             <p className="mt-2 text-xs text-ink-soft">
-              이 링크는 레시피의 참고 링크로도 쓰이고 있어요. 삭제하면 레시피에서도 이 링크가
+              이 링크는 요리책의 참고 링크로도 쓰이고 있어요. 삭제하면 요리책에서도 이 링크가
               사라져요.
             </p>
             <div className="mt-4 flex justify-end gap-2">
@@ -325,7 +325,7 @@ export function BookmarkList({ bookmarks }: { bookmarks: BookmarkWithRecipe[] })
         </div>
       ) : bookmarks.length === 0 ? (
         <p className="mt-10 text-center text-sm text-ink-soft">
-          레시피 링크를 저장해두면 여기 모여요.
+          요리책 링크를 저장해두면 여기 모여요.
         </p>
       ) : filtered.length === 0 ? (
         <p className="mt-10 text-center text-sm text-ink-soft">검색 결과가 없어요.</p>
@@ -360,7 +360,7 @@ export function BookmarkList({ bookmarks }: { bookmarks: BookmarkWithRecipe[] })
                       href={`/recipes/${b.recipe_id}`}
                       className="inline-flex w-fit items-center rounded-full bg-accent/8 px-2 py-0.5 text-[10px] font-bold text-accent"
                     >
-                      {b.recipes.title} 레시피
+                      {b.recipes.title} 요리책
                     </Link>
                   )}
                   <div className="flex items-center justify-between">

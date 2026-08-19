@@ -50,10 +50,10 @@ export function LeaveHouseholdButton({
           <div className="absolute inset-0 bg-black/40" onClick={close} />
           <div className="relative w-full max-w-[360px] rounded-2xl bg-white p-5 shadow-xl">
             <p className="text-sm font-bold text-warn-ink">
-              대장이 나가면 모든 요리책이 삭제돼요. 그래도 괜찮아요?
+              대장이 나가면 모든 부엌이 삭제돼요. 그래도 괜찮아요?
             </p>
             <p className="mt-2 text-xs text-ink-soft">
-              확인을 위해 요리책 이름 <span className="font-bold text-ink">{householdName}</span>
+              확인을 위해 부엌 이름 <span className="font-bold text-ink">{householdName}</span>
               을(를) 입력해주세요.
             </p>
             <input

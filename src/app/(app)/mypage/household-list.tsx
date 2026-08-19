@@ -46,7 +46,7 @@ export function HouseholdList({
               <div className="text-left">
                 <p className="text-[15px] font-bold">{household.name}</p>
                 {role === "owner" && (
-                  <p className="mt-0.5 text-xs text-ink-faint">내가 대장인 요리책</p>
+                  <p className="mt-0.5 text-xs text-ink-faint">내가 대장인 부엌</p>
                 )}
               </div>
               <div className="flex items-center gap-2">
@@ -74,7 +74,7 @@ export function HouseholdList({
             {isOpen && (
               <div className="mt-4 flex flex-col gap-4 border-t border-border pt-4">
                 <div>
-                  <p className="mb-2.5 text-xs font-bold text-ink-soft">요리책 이름</p>
+                  <p className="mb-2.5 text-xs font-bold text-ink-soft">부엌 이름</p>
                   <RenameHouseholdForm householdId={household.id} currentName={household.name} />
                 </div>
 
@@ -85,7 +85,7 @@ export function HouseholdList({
                       type="submit"
                       className="w-full rounded-xl bg-accent py-3 text-sm font-bold text-white"
                     >
-                      이 요리책 사용하기
+                      이 부엌 사용하기
                     </button>
                   </form>
                 )}
@@ -116,7 +116,7 @@ export function HouseholdList({
                 <div>
                   <p className="mb-1 text-xs font-bold text-ink-soft">함께 쓸 사람 초대하기</p>
                   <p className="mb-2.5 text-[11px] text-ink-faint">
-                    코드를 만들어 상대방에게 공유하면, 로그인 후 초대 코드로 이 요리책에 들어올 수
+                    코드를 만들어 상대방에게 공유하면, 로그인 후 초대 코드로 이 부엌에 들어올 수
                     있어요.
                   </p>
                   <InviteForm householdId={household.id} />

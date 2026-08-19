@@ -8,7 +8,7 @@ export type FridgeSaveItem = { name: string; category: string; inStock: boolean 
 
 export async function saveFridge(items: FridgeSaveItem[], toDelete: string[] = []) {
   const { household } = await getCurrentHousehold();
-  if (!household) return { error: "요리책을 먼저 만들어주세요." };
+  if (!household) return { error: "부엌을 먼저 만들어주세요." };
 
   const supabase = await createClient();
 

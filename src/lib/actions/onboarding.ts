@@ -23,7 +23,7 @@ async function applySetup(payload: SetupPayload) {
     const { error } = await supabase.rpc("create_household", {
       household_name: payload.name,
     });
-    if (error) return { error: "요리책을 만들지 못했어요. 다시 시도해주세요.", field: "name" as const };
+    if (error) return { error: "부엌을 만들지 못했어요. 다시 시도해주세요.", field: "name" as const };
   } else {
     const { error } = await supabase.rpc("join_household_with_code", {
       invite_code: payload.code,
@@ -32,7 +32,7 @@ async function applySetup(payload: SetupPayload) {
   }
 
   const { household } = await getCurrentHousehold();
-  if (!household) return { error: "요리책 정보를 확인하지 못했어요." };
+  if (!household) return { error: "부엌 정보를 확인하지 못했어요." };
 
   const fridgeRows = Object.entries(payload.fridge)
     .filter(([, inStock]) => inStock)

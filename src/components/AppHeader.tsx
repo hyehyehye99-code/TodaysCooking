@@ -8,7 +8,7 @@ import { switchHousehold } from "@/lib/actions/household";
 type HouseholdOption = { id: string; name: string };
 
 const TAB_TITLES: Record<string, string> = {
-  "/recipes": "레시피",
+  "/recipes": "요리책",
   "/fridge": "냉장고",
   "/bookmarks": "보관함",
   "/shopping": "장보기",
@@ -104,7 +104,7 @@ export function AppHeader({
         <h1 className="text-[26px] font-bold tracking-tight">{tabTitle}</h1>
         {showNewRecipeButton && (
           <Link href="/recipes/new" className="shrink-0 text-sm font-bold text-accent">
-            + 새 레시피
+            + 새 요리책
           </Link>
         )}
         {showAddBookmarkButton && (

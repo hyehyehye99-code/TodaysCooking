@@ -32,7 +32,7 @@ export async function createHousehold(_prevState: unknown, formData: FormData) {
     household_name: name,
   });
 
-  if (error) return { error: "요리책을 만들지 못했어요. 다시 시도해주세요." };
+  if (error) return { error: "부엌을 만들지 못했어요. 다시 시도해주세요." };
   if (data) await setActiveHouseholdCookie(data as string);
 
   redirect("/recipes");
@@ -55,7 +55,7 @@ export async function joinHousehold(_prevState: unknown, formData: FormData) {
 
 export async function createInvite(_prevState: unknown, formData: FormData) {
   const householdId = String(formData.get("householdId") ?? "");
-  if (!householdId) return { error: "요리책을 찾을 수 없어요." };
+  if (!householdId) return { error: "부엌을 찾을 수 없어요." };
 
   const supabase = await createClient();
   const {
@@ -80,7 +80,7 @@ export async function createInvite(_prevState: unknown, formData: FormData) {
 export async function renameHousehold(_prevState: unknown, formData: FormData) {
   const householdId = String(formData.get("householdId") ?? "");
   const name = String(formData.get("name") ?? "").trim();
-  if (!householdId) return { error: "요리책을 찾을 수 없어요." };
+  if (!householdId) return { error: "부엌을 찾을 수 없어요." };
   if (!name) return { error: "이름을 입력해주세요." };
 
   const supabase = await createClient();

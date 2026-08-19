@@ -40,7 +40,7 @@ export default async function MyPage() {
         <NicknameForm currentNickname={myNickname} />
       </GlassCard>
 
-      <p className="mb-3 text-[13px] font-bold text-ink-soft">내 요리책</p>
+      <p className="mb-3 text-[13px] font-bold text-ink-soft">내 부엌</p>
 
       <div className="mb-4">
         <HouseholdList entries={entries} currentId={current?.id ?? ""} myUserId={user?.id ?? ""} />

@@ -37,8 +37,8 @@ export function OnboardingWizard() {
   }
 
   function goToNextFromStep1() {
-    if (mode === "create" && !name.trim()) return setStep1Error("요리책 이름을 입력해주세요.");
-    if (mode === "join" && !code.trim()) return setStep1Error("요리책 코드를 입력해주세요.");
+    if (mode === "create" && !name.trim()) return setStep1Error("부엌 이름을 입력해주세요.");
+    if (mode === "join" && !code.trim()) return setStep1Error("부엌 코드를 입력해주세요.");
     setStep1Error("");
     setStep(mode === "join" ? 3 : 2);
   }
@@ -90,8 +90,8 @@ export function OnboardingWizard() {
             <BackButton href="/login" className="mb-3" />
 
             <div className="flex flex-1 flex-col pt-4">
-              <h1 className="mb-1 text-[22px] font-bold">요리책을 준비해볼까요?</h1>
-              <p className="mb-10 text-sm text-ink-soft">새로 만들거나, 코드로 기존 요리책에 들어갈 수 있어요.</p>
+              <h1 className="mb-1 text-[22px] font-bold">부엌을 준비해볼까요?</h1>
+              <p className="mb-10 text-sm text-ink-soft">새로 만들거나, 코드로 기존 부엌에 들어갈 수 있어요.</p>
 
               <div className="mb-5 flex rounded-xl border border-transparent bg-surface p-1">
                 <button
@@ -99,14 +99,14 @@ export function OnboardingWizard() {
                   onClick={() => setMode("create")}
                   className={`flex-1 rounded-lg py-2 text-sm font-bold ${mode === "create" ? "bg-accent text-white" : "text-ink-soft"}`}
                 >
-                  요리책 새로 만들기
+                  부엌 새로 만들기
                 </button>
                 <button
                   type="button"
                   onClick={() => setMode("join")}
                   className={`flex-1 rounded-lg py-2 text-sm font-bold ${mode === "join" ? "bg-accent text-white" : "text-ink-soft"}`}
                 >
-                  기존 요리책 열어보기
+                  기존 부엌 열어보기
                 </button>
               </div>
 
@@ -114,14 +114,14 @@ export function OnboardingWizard() {
                 <input
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder="예) 혜동이의 요리책"
+                  placeholder="예) 혜동이의 부엌"
                   className="rounded-xl border border-transparent bg-surface px-4 py-3.5 text-sm outline-none focus:border-accent"
                 />
               ) : (
                 <input
                   value={code}
                   onChange={(e) => setCode(e.target.value)}
-                  placeholder="요리책 코드 입력"
+                  placeholder="부엌 코드 입력"
                   className="rounded-xl border border-transparent bg-surface px-4 py-3.5 text-sm uppercase tracking-widest outline-none focus:border-accent"
                 />
               )}
@@ -186,7 +186,7 @@ export function OnboardingWizard() {
                     className="rounded-xl border border-transparent bg-surface px-4 py-3.5 text-sm outline-none focus:border-accent"
                   />
                   <span className="text-[11px] text-ink-faint">
-                    요리책 안에서 &ldquo;{nickname.trim() || "닉네임"}셰프&rdquo;로 불려요
+                    부엌 안에서 &ldquo;{nickname.trim() || "닉네임"}셰프&rdquo;로 불려요
                   </span>
                 </label>
               </div>

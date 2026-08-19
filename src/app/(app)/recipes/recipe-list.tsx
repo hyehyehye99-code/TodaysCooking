@@ -182,7 +182,7 @@ export function RecipeList({
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="레시피, 재료 검색"
+            placeholder="요리책, 재료 검색"
             className="min-w-0 flex-1 rounded-xl border border-transparent bg-surface px-3.5 py-2.5 text-sm outline-none focus:border-accent"
           />
           {recipes.length > 1 && (
@@ -249,7 +249,7 @@ export function RecipeList({
       {!reordering && filtered.length === 0 && (
         <p className="mt-10 text-center text-sm text-ink-soft">
           {recipes.length === 0
-            ? "아직 등록된 레시피가 없어요. 첫 레시피를 등록해보세요."
+            ? "아직 등록된 요리책이 없어요. 첫 요리책을 등록해보세요."
             : "검색 결과가 없어요."}
         </p>
       )}

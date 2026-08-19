@@ -30,7 +30,7 @@ export function EditRecipeForm({
   return (
     <div>
       <div className="mb-5 flex items-center justify-between">
-        <h1 className="text-[22px] font-bold">레시피 수정</h1>
+        <h1 className="text-[22px] font-bold">요리책 수정</h1>
         <button
           type="button"
           onClick={() => setConfirmingClose(true)}
@@ -136,7 +136,7 @@ export function EditRecipeForm({
         </GlassCard>
 
         <GlassCard className="bg-white p-4">
-          <p className="mb-3 text-[13px] font-bold">레시피</p>
+          <p className="mb-3 text-[13px] font-bold">요리책</p>
           <textarea
             name="notes"
             rows={8}

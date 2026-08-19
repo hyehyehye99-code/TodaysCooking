@@ -16,7 +16,7 @@ export function NewRecipeForm({ existingTags }: { existingTags: string[] }) {
   return (
     <div>
       <div className="mb-5 flex items-center justify-between">
-        <h1 className="text-[22px] font-bold">새 레시피</h1>
+        <h1 className="text-[22px] font-bold">새 요리책</h1>
         <button
           type="button"
           onClick={() => setConfirmingClose(true)}
@@ -117,7 +117,7 @@ export function NewRecipeForm({ existingTags }: { existingTags: string[] }) {
         </GlassCard>
 
         <GlassCard className="bg-white p-4">
-          <p className="mb-3 text-[13px] font-bold">레시피</p>
+          <p className="mb-3 text-[13px] font-bold">요리책</p>
           <textarea
             name="notes"
             rows={8}
@@ -133,7 +133,7 @@ export function NewRecipeForm({ existingTags }: { existingTags: string[] }) {
           disabled={pending}
           className="mt-1 rounded-xl bg-accent py-3.5 text-sm font-bold text-white disabled:opacity-60"
         >
-          {pending ? "저장 중..." : "레시피 저장"}
+          {pending ? "저장 중..." : "요리책 저장"}
         </button>
       </form>
     </div>

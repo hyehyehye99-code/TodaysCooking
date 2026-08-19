@@ -15,7 +15,7 @@ export function AddHouseholdSection() {
         onClick={() => setOpen(true)}
         className="flex w-full items-center justify-center gap-1.5 rounded-xl border border-dashed border-border py-3 text-sm font-bold text-accent"
       >
-        + 요리책 추가
+        + 부엌 추가
       </button>
     );
   }
@@ -23,7 +23,7 @@ export function AddHouseholdSection() {
   return (
     <div className="flex flex-col gap-3">
       <div className="flex items-center justify-between">
-        <p className="text-[13px] font-bold text-ink-soft">요리책 추가</p>
+        <p className="text-[13px] font-bold text-ink-soft">부엌 추가</p>
         <button
           type="button"
           onClick={() => setOpen(false)}
@@ -34,7 +34,7 @@ export function AddHouseholdSection() {
       </div>
 
       <GlassCard className="bg-white p-4">
-        <p className="mb-3 text-[13px] font-bold">새 요리책 만들기</p>
+        <p className="mb-3 text-[13px] font-bold">새 부엌 만들기</p>
         <CreateHouseholdForm action={createHousehold} />
       </GlassCard>
 

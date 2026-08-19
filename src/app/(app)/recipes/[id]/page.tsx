@@ -165,7 +165,7 @@ export default async function RecipeDetailPage({
 
       {r.notes && (
         <div className="mt-6">
-          <p className="mb-2 text-[15px] font-bold">레시피</p>
+          <p className="mb-2 text-[15px] font-bold">요리책</p>
           <GlassCard className="bg-surface p-4">
             <p className="whitespace-pre-line text-sm text-ink">{r.notes}</p>
           </GlassCard>
