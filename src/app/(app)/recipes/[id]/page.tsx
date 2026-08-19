@@ -58,7 +58,7 @@ export default async function RecipeDetailPage({
   return (
     <div>
       <div className="mb-4 flex items-start justify-between gap-3">
-        <div className="flex min-w-0 flex-1 items-start gap-3">
+        <div className={`flex min-w-0 flex-1 gap-3 ${r.subtitle ? "items-start" : "items-center"}`}>
           {(r.cover_photo_url || r.icon_emoji) && (
             <div className="h-14 w-14 shrink-0 overflow-hidden rounded-2xl bg-surface">
               {r.cover_photo_url ? (
