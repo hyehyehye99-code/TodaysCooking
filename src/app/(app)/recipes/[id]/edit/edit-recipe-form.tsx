@@ -1,7 +1,7 @@
 "use client";
 
-import { useActionState } from "react";
-import Link from "next/link";
+import { useActionState, useState } from "react";
+import { useRouter } from "next/navigation";
 import { updateRecipe } from "@/lib/actions/recipes";
 import { GlassCard } from "@/components/ui";
 import { EmojiPicker } from "@/components/EmojiPicker";
@@ -18,6 +18,8 @@ export function EditRecipeForm({
   existingTags: string[];
 }) {
   const [state, formAction, pending] = useActionState(updateRecipe, undefined);
+  const [confirmingClose, setConfirmingClose] = useState(false);
+  const router = useRouter();
   const ingredientsText = recipe.recipe_ingredients
     .slice()
     .sort((a, b) => a.position - b.position)
@@ -28,8 +30,9 @@ export function EditRecipeForm({
     <div>
       <div className="mb-5 flex items-center justify-between">
         <h1 className="text-[22px] font-bold">레시피 수정</h1>
-        <Link
-          href={`/recipes/${recipe.id}`}
+        <button
+          type="button"
+          onClick={() => setConfirmingClose(true)}
           aria-label="닫기"
           className="flex h-8 w-8 items-center justify-center rounded-full bg-surface text-ink"
         >
@@ -37,8 +40,34 @@ export function EditRecipeForm({
             <path d="M18 6L6 18" />
             <path d="M6 6l12 12" />
           </svg>
-        </Link>
+        </button>
       </div>
+
+      {confirmingClose && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-6">
+          <div className="absolute inset-0 bg-black/40" onClick={() => setConfirmingClose(false)} />
+          <div className="relative w-full max-w-[360px] rounded-2xl bg-white p-5 shadow-xl">
+            <p className="text-sm font-bold text-ink">수정 중인 내용이 저장되지 않아요</p>
+            <p className="mt-2 text-xs text-ink-soft">지금 나가면 수정한 내용이 모두 사라져요. 계속하시겠어요?</p>
+            <div className="mt-4 flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setConfirmingClose(false)}
+                className="rounded-lg bg-surface px-3.5 py-2 text-xs font-bold text-ink-soft"
+              >
+                계속 작성
+              </button>
+              <button
+                type="button"
+                onClick={() => router.push(`/recipes/${recipe.id}`)}
+                className="rounded-lg bg-accent px-3.5 py-2 text-xs font-bold text-white"
+              >
+                나가기
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <form action={formAction} className="flex flex-col gap-4">
         <input type="hidden" name="id" value={recipe.id} />

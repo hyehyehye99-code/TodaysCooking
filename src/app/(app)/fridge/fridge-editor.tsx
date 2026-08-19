@@ -24,6 +24,12 @@ export function FridgeEditor({ categories }: { categories: Category[] }) {
     });
   }
 
+  const allExpanded = local.length > 0 && local.every((c) => expanded.has(c.name));
+
+  function toggleAllExpanded() {
+    setExpanded(allExpanded ? new Set() : new Set(local.map((c) => c.name)));
+  }
+
   const ownedCount = local.reduce((n, c) => n + c.items.filter((i) => i.selected).length, 0);
   const q = search.trim().toLowerCase();
   const matchesSearch = (name: string) => !q || name.toLowerCase().includes(q);
@@ -97,6 +103,14 @@ export function FridgeEditor({ categories }: { categories: Category[] }) {
         placeholder="재료 검색"
         className="mb-5 w-full rounded-xl border border-transparent bg-surface px-3.5 py-2.5 text-sm outline-none focus:border-accent"
       />
+
+      {!q && (
+        <div className="-mt-2 mb-2 flex justify-end">
+          <button type="button" onClick={toggleAllExpanded} className="px-4 py-2 text-xs font-bold text-accent">
+            {allExpanded ? "전체 닫기" : "전체 열기"}
+          </button>
+        </div>
+      )}
 
       {noMatches && (
         <GlassCard className="mb-5 border-transparent bg-surface p-4">
