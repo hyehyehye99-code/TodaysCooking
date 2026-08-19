@@ -93,10 +93,10 @@ export function FridgeEditor({ categories }: { categories: Category[] }) {
 
   return (
     <div>
-      <GlassCard className="mb-5 border-transparent bg-accent/8 px-4 py-3.5">
-        <p className="text-sm font-bold text-accent-ink">{ownedCount}개 재료 보유 중</p>
-        <p className="mt-0.5 text-xs text-accent-ink/70">탭하면 바로 추가되거나 빠져요</p>
-      </GlassCard>
+      <h1 className="mb-1 text-[22px] font-bold">냉장고</h1>
+      <p className="mb-5 text-sm text-ink-soft">
+        {ownedCount}개 재료 보유 중 · 탭하면 바로 추가되거나 빠져요
+      </p>
 
       <input
         value={search}
@@ -140,7 +140,7 @@ export function FridgeEditor({ categories }: { categories: Category[] }) {
                 onClick={() => toggleExpand(cat.name)}
                 className="flex w-full items-center justify-between"
               >
-                <span className="text-[13px] font-bold text-ink">{cat.name}</span>
+                <span className="text-xs font-bold text-ink-soft">{cat.name}</span>
                 <svg
                   viewBox="0 0 24 24"
                   width="16"
@@ -159,7 +159,7 @@ export function FridgeEditor({ categories }: { categories: Category[] }) {
               {!isOpen && (
                 <p
                   className={`mt-1.5 text-xs ${
-                    ownedNames.length > 0 ? "font-semibold text-ink" : "text-ink-faint"
+                    ownedNames.length > 0 ? "text-ink" : "text-ink-faint"
                   }`}
                 >
                   {ownedNames.length > 0 ? ownedNames.join(", ") : "보유한 재료가 없어요"}
