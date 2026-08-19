@@ -190,46 +190,52 @@ export function OnboardingWizard({ authed }: { authed: boolean }) {
               ← 이전
             </button>
             <h1 className="mb-1 text-[22px] font-bold">이제 준비 완료!</h1>
+            <p className="mb-6 text-sm text-ink-soft">
+              {authed
+                ? "아래 버튼을 누르면 바로 시작할 수 있어요."
+                : "닉네임과 로그인 정보를 입력하면 요리책이 저장돼요."}
+            </p>
 
-            <label className="mb-5 mt-4 flex flex-col gap-1.5">
-              <span className="text-xs font-bold text-ink-soft">닉네임</span>
-              <input
-                value={nickname}
-                onChange={(e) => setNickname(e.target.value)}
-                placeholder="예) 혜지"
-                className="rounded-xl border border-transparent bg-surface px-4 py-3.5 text-sm outline-none focus:border-accent"
-              />
-              <span className="text-[11px] text-ink-faint">
-                요리책 안에서 &ldquo;{nickname.trim() || "닉네임"}셰프&rdquo;로 불려요
-              </span>
-            </label>
+            <div className="flex flex-col gap-5">
+              <label className="flex flex-col gap-1.5">
+                <span className="text-xs font-bold text-ink-soft">닉네임</span>
+                <input
+                  value={nickname}
+                  onChange={(e) => setNickname(e.target.value)}
+                  placeholder="예) 혜지"
+                  className="rounded-xl border border-transparent bg-surface px-4 py-3.5 text-sm outline-none focus:border-accent"
+                />
+                <span className="text-[11px] text-ink-faint">
+                  요리책 안에서 &ldquo;{nickname.trim() || "닉네임"}셰프&rdquo;로 불려요
+                </span>
+              </label>
 
-            {authed ? (
-              <p className="mb-6 text-sm text-ink-soft">아래 버튼을 누르면 바로 시작할 수 있어요.</p>
-            ) : (
-              <>
-                <p className="mb-6 text-sm text-ink-soft">
-                  마지막으로, 아이디와 비밀번호를 만들면 요리책이 저장돼요.
-                </p>
-                <div className="flex flex-col gap-3">
-                  <input
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                    autoCapitalize="none"
-                    autoCorrect="off"
-                    placeholder="아이디 (영문 소문자, 숫자, _ 4~20자)"
-                    className="rounded-xl border border-transparent bg-surface px-4 py-3.5 text-sm outline-none focus:border-accent"
-                  />
-                  <input
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    type="password"
-                    placeholder="비밀번호 (6자 이상)"
-                    className="rounded-xl border border-transparent bg-surface px-4 py-3.5 text-sm outline-none focus:border-accent"
-                  />
-                </div>
-              </>
-            )}
+              {!authed && (
+                <>
+                  <label className="flex flex-col gap-1.5">
+                    <span className="text-xs font-bold text-ink-soft">아이디</span>
+                    <input
+                      value={username}
+                      onChange={(e) => setUsername(e.target.value)}
+                      autoCapitalize="none"
+                      autoCorrect="off"
+                      placeholder="영문 소문자, 숫자, _ 4~20자"
+                      className="rounded-xl border border-transparent bg-surface px-4 py-3.5 text-sm outline-none focus:border-accent"
+                    />
+                  </label>
+                  <label className="flex flex-col gap-1.5">
+                    <span className="text-xs font-bold text-ink-soft">비밀번호</span>
+                    <input
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      type="password"
+                      placeholder="6자 이상"
+                      className="rounded-xl border border-transparent bg-surface px-4 py-3.5 text-sm outline-none focus:border-accent"
+                    />
+                  </label>
+                </>
+              )}
+            </div>
           </>
         )}
       </div>
