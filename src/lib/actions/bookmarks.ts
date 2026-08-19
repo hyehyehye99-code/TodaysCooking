@@ -52,3 +52,17 @@ export async function updateBookmarkNote(id: string, note: string) {
 
   revalidatePath("/bookmarks");
 }
+
+export async function reorderBookmarks(order: string[]) {
+  const { household } = await getCurrentHousehold();
+  if (!household) return;
+
+  const supabase = await createClient();
+  await Promise.all(
+    order.map((id, index) =>
+      supabase.from("bookmarks").update({ position: index }).eq("id", id)
+    )
+  );
+
+  revalidatePath("/bookmarks");
+}

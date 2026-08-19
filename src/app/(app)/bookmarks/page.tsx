@@ -12,6 +12,7 @@ export default async function BookmarksPage() {
     .from("bookmarks")
     .select("*, recipes(title)")
     .eq("household_id", household!.id)
+    .order("position", { ascending: true, nullsFirst: false })
     .order("created_at", { ascending: false });
 
   const bookmarks = (data as (Bookmark & { recipes: { title: string } | null })[] | null) ?? [];

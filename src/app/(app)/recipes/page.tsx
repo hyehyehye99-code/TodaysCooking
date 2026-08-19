@@ -12,7 +12,6 @@ export default async function RecipesPage() {
       .from("recipes")
       .select("*, recipe_ingredients(*)")
       .eq("household_id", household!.id)
-      .order("is_favorite", { ascending: false })
       .order("position", { ascending: true, nullsFirst: false })
       .order("created_at", { ascending: false }),
     supabase.from("fridge_items").select("name, in_stock").eq("household_id", household!.id),

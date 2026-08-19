@@ -2,8 +2,9 @@
 
 import { useState, useTransition } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { GlassCard } from "@/components/ui";
-import { deleteBookmark, updateBookmarkNote } from "@/lib/actions/bookmarks";
+import { deleteBookmark, updateBookmarkNote, reorderBookmarks } from "@/lib/actions/bookmarks";
 import type { Bookmark } from "@/lib/types";
 
 type BookmarkWithRecipe = Bookmark & { recipes: { title: string } | null };
@@ -12,11 +13,13 @@ function BookmarkNote({ id, note }: { id: string; note: string | null }) {
   const [editing, setEditing] = useState(false);
   const [value, setValue] = useState(note ?? "");
   const [pending, startTransition] = useTransition();
+  const router = useRouter();
 
   function save() {
     startTransition(async () => {
       await updateBookmarkNote(id, value);
       setEditing(false);
+      router.refresh();
     });
   }
 
@@ -146,6 +149,10 @@ function DeleteBookmarkButton({
 
 export function BookmarkList({ bookmarks }: { bookmarks: BookmarkWithRecipe[] }) {
   const [query, setQuery] = useState("");
+  const [reordering, setReordering] = useState(false);
+  const [order, setOrder] = useState<BookmarkWithRecipe[]>(bookmarks);
+  const [pending, startTransition] = useTransition();
+  const router = useRouter();
 
   const filtered = bookmarks.filter((b) => {
     if (!query) return true;
@@ -158,16 +165,116 @@ export function BookmarkList({ bookmarks }: { bookmarks: BookmarkWithRecipe[] })
     );
   });
 
+  function startReorder() {
+    setOrder(bookmarks);
+    setReordering(true);
+  }
+
+  function move(index: number, direction: -1 | 1) {
+    setOrder((prev) => {
+      const next = [...prev];
+      const target = index + direction;
+      if (target < 0 || target >= next.length) return prev;
+      [next[index], next[target]] = [next[target], next[index]];
+      return next;
+    });
+  }
+
+  function saveOrder() {
+    startTransition(async () => {
+      await reorderBookmarks(order.map((b) => b.id));
+      setReordering(false);
+      router.refresh();
+    });
+  }
+
   return (
     <div>
-      <input
-        value={query}
-        onChange={(e) => setQuery(e.target.value)}
-        placeholder="보관함 검색"
-        className="mb-4 w-full rounded-xl border border-transparent bg-surface px-3.5 py-2.5 text-sm outline-none focus:border-accent"
-      />
+      {reordering ? (
+        <div className="mb-4 flex justify-end gap-2">
+          <button
+            onClick={() => setReordering(false)}
+            disabled={pending}
+            className="rounded-lg bg-surface px-3 py-1.5 text-xs font-bold text-ink-soft disabled:opacity-60"
+          >
+            취소
+          </button>
+          <button
+            onClick={saveOrder}
+            disabled={pending}
+            className="rounded-lg bg-accent px-3 py-1.5 text-xs font-bold text-white disabled:opacity-60"
+          >
+            {pending ? "저장 중..." : "완료"}
+          </button>
+        </div>
+      ) : (
+        <div className="mb-4 flex gap-2">
+          <input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="보관함 검색"
+            className="min-w-0 flex-1 rounded-xl border border-transparent bg-surface px-3.5 py-2.5 text-sm outline-none focus:border-accent"
+          />
+          {bookmarks.length > 1 && (
+            <button
+              onClick={startReorder}
+              aria-label="순서 변경"
+              className="flex h-[42px] w-[42px] shrink-0 items-center justify-center rounded-xl bg-surface text-ink-soft"
+            >
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M8 7l4-4 4 4" />
+                <path d="M12 3v14" />
+                <path d="M16 17l-4 4-4-4" />
+                <path d="M12 21V7" />
+              </svg>
+            </button>
+          )}
+        </div>
+      )}
 
-      {bookmarks.length === 0 ? (
+      {reordering ? (
+        <div className="flex flex-col gap-3">
+          {order.map((b, index) => (
+            <GlassCard key={b.id} className="flex items-center gap-3 bg-white p-2.5">
+              <div className="h-[52px] w-[64px] shrink-0 overflow-hidden rounded-xl bg-black/[0.04]">
+                {b.thumbnail_url ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={b.thumbnail_url} alt="" className="h-full w-full object-cover" />
+                ) : (
+                  <div className="flex h-full w-full items-center justify-center">
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="var(--color-ink-faint)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M6 3.5h12a.5.5 0 0 1 .5.5v17l-6.5-4-6.5 4v-17a.5.5 0 0 1 .5-.5z" />
+                    </svg>
+                  </div>
+                )}
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="line-clamp-1 text-[13px] font-bold">{b.title || b.url}</p>
+              </div>
+              <div className="flex shrink-0 flex-col gap-1">
+                <button
+                  onClick={() => move(index, -1)}
+                  disabled={index === 0}
+                  className="flex h-7 w-7 items-center justify-center rounded-full bg-surface text-ink-soft disabled:opacity-30"
+                >
+                  <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M18 15l-6-6-6 6" />
+                  </svg>
+                </button>
+                <button
+                  onClick={() => move(index, 1)}
+                  disabled={index === order.length - 1}
+                  className="flex h-7 w-7 items-center justify-center rounded-full bg-surface text-ink-soft disabled:opacity-30"
+                >
+                  <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M6 9l6 6 6-6" />
+                  </svg>
+                </button>
+              </div>
+            </GlassCard>
+          ))}
+        </div>
+      ) : bookmarks.length === 0 ? (
         <p className="mt-10 text-center text-sm text-ink-soft">
           레시피 링크를 저장해두면 여기 모여요.
         </p>
