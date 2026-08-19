@@ -38,5 +38,4 @@ Vercel에 배포할 경우, 프로젝트 환경 변수에 `NEXT_PUBLIC_SUPABASE_
 
 ## 아직 안 된 것
 
-- PWA 아이콘 (`public/manifest.json`의 `icons`가 비어 있어요 — 192×192, 512×512 아이콘 추가 필요)
 - 레시피 수정, 북마크 링크 미리보기 실패 시 수동 입력

@@ -7,7 +7,7 @@ export default function LandingPage() {
         <p className="mb-2 text-xs font-bold tracking-wide text-ink-faint">오내요</p>
         <h1 className="mb-3 text-[32px] font-bold leading-tight">오늘은 내가 요리할게!</h1>
         <p className="text-sm leading-relaxed text-ink-soft">
-          요리책을 만들고, 냉장고 재료까지 준비하면 시작할 수 있어요.
+          흩어진 레시피를 한번에, 필요한 재료까지 정리해놨어!
         </p>
       </div>
 
