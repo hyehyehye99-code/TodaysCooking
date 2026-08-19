@@ -5,10 +5,10 @@ import { INGREDIENT_CATEGORIES } from "@/lib/ingredients";
 import { completeOnboardingAuthed, completeOnboardingWithSignup } from "@/lib/actions/onboarding";
 import { BackButton } from "@/components/ui";
 
-function StepDots({ step }: { step: 1 | 2 | 3 }) {
+function StepDots({ step, total }: { step: number; total: number }) {
   return (
     <div className="mb-6 flex gap-1.5">
-      {[1, 2, 3].map((n) => (
+      {Array.from({ length: total }, (_, i) => i + 1).map((n) => (
         <div
           key={n}
           className={`h-1.5 flex-1 rounded-full ${n <= step ? "bg-accent" : "bg-surface"}`}
@@ -38,11 +38,11 @@ export function OnboardingWizard({ authed }: { authed: boolean }) {
     setFridge((prev) => ({ ...prev, [itemName]: !prev[itemName] }));
   }
 
-  function goToStep2() {
+  function goToNextFromStep1() {
     if (mode === "create" && !name.trim()) return setStep1Error("요리책 이름을 입력해주세요.");
     if (mode === "join" && !code.trim()) return setStep1Error("요리책 코드를 입력해주세요.");
     setStep1Error("");
-    setStep(2);
+    setStep(mode === "join" ? 3 : 2);
   }
 
   function payload() {
@@ -81,8 +81,11 @@ export function OnboardingWizard({ authed }: { authed: boolean }) {
     });
   }
 
+  const totalSteps = mode === "join" ? 2 : 3;
+  const stepIndex = mode === "join" ? (step === 1 ? 1 : 2) : step;
+
   let primaryLabel = "다음";
-  let primaryHandler = goToStep2;
+  let primaryHandler = goToNextFromStep1;
   let primaryDisabled = false;
 
   if (step === 2) {
@@ -102,7 +105,7 @@ export function OnboardingWizard({ authed }: { authed: boolean }) {
   return (
     <div className="mx-auto flex h-dvh w-full max-w-[420px] flex-col">
       <div className="flex flex-1 flex-col overflow-y-auto px-6 pt-[max(env(safe-area-inset-top),24px)]">
-        <StepDots step={step} />
+        <StepDots step={stepIndex} total={totalSteps} />
 
         {step === 1 && (
           <>
@@ -186,7 +189,7 @@ export function OnboardingWizard({ authed }: { authed: boolean }) {
 
         {step === 3 && (
           <div className="flex flex-1 flex-col">
-            <BackButton onClick={() => setStep(2)} className="mb-3" />
+            <BackButton onClick={() => setStep(mode === "join" ? 1 : 2)} className="mb-3" />
 
             <div className="flex flex-1 flex-col justify-center">
               <h1 className="mb-1 text-[22px] font-bold">이제 준비 완료!</h1>
