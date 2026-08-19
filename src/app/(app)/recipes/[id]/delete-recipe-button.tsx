@@ -8,16 +8,19 @@ export function DeleteRecipeButton({ recipeId }: { recipeId: string }) {
 
   if (!confirming) {
     return (
-      <button onClick={() => setConfirming(true)} className="text-xs text-ink-faint underline">
+      <button
+        onClick={() => setConfirming(true)}
+        className="flex-1 rounded-xl bg-surface py-3 text-sm font-bold text-ink-soft"
+      >
         레시피 삭제
       </button>
     );
   }
 
   return (
-    <div className="flex items-center gap-3">
+    <div className="flex flex-1 items-center justify-center gap-3 rounded-xl bg-surface py-3">
       <span className="text-xs text-ink-soft">정말 삭제할까요?</span>
-      <button onClick={() => setConfirming(false)} className="text-xs text-ink-soft underline">
+      <button onClick={() => setConfirming(false)} className="text-xs font-bold text-ink-soft underline">
         취소
       </button>
       <form action={deleteRecipe}>

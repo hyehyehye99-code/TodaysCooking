@@ -125,7 +125,7 @@ export function OnboardingWizard({ authed }: { authed: boolean }) {
           <div className="flex flex-1 flex-col">
             <BackButton href="/login/start" className="mb-3" />
 
-            <div className="flex flex-1 flex-col justify-center">
+            <div className="flex flex-1 flex-col pt-4">
               <h1 className="mb-1 text-[22px] font-bold">요리책을 준비해볼까요?</h1>
               <p className="mb-10 text-sm text-ink-soft">새로 만들거나, 코드로 기존 요리책에 들어갈 수 있어요.</p>
 
@@ -208,7 +208,7 @@ export function OnboardingWizard({ authed }: { authed: boolean }) {
           <div className="flex flex-1 flex-col">
             <BackButton onClick={() => setStep(mode === "join" ? 1 : 2)} className="mb-3" />
 
-            <div className="flex flex-1 flex-col justify-center">
+            <div className="flex flex-1 flex-col pt-4">
               <h1 className="mb-1 text-[22px] font-bold">이제 준비 완료!</h1>
               <p className="mb-6 text-sm text-ink-soft">
                 {authed

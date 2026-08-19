@@ -61,7 +61,7 @@ export function TabBar() {
   if (isRecipeSubpage) return null;
 
   return (
-    <nav className="sticky bottom-0 z-10 flex border-t border-border bg-white px-2 pb-[max(env(safe-area-inset-bottom),10px)] pt-2">
+    <nav className="sticky bottom-0 z-10 flex border-t border-border bg-white px-2 pb-[max(env(safe-area-inset-bottom),18px)] pt-2.5">
       {TABS.map((tab) => {
         const active = pathname.startsWith(tab.href);
         return (

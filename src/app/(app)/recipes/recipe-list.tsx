@@ -76,6 +76,7 @@ export function RecipeList({
 }) {
   const [query, setQuery] = useState("");
   const [activeTag, setActiveTag] = useState<string | null>(null);
+  const [favoritesOnly, setFavoritesOnly] = useState(false);
   const [reordering, setReordering] = useState(false);
   const [order, setOrder] = useState<RecipeWithIngredients[]>(recipes);
   const [pending, startTransition] = useTransition();
@@ -89,13 +90,16 @@ export function RecipeList({
   );
 
   const filtered = recipes.filter((r) => {
+    const q = query.toLowerCase();
     const matchesQuery =
       !query ||
-      r.title.toLowerCase().includes(query.toLowerCase()) ||
-      (r.subtitle ?? "").toLowerCase().includes(query.toLowerCase()) ||
-      r.tags.some((t) => t.toLowerCase().includes(query.toLowerCase()));
+      r.title.toLowerCase().includes(q) ||
+      (r.subtitle ?? "").toLowerCase().includes(q) ||
+      r.tags.some((t) => t.toLowerCase().includes(q)) ||
+      r.recipe_ingredients.some((ing) => ing.name.toLowerCase().includes(q));
     const matchesTag = !activeTag || r.tags.includes(activeTag);
-    return matchesQuery && matchesTag;
+    const matchesFavorite = !favoritesOnly || r.is_favorite;
+    return matchesQuery && matchesTag && matchesFavorite;
   });
 
   function startReorder() {
@@ -145,7 +149,7 @@ export function RecipeList({
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="레시피 검색"
+            placeholder="레시피, 재료 검색"
             className="min-w-0 flex-1 rounded-xl border border-transparent bg-surface px-3.5 py-2.5 text-sm outline-none focus:border-accent"
           />
           {recipes.length > 1 && (
@@ -165,7 +169,7 @@ export function RecipeList({
         </div>
       )}
 
-      {!reordering && allTags.length > 0 && (
+      {!reordering && (recipes.length > 0 || allTags.length > 0) && (
         <div className="mb-4 flex flex-wrap gap-1.5">
           <button
             onClick={() => setActiveTag(null)}
@@ -174,6 +178,26 @@ export function RecipeList({
             }`}
           >
             전체
+          </button>
+          <button
+            onClick={() => setFavoritesOnly((prev) => !prev)}
+            className={`inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-semibold ${
+              favoritesOnly ? "bg-accent text-white" : "bg-surface text-ink-soft"
+            }`}
+          >
+            <svg
+              viewBox="0 0 24 24"
+              width="11"
+              height="11"
+              fill={favoritesOnly ? "currentColor" : "none"}
+              stroke="currentColor"
+              strokeWidth="1.8"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M12 3.5l2.7 5.6 6.1.9-4.4 4.3 1 6.1-5.4-2.9-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z" />
+            </svg>
+            즐겨찾기
           </button>
           {allTags.map((tag) => (
             <button

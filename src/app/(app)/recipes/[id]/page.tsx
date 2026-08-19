@@ -57,8 +57,8 @@ export default async function RecipeDetailPage({
 
   return (
     <div>
-      <div className="mb-4 flex items-center justify-between gap-3">
-        <div className="flex min-w-0 flex-1 items-center gap-3">
+      <div className="mb-4 flex items-start justify-between gap-3">
+        <div className="flex min-w-0 flex-1 items-start gap-3">
           {(r.cover_photo_url || r.icon_emoji) && (
             <div className="h-14 w-14 shrink-0 overflow-hidden rounded-2xl bg-surface">
               {r.cover_photo_url ? (
@@ -71,7 +71,10 @@ export default async function RecipeDetailPage({
               )}
             </div>
           )}
-          <h1 className="min-w-0 flex-1 text-[22px] font-bold">{r.title}</h1>
+          <div className="min-w-0 flex-1">
+            <h1 className="text-[22px] font-bold">{r.title}</h1>
+            {r.subtitle && <p className="mt-0.5 text-sm text-ink-soft">{r.subtitle}</p>}
+          </div>
         </div>
         <Link
           href="/recipes"
@@ -85,8 +88,7 @@ export default async function RecipeDetailPage({
         </Link>
       </div>
 
-      {r.subtitle && <p className="text-sm text-ink-soft">{r.subtitle}</p>}
-      <p className="mt-1 text-xs text-ink-faint">{chefName(creatorProfile?.nickname)} 등록</p>
+      <p className="text-xs font-semibold text-accent">{chefName(creatorProfile?.nickname)} 등록</p>
       {r.tags.length > 0 && (
         <div className="mt-2 flex flex-wrap gap-1.5">
           {r.tags.map((tag) => (
@@ -167,16 +169,19 @@ export default async function RecipeDetailPage({
 
       {r.notes && (
         <div className="mt-6">
-          <p className="mb-2 text-[15px] font-bold">메모</p>
+          <p className="mb-2 text-[15px] font-bold">레시피</p>
           <GlassCard className="bg-surface p-4">
-            <p className="whitespace-pre-line text-sm text-ink-soft">{r.notes}</p>
+            <p className="whitespace-pre-line text-sm text-ink">{r.notes}</p>
           </GlassCard>
         </div>
       )}
 
-      <div className="mt-10 flex items-center justify-between">
+      <div className="mt-10 flex gap-2.5">
         <DeleteRecipeButton recipeId={r.id} />
-        <Link href={`/recipes/${r.id}/edit`} className="text-sm font-bold text-accent">
+        <Link
+          href={`/recipes/${r.id}/edit`}
+          className="flex-1 rounded-xl border border-accent bg-surface py-3 text-center text-sm font-bold text-accent-ink"
+        >
           수정하기
         </Link>
       </div>
