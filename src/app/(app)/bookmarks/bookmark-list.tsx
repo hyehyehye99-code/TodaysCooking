@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useRef, useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { GlassCard } from "@/components/ui";
@@ -151,6 +151,10 @@ export function BookmarkList({ bookmarks }: { bookmarks: BookmarkWithRecipe[] })
   const [query, setQuery] = useState("");
   const [reordering, setReordering] = useState(false);
   const [order, setOrder] = useState<BookmarkWithRecipe[]>(bookmarks);
+  const [dragId, setDragId] = useState<string | null>(null);
+  const [dragOffset, setDragOffset] = useState(0);
+  const dragStateRef = useRef<{ startY: number; rowHeight: number; index: number } | null>(null);
+  const rowRefs = useRef<Map<string, HTMLDivElement>>(new Map());
   const [pending, startTransition] = useTransition();
   const router = useRouter();
 
@@ -170,14 +174,43 @@ export function BookmarkList({ bookmarks }: { bookmarks: BookmarkWithRecipe[] })
     setReordering(true);
   }
 
-  function move(index: number, direction: -1 | 1) {
-    setOrder((prev) => {
-      const next = [...prev];
-      const target = index + direction;
-      if (target < 0 || target >= next.length) return prev;
-      [next[index], next[target]] = [next[target], next[index]];
-      return next;
-    });
+  function handleDragPointerDown(e: React.PointerEvent, id: string, index: number) {
+    const row = rowRefs.current.get(id);
+    if (!row) return;
+    e.currentTarget.setPointerCapture(e.pointerId);
+    dragStateRef.current = { startY: e.clientY, rowHeight: row.getBoundingClientRect().height, index };
+    setDragId(id);
+    setDragOffset(0);
+  }
+
+  function handleDragPointerMove(e: React.PointerEvent) {
+    const dragState = dragStateRef.current;
+    if (!dragState) return;
+    const deltaY = e.clientY - dragState.startY;
+    const steps = Math.round(deltaY / dragState.rowHeight);
+    if (steps !== 0) {
+      setOrder((prev) => {
+        const from = dragState.index;
+        const to = Math.min(Math.max(from + steps, 0), prev.length - 1);
+        if (to === from) return prev;
+        const next = [...prev];
+        const [item] = next.splice(from, 1);
+        next.splice(to, 0, item);
+        dragState.index = to;
+        return next;
+      });
+      dragState.startY += steps * dragState.rowHeight;
+      setDragOffset(deltaY - steps * dragState.rowHeight);
+    } else {
+      setDragOffset(deltaY);
+    }
+  }
+
+  function handleDragPointerUp(e: React.PointerEvent) {
+    e.currentTarget.releasePointerCapture(e.pointerId);
+    dragStateRef.current = null;
+    setDragId(null);
+    setDragOffset(0);
   }
 
   function saveOrder() {
@@ -234,45 +267,61 @@ export function BookmarkList({ bookmarks }: { bookmarks: BookmarkWithRecipe[] })
 
       {reordering ? (
         <div className="flex flex-col gap-3">
-          {order.map((b, index) => (
-            <GlassCard key={b.id} className="flex items-center gap-3 bg-white p-2.5">
-              <div className="h-[52px] w-[64px] shrink-0 overflow-hidden rounded-xl bg-black/[0.04]">
-                {b.thumbnail_url ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={b.thumbnail_url} alt="" className="h-full w-full object-cover" />
-                ) : (
-                  <div className="flex h-full w-full items-center justify-center">
-                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="var(--color-ink-faint)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M6 3.5h12a.5.5 0 0 1 .5.5v17l-6.5-4-6.5 4v-17a.5.5 0 0 1 .5-.5z" />
-                    </svg>
+          {order.map((b, index) => {
+            const dragging = dragId === b.id;
+            return (
+              <div
+                key={b.id}
+                ref={(el) => {
+                  if (el) rowRefs.current.set(b.id, el);
+                  else rowRefs.current.delete(b.id);
+                }}
+                style={
+                  dragging
+                    ? { transform: `translateY(${dragOffset}px)`, position: "relative", zIndex: 10 }
+                    : undefined
+                }
+              >
+                <GlassCard
+                  className={`flex items-center gap-3 bg-white p-2.5 ${dragging ? "shadow-lg" : ""}`}
+                >
+                  <div className="h-[52px] w-[64px] shrink-0 overflow-hidden rounded-xl bg-black/[0.04]">
+                    {b.thumbnail_url ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={b.thumbnail_url} alt="" className="h-full w-full object-cover" />
+                    ) : (
+                      <div className="flex h-full w-full items-center justify-center">
+                        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="var(--color-ink-faint)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M6 3.5h12a.5.5 0 0 1 .5.5v17l-6.5-4-6.5 4v-17a.5.5 0 0 1 .5-.5z" />
+                        </svg>
+                      </div>
+                    )}
                   </div>
-                )}
+                  <div className="min-w-0 flex-1">
+                    <p className="line-clamp-1 text-[13px] font-bold">{b.title || b.url}</p>
+                  </div>
+                  <button
+                    type="button"
+                    onPointerDown={(e) => handleDragPointerDown(e, b.id, index)}
+                    onPointerMove={handleDragPointerMove}
+                    onPointerUp={handleDragPointerUp}
+                    onPointerCancel={handleDragPointerUp}
+                    aria-label="드래그해서 순서 변경"
+                    className="flex h-8 w-8 shrink-0 touch-none items-center justify-center rounded-full bg-surface text-ink-soft"
+                  >
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                      <circle cx="9" cy="6" r="1.4" />
+                      <circle cx="15" cy="6" r="1.4" />
+                      <circle cx="9" cy="12" r="1.4" />
+                      <circle cx="15" cy="12" r="1.4" />
+                      <circle cx="9" cy="18" r="1.4" />
+                      <circle cx="15" cy="18" r="1.4" />
+                    </svg>
+                  </button>
+                </GlassCard>
               </div>
-              <div className="min-w-0 flex-1">
-                <p className="line-clamp-1 text-[13px] font-bold">{b.title || b.url}</p>
-              </div>
-              <div className="flex shrink-0 flex-col gap-1">
-                <button
-                  onClick={() => move(index, -1)}
-                  disabled={index === 0}
-                  className="flex h-7 w-7 items-center justify-center rounded-full bg-surface text-ink-soft disabled:opacity-30"
-                >
-                  <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M18 15l-6-6-6 6" />
-                  </svg>
-                </button>
-                <button
-                  onClick={() => move(index, 1)}
-                  disabled={index === order.length - 1}
-                  className="flex h-7 w-7 items-center justify-center rounded-full bg-surface text-ink-soft disabled:opacity-30"
-                >
-                  <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M6 9l6 6 6-6" />
-                  </svg>
-                </button>
-              </div>
-            </GlassCard>
-          ))}
+            );
+          })}
         </div>
       ) : bookmarks.length === 0 ? (
         <p className="mt-10 text-center text-sm text-ink-soft">

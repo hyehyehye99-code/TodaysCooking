@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useTransition } from "react";
+import { useMemo, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { GlassCard } from "@/components/ui";
@@ -79,6 +79,10 @@ export function RecipeList({
   const [favoritesOnly, setFavoritesOnly] = useState(false);
   const [reordering, setReordering] = useState(false);
   const [order, setOrder] = useState<RecipeWithIngredients[]>(recipes);
+  const [dragId, setDragId] = useState<string | null>(null);
+  const [dragOffset, setDragOffset] = useState(0);
+  const dragStateRef = useRef<{ startY: number; rowHeight: number; index: number } | null>(null);
+  const rowRefs = useRef<Map<string, HTMLDivElement>>(new Map());
   const [pending, startTransition] = useTransition();
   const router = useRouter();
 
@@ -107,14 +111,43 @@ export function RecipeList({
     setReordering(true);
   }
 
-  function move(index: number, direction: -1 | 1) {
-    setOrder((prev) => {
-      const next = [...prev];
-      const target = index + direction;
-      if (target < 0 || target >= next.length) return prev;
-      [next[index], next[target]] = [next[target], next[index]];
-      return next;
-    });
+  function handleDragPointerDown(e: React.PointerEvent, id: string, index: number) {
+    const row = rowRefs.current.get(id);
+    if (!row) return;
+    e.currentTarget.setPointerCapture(e.pointerId);
+    dragStateRef.current = { startY: e.clientY, rowHeight: row.getBoundingClientRect().height, index };
+    setDragId(id);
+    setDragOffset(0);
+  }
+
+  function handleDragPointerMove(e: React.PointerEvent) {
+    const dragState = dragStateRef.current;
+    if (!dragState) return;
+    const deltaY = e.clientY - dragState.startY;
+    const steps = Math.round(deltaY / dragState.rowHeight);
+    if (steps !== 0) {
+      setOrder((prev) => {
+        const from = dragState.index;
+        const to = Math.min(Math.max(from + steps, 0), prev.length - 1);
+        if (to === from) return prev;
+        const next = [...prev];
+        const [item] = next.splice(from, 1);
+        next.splice(to, 0, item);
+        dragState.index = to;
+        return next;
+      });
+      dragState.startY += steps * dragState.rowHeight;
+      setDragOffset(deltaY - steps * dragState.rowHeight);
+    } else {
+      setDragOffset(deltaY);
+    }
+  }
+
+  function handleDragPointerUp(e: React.PointerEvent) {
+    e.currentTarget.releasePointerCapture(e.pointerId);
+    dragStateRef.current = null;
+    setDragId(null);
+    setDragOffset(0);
   }
 
   function saveOrder() {
@@ -223,34 +256,50 @@ export function RecipeList({
 
       {reordering ? (
         <div className="flex flex-col gap-3">
-          {order.map((recipe, index) => (
-            <GlassCard key={recipe.id} className="flex items-center gap-3 bg-white p-3.5">
-              <RecipeThumb recipe={recipe} />
-              <div className="min-w-0 flex-1">
-                <p className="text-[15px] font-bold">{recipe.title}</p>
-              </div>
-              <div className="flex shrink-0 flex-col gap-1">
-                <button
-                  onClick={() => move(index, -1)}
-                  disabled={index === 0}
-                  className="flex h-7 w-7 items-center justify-center rounded-full bg-surface text-ink-soft disabled:opacity-30"
+          {order.map((recipe, index) => {
+            const dragging = dragId === recipe.id;
+            return (
+              <div
+                key={recipe.id}
+                ref={(el) => {
+                  if (el) rowRefs.current.set(recipe.id, el);
+                  else rowRefs.current.delete(recipe.id);
+                }}
+                style={
+                  dragging
+                    ? { transform: `translateY(${dragOffset}px)`, position: "relative", zIndex: 10 }
+                    : undefined
+                }
+              >
+                <GlassCard
+                  className={`flex items-center gap-3 bg-white p-3.5 ${dragging ? "shadow-lg" : ""}`}
                 >
-                  <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M18 15l-6-6-6 6" />
-                  </svg>
-                </button>
-                <button
-                  onClick={() => move(index, 1)}
-                  disabled={index === order.length - 1}
-                  className="flex h-7 w-7 items-center justify-center rounded-full bg-surface text-ink-soft disabled:opacity-30"
-                >
-                  <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M6 9l6 6 6-6" />
-                  </svg>
-                </button>
+                  <RecipeThumb recipe={recipe} />
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[15px] font-bold">{recipe.title}</p>
+                  </div>
+                  <button
+                    type="button"
+                    onPointerDown={(e) => handleDragPointerDown(e, recipe.id, index)}
+                    onPointerMove={handleDragPointerMove}
+                    onPointerUp={handleDragPointerUp}
+                    onPointerCancel={handleDragPointerUp}
+                    aria-label="드래그해서 순서 변경"
+                    className="flex h-8 w-8 shrink-0 touch-none items-center justify-center rounded-full bg-surface text-ink-soft"
+                  >
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                      <circle cx="9" cy="6" r="1.4" />
+                      <circle cx="15" cy="6" r="1.4" />
+                      <circle cx="9" cy="12" r="1.4" />
+                      <circle cx="15" cy="12" r="1.4" />
+                      <circle cx="9" cy="18" r="1.4" />
+                      <circle cx="15" cy="18" r="1.4" />
+                    </svg>
+                  </button>
+                </GlassCard>
               </div>
-            </GlassCard>
-          ))}
+            );
+          })}
         </div>
       ) : (
         <div className="flex flex-col gap-3">
