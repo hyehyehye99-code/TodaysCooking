@@ -57,7 +57,7 @@ export default async function RecipeDetailPage({
 
   return (
     <div>
-      <div className="sticky top-0 z-10 -mx-5 mb-4 flex items-center justify-between gap-3 bg-white px-5 pb-4">
+      <div className="mb-4 flex items-center justify-between gap-3">
         <div className="flex min-w-0 flex-1 items-center gap-3">
           {(r.cover_photo_url || r.icon_emoji) && (
             <div className="h-14 w-14 shrink-0 overflow-hidden rounded-2xl bg-surface">

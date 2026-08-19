@@ -26,7 +26,7 @@ export function EditRecipeForm({
 
   return (
     <div>
-      <div className="sticky top-0 z-10 -mx-5 mb-5 flex items-center justify-between bg-white px-5 pb-4">
+      <div className="mb-5 flex items-center justify-between">
         <h1 className="text-[22px] font-bold">레시피 수정</h1>
         <Link
           href={`/recipes/${recipe.id}`}
