@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { INGREDIENT_CATEGORIES } from "@/lib/ingredients";
 import { completeOnboardingAuthed, completeOnboardingWithSignup } from "@/lib/actions/onboarding";
+import { checkUsernameAvailable } from "@/lib/actions/username";
 import { BackButton } from "@/components/ui";
 
 function StepDots({ step, total }: { step: number; total: number }) {
@@ -30,12 +31,24 @@ export function OnboardingWizard({ authed }: { authed: boolean }) {
 
   const [nickname, setNickname] = useState("");
   const [username, setUsername] = useState("");
+  const [usernameStatus, setUsernameStatus] = useState<
+    "idle" | "checking" | "available" | "taken" | "invalid"
+  >("idle");
   const [password, setPassword] = useState("");
   const [step3Error, setStep3Error] = useState("");
   const [pending, startTransition] = useTransition();
 
   function toggleFridgeItem(itemName: string) {
     setFridge((prev) => ({ ...prev, [itemName]: !prev[itemName] }));
+  }
+
+  async function handleUsernameBlur() {
+    const value = username.trim();
+    if (!value) return setUsernameStatus("idle");
+    setUsernameStatus("checking");
+    const result = await checkUsernameAvailable(value);
+    if ("error" in result) setUsernameStatus("invalid");
+    else setUsernameStatus(result.available ? "available" : "taken");
   }
 
   function goToNextFromStep1() {
@@ -71,6 +84,7 @@ export function OnboardingWizard({ authed }: { authed: boolean }) {
     setStep3Error("");
     if (!nickname.trim()) return setStep3Error("닉네임을 입력해주세요.");
     if (!username.trim() || !password) return setStep3Error("아이디와 비밀번호를 입력해주세요.");
+    if (usernameStatus === "taken") return setStep3Error("이미 사용 중인 아이디예요. 다른 아이디를 입력해주세요.");
     startTransition(async () => {
       const result = await completeOnboardingWithSignup({
         ...payload(),
@@ -108,44 +122,47 @@ export function OnboardingWizard({ authed }: { authed: boolean }) {
         <StepDots step={stepIndex} total={totalSteps} />
 
         {step === 1 && (
-          <>
+          <div className="flex flex-1 flex-col">
             <BackButton href="/login/start" className="mb-3" />
-            <h1 className="mb-1 text-[22px] font-bold">요리책을 준비해볼까요?</h1>
-            <p className="mb-6 text-sm text-ink-soft">새로 만들거나, 코드로 기존 요리책에 들어갈 수 있어요.</p>
 
-            <div className="mb-5 flex rounded-xl border border-transparent bg-surface p-1">
-              <button
-                type="button"
-                onClick={() => setMode("create")}
-                className={`flex-1 rounded-lg py-2 text-sm font-bold ${mode === "create" ? "bg-accent text-white" : "text-ink-soft"}`}
-              >
-                요리책 새로 만들기
-              </button>
-              <button
-                type="button"
-                onClick={() => setMode("join")}
-                className={`flex-1 rounded-lg py-2 text-sm font-bold ${mode === "join" ? "bg-accent text-white" : "text-ink-soft"}`}
-              >
-                기존 요리책 열어보기
-              </button>
+            <div className="flex flex-1 flex-col justify-center">
+              <h1 className="mb-1 text-[22px] font-bold">요리책을 준비해볼까요?</h1>
+              <p className="mb-6 text-sm text-ink-soft">새로 만들거나, 코드로 기존 요리책에 들어갈 수 있어요.</p>
+
+              <div className="mb-5 flex rounded-xl border border-transparent bg-surface p-1">
+                <button
+                  type="button"
+                  onClick={() => setMode("create")}
+                  className={`flex-1 rounded-lg py-2 text-sm font-bold ${mode === "create" ? "bg-accent text-white" : "text-ink-soft"}`}
+                >
+                  요리책 새로 만들기
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setMode("join")}
+                  className={`flex-1 rounded-lg py-2 text-sm font-bold ${mode === "join" ? "bg-accent text-white" : "text-ink-soft"}`}
+                >
+                  기존 요리책 열어보기
+                </button>
+              </div>
+
+              {mode === "create" ? (
+                <input
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="예) 민지네 요리책"
+                  className="rounded-xl border border-transparent bg-surface px-4 py-3.5 text-sm outline-none focus:border-accent"
+                />
+              ) : (
+                <input
+                  value={code}
+                  onChange={(e) => setCode(e.target.value)}
+                  placeholder="요리책 코드 입력"
+                  className="rounded-xl border border-transparent bg-surface px-4 py-3.5 text-sm uppercase tracking-widest outline-none focus:border-accent"
+                />
+              )}
             </div>
-
-            {mode === "create" ? (
-              <input
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="예) 민지네 요리책"
-                className="rounded-xl border border-transparent bg-surface px-4 py-3.5 text-sm outline-none focus:border-accent"
-              />
-            ) : (
-              <input
-                value={code}
-                onChange={(e) => setCode(e.target.value)}
-                placeholder="요리책 코드 입력"
-                className="rounded-xl border border-transparent bg-surface px-4 py-3.5 text-sm uppercase tracking-widest outline-none focus:border-accent"
-              />
-            )}
-          </>
+          </div>
         )}
 
         {step === 2 && (
@@ -219,12 +236,25 @@ export function OnboardingWizard({ authed }: { authed: boolean }) {
                       <span className="text-xs font-bold text-ink-soft">아이디</span>
                       <input
                         value={username}
-                        onChange={(e) => setUsername(e.target.value)}
+                        onChange={(e) => {
+                          setUsername(e.target.value);
+                          setUsernameStatus("idle");
+                        }}
+                        onBlur={handleUsernameBlur}
                         autoCapitalize="none"
                         autoCorrect="off"
                         placeholder="영문 소문자, 숫자, _ 4~20자"
                         className="rounded-xl border border-transparent bg-surface px-4 py-3.5 text-sm outline-none focus:border-accent"
                       />
+                      {usernameStatus === "checking" && (
+                        <span className="text-[11px] text-ink-faint">확인 중...</span>
+                      )}
+                      {usernameStatus === "available" && (
+                        <span className="text-[11px] text-positive-ink">사용할 수 있는 아이디예요</span>
+                      )}
+                      {usernameStatus === "taken" && (
+                        <span className="text-[11px] text-warn-ink">이미 사용 중인 아이디예요</span>
+                      )}
                     </label>
                     <label className="flex flex-col gap-1.5">
                       <span className="text-xs font-bold text-ink-soft">비밀번호</span>
