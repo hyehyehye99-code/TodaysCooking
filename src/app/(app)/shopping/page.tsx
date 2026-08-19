@@ -57,7 +57,7 @@ export default async function ShoppingPage() {
         </p>
       ) : (
         <>
-          <form action={setAllShoppingItemsChecked} className="mt-6 mb-8 flex justify-end">
+          <form action={setAllShoppingItemsChecked} className="mt-6 mb-4 flex justify-end">
             <input type="hidden" name="checked" value={(!allChecked).toString()} />
             <button type="submit" className="px-4 py-2 text-xs font-bold text-accent">
               {allChecked ? "전체 해제" : "전체 선택"}
