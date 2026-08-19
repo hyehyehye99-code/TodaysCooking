@@ -20,7 +20,7 @@ export function GoogleSignInButton() {
       type="button"
       onClick={handleClick}
       disabled={pending}
-      className="flex items-center justify-center gap-2 rounded-xl border border-border bg-white py-4 text-sm font-bold text-ink disabled:opacity-60"
+      className="flex w-full items-center justify-center gap-2 rounded-xl border border-border bg-white py-4 text-sm font-bold text-ink disabled:opacity-60"
     >
       <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true">
         <path
@@ -40,7 +40,7 @@ export function GoogleSignInButton() {
           fill="#EA4335"
         />
       </svg>
-      {pending ? "이동하는 중..." : "Google로 계속하기"}
+      {pending ? "이동하는 중..." : "구글로 시작하기"}
     </button>
   );
 }
