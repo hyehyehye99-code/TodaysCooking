@@ -6,6 +6,7 @@ import {
   addShoppingItem,
   deleteShoppingItem,
   finishShoppingTrip,
+  setAllShoppingItemsChecked,
 } from "@/lib/actions/shopping";
 import type { ShoppingItem } from "@/lib/types";
 
@@ -22,6 +23,7 @@ export default async function ShoppingPage() {
   const items = (data as ShoppingItem[] | null) ?? [];
   const doneCount = items.filter((i) => i.checked).length;
   const percent = items.length ? (doneCount / items.length) * 100 : 0;
+  const allChecked = items.length > 0 && doneCount === items.length;
 
   return (
     <div>
@@ -54,7 +56,14 @@ export default async function ShoppingPage() {
           장보기 목록이 비어 있어요.
         </p>
       ) : (
-        <div className="flex flex-col">
+        <>
+          <form action={setAllShoppingItemsChecked} className="mb-2 flex justify-end">
+            <input type="hidden" name="checked" value={(!allChecked).toString()} />
+            <button type="submit" className="text-xs font-bold text-accent">
+              {allChecked ? "전체 해제" : "전체 선택"}
+            </button>
+          </form>
+          <div className="flex flex-col">
           {items.map((item) => (
             <div
               key={item.id}
@@ -99,7 +108,8 @@ export default async function ShoppingPage() {
               </form>
             </div>
           ))}
-        </div>
+          </div>
+        </>
       )}
 
       {doneCount > 0 && (

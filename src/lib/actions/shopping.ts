@@ -39,6 +39,21 @@ export async function deleteShoppingItem(formData: FormData) {
   revalidatePath("/shopping");
 }
 
+export async function setAllShoppingItemsChecked(formData: FormData) {
+  const checked = formData.get("checked") === "true";
+
+  const { household } = await getCurrentHousehold();
+  if (!household) return;
+
+  const supabase = await createClient();
+  await supabase
+    .from("shopping_items")
+    .update({ checked })
+    .eq("household_id", household.id);
+
+  revalidatePath("/shopping");
+}
+
 export async function clearCheckedItems() {
   const { household } = await getCurrentHousehold();
   if (!household) return;

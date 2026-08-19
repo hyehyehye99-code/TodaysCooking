@@ -11,15 +11,15 @@ export default function ExistingLoginPage() {
     <div className="mx-auto flex h-dvh w-full max-w-[420px] flex-col px-7 pt-[max(env(safe-area-inset-top),24px)] pb-[max(env(safe-area-inset-bottom),24px)]">
       <div>
         <BackButton href="/login/start" className="mb-8" />
-        <p className="mb-2 text-xs font-bold tracking-wide text-ink-faint">오내요</p>
-        <h1 className="mb-2 text-[28px] font-bold leading-tight">다시 만나서 반가워요</h1>
+        <p className="mb-3 text-xs font-bold tracking-wide text-ink-faint">오내요</p>
+        <h1 className="mb-3 text-[28px] font-bold leading-tight">다시 만나서 반가워요</h1>
         <p className="text-sm text-ink-soft">아이디와 비밀번호를 입력해주세요.</p>
       </div>
 
       <span className="mt-10 mb-10 text-center text-[96px] leading-none">🤗</span>
 
       <div className="flex flex-1 flex-col">
-        <form action={formAction} className="flex flex-col gap-3">
+        <form action={formAction} className="flex flex-col gap-4">
           <input
             name="username"
             required

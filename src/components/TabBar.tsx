@@ -31,8 +31,9 @@ const TABS = [
     label: "장보기",
     icon: (
       <>
-        <path d="M6.5 8h11l-.9 12.1a1 1 0 0 1-1 .9H8.4a1 1 0 0 1-1-.9L6.5 8z" />
-        <path d="M9 8V6.5a3 3 0 0 1 6 0V8" />
+        <circle cx="9" cy="20.5" r="1.3" />
+        <circle cx="18" cy="20.5" r="1.3" />
+        <path d="M2.5 2.5h3l2.5 12.5a1.8 1.8 0 0 0 1.8 1.5h8.4a1.8 1.8 0 0 0 1.8-1.5L22 6.5H6" />
       </>
     ),
   },
@@ -61,7 +62,7 @@ export function TabBar() {
   if (isRecipeSubpage) return null;
 
   return (
-    <nav className="sticky bottom-0 z-10 flex border-t border-border bg-white px-2 pb-[max(env(safe-area-inset-bottom),18px)] pt-2.5">
+    <nav className="sticky bottom-0 z-10 flex border-t border-border bg-white px-2 pb-[max(env(safe-area-inset-bottom),30px)] pt-3">
       {TABS.map((tab) => {
         const active = pathname.startsWith(tab.href);
         return (

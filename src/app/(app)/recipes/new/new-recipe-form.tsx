@@ -116,7 +116,7 @@ export function NewRecipeForm({ existingTags }: { existingTags: string[] }) {
         </GlassCard>
 
         <GlassCard className="bg-white p-4">
-          <p className="mb-3 text-[13px] font-bold">메모</p>
+          <p className="mb-3 text-[13px] font-bold">레시피</p>
           <textarea
             name="notes"
             rows={4}
