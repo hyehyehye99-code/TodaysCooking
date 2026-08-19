@@ -123,44 +123,47 @@ export function RecipeList({
 
   return (
     <div>
-      {!reordering && (
-        <input
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="레시피 검색"
-          className="mb-3 w-full rounded-xl border border-transparent bg-surface px-3.5 py-2.5 text-sm outline-none focus:border-accent"
-        />
-      )}
-
-      <div className="mb-4 flex justify-end">
-        {reordering ? (
-          <div className="flex gap-2">
-            <button
-              onClick={() => setReordering(false)}
-              disabled={pending}
-              className="rounded-lg bg-surface px-3 py-1.5 text-xs font-bold text-ink-soft disabled:opacity-60"
-            >
-              취소
-            </button>
-            <button
-              onClick={saveOrder}
-              disabled={pending}
-              className="rounded-lg bg-accent px-3 py-1.5 text-xs font-bold text-white disabled:opacity-60"
-            >
-              {pending ? "저장 중..." : "완료"}
-            </button>
-          </div>
-        ) : (
-          recipes.length > 1 && (
+      {reordering ? (
+        <div className="mb-4 flex justify-end gap-2">
+          <button
+            onClick={() => setReordering(false)}
+            disabled={pending}
+            className="rounded-lg bg-surface px-3 py-1.5 text-xs font-bold text-ink-soft disabled:opacity-60"
+          >
+            취소
+          </button>
+          <button
+            onClick={saveOrder}
+            disabled={pending}
+            className="rounded-lg bg-accent px-3 py-1.5 text-xs font-bold text-white disabled:opacity-60"
+          >
+            {pending ? "저장 중..." : "완료"}
+          </button>
+        </div>
+      ) : (
+        <div className="mb-4 flex gap-2">
+          <input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="레시피 검색"
+            className="min-w-0 flex-1 rounded-xl border border-transparent bg-surface px-3.5 py-2.5 text-sm outline-none focus:border-accent"
+          />
+          {recipes.length > 1 && (
             <button
               onClick={startReorder}
-              className="rounded-lg bg-surface px-3 py-1.5 text-xs font-bold text-ink-soft"
+              aria-label="순서 변경"
+              className="flex h-[42px] w-[42px] shrink-0 items-center justify-center rounded-xl bg-surface text-ink-soft"
             >
-              순서 변경
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M8 7l4-4 4 4" />
+                <path d="M12 3v14" />
+                <path d="M16 17l-4 4-4-4" />
+                <path d="M12 21V7" />
+              </svg>
             </button>
-          )
-        )}
-      </div>
+          )}
+        </div>
+      )}
 
       {!reordering && allTags.length > 0 && (
         <div className="mb-4 flex flex-wrap gap-1.5">
@@ -231,17 +234,23 @@ export function RecipeList({
             const makeable = recipe.recipe_ingredients.every((ing) => owned.has(ing.name));
             return (
             <Link key={recipe.id} href={`/recipes/${recipe.id}`}>
-              <GlassCard
-                className={`flex items-center gap-3 p-3.5 ${makeable ? "bg-accent/8" : "bg-white"}`}
-              >
+              <GlassCard className="flex items-center gap-3 bg-white p-3.5">
                 <RecipeThumb recipe={recipe} />
                 <div className="min-w-0 flex-1">
                   <p className="text-[15px] font-bold">{recipe.title}</p>
                   {recipe.subtitle && (
                     <p className="mt-0.5 truncate text-xs text-ink-soft">{recipe.subtitle}</p>
                   )}
-                  {recipe.tags.length > 0 && (
-                    <div className="mt-1 flex flex-wrap gap-1">
+                  {(makeable || recipe.tags.length > 0) && (
+                    <div className="mt-1 flex flex-wrap items-center gap-1.5">
+                      {makeable && (
+                        <span className="inline-flex items-center gap-0.5 rounded-full bg-positive/10 px-1.5 py-0.5 text-[10px] font-bold text-positive-ink">
+                          <svg viewBox="0 0 14 14" width="9" height="9" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M2.5 7.5l3 3 6-7" />
+                          </svg>
+                          바로 만들 수 있어요
+                        </span>
+                      )}
                       {recipe.tags.map((tag) => (
                         <span key={tag} className="text-[10px] font-semibold text-accent">
                           #{tag}
