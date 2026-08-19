@@ -77,6 +77,20 @@ export async function createInvite(_prevState: unknown, formData: FormData) {
   return { code };
 }
 
+export async function renameHousehold(_prevState: unknown, formData: FormData) {
+  const householdId = String(formData.get("householdId") ?? "");
+  const name = String(formData.get("name") ?? "").trim();
+  if (!householdId) return { error: "요리책을 찾을 수 없어요." };
+  if (!name) return { error: "이름을 입력해주세요." };
+
+  const supabase = await createClient();
+  const { error } = await supabase.from("households").update({ name }).eq("id", householdId);
+  if (error) return { error: "이름을 저장하지 못했어요." };
+
+  revalidatePath("/mypage");
+  return { success: true as const };
+}
+
 export async function switchHousehold(formData: FormData) {
   const householdId = String(formData.get("householdId") ?? "");
   if (!householdId) return;

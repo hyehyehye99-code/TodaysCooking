@@ -6,6 +6,7 @@ import { switchHousehold } from "@/lib/actions/household";
 import { chefName } from "@/lib/format";
 import { InviteForm } from "./invite-form";
 import { LeaveHouseholdButton } from "./leave-household-button";
+import { RenameHouseholdForm } from "./rename-household-form";
 
 type Member = { user_id: string; nickname: string; role: string; joined_at: string };
 type HouseholdEntry = {
@@ -72,6 +73,11 @@ export function HouseholdList({
 
             {isOpen && (
               <div className="mt-4 flex flex-col gap-4 border-t border-border pt-4">
+                <div>
+                  <p className="mb-2.5 text-xs font-bold text-ink-soft">요리책 이름</p>
+                  <RenameHouseholdForm householdId={household.id} currentName={household.name} />
+                </div>
+
                 {!active && (
                   <form action={switchHousehold}>
                     <input type="hidden" name="householdId" value={household.id} />
