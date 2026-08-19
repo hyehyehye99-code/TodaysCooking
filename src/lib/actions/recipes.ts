@@ -177,8 +177,12 @@ export async function deleteRecipe(formData: FormData) {
   redirect("/recipes");
 }
 
-export async function addMissingToShopping(formData: FormData) {
-  const recipeId = String(formData.get("recipeId") ?? "");
+export async function resolveMissingIngredients(payload: {
+  recipeId: string;
+  shopping: string[];
+  fridge: string[];
+}) {
+  const { recipeId, shopping, fridge } = payload;
   if (!recipeId) return;
 
   const { household } = await getCurrentHousehold();
@@ -186,39 +190,41 @@ export async function addMissingToShopping(formData: FormData) {
 
   const supabase = await createClient();
 
-  const [{ data: recipe }, { data: ingredients }, { data: fridgeItems }, { data: existing }] =
-    await Promise.all([
+  if (shopping.length) {
+    const [{ data: recipe }, { data: existing }] = await Promise.all([
       supabase.from("recipes").select("title").eq("id", recipeId).single(),
-      supabase.from("recipe_ingredients").select("name").eq("recipe_id", recipeId),
-      supabase
-        .from("fridge_items")
-        .select("name, in_stock")
-        .eq("household_id", household.id),
       supabase.from("shopping_items").select("name").eq("household_id", household.id),
     ]);
+    const alreadyOnList = new Set((existing ?? []).map((i) => i.name));
+    const toInsert = shopping.filter((name) => !alreadyOnList.has(name));
 
-  const owned = new Set(
-    (fridgeItems ?? []).filter((i) => i.in_stock).map((i) => i.name)
-  );
-  const alreadyOnList = new Set((existing ?? []).map((i) => i.name));
+    if (toInsert.length) {
+      await supabase.from("shopping_items").insert(
+        toInsert.map((name) => ({
+          household_id: household.id,
+          name,
+          source_recipe_id: recipeId,
+          source_recipe_title: recipe?.title ?? null,
+        }))
+      );
+    }
+  }
 
-  const missing = (ingredients ?? [])
-    .map((i) => i.name)
-    .filter((name) => !owned.has(name) && !alreadyOnList.has(name));
-
-  if (missing.length === 0) return;
-
-  await supabase.from("shopping_items").insert(
-    missing.map((name) => ({
-      household_id: household.id,
-      name,
-      source_recipe_id: recipeId,
-      source_recipe_title: recipe?.title ?? null,
-    }))
-  );
+  if (fridge.length) {
+    await supabase.from("fridge_items").upsert(
+      fridge.map((name) => ({
+        household_id: household.id,
+        name,
+        in_stock: true,
+        updated_at: new Date().toISOString(),
+      })),
+      { onConflict: "household_id,name" }
+    );
+  }
 
   revalidatePath(`/recipes/${recipeId}`);
   revalidatePath("/shopping");
+  revalidatePath("/fridge");
 }
 
 export async function reorderRecipes(order: string[]) {

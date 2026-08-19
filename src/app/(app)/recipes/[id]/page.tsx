@@ -3,10 +3,10 @@ import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentHousehold } from "@/lib/household";
 import { GlassCard, ProgressBar } from "@/components/ui";
-import { addMissingToShopping } from "@/lib/actions/recipes";
 import { chefName } from "@/lib/format";
 import type { RecipeWithIngredients } from "@/lib/types";
 import { DeleteRecipeButton } from "./delete-recipe-button";
+import { MissingIngredientsButton } from "./missing-ingredients-button";
 
 export default async function RecipeDetailPage({
   params,
@@ -30,7 +30,11 @@ export default async function RecipeDetailPage({
       .single(),
     supabase.from("fridge_items").select("name, in_stock").eq("household_id", household!.id),
     supabase.from("shopping_items").select("name").eq("household_id", household!.id),
-    supabase.from("bookmarks").select("url, domain").eq("recipe_id", id).maybeSingle(),
+    supabase
+      .from("bookmarks")
+      .select("url, domain, title, thumbnail_url")
+      .eq("recipe_id", id)
+      .maybeSingle(),
   ]);
 
   if (!recipe) notFound();
@@ -102,13 +106,31 @@ export default async function RecipeDetailPage({
         </div>
       )}
       {referenceBookmark && (
-        <a
-          href={referenceBookmark.url}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="mt-2 inline-flex items-center gap-1 text-xs font-semibold text-accent"
-        >
-          참고 링크 보기 ({referenceBookmark.domain}) →
+        <a href={referenceBookmark.url} target="_blank" rel="noopener noreferrer" className="mt-3 block">
+          <GlassCard className="flex gap-3 bg-white p-2.5">
+            <div className="h-[72px] w-[88px] shrink-0 overflow-hidden rounded-xl bg-black/[0.04]">
+              {referenceBookmark.thumbnail_url ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={referenceBookmark.thumbnail_url}
+                  alt=""
+                  className="h-full w-full object-cover"
+                />
+              ) : (
+                <div className="flex h-full w-full items-center justify-center">
+                  <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="var(--color-ink-faint)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M6 3.5h12a.5.5 0 0 1 .5.5v17l-6.5-4-6.5 4v-17a.5.5 0 0 1 .5-.5z" />
+                  </svg>
+                </div>
+              )}
+            </div>
+            <div className="flex min-w-0 flex-1 flex-col justify-center gap-1">
+              <p className="line-clamp-2 text-[13px] font-bold leading-snug">
+                {referenceBookmark.title || "참고 링크"}
+              </p>
+              <span className="text-[11px] text-ink-faint">{referenceBookmark.domain}</span>
+            </div>
+          </GlassCard>
         </a>
       )}
 
@@ -147,15 +169,7 @@ export default async function RecipeDetailPage({
             <span className="text-[13px] font-bold text-ink-faint">장보기에 담겨 있어요</span>
           </div>
         ) : (
-          <form action={addMissingToShopping}>
-            <input type="hidden" name="recipeId" value={r.id} />
-            <button
-              type="submit"
-              className="w-full rounded-xl bg-accent py-2.5 text-[13px] font-bold text-white"
-            >
-              부족한 재료 장보기 담기
-            </button>
-          </form>
+          <MissingIngredientsButton recipeId={r.id} missing={missing.map((m) => m.name)} />
         )}
       </div>
 
