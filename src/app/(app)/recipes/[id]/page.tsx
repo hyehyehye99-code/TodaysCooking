@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentHousehold } from "@/lib/household";
-import { GlassCard, ProgressBar } from "@/components/ui";
+import { GlassCard } from "@/components/ui";
 import { chefName } from "@/lib/format";
 import type { RecipeWithIngredients } from "@/lib/types";
 import { DeleteRecipeButton } from "./delete-recipe-button";
@@ -129,25 +129,21 @@ export default async function RecipeDetailPage({
       )}
 
       <div className="mt-5">
-        <p className="mb-1.5 text-xs text-ink-soft">
-          보유 재료 {ingredients.length - missing.length}/{ingredients.length}
+        <p className="mb-2 text-sm text-ink-soft">
+          재료 {ingredients.length - missing.length}/{ingredients.length} 보유 중
         </p>
-        <ProgressBar
-          percent={((ingredients.length - missing.length) / (ingredients.length || 1)) * 100}
-        />
-      </div>
-
-      <div className="mt-3.5 flex flex-wrap gap-1.5">
-        {ingredients.map((ing) => (
-          <span
-            key={ing.id}
-            className={`rounded-full border border-transparent px-2.5 py-1 text-xs font-semibold ${
-              owned.has(ing.name) ? "bg-positive/10 text-positive-ink" : "bg-warn/10 text-warn-ink"
-            }`}
-          >
-            {ing.name}
-          </span>
-        ))}
+        <div className="flex flex-wrap gap-2">
+          {ingredients.map((ing) => (
+            <span
+              key={ing.id}
+              className={`rounded-full border border-transparent px-3.5 py-2 text-[13px] font-semibold ${
+                owned.has(ing.name) ? "bg-accent text-white" : "bg-surface text-ink-soft"
+              }`}
+            >
+              {ing.name}
+            </span>
+          ))}
+        </div>
       </div>
 
       <div className="mt-4">
