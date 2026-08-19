@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentHousehold } from "@/lib/household";
 import { RecipeList } from "./recipe-list";
@@ -24,12 +23,6 @@ export default async function RecipesPage() {
 
   return (
     <div>
-      <div className="mb-2 flex justify-end">
-        <Link href="/recipes/new" className="text-sm font-bold text-accent">
-          + 새 레시피
-        </Link>
-      </div>
-
       <RecipeList recipes={items} ownedIngredients={owned} />
     </div>
   );
