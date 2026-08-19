@@ -98,11 +98,15 @@ export function TabBar() {
               height="23"
               fill="none"
               stroke="currentColor"
-              strokeWidth="1.8"
               strokeLinecap="round"
               strokeLinejoin="round"
             >
-              {tab.icon}
+              <g
+                strokeWidth={1.8 / tab.scale}
+                transform={`translate(12 12) scale(${tab.scale}) translate(${-tab.cx} ${-tab.cy})`}
+              >
+                {tab.icon}
+              </g>
             </svg>
             <span className={`text-[10.5px] ${active ? "font-bold" : "font-medium"}`}>
               {tab.label}
