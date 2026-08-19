@@ -1,7 +1,12 @@
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentHousehold } from "@/lib/household";
 import { GlassCard, ProgressBar } from "@/components/ui";
-import { toggleShoppingItem, addShoppingItem, finishShoppingTrip } from "@/lib/actions/shopping";
+import {
+  toggleShoppingItem,
+  addShoppingItem,
+  deleteShoppingItem,
+  finishShoppingTrip,
+} from "@/lib/actions/shopping";
 import type { ShoppingItem } from "@/lib/types";
 
 export default async function ShoppingPage() {
@@ -12,7 +17,6 @@ export default async function ShoppingPage() {
     .from("shopping_items")
     .select("*")
     .eq("household_id", household!.id)
-    .order("checked", { ascending: true })
     .order("created_at", { ascending: false });
 
   const items = (data as ShoppingItem[] | null) ?? [];
@@ -52,36 +56,48 @@ export default async function ShoppingPage() {
       ) : (
         <div className="flex flex-col">
           {items.map((item) => (
-            <form
+            <div
               key={item.id}
-              action={toggleShoppingItem}
               className="flex items-center gap-3 border-b border-border py-3"
             >
-              <input type="hidden" name="id" value={item.id} />
-              <input type="hidden" name="nextChecked" value={(!item.checked).toString()} />
-              <button
-                type="submit"
-                className={`flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-[7px] border-[1.5px] ${
-                  item.checked ? "border-positive bg-positive" : "border-border bg-surface"
-                }`}
-              >
-                {item.checked && (
-                  <svg viewBox="0 0 14 14" width="13" height="13" fill="none" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M2.5 7.5l3 3 6-7" />
-                  </svg>
-                )}
-              </button>
-              <div className="flex-1 text-left">
-                <p className={`text-sm font-semibold ${item.checked ? "text-ink-faint line-through" : ""}`}>
-                  {item.name}
-                </p>
+              <form action={toggleShoppingItem}>
+                <input type="hidden" name="id" value={item.id} />
+                <input type="hidden" name="nextChecked" value={(!item.checked).toString()} />
+                <button
+                  type="submit"
+                  className={`flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-[7px] border-[1.5px] ${
+                    item.checked ? "border-positive bg-positive" : "border-border bg-surface"
+                  }`}
+                >
+                  {item.checked && (
+                    <svg viewBox="0 0 14 14" width="13" height="13" fill="none" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M2.5 7.5l3 3 6-7" />
+                    </svg>
+                  )}
+                </button>
+              </form>
+              <div className="min-w-0 flex-1 text-left">
+                <p className="text-sm font-semibold">{item.name}</p>
                 {item.source_recipe_title && (
                   <p className="mt-0.5 text-[11px] text-ink-faint">
                     {item.source_recipe_title} 재료
                   </p>
                 )}
               </div>
-            </form>
+              <form action={deleteShoppingItem}>
+                <input type="hidden" name="id" value={item.id} />
+                <button
+                  type="submit"
+                  aria-label="삭제"
+                  className="flex h-6 w-6 shrink-0 items-center justify-center text-ink-faint"
+                >
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M18 6L6 18" />
+                    <path d="M6 6l12 12" />
+                  </svg>
+                </button>
+              </form>
+            </div>
           ))}
         </div>
       )}

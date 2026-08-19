@@ -193,10 +193,29 @@ export async function resolveMissingIngredients(payload: {
   if (shopping.length) {
     const [{ data: recipe }, { data: existing }] = await Promise.all([
       supabase.from("recipes").select("title").eq("id", recipeId).single(),
-      supabase.from("shopping_items").select("name").eq("household_id", household.id),
+      supabase
+        .from("shopping_items")
+        .select("id, name, source_recipe_title")
+        .eq("household_id", household.id),
     ]);
-    const alreadyOnList = new Set((existing ?? []).map((i) => i.name));
-    const toInsert = shopping.filter((name) => !alreadyOnList.has(name));
+    const recipeTitle = recipe?.title ?? null;
+    const existingByName = new Map((existing ?? []).map((i) => [i.name, i]));
+
+    const toInsert = shopping.filter((name) => !existingByName.has(name));
+    const toUpdate = recipeTitle
+      ? shopping
+          .map((name) => existingByName.get(name))
+          .filter((item): item is NonNullable<typeof item> => !!item)
+          .map((item) => {
+            const titles = (item.source_recipe_title ?? "")
+              .split(",")
+              .map((t: string) => t.trim())
+              .filter(Boolean);
+            if (titles.includes(recipeTitle)) return null;
+            return { id: item.id, source_recipe_title: [...titles, recipeTitle].join(", ") };
+          })
+          .filter((u): u is { id: string; source_recipe_title: string } => !!u)
+      : [];
 
     if (toInsert.length) {
       await supabase.from("shopping_items").insert(
@@ -204,10 +223,19 @@ export async function resolveMissingIngredients(payload: {
           household_id: household.id,
           name,
           source_recipe_id: recipeId,
-          source_recipe_title: recipe?.title ?? null,
+          source_recipe_title: recipeTitle,
         }))
       );
     }
+
+    await Promise.all(
+      toUpdate.map((u) =>
+        supabase
+          .from("shopping_items")
+          .update({ source_recipe_title: u.source_recipe_title })
+          .eq("id", u.id)
+      )
+    );
   }
 
   if (fridge.length) {

@@ -29,6 +29,16 @@ export async function addShoppingItem(formData: FormData) {
   revalidatePath("/shopping");
 }
 
+export async function deleteShoppingItem(formData: FormData) {
+  const id = String(formData.get("id") ?? "");
+  if (!id) return;
+
+  const supabase = await createClient();
+  await supabase.from("shopping_items").delete().eq("id", id);
+
+  revalidatePath("/shopping");
+}
+
 export async function clearCheckedItems() {
   const { household } = await getCurrentHousehold();
   if (!household) return;
