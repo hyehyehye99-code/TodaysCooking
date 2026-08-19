@@ -59,16 +59,9 @@ export default async function RecipeDetailPage({
     <div className="pt-2">
       <div className="mb-4 flex items-start justify-between gap-3">
         <div className={`flex min-w-0 flex-1 gap-3 ${r.subtitle ? "items-start" : "items-center"}`}>
-          {(r.cover_photo_url || r.icon_emoji) && (
-            <div className="h-14 w-14 shrink-0 overflow-hidden rounded-2xl bg-surface">
-              {r.cover_photo_url ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={r.cover_photo_url} alt="" className="h-full w-full object-cover" />
-              ) : (
-                <div className="flex h-full w-full items-center justify-center text-2xl">
-                  {r.icon_emoji}
-                </div>
-              )}
+          {!r.cover_photo_url && r.icon_emoji && (
+            <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-surface text-2xl">
+              {r.icon_emoji}
             </div>
           )}
           <div className="min-w-0 flex-1">
@@ -87,6 +80,13 @@ export default async function RecipeDetailPage({
           </svg>
         </Link>
       </div>
+
+      {r.cover_photo_url && (
+        <div className="mb-4 aspect-square w-full overflow-hidden rounded-2xl bg-surface">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={r.cover_photo_url} alt="" className="h-full w-full object-cover" />
+        </div>
+      )}
 
       <p className="text-xs font-semibold text-accent">{chefName(creatorProfile?.nickname)} 등록</p>
       {r.tags.length > 0 && (
