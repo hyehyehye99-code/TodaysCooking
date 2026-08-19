@@ -24,7 +24,7 @@ export default async function RecipesPage() {
 
   return (
     <div>
-      <div className="mb-4 flex justify-end">
+      <div className="mb-2 flex justify-end">
         <Link href="/recipes/new" className="text-sm font-bold text-accent">
           + 새 레시피
         </Link>

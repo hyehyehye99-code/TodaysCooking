@@ -19,11 +19,11 @@ export function AppHeader({
   if (pathname.startsWith("/mypage")) return null;
 
   if (otherHouseholds.length === 0) {
-    return <h1 className="mb-4 text-[22px] font-bold tracking-tight">{currentName}</h1>;
+    return <h1 className="mb-2 text-[22px] font-bold tracking-tight">{currentName}</h1>;
   }
 
   return (
-    <div className="relative mb-4">
+    <div className="relative mb-2">
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
