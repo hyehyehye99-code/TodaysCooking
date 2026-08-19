@@ -1,6 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentHousehold } from "@/lib/household";
-import { PageHeader } from "@/components/ui";
 import { AddBookmarkForm } from "./add-bookmark-form";
 import { BookmarkList } from "./bookmark-list";
 import type { Bookmark } from "@/lib/types";
@@ -19,7 +18,6 @@ export default async function BookmarksPage() {
 
   return (
     <div>
-      <PageHeader title="북마크" />
       <AddBookmarkForm />
       <div className="mt-5">
         <BookmarkList bookmarks={bookmarks} />

@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentHousehold } from "@/lib/household";
-import { GlassCard, PageHeader, ProgressBar } from "@/components/ui";
+import { GlassCard, ProgressBar } from "@/components/ui";
 import { toggleShoppingItem, addShoppingItem, finishShoppingTrip } from "@/lib/actions/shopping";
 import type { ShoppingItem } from "@/lib/types";
 
@@ -21,8 +21,6 @@ export default async function ShoppingPage() {
 
   return (
     <div>
-      <PageHeader title="장보기" />
-
       <GlassCard className="mb-[18px] bg-white p-4">
         <div className="mb-2.5 flex items-center justify-between">
           <span className="text-[13px] font-bold">이번 장보기</span>

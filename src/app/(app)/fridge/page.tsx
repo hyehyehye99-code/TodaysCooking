@@ -1,6 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentHousehold } from "@/lib/household";
-import { PageHeader } from "@/components/ui";
 import { INGREDIENT_CATEGORIES, ALL_KNOWN_INGREDIENTS } from "@/lib/ingredients";
 import { FridgeEditor } from "./fridge-editor";
 import type { FridgeItem } from "@/lib/types";
@@ -54,7 +53,6 @@ export default async function FridgePage() {
 
   return (
     <div>
-      <PageHeader title="냉장고" />
       <FridgeEditor categories={categories} />
     </div>
   );

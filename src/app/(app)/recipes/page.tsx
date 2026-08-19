@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentHousehold } from "@/lib/household";
-import { PageHeader } from "@/components/ui";
 import { RecipeList } from "./recipe-list";
 import type { RecipeWithIngredients } from "@/lib/types";
 
@@ -25,8 +24,7 @@ export default async function RecipesPage() {
 
   return (
     <div>
-      <div className="mb-4 flex items-baseline justify-between">
-        <PageHeader title="레시피" />
+      <div className="mb-4 flex justify-end">
         <Link href="/recipes/new" className="text-sm font-bold text-accent">
           + 새 레시피
         </Link>
