@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { BackButton } from "@/components/ui";
+import { GoogleSignInButton } from "./google-signin-button";
 
 export default function LoginStartPage() {
   return (
@@ -29,6 +30,14 @@ export default function LoginStartPage() {
         >
           로그인 (계정이 있어요)
         </Link>
+
+        <div className="flex items-center gap-3">
+          <div className="h-px flex-1 bg-border" />
+          <span className="text-xs text-ink-faint">또는</span>
+          <div className="h-px flex-1 bg-border" />
+        </div>
+
+        <GoogleSignInButton />
       </div>
     </div>
   );
