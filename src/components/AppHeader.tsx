@@ -7,6 +7,13 @@ import { switchHousehold } from "@/lib/actions/household";
 
 type HouseholdOption = { id: string; name: string };
 
+const TAB_TITLES: Record<string, string> = {
+  "/recipes": "레시피",
+  "/fridge": "냉장고",
+  "/bookmarks": "북마크",
+  "/shopping": "장보기",
+};
+
 export function AppHeader({
   currentName,
   otherHouseholds,
@@ -19,30 +26,31 @@ export function AppHeader({
 
   if (pathname.startsWith("/mypage") || pathname.startsWith("/recipes/")) return null;
 
+  const tabTitle = TAB_TITLES[pathname] ?? "";
   const showNewRecipeButton = pathname === "/recipes";
 
   return (
-    <div className="mb-3 flex items-baseline justify-between gap-3">
+    <div className="mb-3">
       {otherHouseholds.length === 0 ? (
-        <h1 className="text-[26px] font-bold tracking-tight">{currentName}</h1>
+        <p className="mb-1 text-sm font-bold text-ink-soft">{currentName}</p>
       ) : (
-        <div className="relative">
+        <div className="relative mb-1 inline-block">
           <button
             type="button"
             onClick={() => setOpen((v) => !v)}
-            className="flex items-center gap-1 text-[26px] font-bold tracking-tight"
+            className="flex items-center gap-1 text-sm font-bold text-ink-soft"
           >
             {currentName}
             <svg
               viewBox="0 0 24 24"
-              width="20"
-              height="20"
+              width="14"
+              height="14"
               fill="none"
               stroke="currentColor"
               strokeWidth="2.4"
               strokeLinecap="round"
               strokeLinejoin="round"
-              className={`mt-0.5 transition-transform duration-200 ${open ? "rotate-180" : ""}`}
+              className={`transition-transform duration-200 ${open ? "rotate-180" : ""}`}
             >
               <path d="M6 9l6 6 6-6" />
             </svg>
@@ -74,11 +82,14 @@ export function AppHeader({
         </div>
       )}
 
-      {showNewRecipeButton && (
-        <Link href="/recipes/new" className="shrink-0 text-sm font-bold text-accent">
-          + 새 레시피
-        </Link>
-      )}
+      <div className="flex items-baseline justify-between gap-3">
+        <h1 className="text-[26px] font-bold tracking-tight">{tabTitle}</h1>
+        {showNewRecipeButton && (
+          <Link href="/recipes/new" className="shrink-0 text-sm font-bold text-accent">
+            + 새 레시피
+          </Link>
+        )}
+      </div>
     </div>
   );
 }

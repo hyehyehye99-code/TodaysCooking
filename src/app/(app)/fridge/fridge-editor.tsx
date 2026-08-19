@@ -93,7 +93,6 @@ export function FridgeEditor({ categories }: { categories: Category[] }) {
 
   return (
     <div>
-      <h1 className="mb-1 text-[22px] font-bold">냉장고</h1>
       <p className="mb-5 text-sm text-ink-soft">
         {ownedCount}개 재료 보유 중 · 탭하면 바로 추가되거나 빠져요
       </p>
@@ -158,7 +157,7 @@ export function FridgeEditor({ categories }: { categories: Category[] }) {
 
               {!isOpen && (
                 <p
-                  className={`mt-1.5 text-xs ${
+                  className={`mt-1.5 text-sm ${
                     ownedNames.length > 0 ? "text-ink" : "text-ink-faint"
                   }`}
                 >
