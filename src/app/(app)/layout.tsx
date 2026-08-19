@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { getCurrentHousehold, getMyHouseholds } from "@/lib/household";
 import { TabBar } from "@/components/TabBar";
 import { AppHeader } from "@/components/AppHeader";
+import { PullToRefresh } from "@/components/PullToRefresh";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const [{ user, household }, households] = await Promise.all([
@@ -16,10 +17,10 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
   return (
     <div className="mx-auto flex h-dvh w-full max-w-[520px] flex-col">
-      <div className="flex-1 overflow-y-auto px-5 pt-6 pb-[max(env(safe-area-inset-bottom),40px)]">
+      <PullToRefresh className="px-5 pt-6 pb-[max(env(safe-area-inset-bottom),40px)]">
         <AppHeader currentId={household.id} currentName={household.name} households={allHouseholds} />
         {children}
-      </div>
+      </PullToRefresh>
       <TabBar />
     </div>
   );

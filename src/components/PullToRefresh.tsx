@@ -1,0 +1,101 @@
+"use client";
+
+import { useRef, useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
+
+const PULL_THRESHOLD = 64;
+const MAX_PULL = 90;
+const PULL_RESISTANCE = 0.5;
+
+export function PullToRefresh({
+  children,
+  className,
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const startYRef = useRef<number | null>(null);
+  const [pull, setPull] = useState(0);
+  const [dragging, setDragging] = useState(false);
+  const [pending, startTransition] = useTransition();
+  const router = useRouter();
+
+  function handleTouchStart(e: React.TouchEvent) {
+    const el = containerRef.current;
+    if (pending || !el || el.scrollTop > 0) {
+      startYRef.current = null;
+      return;
+    }
+    startYRef.current = e.touches[0].clientY;
+    setDragging(true);
+  }
+
+  function handleTouchMove(e: React.TouchEvent) {
+    if (startYRef.current === null) return;
+    const delta = e.touches[0].clientY - startYRef.current;
+    if (delta <= 0) {
+      setPull(0);
+      return;
+    }
+    // Suppress the native scroll/rubber-band while we're driving our own
+    // pull animation, so the two don't fight over the same gesture.
+    e.preventDefault();
+    setPull(Math.min(delta * PULL_RESISTANCE, MAX_PULL));
+  }
+
+  function handleTouchEnd() {
+    if (startYRef.current === null) return;
+    startYRef.current = null;
+    setDragging(false);
+    if (pull >= PULL_THRESHOLD) {
+      startTransition(() => {
+        router.refresh();
+      });
+    }
+    setPull(0);
+  }
+
+  const shown = pending ? PULL_THRESHOLD : pull;
+
+  return (
+    <div className="relative flex-1 overflow-hidden">
+      <div
+        className="pointer-events-none absolute inset-x-0 top-0 flex justify-center overflow-hidden"
+        style={{ height: shown }}
+      >
+        <div className="flex items-end pb-2">
+          <svg
+            viewBox="0 0 24 24"
+            width="20"
+            height="20"
+            fill="none"
+            stroke="var(--color-accent)"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className={pending ? "animate-spin" : ""}
+            style={pending ? undefined : { transform: `rotate(${(shown / PULL_THRESHOLD) * 180}deg)` }}
+          >
+            <path d="M21 12a9 9 0 1 1-3-6.7" />
+            <path d="M21 3v6h-6" />
+          </svg>
+        </div>
+      </div>
+      <div
+        ref={containerRef}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+        onTouchCancel={handleTouchEnd}
+        style={{
+          transform: `translateY(${shown}px)`,
+          transition: dragging ? "none" : "transform 200ms ease-out",
+        }}
+        className={`h-full overflow-y-auto ${className ?? ""}`}
+      >
+        {children}
+      </div>
+    </div>
+  );
+}
