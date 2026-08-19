@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentHousehold } from "@/lib/household";
-import { GlassCard, PageHeader } from "@/components/ui";
+import { PageHeader } from "@/components/ui";
 import { RecipeList } from "./recipe-list";
 import type { RecipeWithIngredients } from "@/lib/types";
 
@@ -20,11 +20,8 @@ export default async function RecipesPage() {
     supabase.from("fridge_items").select("name, in_stock").eq("household_id", household!.id),
   ]);
 
-  const owned = new Set((fridgeItems ?? []).filter((i) => i.in_stock).map((i) => i.name));
+  const owned = (fridgeItems ?? []).filter((i) => i.in_stock).map((i) => i.name);
   const items = (recipes as RecipeWithIngredients[] | null) ?? [];
-  const makeableCount = items.filter((r) =>
-    r.recipe_ingredients.every((ing) => owned.has(ing.name))
-  ).length;
 
   return (
     <div>
@@ -35,13 +32,7 @@ export default async function RecipesPage() {
         </Link>
       </div>
 
-      <GlassCard className="mb-4 border-transparent bg-surface px-4 py-3.5">
-        <p className="text-sm font-bold text-accent-ink">
-          지금 만들 수 있는 레시피 {makeableCount}개
-        </p>
-      </GlassCard>
-
-      <RecipeList recipes={items} />
+      <RecipeList recipes={items} ownedIngredients={owned} />
     </div>
   );
 }

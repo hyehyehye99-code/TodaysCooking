@@ -67,13 +67,21 @@ function RecipeThumb({ recipe }: { recipe: RecipeWithIngredients }) {
   );
 }
 
-export function RecipeList({ recipes }: { recipes: RecipeWithIngredients[] }) {
+export function RecipeList({
+  recipes,
+  ownedIngredients,
+}: {
+  recipes: RecipeWithIngredients[];
+  ownedIngredients: string[];
+}) {
   const [query, setQuery] = useState("");
   const [activeTag, setActiveTag] = useState<string | null>(null);
   const [reordering, setReordering] = useState(false);
   const [order, setOrder] = useState<RecipeWithIngredients[]>(recipes);
   const [pending, startTransition] = useTransition();
   const router = useRouter();
+
+  const owned = useMemo(() => new Set(ownedIngredients), [ownedIngredients]);
 
   const allTags = useMemo(
     () => [...new Set(recipes.flatMap((r) => r.tags))],
@@ -219,9 +227,13 @@ export function RecipeList({ recipes }: { recipes: RecipeWithIngredients[] }) {
         </div>
       ) : (
         <div className="flex flex-col gap-3">
-          {filtered.map((recipe) => (
+          {filtered.map((recipe) => {
+            const makeable = recipe.recipe_ingredients.every((ing) => owned.has(ing.name));
+            return (
             <Link key={recipe.id} href={`/recipes/${recipe.id}`}>
-              <GlassCard className="flex items-center gap-3 bg-white p-3.5">
+              <GlassCard
+                className={`flex items-center gap-3 p-3.5 ${makeable ? "bg-accent/8" : "bg-white"}`}
+              >
                 <RecipeThumb recipe={recipe} />
                 <div className="min-w-0 flex-1">
                   <p className="text-[15px] font-bold">{recipe.title}</p>
@@ -241,7 +253,8 @@ export function RecipeList({ recipes }: { recipes: RecipeWithIngredients[] }) {
                 <FavoriteButton recipe={recipe} />
               </GlassCard>
             </Link>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>
