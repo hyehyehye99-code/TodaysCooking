@@ -3,10 +3,18 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
+// Each icon is hand-drawn to a different bounding box within the shared
+// 24x24 viewBox, so at a fixed container size they render at visibly
+// different scales. scale/cx/cy normalize every icon to the same ~16-unit
+// footprint centered at (12, 12); strokeWidth is scaled inversely so the
+// rendered line weight stays uniform after the group transform.
 const TABS = [
   {
     href: "/recipes",
     label: "레시피",
+    cx: 12,
+    cy: 12,
+    scale: 1,
     icon: (
       <>
         <path d="M4 5.5c2.2-1 5.2-1 8 0 2.8-1 5.8-1 8 0v13c-2.2-1-5.2-1-8 0-2.8-1-5.8-1-8 0z" />
@@ -17,6 +25,9 @@ const TABS = [
   {
     href: "/fridge",
     label: "냉장고",
+    cx: 12,
+    cy: 12,
+    scale: 0.8,
     icon: (
       <>
         <rect x="5" y="2" width="14" height="20" rx="2" />
@@ -29,6 +40,9 @@ const TABS = [
   {
     href: "/shopping",
     label: "장보기",
+    cx: 12.25,
+    cy: 12.15,
+    scale: 0.82,
     icon: (
       <>
         <circle cx="9" cy="20.5" r="1.3" />
@@ -40,11 +54,17 @@ const TABS = [
   {
     href: "/bookmarks",
     label: "보관함",
+    cx: 12,
+    cy: 12.25,
+    scale: 0.91,
     icon: <path d="M6 3.5h12a.5.5 0 0 1 .5.5v17l-6.5-4-6.5 4v-17a.5.5 0 0 1 .5-.5z" />,
   },
   {
     href: "/mypage",
     label: "마이페이지",
+    cx: 12,
+    cy: 12.25,
+    scale: 1.03,
     icon: (
       <>
         <circle cx="12" cy="8" r="3.5" />
