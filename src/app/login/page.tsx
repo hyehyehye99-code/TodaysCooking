@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { GoogleSignInButton } from "./google-signin-button";
 
 export default function LandingPage() {
   return (
@@ -19,12 +19,7 @@ export default function LandingPage() {
         <span className="text-[96px] leading-none">🙋</span>
       </div>
 
-      <Link
-        href="/login/start"
-        className="rounded-xl bg-accent py-4 text-center text-sm font-bold text-white"
-      >
-        시작하기
-      </Link>
+      <GoogleSignInButton />
     </div>
   );
 }

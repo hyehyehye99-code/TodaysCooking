@@ -3,7 +3,6 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentHousehold } from "@/lib/household";
-import { isValidUsername, usernameToEmail } from "@/lib/username";
 
 export type SetupPayload = {
   mode: "create" | "join";
@@ -52,45 +51,6 @@ async function applySetup(payload: SetupPayload) {
 }
 
 export async function completeOnboardingAuthed(payload: SetupPayload) {
-  const result = await applySetup(payload);
-  if ("error" in result) return result;
-  redirect("/recipes");
-}
-
-export async function completeOnboardingWithSignup(
-  payload: SetupPayload & { username: string; password: string }
-) {
-  const supabase = await createClient();
-
-  const {
-    data: { user: existingUser },
-  } = await supabase.auth.getUser();
-
-  if (!existingUser) {
-    const username = payload.username.trim().toLowerCase();
-    if (!isValidUsername(username)) {
-      return { error: "아이디는 영문 소문자, 숫자, _ 로 4~20자여야 해요." };
-    }
-    if (payload.password.length < 6) {
-      return { error: "비밀번호는 6자 이상이어야 해요." };
-    }
-
-    const { error: signUpError } = await supabase.auth.signUp({
-      email: usernameToEmail(username),
-      password: payload.password,
-    });
-    if (signUpError) {
-      console.error("signUp error:", signUpError);
-      if (
-        signUpError.message.toLowerCase().includes("already registered") ||
-        signUpError.code === "user_already_exists"
-      ) {
-        return { error: "이미 사용 중인 아이디예요." };
-      }
-      return { error: "회원가입에 실패했어요. 다시 시도해주세요." };
-    }
-  }
-
   const result = await applySetup(payload);
   if ("error" in result) return result;
   redirect("/recipes");

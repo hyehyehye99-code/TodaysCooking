@@ -2,8 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { INGREDIENT_CATEGORIES } from "@/lib/ingredients";
-import { completeOnboardingAuthed, completeOnboardingWithSignup } from "@/lib/actions/onboarding";
-import { checkUsernameAvailable } from "@/lib/actions/username";
+import { completeOnboardingAuthed } from "@/lib/actions/onboarding";
 import { BackButton } from "@/components/ui";
 
 function StepDots({ step, total }: { step: number; total: number }) {
@@ -19,7 +18,7 @@ function StepDots({ step, total }: { step: number; total: number }) {
   );
 }
 
-export function OnboardingWizard({ authed }: { authed: boolean }) {
+export function OnboardingWizard() {
   const [step, setStep] = useState<1 | 2 | 3>(1);
 
   const [mode, setMode] = useState<"create" | "join">("create");
@@ -30,25 +29,11 @@ export function OnboardingWizard({ authed }: { authed: boolean }) {
   const [fridge, setFridge] = useState<Record<string, boolean>>({});
 
   const [nickname, setNickname] = useState("");
-  const [username, setUsername] = useState("");
-  const [usernameStatus, setUsernameStatus] = useState<
-    "idle" | "checking" | "available" | "taken" | "invalid"
-  >("idle");
-  const [password, setPassword] = useState("");
   const [step3Error, setStep3Error] = useState("");
   const [pending, startTransition] = useTransition();
 
   function toggleFridgeItem(itemName: string) {
     setFridge((prev) => ({ ...prev, [itemName]: !prev[itemName] }));
-  }
-
-  async function handleUsernameBlur() {
-    const value = username.trim();
-    if (!value) return setUsernameStatus("idle");
-    setUsernameStatus("checking");
-    const result = await checkUsernameAvailable(value);
-    if ("error" in result) setUsernameStatus("invalid");
-    else setUsernameStatus(result.available ? "available" : "taken");
   }
 
   function goToNextFromStep1() {
@@ -72,25 +57,10 @@ export function OnboardingWizard({ authed }: { authed: boolean }) {
     }
   }
 
-  function handleFinishAuthed() {
+  function handleFinish() {
     if (!nickname.trim()) return setStep3Error("닉네임을 입력해주세요.");
     startTransition(async () => {
       const result = await completeOnboardingAuthed(payload());
-      if (result && "error" in result) handleSetupError(result);
-    });
-  }
-
-  function handleSignupAndFinish() {
-    setStep3Error("");
-    if (!nickname.trim()) return setStep3Error("닉네임을 입력해주세요.");
-    if (!username.trim() || !password) return setStep3Error("아이디와 비밀번호를 입력해주세요.");
-    if (usernameStatus === "taken") return setStep3Error("이미 사용 중인 아이디예요. 다른 아이디를 입력해주세요.");
-    startTransition(async () => {
-      const result = await completeOnboardingWithSignup({
-        ...payload(),
-        username: username.trim(),
-        password,
-      });
       if (result && "error" in result) handleSetupError(result);
     });
   }
@@ -105,15 +75,9 @@ export function OnboardingWizard({ authed }: { authed: boolean }) {
   if (step === 2) {
     primaryHandler = () => setStep(3);
   } else if (step === 3) {
-    if (authed) {
-      primaryLabel = pending ? "시작하는 중..." : "시작하기";
-      primaryHandler = handleFinishAuthed;
-      primaryDisabled = pending;
-    } else {
-      primaryLabel = pending ? "가입하는 중..." : "회원가입하고 시작하기!";
-      primaryHandler = handleSignupAndFinish;
-      primaryDisabled = pending;
-    }
+    primaryLabel = pending ? "시작하는 중..." : "시작하기";
+    primaryHandler = handleFinish;
+    primaryDisabled = pending;
   }
 
   return (
@@ -123,7 +87,7 @@ export function OnboardingWizard({ authed }: { authed: boolean }) {
 
         {step === 1 && (
           <div className="flex flex-1 flex-col">
-            <BackButton href="/login/start" className="mb-3" />
+            <BackButton href="/login" className="mb-3" />
 
             <div className="flex flex-1 flex-col pt-4">
               <h1 className="mb-1 text-[22px] font-bold">요리책을 준비해볼까요?</h1>
@@ -210,11 +174,7 @@ export function OnboardingWizard({ authed }: { authed: boolean }) {
 
             <div className="flex flex-1 flex-col pt-4">
               <h1 className="mb-1 text-[22px] font-bold">이제 준비 완료!</h1>
-              <p className="mb-6 text-sm text-ink-soft">
-                {authed
-                  ? "아래 버튼을 누르면 바로 시작할 수 있어요."
-                  : "닉네임과 로그인 정보를 입력하면 요리책이 저장돼요."}
-              </p>
+              <p className="mb-6 text-sm text-ink-soft">아래 버튼을 누르면 바로 시작할 수 있어요.</p>
 
               <div className="flex flex-col gap-5">
                 <label className="flex flex-col gap-1.5">
@@ -229,45 +189,6 @@ export function OnboardingWizard({ authed }: { authed: boolean }) {
                     요리책 안에서 &ldquo;{nickname.trim() || "닉네임"}셰프&rdquo;로 불려요
                   </span>
                 </label>
-
-                {!authed && (
-                  <>
-                    <label className="flex flex-col gap-1.5">
-                      <span className="text-xs font-bold text-ink-soft">아이디</span>
-                      <input
-                        value={username}
-                        onChange={(e) => {
-                          setUsername(e.target.value);
-                          setUsernameStatus("idle");
-                        }}
-                        onBlur={handleUsernameBlur}
-                        autoCapitalize="none"
-                        autoCorrect="off"
-                        placeholder="영문 소문자, 숫자, _ 4~20자"
-                        className="rounded-xl border border-transparent bg-surface px-4 py-3.5 text-sm outline-none focus:border-accent"
-                      />
-                      {usernameStatus === "checking" && (
-                        <span className="text-[11px] text-ink-faint">확인 중...</span>
-                      )}
-                      {usernameStatus === "available" && (
-                        <span className="text-[11px] text-positive-ink">사용할 수 있는 아이디예요</span>
-                      )}
-                      {usernameStatus === "taken" && (
-                        <span className="text-[11px] text-warn-ink">이미 사용 중인 아이디예요</span>
-                      )}
-                    </label>
-                    <label className="flex flex-col gap-1.5">
-                      <span className="text-xs font-bold text-ink-soft">비밀번호</span>
-                      <input
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        type="password"
-                        placeholder="6자 이상"
-                        className="rounded-xl border border-transparent bg-surface px-4 py-3.5 text-sm outline-none focus:border-accent"
-                      />
-                    </label>
-                  </>
-                )}
               </div>
             </div>
           </div>
