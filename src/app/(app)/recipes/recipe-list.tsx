@@ -42,11 +42,11 @@ function FavoriteButton({ recipe }: { recipe: RecipeWithIngredients }) {
 }
 
 function RecipeThumb({ recipe }: { recipe: RecipeWithIngredients }) {
-  if (recipe.cover_photo_url) {
+  if (recipe.cover_photo_urls.length > 0) {
     return (
       <div className="h-14 w-14 shrink-0 overflow-hidden rounded-2xl bg-surface">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={recipe.cover_photo_url} alt="" className="h-full w-full object-cover" />
+        <img src={recipe.cover_photo_urls[0]} alt="" className="h-full w-full object-cover" />
       </div>
     );
   }

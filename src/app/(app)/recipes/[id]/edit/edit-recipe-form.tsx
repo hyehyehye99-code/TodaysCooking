@@ -96,8 +96,8 @@ export function EditRecipeForm({
           <p className="mb-3 text-[13px] font-bold">사진 또는 이모지</p>
           <div className="flex flex-col gap-3">
             <div className="flex flex-col gap-1.5">
-              <span className="text-xs text-ink-soft">사진 (선택, 1장)</span>
-              <PhotoPicker name="photo" defaultPreviewUrl={recipe.cover_photo_url} />
+              <span className="text-xs text-ink-soft">사진 (선택, 최대 5장)</span>
+              <PhotoPicker name="photos" existingUrls={recipe.cover_photo_urls} />
             </div>
             <label className="flex flex-col gap-1.5">
               <span className="text-xs text-ink-soft">아이콘 이모지 (사진이 없을 때 표시돼요)</span>

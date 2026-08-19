@@ -4,7 +4,7 @@ export type Recipe = {
   title: string;
   subtitle: string | null;
   cook_time_minutes: number | null;
-  cover_photo_url: string | null;
+  cover_photo_urls: string[];
   icon_emoji: string | null;
   tags: string[];
   notes: string | null;

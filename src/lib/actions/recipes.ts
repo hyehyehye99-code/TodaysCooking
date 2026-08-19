@@ -4,14 +4,53 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentHousehold } from "@/lib/household";
-import { uploadRecipePhoto } from "@/lib/actions/storage";
+import { uploadRecipePhotos } from "@/lib/actions/storage";
 import { fetchLinkPreview } from "@/lib/actions/link-preview";
+import { MAX_RECIPE_PHOTOS } from "@/lib/constants";
 
 function parseIngredients(raw: string) {
   return raw
     .split(/[\n,]/)
     .map((s) => s.trim())
     .filter(Boolean);
+}
+
+// PhotoPicker submits an ordered token list ("existing:<url>" or "new:<i>",
+// where <i> indexes into the "photos" file input in submission order) so the
+// final array can interleave kept and newly-uploaded photos in any order.
+async function resolvePhotoUrls(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  householdId: string,
+  formData: FormData
+): Promise<{ urls: string[] } | { error: string }> {
+  let order: string[] = [];
+  try {
+    order = JSON.parse(String(formData.get("photoOrder") ?? "[]"));
+  } catch {
+    order = [];
+  }
+  order = order.slice(0, MAX_RECIPE_PHOTOS);
+
+  const newFiles = formData
+    .getAll("photos")
+    .filter((f): f is File => f instanceof File && f.size > 0);
+
+  let uploadedUrls: string[] = [];
+  if (newFiles.length > 0) {
+    const uploaded = await uploadRecipePhotos(supabase, householdId, newFiles);
+    if ("error" in uploaded) return { error: uploaded.error };
+    uploadedUrls = uploaded.urls;
+  }
+
+  const urls = order
+    .map((token) => {
+      if (token.startsWith("new:")) return uploadedUrls[Number(token.slice(4))] ?? null;
+      if (token.startsWith("existing:")) return token.slice("existing:".length);
+      return null;
+    })
+    .filter((url): url is string => !!url);
+
+  return { urls };
 }
 
 function parseTags(raw: string) {
@@ -70,7 +109,6 @@ export async function createRecipe(_prevState: unknown, formData: FormData) {
   const tags = parseTags(String(formData.get("tags") ?? ""));
   const iconEmoji = String(formData.get("iconEmoji") ?? "").trim();
   const notes = String(formData.get("notes") ?? "").trim();
-  const photo = formData.get("photo");
   const referenceUrl = String(formData.get("referenceUrl") ?? "");
 
   if (!title) return { error: "요리 이름을 입력해주세요." };
@@ -81,12 +119,8 @@ export async function createRecipe(_prevState: unknown, formData: FormData) {
 
   const supabase = await createClient();
 
-  let coverPhotoUrl: string | null = null;
-  if (photo instanceof File && photo.size > 0) {
-    const uploaded = await uploadRecipePhoto(supabase, household.id, photo);
-    if ("error" in uploaded) return { error: uploaded.error };
-    coverPhotoUrl = uploaded.url;
-  }
+  const photos = await resolvePhotoUrls(supabase, household.id, formData);
+  if ("error" in photos) return { error: photos.error };
 
   const { data: recipe, error } = await supabase
     .from("recipes")
@@ -94,7 +128,7 @@ export async function createRecipe(_prevState: unknown, formData: FormData) {
       household_id: household.id,
       title,
       subtitle: subtitle || null,
-      cover_photo_url: coverPhotoUrl,
+      cover_photo_urls: photos.urls,
       icon_emoji: iconEmoji || null,
       tags,
       notes: notes || null,
@@ -128,7 +162,6 @@ export async function updateRecipe(_prevState: unknown, formData: FormData) {
   const tags = parseTags(String(formData.get("tags") ?? ""));
   const iconEmoji = String(formData.get("iconEmoji") ?? "").trim();
   const notes = String(formData.get("notes") ?? "").trim();
-  const photo = formData.get("photo");
   const referenceUrl = String(formData.get("referenceUrl") ?? "");
 
   if (!id) return { error: "레시피를 찾을 수 없어요." };
@@ -140,19 +173,17 @@ export async function updateRecipe(_prevState: unknown, formData: FormData) {
 
   const supabase = await createClient();
 
+  const photos = await resolvePhotoUrls(supabase, household.id, formData);
+  if ("error" in photos) return { error: photos.error };
+
   const update: Record<string, unknown> = {
     title,
     subtitle: subtitle || null,
     icon_emoji: iconEmoji || null,
     tags,
     notes: notes || null,
+    cover_photo_urls: photos.urls,
   };
-
-  if (photo instanceof File && photo.size > 0) {
-    const uploaded = await uploadRecipePhoto(supabase, household.id, photo);
-    if ("error" in uploaded) return { error: uploaded.error };
-    update.cover_photo_url = uploaded.url;
-  }
 
   const { error } = await supabase.from("recipes").update(update).eq("id", id);
   if (error) return { error: "레시피를 수정하지 못했어요." };
