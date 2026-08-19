@@ -1,12 +1,11 @@
 import Link from "next/link";
+import { BackButton } from "@/components/ui";
 
 export default function LoginStartPage() {
   return (
     <div className="mx-auto flex h-dvh w-full max-w-[420px] flex-col justify-between px-7 pt-[max(env(safe-area-inset-top),24px)] pb-[max(env(safe-area-inset-bottom),100px)]">
       <div>
-        <Link href="/login" className="mb-8 inline-block text-sm text-ink-soft">
-          ← 뒤로
-        </Link>
+        <BackButton href="/login" className="mb-8" />
         <p className="mb-2 text-xs font-bold tracking-wide text-ink-faint">오내요</p>
         <h1 className="text-[28px] font-bold leading-tight">
           처음이신가요,

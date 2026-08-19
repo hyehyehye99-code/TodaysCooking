@@ -1,8 +1,8 @@
 "use client";
 
-import Link from "next/link";
 import { useActionState } from "react";
 import { signInWithPassword } from "@/lib/actions/auth";
+import { BackButton } from "@/components/ui";
 
 export default function ExistingLoginPage() {
   const [state, formAction, pending] = useActionState(signInWithPassword, undefined);
@@ -10,9 +10,7 @@ export default function ExistingLoginPage() {
   return (
     <div className="mx-auto flex h-dvh w-full max-w-[420px] flex-col justify-between px-7 pt-[max(env(safe-area-inset-top),24px)] pb-[max(env(safe-area-inset-bottom),100px)]">
       <div>
-        <Link href="/login/start" className="mb-8 inline-block text-sm text-ink-soft">
-          ← 뒤로
-        </Link>
+        <BackButton href="/login/start" className="mb-8" />
         <p className="mb-2 text-xs font-bold tracking-wide text-ink-faint">오내요</p>
         <h1 className="mb-2 text-[28px] font-bold leading-tight">다시 만나서 반가워요</h1>
         <p className="text-sm text-ink-soft">아이디와 비밀번호를 입력해주세요.</p>

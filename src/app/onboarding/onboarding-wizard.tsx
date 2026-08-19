@@ -1,9 +1,9 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import Link from "next/link";
 import { INGREDIENT_CATEGORIES } from "@/lib/ingredients";
 import { completeOnboardingAuthed, completeOnboardingWithSignup } from "@/lib/actions/onboarding";
+import { BackButton } from "@/components/ui";
 
 function StepDots({ step }: { step: 1 | 2 | 3 }) {
   return (
@@ -91,14 +91,12 @@ export function OnboardingWizard({ authed }: { authed: boolean }) {
 
   return (
     <div className="mx-auto flex h-dvh w-full max-w-[420px] flex-col">
-      <div className="flex-1 overflow-y-auto px-6 pt-[max(env(safe-area-inset-top),24px)]">
+      <div className="flex flex-1 flex-col overflow-y-auto px-6 pt-[max(env(safe-area-inset-top),24px)]">
         <StepDots step={step} />
 
         {step === 1 && (
           <>
-            <Link href="/login/start" className="mb-3 self-start text-sm text-ink-soft">
-              ← 뒤로
-            </Link>
+            <BackButton href="/login/start" className="mb-3" />
             <h1 className="mb-1 text-[22px] font-bold">요리책을 준비해볼까요?</h1>
             <p className="mb-6 text-sm text-ink-soft">새로 만들거나, 코드로 기존 요리책에 들어갈 수 있어요.</p>
 
@@ -139,12 +137,7 @@ export function OnboardingWizard({ authed }: { authed: boolean }) {
 
         {step === 2 && (
           <>
-            <button
-              onClick={() => setStep(1)}
-              className="mb-3 self-start text-sm text-ink-soft"
-            >
-              ← 이전
-            </button>
+            <BackButton onClick={() => setStep(1)} className="mb-3" />
             <h1 className="mb-1 text-[22px] font-bold">지금 냉장고에 무엇이 들어있나요?</h1>
             <p className="mb-5 text-sm text-ink-soft">
               가지고 있는 재료를 탭해서 표시해주세요. 나중에 언제든 바꿀 수 있어요.
@@ -182,61 +175,59 @@ export function OnboardingWizard({ authed }: { authed: boolean }) {
         )}
 
         {step === 3 && (
-          <>
-            <button
-              onClick={() => setStep(2)}
-              className="mb-3 self-start text-sm text-ink-soft"
-            >
-              ← 이전
-            </button>
-            <h1 className="mb-1 text-[22px] font-bold">이제 준비 완료!</h1>
-            <p className="mb-6 text-sm text-ink-soft">
-              {authed
-                ? "아래 버튼을 누르면 바로 시작할 수 있어요."
-                : "닉네임과 로그인 정보를 입력하면 요리책이 저장돼요."}
-            </p>
+          <div className="flex flex-1 flex-col">
+            <BackButton onClick={() => setStep(2)} className="mb-3" />
 
-            <div className="flex flex-col gap-5">
-              <label className="flex flex-col gap-1.5">
-                <span className="text-xs font-bold text-ink-soft">닉네임</span>
-                <input
-                  value={nickname}
-                  onChange={(e) => setNickname(e.target.value)}
-                  placeholder="예) 혜지"
-                  className="rounded-xl border border-transparent bg-surface px-4 py-3.5 text-sm outline-none focus:border-accent"
-                />
-                <span className="text-[11px] text-ink-faint">
-                  요리책 안에서 &ldquo;{nickname.trim() || "닉네임"}셰프&rdquo;로 불려요
-                </span>
-              </label>
+            <div className="flex flex-1 flex-col justify-center">
+              <h1 className="mb-1 text-[22px] font-bold">이제 준비 완료!</h1>
+              <p className="mb-6 text-sm text-ink-soft">
+                {authed
+                  ? "아래 버튼을 누르면 바로 시작할 수 있어요."
+                  : "닉네임과 로그인 정보를 입력하면 요리책이 저장돼요."}
+              </p>
 
-              {!authed && (
-                <>
-                  <label className="flex flex-col gap-1.5">
-                    <span className="text-xs font-bold text-ink-soft">아이디</span>
-                    <input
-                      value={username}
-                      onChange={(e) => setUsername(e.target.value)}
-                      autoCapitalize="none"
-                      autoCorrect="off"
-                      placeholder="영문 소문자, 숫자, _ 4~20자"
-                      className="rounded-xl border border-transparent bg-surface px-4 py-3.5 text-sm outline-none focus:border-accent"
-                    />
-                  </label>
-                  <label className="flex flex-col gap-1.5">
-                    <span className="text-xs font-bold text-ink-soft">비밀번호</span>
-                    <input
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      type="password"
-                      placeholder="6자 이상"
-                      className="rounded-xl border border-transparent bg-surface px-4 py-3.5 text-sm outline-none focus:border-accent"
-                    />
-                  </label>
-                </>
-              )}
+              <div className="flex flex-col gap-5">
+                <label className="flex flex-col gap-1.5">
+                  <span className="text-xs font-bold text-ink-soft">닉네임</span>
+                  <input
+                    value={nickname}
+                    onChange={(e) => setNickname(e.target.value)}
+                    placeholder="예) 혜지"
+                    className="rounded-xl border border-transparent bg-surface px-4 py-3.5 text-sm outline-none focus:border-accent"
+                  />
+                  <span className="text-[11px] text-ink-faint">
+                    요리책 안에서 &ldquo;{nickname.trim() || "닉네임"}셰프&rdquo;로 불려요
+                  </span>
+                </label>
+
+                {!authed && (
+                  <>
+                    <label className="flex flex-col gap-1.5">
+                      <span className="text-xs font-bold text-ink-soft">아이디</span>
+                      <input
+                        value={username}
+                        onChange={(e) => setUsername(e.target.value)}
+                        autoCapitalize="none"
+                        autoCorrect="off"
+                        placeholder="영문 소문자, 숫자, _ 4~20자"
+                        className="rounded-xl border border-transparent bg-surface px-4 py-3.5 text-sm outline-none focus:border-accent"
+                      />
+                    </label>
+                    <label className="flex flex-col gap-1.5">
+                      <span className="text-xs font-bold text-ink-soft">비밀번호</span>
+                      <input
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        type="password"
+                        placeholder="6자 이상"
+                        className="rounded-xl border border-transparent bg-surface px-4 py-3.5 text-sm outline-none focus:border-accent"
+                      />
+                    </label>
+                  </>
+                )}
+              </div>
             </div>
-          </>
+          </div>
         )}
       </div>
 
