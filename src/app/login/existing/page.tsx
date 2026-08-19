@@ -8,13 +8,15 @@ export default function ExistingLoginPage() {
   const [state, formAction, pending] = useActionState(signInWithPassword, undefined);
 
   return (
-    <div className="mx-auto flex h-dvh w-full max-w-[420px] flex-col justify-center px-6">
-      <Link href="/login/start" className="mb-6 text-sm text-ink-soft">
-        ← 뒤로
-      </Link>
-      <p className="mb-1 text-xs font-bold tracking-wide text-ink-faint">오내요</p>
-      <h1 className="mb-2 text-[28px] font-bold leading-tight">다시 만나서 반가워요</h1>
-      <p className="mb-8 text-sm text-ink-soft">아이디와 비밀번호를 입력해주세요.</p>
+    <div className="mx-auto flex h-dvh w-full max-w-[420px] flex-col justify-between px-7 pt-[max(env(safe-area-inset-top),24px)] pb-[max(env(safe-area-inset-bottom),100px)]">
+      <div>
+        <Link href="/login/start" className="mb-8 inline-block text-sm text-ink-soft">
+          ← 뒤로
+        </Link>
+        <p className="mb-2 text-xs font-bold tracking-wide text-ink-faint">오내요</p>
+        <h1 className="mb-2 text-[28px] font-bold leading-tight">다시 만나서 반가워요</h1>
+        <p className="text-sm text-ink-soft">아이디와 비밀번호를 입력해주세요.</p>
+      </div>
 
       <form action={formAction} className="flex flex-col gap-3">
         <input
