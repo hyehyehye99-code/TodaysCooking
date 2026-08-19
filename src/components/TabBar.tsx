@@ -27,11 +27,6 @@ const TABS = [
     ),
   },
   {
-    href: "/bookmarks",
-    label: "북마크",
-    icon: <path d="M6 3.5h12a.5.5 0 0 1 .5.5v17l-6.5-4-6.5 4v-17a.5.5 0 0 1 .5-.5z" />,
-  },
-  {
     href: "/shopping",
     label: "장보기",
     icon: (
@@ -40,6 +35,11 @@ const TABS = [
         <path d="M9 8V6.5a3 3 0 0 1 6 0V8" />
       </>
     ),
+  },
+  {
+    href: "/bookmarks",
+    label: "보관함",
+    icon: <path d="M6 3.5h12a.5.5 0 0 1 .5.5v17l-6.5-4-6.5 4v-17a.5.5 0 0 1 .5-.5z" />,
   },
   {
     href: "/mypage",

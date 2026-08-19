@@ -117,7 +117,7 @@ function DeleteBookmarkButton({
           <div className="relative w-full max-w-[360px] rounded-2xl bg-white p-5 shadow-xl">
             <p className="text-sm font-bold text-ink">레시피에서도 사라져요</p>
             <p className="mt-2 text-xs text-ink-soft">
-              이 북마크는 레시피의 참고 링크로도 쓰이고 있어요. 삭제하면 레시피에서도 이 링크가
+              이 링크는 레시피의 참고 링크로도 쓰이고 있어요. 삭제하면 레시피에서도 이 링크가
               사라져요.
             </p>
             <div className="mt-4 flex justify-end gap-2">
@@ -163,7 +163,7 @@ export function BookmarkList({ bookmarks }: { bookmarks: BookmarkWithRecipe[] })
       <input
         value={query}
         onChange={(e) => setQuery(e.target.value)}
-        placeholder="북마크 검색"
+        placeholder="보관함 검색"
         className="mb-4 w-full rounded-xl border border-transparent bg-surface px-3.5 py-2.5 text-sm outline-none focus:border-accent"
       />
 

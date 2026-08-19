@@ -94,7 +94,7 @@ export function NewRecipeForm({ existingTags }: { existingTags: string[] }) {
 
         <GlassCard className="bg-white p-4">
           <p className="mb-1 text-[13px] font-bold">참고 링크</p>
-          <p className="mb-3 text-xs text-ink-soft">여기 넣은 링크는 북마크 탭에도 함께 저장돼요</p>
+          <p className="mb-3 text-xs text-ink-soft">여기 넣은 링크는 보관함 탭에도 함께 저장돼요</p>
           <input
             name="referenceUrl"
             type="url"

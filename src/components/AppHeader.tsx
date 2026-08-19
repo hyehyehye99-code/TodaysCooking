@@ -10,7 +10,7 @@ type HouseholdOption = { id: string; name: string };
 const TAB_TITLES: Record<string, string> = {
   "/recipes": "레시피",
   "/fridge": "냉장고",
-  "/bookmarks": "북마크",
+  "/bookmarks": "보관함",
   "/shopping": "장보기",
 };
 
@@ -28,6 +28,7 @@ export function AppHeader({
 
   const tabTitle = TAB_TITLES[pathname] ?? "";
   const showNewRecipeButton = pathname === "/recipes";
+  const showAddBookmarkButton = pathname === "/bookmarks";
 
   return (
     <div className="mb-3">
@@ -87,6 +88,11 @@ export function AppHeader({
         {showNewRecipeButton && (
           <Link href="/recipes/new" className="shrink-0 text-sm font-bold text-accent">
             + 새 레시피
+          </Link>
+        )}
+        {showAddBookmarkButton && (
+          <Link href="/bookmarks?add=1" className="shrink-0 text-sm font-bold text-accent">
+            + 링크 추가하기
           </Link>
         )}
       </div>
