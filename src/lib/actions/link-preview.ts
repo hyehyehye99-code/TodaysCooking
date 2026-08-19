@@ -70,6 +70,24 @@ function extractTitle(html: string) {
   return decoded.length > 200 ? decoded.slice(0, 200).trim() + "…" : decoded;
 }
 
+const YOUTUBE_HOSTS = new Set(["youtube.com", "www.youtube.com", "m.youtube.com", "youtu.be"]);
+
+// YouTube's watch-page HTML is scraped by the generic path below, but that
+// page is frequently rate-limited or swapped for a cookie-consent wall when
+// requested from a datacenter/serverless IP (e.g. Vercel), which silently
+// yields no og:title/og:image. oEmbed is the officially supported,
+// lightweight alternative for exactly this and isn't subject to that wall.
+async function fetchYoutubeOEmbed(url: URL) {
+  const oembedUrl = `https://www.youtube.com/oembed?url=${encodeURIComponent(url.toString())}&format=json`;
+  const res = await fetch(oembedUrl, { signal: AbortSignal.timeout(5000) });
+  if (!res.ok) return null;
+  const data = await res.json();
+  const title = typeof data.title === "string" ? data.title : null;
+  const thumbnailUrl = typeof data.thumbnail_url === "string" ? data.thumbnail_url : null;
+  if (!title && !thumbnailUrl) return null;
+  return { title, thumbnailUrl };
+}
+
 export async function fetchLinkPreview(rawUrl: string) {
   const value = rawUrl.trim();
   if (!value) return { ok: false as const, error: "링크를 입력해주세요." };
@@ -80,6 +98,23 @@ export async function fetchLinkPreview(rawUrl: string) {
     await assertPublicHost(url.hostname);
   } catch {
     return { ok: false as const, error: "올바른 링크가 아니에요." };
+  }
+
+  if (YOUTUBE_HOSTS.has(url.hostname)) {
+    try {
+      const oembed = await fetchYoutubeOEmbed(url);
+      if (oembed) {
+        return {
+          ok: true as const,
+          url: url.toString(),
+          domain: url.hostname.replace(/^www\./, ""),
+          title: oembed.title,
+          thumbnailUrl: oembed.thumbnailUrl,
+        };
+      }
+    } catch {
+      // fall through to the generic scraper below
+    }
   }
 
   try {
