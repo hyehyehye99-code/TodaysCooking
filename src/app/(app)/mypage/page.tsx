@@ -1,12 +1,11 @@
 import Link from "next/link";
 import { getCurrentHousehold, getMyHouseholds } from "@/lib/household";
 import { GlassCard, PageHeader } from "@/components/ui";
-import { createHousehold, joinHousehold } from "@/lib/actions/household";
 import { signOut } from "@/lib/actions/auth";
 import { chefName } from "@/lib/format";
 import { createClient } from "@/lib/supabase/server";
-import { CreateHouseholdForm, JoinHouseholdForm } from "./forms";
 import { NicknameForm } from "./nickname-form";
+import { AddHouseholdSection } from "./add-household-section";
 
 export default async function MyPage() {
   const { user, household: current } = await getCurrentHousehold();
@@ -25,7 +24,15 @@ export default async function MyPage() {
     <div>
       <PageHeader title="마이페이지" />
 
-      <div className="mb-6 flex flex-col gap-2.5">
+      <GlassCard className="mb-6 bg-white p-4">
+        <p className="mb-1 text-[11px] font-bold text-ink-faint">닉네임</p>
+        <p className="mb-3 text-xl font-bold">{chefName(myNickname)}</p>
+        <NicknameForm currentNickname={myNickname} />
+      </GlassCard>
+
+      <p className="mb-3 text-[13px] font-bold text-ink-soft">내 요리책</p>
+
+      <div className="mb-4 flex flex-col gap-2.5">
         {households.map(({ household, role }) => {
           const active = household.id === current?.id;
           return (
@@ -55,31 +62,15 @@ export default async function MyPage() {
         })}
       </div>
 
-      <div className="flex flex-col gap-4">
-        <GlassCard className="bg-white p-4">
-          <p className="mb-3 text-[13px] font-bold">새 요리책 만들기</p>
-          <CreateHouseholdForm action={createHousehold} />
-        </GlassCard>
+      <AddHouseholdSection />
 
-        <GlassCard className="bg-white p-4">
-          <p className="mb-3 text-[13px] font-bold">코드로 참여하기</p>
-          <JoinHouseholdForm action={joinHousehold} />
-        </GlassCard>
-
-        <GlassCard className="bg-white p-4">
-          <p className="mb-1 text-[13px] font-bold">내 닉네임</p>
-          <p className="mb-3 text-xs text-ink-soft">
-            요리책 안에서 {chefName(myNickname || "닉네임")}로 불려요.
-          </p>
-          <NicknameForm currentNickname={myNickname} />
-        </GlassCard>
+      <div className="mt-8 border-t border-border pt-5">
+        <form action={signOut}>
+          <button type="submit" className="text-sm text-ink-faint underline">
+            로그아웃
+          </button>
+        </form>
       </div>
-
-      <form action={signOut} className="mt-6">
-        <button type="submit" className="text-sm text-ink-faint underline">
-          로그아웃
-        </button>
-      </form>
     </div>
   );
 }
