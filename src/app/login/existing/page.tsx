@@ -16,6 +16,8 @@ export default function ExistingLoginPage() {
         <p className="text-sm text-ink-soft">아이디와 비밀번호를 입력해주세요.</p>
       </div>
 
+      <span className="my-6 text-center text-[96px] leading-none">🤗</span>
+
       <div className="flex flex-1 flex-col justify-center">
         <form action={formAction} className="flex flex-col gap-3">
           <input

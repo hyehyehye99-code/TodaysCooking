@@ -11,6 +11,14 @@ export default function LandingPage() {
         </p>
       </div>
 
+      <div className="flex flex-col items-center gap-3">
+        <div className="relative rounded-2xl bg-surface px-4 py-2.5">
+          <span className="text-sm font-bold text-ink">내가!</span>
+          <span className="absolute left-1/2 top-full h-3 w-3 -translate-x-1/2 -translate-y-1.5 rotate-45 bg-surface" />
+        </div>
+        <span className="text-[96px] leading-none">🙋</span>
+      </div>
+
       <Link
         href="/login/start"
         className="rounded-xl bg-accent py-4 text-center text-sm font-bold text-white"

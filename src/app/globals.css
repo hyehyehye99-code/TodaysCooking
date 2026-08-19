@@ -16,12 +16,12 @@
   --color-ink-soft: #6b7684;
   --color-ink-faint: #b0b8c1;
 
-  --color-accent: #00a1ff;
-  --color-accent-ink: #0072b3;
-  --color-positive: #3f6b4e;
-  --color-positive-ink: #2f5a3f;
-  --color-warn: #3b5a82;
-  --color-warn-ink: #24374f;
+  --color-accent: #e8603c;
+  --color-accent-ink: #7a2a12;
+  --color-positive: #3f9b4f;
+  --color-positive-ink: #1c5227;
+  --color-warn: #f59e0b;
+  --color-warn-ink: #78350f;
 
   --font-sans: var(--font-suit);
   --font-display: var(--font-suit);

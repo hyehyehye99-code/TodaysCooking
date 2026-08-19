@@ -136,8 +136,10 @@ export default async function RecipeDetailPage({
           {ingredients.map((ing) => (
             <span
               key={ing.id}
-              className={`rounded-full border border-transparent px-3.5 py-2 text-[13px] font-semibold ${
-                owned.has(ing.name) ? "bg-accent text-white" : "bg-surface text-ink-soft"
+              className={`rounded-full border px-3.5 py-2 text-[13px] font-semibold ${
+                owned.has(ing.name)
+                  ? "border-accent bg-surface text-accent-ink"
+                  : "border-transparent bg-surface text-ink-soft"
               }`}
             >
               {ing.name}

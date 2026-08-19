@@ -14,6 +14,8 @@ export default function LoginStartPage() {
         </h1>
       </div>
 
+      <span className="text-center text-[96px] leading-none">🤔</span>
+
       <div className="flex flex-col gap-3">
         <Link
           href="/onboarding"
@@ -23,7 +25,7 @@ export default function LoginStartPage() {
         </Link>
         <Link
           href="/login/existing"
-          className="rounded-xl bg-surface py-4 text-center text-sm font-bold text-ink"
+          className="rounded-xl border border-accent bg-surface py-4 text-center text-sm font-bold text-accent-ink"
         >
           로그인 (계정이 있어요)
         </Link>
