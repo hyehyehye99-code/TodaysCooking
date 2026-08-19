@@ -33,7 +33,7 @@ export function NewRecipeForm({ existingTags }: { existingTags: string[] }) {
         <div className="fixed inset-0 z-50 flex items-center justify-center px-6">
           <div className="absolute inset-0 bg-black/40" onClick={() => setConfirmingClose(false)} />
           <div className="relative w-full max-w-[360px] rounded-2xl bg-white p-5 shadow-xl">
-            <p className="text-sm font-bold text-accent-ink">작성 중인 내용이 저장되지 않아요</p>
+            <p className="text-sm font-bold text-ink">작성 중인 내용이 저장되지 않아요</p>
             <p className="mt-2 text-xs text-ink-soft">지금 나가면 입력한 내용이 모두 사라져요. 계속하시겠어요?</p>
             <div className="mt-4 flex justify-end gap-2">
               <button
