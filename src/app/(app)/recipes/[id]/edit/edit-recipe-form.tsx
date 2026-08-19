@@ -136,7 +136,7 @@ export function EditRecipeForm({
         </GlassCard>
 
         <GlassCard className="bg-white p-4">
-          <p className="mb-3 text-[13px] font-bold">요리책</p>
+          <p className="mb-3 text-[13px] font-bold">만드는법</p>
           <textarea
             name="notes"
             rows={8}
