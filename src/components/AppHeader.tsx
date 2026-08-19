@@ -22,7 +22,7 @@ export function AppHeader({
   const showNewRecipeButton = pathname === "/recipes";
 
   return (
-    <div className="mb-3 flex items-center justify-between gap-3">
+    <div className="mb-3 flex items-baseline justify-between gap-3">
       {otherHouseholds.length === 0 ? (
         <h1 className="text-[26px] font-bold tracking-tight">{currentName}</h1>
       ) : (
@@ -75,10 +75,7 @@ export function AppHeader({
       )}
 
       {showNewRecipeButton && (
-        <Link
-          href="/recipes/new"
-          className="shrink-0 rounded-lg bg-accent/10 px-3 py-1.5 text-sm font-bold text-accent"
-        >
+        <Link href="/recipes/new" className="shrink-0 text-sm font-bold text-accent">
           + 새 레시피
         </Link>
       )}
