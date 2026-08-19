@@ -180,7 +180,7 @@ export default async function RecipeDetailPage({
         <DeleteRecipeButton recipeId={r.id} />
         <Link
           href={`/recipes/${r.id}/edit`}
-          className="flex-1 rounded-xl border border-accent bg-surface py-3 text-center text-sm font-bold text-accent-ink"
+          className="flex-1 rounded-xl border border-accent bg-white py-3 text-center text-sm font-bold text-accent-ink"
         >
           수정하기
         </Link>

@@ -105,7 +105,7 @@ export function EditRecipeForm({
           <textarea
             name="ingredients"
             required
-            rows={6}
+            rows={12}
             defaultValue={ingredientsText}
             className="w-full rounded-xl border border-transparent bg-surface px-3.5 py-3 text-sm outline-none focus:border-accent"
           />
@@ -115,7 +115,7 @@ export function EditRecipeForm({
           <p className="mb-3 text-[13px] font-bold">레시피</p>
           <textarea
             name="notes"
-            rows={4}
+            rows={8}
             defaultValue={recipe.notes ?? ""}
             placeholder="예) 다음엔 국물을 더 자작하게, 마늘은 좀 줄이기"
             className="w-full rounded-xl border border-transparent bg-surface px-3.5 py-3 text-sm outline-none focus:border-accent"

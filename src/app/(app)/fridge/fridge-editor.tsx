@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState } from "react";
 import { saveFridge } from "@/lib/actions/fridge";
 import { GlassCard } from "@/components/ui";
 
@@ -14,7 +14,6 @@ export function FridgeEditor({ categories }: { categories: Category[] }) {
   const [expanded, setExpanded] = useState<Set<string>>(
     () => new Set(categories.filter((c) => c.items.some((i) => i.selected)).map((c) => c.name))
   );
-  const [, startTransition] = useTransition();
 
   function toggleExpand(catName: string) {
     setExpanded((prev) => {
@@ -30,23 +29,23 @@ export function FridgeEditor({ categories }: { categories: Category[] }) {
   const matchesSearch = (name: string) => !q || name.toLowerCase().includes(q);
 
   function toggle(catName: string, itemName: string) {
-    let nextSelected = false;
+    const item = local.find((c) => c.name === catName)?.items.find((i) => i.name === itemName);
+    if (!item) return;
+    const nextSelected = !item.selected;
+
     setLocal((prev) =>
-      prev.map((c) => {
-        if (c.name !== catName) return c;
-        return {
-          ...c,
-          items: c.items.map((i) => {
-            if (i.name !== itemName) return i;
-            nextSelected = !i.selected;
-            return { ...i, selected: nextSelected };
-          }),
-        };
-      })
+      prev.map((c) =>
+        c.name !== catName
+          ? c
+          : {
+              ...c,
+              items: c.items.map((i) =>
+                i.name === itemName ? { ...i, selected: nextSelected } : i
+              ),
+            }
+      )
     );
-    startTransition(async () => {
-      await saveFridge([{ name: itemName, category: catName, inStock: nextSelected }]);
-    });
+    void saveFridge([{ name: itemName, category: catName, inStock: nextSelected }]);
   }
 
   function removeCustom(catName: string, itemName: string) {
@@ -55,28 +54,23 @@ export function FridgeEditor({ categories }: { categories: Category[] }) {
         c.name !== catName ? c : { ...c, items: c.items.filter((i) => i.name !== itemName) }
       )
     );
-    startTransition(async () => {
-      await saveFridge([], [itemName]);
-    });
+    void saveFridge([], [itemName]);
   }
 
   function addCustomNamed(catName: string, rawValue: string) {
     const value = rawValue.trim();
     if (!value) return;
-    let added = false;
+    const category = local.find((c) => c.name === catName);
+    if (!category || category.items.some((i) => i.name === value)) return;
+
     setLocal((prev) =>
-      prev.map((c) => {
-        if (c.name !== catName) return c;
-        if (c.items.some((i) => i.name === value)) return c;
-        added = true;
-        return { ...c, items: [...c.items, { name: value, selected: true, custom: true }] };
-      })
+      prev.map((c) =>
+        c.name !== catName
+          ? c
+          : { ...c, items: [...c.items, { name: value, selected: true, custom: true }] }
+      )
     );
-    if (added) {
-      startTransition(async () => {
-        await saveFridge([{ name: value, category: catName, inStock: true }]);
-      });
-    }
+    void saveFridge([{ name: value, category: catName, inStock: true }]);
   }
 
   function addCustom(catName: string) {

@@ -109,7 +109,7 @@ export function NewRecipeForm({ existingTags }: { existingTags: string[] }) {
           <textarea
             name="ingredients"
             required
-            rows={6}
+            rows={12}
             placeholder={"김치\n돼지고기\n두부\n대파\n마늘\n고추장"}
             className="w-full rounded-xl border border-transparent bg-surface px-3.5 py-3 text-sm outline-none focus:border-accent"
           />
@@ -119,7 +119,7 @@ export function NewRecipeForm({ existingTags }: { existingTags: string[] }) {
           <p className="mb-3 text-[13px] font-bold">레시피</p>
           <textarea
             name="notes"
-            rows={4}
+            rows={8}
             placeholder="예) 다음엔 국물을 더 자작하게, 마늘은 좀 줄이기"
             className="w-full rounded-xl border border-transparent bg-surface px-3.5 py-3 text-sm outline-none focus:border-accent"
           />
