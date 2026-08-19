@@ -40,3 +40,13 @@ export async function deleteBookmark(formData: FormData) {
 
   revalidatePath("/bookmarks");
 }
+
+export async function updateBookmarkNote(id: string, note: string) {
+  const supabase = await createClient();
+  await supabase
+    .from("bookmarks")
+    .update({ note: note.trim() || null })
+    .eq("id", id);
+
+  revalidatePath("/bookmarks");
+}

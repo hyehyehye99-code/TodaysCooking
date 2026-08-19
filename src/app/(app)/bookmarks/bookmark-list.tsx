@@ -1,12 +1,148 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import Link from "next/link";
 import { GlassCard } from "@/components/ui";
-import { deleteBookmark } from "@/lib/actions/bookmarks";
+import { deleteBookmark, updateBookmarkNote } from "@/lib/actions/bookmarks";
 import type { Bookmark } from "@/lib/types";
 
 type BookmarkWithRecipe = Bookmark & { recipes: { title: string } | null };
+
+function BookmarkNote({ id, note }: { id: string; note: string | null }) {
+  const [editing, setEditing] = useState(false);
+  const [value, setValue] = useState(note ?? "");
+  const [pending, startTransition] = useTransition();
+
+  function save() {
+    startTransition(async () => {
+      await updateBookmarkNote(id, value);
+      setEditing(false);
+    });
+  }
+
+  if (editing) {
+    return (
+      <div className="mt-1.5 flex items-center gap-1.5">
+        <input
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              save();
+            }
+          }}
+          autoFocus
+          placeholder="메모 입력"
+          className="min-w-0 flex-1 rounded-lg bg-surface px-2 py-1.5 text-xs outline-none"
+        />
+        <button
+          type="button"
+          onClick={save}
+          disabled={pending}
+          className="shrink-0 rounded-lg bg-accent px-2 py-1.5 text-xs font-bold text-white disabled:opacity-60"
+        >
+          {pending ? "..." : "저장"}
+        </button>
+      </div>
+    );
+  }
+
+  if (note) {
+    return (
+      <button
+        type="button"
+        onClick={() => setEditing(true)}
+        className="mt-1.5 block w-full truncate text-left text-xs text-ink-soft"
+      >
+        {note}
+      </button>
+    );
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={() => setEditing(true)}
+      className="mt-1.5 text-xs font-semibold text-accent"
+    >
+      + 메모 추가
+    </button>
+  );
+}
+
+function DeleteBookmarkButton({
+  id,
+  linkedToRecipe,
+}: {
+  id: string;
+  linkedToRecipe: boolean;
+}) {
+  const [confirming, setConfirming] = useState(false);
+  const [pending, startTransition] = useTransition();
+
+  function doDelete() {
+    startTransition(async () => {
+      const form = new FormData();
+      form.set("id", id);
+      await deleteBookmark(form);
+      setConfirming(false);
+    });
+  }
+
+  if (!linkedToRecipe) {
+    return (
+      <form action={deleteBookmark}>
+        <input type="hidden" name="id" value={id} />
+        <button type="submit" className="text-[11px] text-ink-faint">
+          삭제
+        </button>
+      </form>
+    );
+  }
+
+  return (
+    <>
+      <button
+        type="button"
+        onClick={() => setConfirming(true)}
+        className="text-[11px] text-ink-faint"
+      >
+        삭제
+      </button>
+
+      {confirming && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-6">
+          <div className="absolute inset-0 bg-black/40" onClick={() => setConfirming(false)} />
+          <div className="relative w-full max-w-[360px] rounded-2xl bg-white p-5 shadow-xl">
+            <p className="text-sm font-bold text-ink">레시피에서도 사라져요</p>
+            <p className="mt-2 text-xs text-ink-soft">
+              이 북마크는 레시피의 참고 링크로도 쓰이고 있어요. 삭제하면 레시피에서도 이 링크가
+              사라져요.
+            </p>
+            <div className="mt-4 flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setConfirming(false)}
+                className="rounded-lg bg-surface px-3.5 py-2 text-xs font-bold text-ink-soft"
+              >
+                취소
+              </button>
+              <button
+                type="button"
+                onClick={doDelete}
+                disabled={pending}
+                className="rounded-lg bg-accent px-3.5 py-2 text-xs font-bold text-white disabled:opacity-60"
+              >
+                {pending ? "삭제 중..." : "삭제"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
 
 export function BookmarkList({ bookmarks }: { bookmarks: BookmarkWithRecipe[] }) {
   const [query, setQuery] = useState("");
@@ -71,13 +207,9 @@ export function BookmarkList({ bookmarks }: { bookmarks: BookmarkWithRecipe[] })
                 )}
                 <div className="flex items-center justify-between">
                   <span className="text-[11px] text-ink-faint">{b.domain}</span>
-                  <form action={deleteBookmark}>
-                    <input type="hidden" name="id" value={b.id} />
-                    <button type="submit" className="text-[11px] text-ink-faint">
-                      삭제
-                    </button>
-                  </form>
+                  <DeleteBookmarkButton id={b.id} linkedToRecipe={!!(b.recipe_id && b.recipes)} />
                 </div>
+                <BookmarkNote id={b.id} note={b.note} />
               </div>
             </GlassCard>
           ))}

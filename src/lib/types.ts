@@ -42,6 +42,7 @@ export type Bookmark = {
   domain: string | null;
   thumbnail_url: string | null;
   recipe_id: string | null;
+  note: string | null;
   created_by: string;
   created_at: string;
 };
