@@ -9,7 +9,7 @@ export default function ExistingLoginPage() {
 
   return (
     <div className="mx-auto flex h-dvh w-full max-w-[420px] flex-col justify-center px-6">
-      <Link href="/login" className="mb-6 text-sm text-ink-soft">
+      <Link href="/login/start" className="mb-6 text-sm text-ink-soft">
         ← 뒤로
       </Link>
       <p className="mb-1 text-xs font-bold tracking-wide text-ink-faint">오내요</p>

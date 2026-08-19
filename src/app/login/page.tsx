@@ -11,30 +11,12 @@ export default function LandingPage() {
         </p>
       </div>
 
-      <div className="flex flex-col gap-4">
-        <Link
-          href="/onboarding"
-          className="rounded-xl bg-accent py-4 text-center text-sm font-bold text-white"
-        >
-          시작하기
-        </Link>
-
-        <div className="flex flex-col gap-2">
-          <Link
-            href="/guest/recipes"
-            className="text-center text-sm font-bold text-ink-soft underline"
-          >
-            로그인 없이 둘러보기
-          </Link>
-
-          <Link
-            href="/login/existing"
-            className="text-center text-xs text-ink-faint underline"
-          >
-            이미 계정이 있으신가요? 바로 로그인
-          </Link>
-        </div>
-      </div>
+      <Link
+        href="/login/start"
+        className="rounded-xl bg-accent py-4 text-center text-sm font-bold text-white"
+      >
+        시작하기
+      </Link>
     </div>
   );
 }

@@ -2,7 +2,6 @@ import { redirect } from "next/navigation";
 import { getCurrentHousehold, getMyHouseholds } from "@/lib/household";
 import { TabBar } from "@/components/TabBar";
 import { AppHeader } from "@/components/AppHeader";
-import { GuestImportPrompt } from "@/components/GuestImportPrompt";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const { user, household } = await getCurrentHousehold();
@@ -20,7 +19,6 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           currentName={household.name}
           households={households.map((h) => h.household)}
         />
-        <GuestImportPrompt />
         {children}
       </div>
       <TabBar />

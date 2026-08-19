@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-const BASE_TABS = [
+const TABS = [
   {
     href: "/recipes",
     label: "레시피",
@@ -41,10 +41,6 @@ const BASE_TABS = [
       </>
     ),
   },
-];
-
-const ALL_TABS = [
-  ...BASE_TABS,
   {
     href: "/mypage",
     label: "마이페이지",
@@ -57,25 +53,22 @@ const ALL_TABS = [
   },
 ];
 
-export function TabBar({ basePath = "" }: { basePath?: string }) {
+export function TabBar() {
   const pathname = usePathname();
-  const TABS = basePath ? BASE_TABS : ALL_TABS;
 
-  const recipesRoot = `${basePath}/recipes`;
-  const isRecipeSubpage = pathname.startsWith(`${recipesRoot}/`);
-  const isMypageSubpage = !basePath && pathname.startsWith("/mypage/");
+  const isRecipeSubpage = pathname.startsWith("/recipes/");
+  const isMypageSubpage = pathname.startsWith("/mypage/");
 
   if (isRecipeSubpage || isMypageSubpage) return null;
 
   return (
     <nav className="sticky bottom-0 z-10 flex border-t border-border bg-white px-2 pb-[max(env(safe-area-inset-bottom),10px)] pt-2">
       {TABS.map((tab) => {
-        const href = `${basePath}${tab.href}`;
-        const active = pathname.startsWith(href);
+        const active = pathname.startsWith(tab.href);
         return (
           <Link
             key={tab.href}
-            href={href}
+            href={tab.href}
             className="flex flex-1 flex-col items-center gap-1 py-1"
             style={{ color: active ? "var(--color-accent)" : "var(--color-ink-faint)" }}
           >
