@@ -22,7 +22,7 @@ function BookmarkNote({ id, note }: { id: string; note: string | null }) {
 
   if (editing) {
     return (
-      <div className="mt-1.5 flex items-center gap-1.5">
+      <div className="flex items-center gap-1.5 border-t border-border pt-2">
         <input
           value={value}
           onChange={(e) => setValue(e.target.value)}
@@ -53,7 +53,7 @@ function BookmarkNote({ id, note }: { id: string; note: string | null }) {
       <button
         type="button"
         onClick={() => setEditing(true)}
-        className="mt-1.5 block w-full truncate text-left text-xs text-ink-soft"
+        className="block w-full truncate border-t border-border pt-2 text-left text-xs text-ink-soft"
       >
         {note}
       </button>
@@ -64,7 +64,7 @@ function BookmarkNote({ id, note }: { id: string; note: string | null }) {
     <button
       type="button"
       onClick={() => setEditing(true)}
-      className="mt-1.5 text-xs font-semibold text-accent"
+      className="w-fit border-t border-border pt-2 text-xs font-semibold text-accent"
     >
       + 메모 추가
     </button>
@@ -153,7 +153,8 @@ export function BookmarkList({ bookmarks }: { bookmarks: BookmarkWithRecipe[] })
     return (
       (b.title ?? "").toLowerCase().includes(q) ||
       (b.domain ?? "").toLowerCase().includes(q) ||
-      (b.recipes?.title ?? "").toLowerCase().includes(q)
+      (b.recipes?.title ?? "").toLowerCase().includes(q) ||
+      (b.note ?? "").toLowerCase().includes(q)
     );
   });
 
@@ -175,42 +176,44 @@ export function BookmarkList({ bookmarks }: { bookmarks: BookmarkWithRecipe[] })
       ) : (
         <div className="flex flex-col gap-3">
           {filtered.map((b) => (
-            <GlassCard key={b.id} className="flex gap-3 bg-white p-2.5">
-              <div className="h-[72px] w-[88px] shrink-0 overflow-hidden rounded-xl bg-black/[0.04]">
-                {b.thumbnail_url ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={b.thumbnail_url} alt="" className="h-full w-full object-cover" />
-                ) : (
-                  <div className="flex h-full w-full items-center justify-center">
-                    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="var(--color-ink-faint)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M6 3.5h12a.5.5 0 0 1 .5.5v17l-6.5-4-6.5 4v-17a.5.5 0 0 1 .5-.5z" />
-                    </svg>
-                  </div>
-                )}
-              </div>
-              <div className="flex min-w-0 flex-1 flex-col justify-center gap-1.5">
-                <a
-                  href={b.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="line-clamp-2 text-[13px] font-bold leading-snug"
-                >
-                  {b.title || b.url}
-                </a>
-                {b.recipe_id && b.recipes && (
-                  <Link
-                    href={`/recipes/${b.recipe_id}`}
-                    className="inline-flex w-fit items-center rounded-full bg-accent/8 px-2 py-0.5 text-[10px] font-bold text-accent"
-                  >
-                    {b.recipes.title} 레시피
-                  </Link>
-                )}
-                <div className="flex items-center justify-between">
-                  <span className="text-[11px] text-ink-faint">{b.domain}</span>
-                  <DeleteBookmarkButton id={b.id} linkedToRecipe={!!(b.recipe_id && b.recipes)} />
+            <GlassCard key={b.id} className="flex flex-col gap-2 bg-white p-2.5">
+              <div className="flex gap-3">
+                <div className="h-[72px] w-[88px] shrink-0 overflow-hidden rounded-xl bg-black/[0.04]">
+                  {b.thumbnail_url ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={b.thumbnail_url} alt="" className="h-full w-full object-cover" />
+                  ) : (
+                    <div className="flex h-full w-full items-center justify-center">
+                      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="var(--color-ink-faint)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M6 3.5h12a.5.5 0 0 1 .5.5v17l-6.5-4-6.5 4v-17a.5.5 0 0 1 .5-.5z" />
+                      </svg>
+                    </div>
+                  )}
                 </div>
-                <BookmarkNote id={b.id} note={b.note} />
+                <div className="flex min-w-0 flex-1 flex-col justify-center gap-1.5">
+                  <a
+                    href={b.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="line-clamp-2 text-[13px] font-bold leading-snug"
+                  >
+                    {b.title || b.url}
+                  </a>
+                  {b.recipe_id && b.recipes && (
+                    <Link
+                      href={`/recipes/${b.recipe_id}`}
+                      className="inline-flex w-fit items-center rounded-full bg-accent/8 px-2 py-0.5 text-[10px] font-bold text-accent"
+                    >
+                      {b.recipes.title} 레시피
+                    </Link>
+                  )}
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] text-ink-faint">{b.domain}</span>
+                    <DeleteBookmarkButton id={b.id} linkedToRecipe={!!(b.recipe_id && b.recipes)} />
+                  </div>
+                </div>
               </div>
+              <BookmarkNote id={b.id} note={b.note} />
             </GlassCard>
           ))}
         </div>

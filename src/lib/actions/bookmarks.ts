@@ -7,6 +7,7 @@ import { fetchLinkPreview } from "@/lib/actions/link-preview";
 
 export async function addBookmark(_prevState: unknown, formData: FormData) {
   const rawUrl = String(formData.get("url") ?? "").trim();
+  const note = String(formData.get("note") ?? "").trim();
   if (!rawUrl) return { error: "링크를 입력해주세요." };
 
   const { user, household } = await getCurrentHousehold();
@@ -22,6 +23,7 @@ export async function addBookmark(_prevState: unknown, formData: FormData) {
     title: preview.title,
     domain: preview.domain,
     thumbnail_url: preview.thumbnailUrl,
+    note: note || null,
     created_by: user.id,
   });
 
