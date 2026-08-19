@@ -58,7 +58,21 @@ export default async function RecipeDetailPage({
   return (
     <div>
       <div className="mb-4 flex items-center justify-between gap-3">
-        <h1 className="min-w-0 flex-1 text-[22px] font-bold">{r.title}</h1>
+        <div className="flex min-w-0 flex-1 items-center gap-3">
+          {(r.cover_photo_url || r.icon_emoji) && (
+            <div className="h-14 w-14 shrink-0 overflow-hidden rounded-2xl bg-surface">
+              {r.cover_photo_url ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={r.cover_photo_url} alt="" className="h-full w-full object-cover" />
+              ) : (
+                <div className="flex h-full w-full items-center justify-center text-2xl">
+                  {r.icon_emoji}
+                </div>
+              )}
+            </div>
+          )}
+          <h1 className="min-w-0 flex-1 text-[22px] font-bold">{r.title}</h1>
+        </div>
         <Link
           href="/recipes"
           aria-label="닫기"
@@ -70,26 +84,6 @@ export default async function RecipeDetailPage({
           </svg>
         </Link>
       </div>
-
-      {r.cover_photo_url ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
-          src={r.cover_photo_url}
-          alt=""
-          className="mb-4 h-48 w-full rounded-2xl object-cover"
-        />
-      ) : r.icon_emoji ? (
-        <div className="mb-4 flex h-48 w-full items-center justify-center rounded-2xl bg-surface text-6xl">
-          {r.icon_emoji}
-        </div>
-      ) : (
-        <div className="mb-4 flex h-48 w-full items-center justify-center rounded-2xl bg-surface">
-          <svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="var(--color-accent)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M4 5.5c2.2-1 5.2-1 8 0 2.8-1 5.8-1 8 0v13c-2.2-1-5.2-1-8 0-2.8-1-5.8-1-8 0z" />
-            <path d="M12 5.5v13" />
-          </svg>
-        </div>
-      )}
 
       {r.subtitle && <p className="text-sm text-ink-soft">{r.subtitle}</p>}
       <p className="mt-1 text-xs text-ink-faint">{chefName(creatorProfile?.nickname)} 등록</p>

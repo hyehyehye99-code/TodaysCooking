@@ -41,12 +41,10 @@ export function EditRecipeForm({
         <input type="hidden" name="id" value={recipe.id} />
 
         {recipe.cover_photo_url && (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={recipe.cover_photo_url}
-            alt=""
-            className="h-32 w-full rounded-xl object-cover"
-          />
+          <div className="h-14 w-14 overflow-hidden rounded-2xl bg-surface">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={recipe.cover_photo_url} alt="" className="h-full w-full object-cover" />
+          </div>
         )}
 
         <label className="flex flex-col gap-1.5">
