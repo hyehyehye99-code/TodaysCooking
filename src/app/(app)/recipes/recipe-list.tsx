@@ -276,7 +276,7 @@ export function RecipeList({
                         </span>
                       )}
                       {recipe.tags.map((tag) => (
-                        <span key={tag} className="text-[10px] font-semibold text-accent">
+                        <span key={tag} className="text-[10px] font-semibold text-positive-ink">
                           #{tag}
                         </span>
                       ))}

@@ -56,7 +56,7 @@ export default async function RecipeDetailPage({
   const allAdded = missing.length > 0 && missing.every((m) => onShoppingList.has(m.name));
 
   return (
-    <div>
+    <div className="pt-2">
       <div className="mb-4 flex items-start justify-between gap-3">
         <div className={`flex min-w-0 flex-1 gap-3 ${r.subtitle ? "items-start" : "items-center"}`}>
           {(r.cover_photo_url || r.icon_emoji) && (
@@ -94,7 +94,7 @@ export default async function RecipeDetailPage({
           {r.tags.map((tag) => (
             <span
               key={tag}
-              className="rounded-full bg-surface px-2.5 py-1 text-[11px] font-semibold text-accent"
+              className="rounded-full bg-surface px-2.5 py-1 text-[11px] font-semibold text-positive-ink"
             >
               #{tag}
             </span>
