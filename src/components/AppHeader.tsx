@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 import { switchHousehold } from "@/lib/actions/household";
 
 type HouseholdOption = { id: string; name: string };
@@ -17,9 +16,6 @@ export function AppHeader({
   households: HouseholdOption[];
 }) {
   const [open, setOpen] = useState(false);
-  const pathname = usePathname();
-
-  if (pathname.startsWith("/settings")) return null;
 
   return (
     <div className="relative mb-5">
@@ -62,7 +58,7 @@ export function AppHeader({
               return (
                 <Link
                   key={h.id}
-                  href={`/settings/household/${h.id}`}
+                  href={`/mypage/${h.id}`}
                   onClick={() => setOpen(false)}
                   className="w-full rounded-xl bg-accent/8 px-3 py-2.5 text-left text-sm font-semibold text-accent-ink"
                 >
@@ -84,7 +80,7 @@ export function AppHeader({
             );
           })}
           <Link
-            href="/settings/household"
+            href="/mypage"
             onClick={() => setOpen(false)}
             className="mt-1 rounded-xl px-3 py-2.5 text-left text-xs font-semibold text-ink-soft"
           >

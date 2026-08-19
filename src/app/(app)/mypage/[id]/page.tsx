@@ -5,7 +5,7 @@ import { getCurrentHousehold } from "@/lib/household";
 import { GlassCard, PageHeader } from "@/components/ui";
 import { switchHousehold } from "@/lib/actions/household";
 import { chefName } from "@/lib/format";
-import { InviteForm } from "../../invite-form";
+import { InviteForm } from "../invite-form";
 import { LeaveHouseholdButton } from "../leave-household-button";
 
 type Member = { user_id: string; nickname: string; role: string; joined_at: string };
@@ -39,7 +39,7 @@ export default async function HouseholdDetailPage({
       <div className="mb-4 flex items-center justify-end">
         {active ? (
           <Link
-            href="/recipes"
+            href="/mypage"
             aria-label="닫기"
             className="flex h-8 w-8 items-center justify-center rounded-full bg-surface text-ink"
           >
@@ -49,8 +49,8 @@ export default async function HouseholdDetailPage({
             </svg>
           </Link>
         ) : (
-          <Link href="/settings/household" className="mr-auto text-sm text-ink-soft">
-            ← 요리책 관리
+          <Link href="/mypage" className="mr-auto text-sm text-ink-soft">
+            ← 마이페이지
           </Link>
         )}
       </div>

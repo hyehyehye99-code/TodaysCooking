@@ -221,48 +221,6 @@ export async function addMissingToShopping(formData: FormData) {
   revalidatePath("/shopping");
 }
 
-export async function addCookLog(_prevState: unknown, formData: FormData) {
-  const recipeId = String(formData.get("recipeId") ?? "");
-  const cookedAt = String(formData.get("cookedAt") ?? "").trim();
-  const ratingRaw = String(formData.get("rating") ?? "").trim();
-  const photo = formData.get("photo");
-
-  if (!recipeId) return { error: "레시피를 찾을 수 없어요." };
-  if (!(photo instanceof File) || photo.size === 0) return { error: "사진을 선택해주세요." };
-
-  const { household } = await getCurrentHousehold();
-  if (!household) return { error: "요리책을 먼저 만들어주세요." };
-
-  const supabase = await createClient();
-  const uploaded = await uploadRecipePhoto(supabase, household.id, photo);
-  if ("error" in uploaded) return { error: uploaded.error };
-
-  const { error } = await supabase.from("recipe_cook_logs").insert({
-    household_id: household.id,
-    recipe_id: recipeId,
-    photo_url: uploaded.url,
-    cooked_at: cookedAt || new Date().toISOString().slice(0, 10),
-    rating: ratingRaw ? Number(ratingRaw) : null,
-  });
-  if (error) return { error: "사진을 저장하지 못했어요." };
-
-  revalidatePath(`/recipes/${recipeId}`);
-  revalidatePath("/cooking-photos");
-  return { success: true };
-}
-
-export async function deleteCookLog(formData: FormData) {
-  const id = String(formData.get("id") ?? "");
-  const recipeId = String(formData.get("recipeId") ?? "");
-  if (!id) return;
-
-  const supabase = await createClient();
-  await supabase.from("recipe_cook_logs").delete().eq("id", id);
-
-  if (recipeId) revalidatePath(`/recipes/${recipeId}`);
-  revalidatePath("/cooking-photos");
-}
-
 export async function reorderRecipes(order: string[]) {
   const { household } = await getCurrentHousehold();
   if (!household) return;

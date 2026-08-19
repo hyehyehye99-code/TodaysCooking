@@ -6,9 +6,9 @@ import { signOut } from "@/lib/actions/auth";
 import { chefName } from "@/lib/format";
 import { createClient } from "@/lib/supabase/server";
 import { CreateHouseholdForm, JoinHouseholdForm } from "./forms";
-import { NicknameForm } from "../nickname-form";
+import { NicknameForm } from "./nickname-form";
 
-export default async function HouseholdSwitcherPage() {
+export default async function MyPage() {
   const { user, household: current } = await getCurrentHousehold();
   const households = await getMyHouseholds();
   const supabase = await createClient();
@@ -23,18 +23,13 @@ export default async function HouseholdSwitcherPage() {
 
   return (
     <div>
-      <div className="mb-4 flex items-baseline justify-between">
-        <PageHeader title="요리책 관리" />
-        <Link href="/recipes" className="text-sm font-bold text-ink-soft">
-          닫기
-        </Link>
-      </div>
+      <PageHeader title="마이페이지" />
 
       <div className="mb-6 flex flex-col gap-2.5">
         {households.map(({ household, role }) => {
           const active = household.id === current?.id;
           return (
-            <Link key={household.id} href={`/settings/household/${household.id}`}>
+            <Link key={household.id} href={`/mypage/${household.id}`}>
               <GlassCard
                 className={`flex items-center justify-between bg-white p-4 ${active ? "ring-2 ring-accent" : ""}`}
               >

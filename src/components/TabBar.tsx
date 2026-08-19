@@ -46,12 +46,12 @@ const BASE_TABS = [
 const ALL_TABS = [
   ...BASE_TABS,
   {
-    href: "/cooking-photos",
-    label: "요리사진",
+    href: "/mypage",
+    label: "마이페이지",
     icon: (
       <>
-        <path d="M4 8a2 2 0 0 1 2-2h2l1.2-1.6a1 1 0 0 1 .8-.4h4a1 1 0 0 1 .8.4L16 6h2a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z" />
-        <circle cx="12" cy="13" r="3.3" />
+        <circle cx="12" cy="8" r="3.5" />
+        <path d="M5 20c0-3.9 3.1-7 7-7s7 3.1 7 7" />
       </>
     ),
   },
@@ -63,9 +63,9 @@ export function TabBar({ basePath = "" }: { basePath?: string }) {
 
   const recipesRoot = `${basePath}/recipes`;
   const isRecipeSubpage = pathname.startsWith(`${recipesRoot}/`);
-  const isSettings = !basePath && pathname.startsWith("/settings");
+  const isMypageSubpage = !basePath && pathname.startsWith("/mypage/");
 
-  if (isRecipeSubpage || isSettings) return null;
+  if (isRecipeSubpage || isMypageSubpage) return null;
 
   return (
     <nav className="sticky bottom-0 z-10 flex border-t border-border bg-white px-2 pb-[max(env(safe-area-inset-bottom),10px)] pt-2">

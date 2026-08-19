@@ -5,10 +5,8 @@ import { getCurrentHousehold } from "@/lib/household";
 import { GlassCard, ProgressBar } from "@/components/ui";
 import { addMissingToShopping } from "@/lib/actions/recipes";
 import { chefName } from "@/lib/format";
-import type { RecipeWithIngredients, CookLog } from "@/lib/types";
-import { CookLogForm } from "./cook-log-form";
+import type { RecipeWithIngredients } from "@/lib/types";
 import { DeleteRecipeButton } from "./delete-recipe-button";
-import { DeleteCookLogButton } from "./delete-cook-log-button";
 
 export default async function RecipeDetailPage({
   params,
@@ -23,7 +21,6 @@ export default async function RecipeDetailPage({
     { data: recipe },
     { data: fridgeItems },
     { data: shoppingItems },
-    { data: cookLogs },
     { data: referenceBookmark },
   ] = await Promise.all([
     supabase
@@ -33,18 +30,12 @@ export default async function RecipeDetailPage({
       .single(),
     supabase.from("fridge_items").select("name, in_stock").eq("household_id", household!.id),
     supabase.from("shopping_items").select("name").eq("household_id", household!.id),
-    supabase
-      .from("recipe_cook_logs")
-      .select("*")
-      .eq("recipe_id", id)
-      .order("cooked_at", { ascending: false }),
     supabase.from("bookmarks").select("url, domain").eq("recipe_id", id).maybeSingle(),
   ]);
 
   if (!recipe) notFound();
 
   const r = recipe as RecipeWithIngredients;
-  const logs = (cookLogs as CookLog[] | null) ?? [];
 
   const { data: creatorProfile } = await supabase
     .from("profiles")
@@ -176,31 +167,6 @@ export default async function RecipeDetailPage({
           </GlassCard>
         </div>
       )}
-
-      <div className="mt-8">
-        <p className="mb-3 text-[15px] font-bold">요리한 사진</p>
-        <CookLogForm recipeId={r.id} />
-
-        {logs.length > 0 && (
-          <div className="mt-4 grid grid-cols-2 gap-3">
-            {logs.map((log) => (
-              <GlassCard key={log.id} className="overflow-hidden bg-white p-0">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={log.photo_url} alt="" className="h-32 w-full object-cover" />
-                <div className="flex items-center justify-between px-2.5 py-2">
-                  <div>
-                    <p className="text-[11px] text-ink-soft">{log.cooked_at}</p>
-                    {log.rating && (
-                      <p className="mt-0.5 text-xs text-warn-ink">{"★".repeat(log.rating)}</p>
-                    )}
-                  </div>
-                  <DeleteCookLogButton id={log.id} recipeId={r.id} />
-                </div>
-              </GlassCard>
-            ))}
-          </div>
-        )}
-      </div>
 
       <div className="mt-10 flex items-center justify-between">
         <DeleteRecipeButton recipeId={r.id} />

@@ -73,7 +73,7 @@ export async function createInvite(_prevState: unknown, formData: FormData) {
 
   if (error) return { error: "초대 코드를 만들지 못했어요." };
 
-  revalidatePath("/settings");
+  revalidatePath("/mypage");
   return { code };
 }
 
