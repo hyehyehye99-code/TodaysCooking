@@ -105,9 +105,13 @@ export async function createRecipe(_prevState: unknown, formData: FormData) {
 
   if (error || !recipe) return { error: "레시피를 저장하지 못했어요." };
 
-  await supabase.from("recipe_ingredients").insert(
+  const { error: ingredientsError } = await supabase.from("recipe_ingredients").insert(
     ingredients.map((name, i) => ({ recipe_id: recipe.id, name, position: i }))
   );
+  if (ingredientsError) {
+    await supabase.from("recipes").delete().eq("id", recipe.id);
+    return { error: "재료를 저장하지 못했어요. 다시 시도해주세요." };
+  }
 
   await saveReferenceLink(supabase, household.id, user.id, recipe.id, referenceUrl);
 
@@ -153,10 +157,16 @@ export async function updateRecipe(_prevState: unknown, formData: FormData) {
   const { error } = await supabase.from("recipes").update(update).eq("id", id);
   if (error) return { error: "레시피를 수정하지 못했어요." };
 
-  await supabase.from("recipe_ingredients").delete().eq("recipe_id", id);
-  await supabase
+  const { error: deleteError } = await supabase
     .from("recipe_ingredients")
-    .insert(ingredients.map((name, i) => ({ recipe_id: id, name, position: i })));
+    .delete()
+    .eq("recipe_id", id);
+  const { error: insertError } = deleteError
+    ? { error: deleteError }
+    : await supabase
+        .from("recipe_ingredients")
+        .insert(ingredients.map((name, i) => ({ recipe_id: id, name, position: i })));
+  if (deleteError || insertError) return { error: "재료를 저장하지 못했어요. 다시 시도해주세요." };
 
   await saveReferenceLink(supabase, household.id, user.id, id, referenceUrl);
 

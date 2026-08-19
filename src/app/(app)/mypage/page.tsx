@@ -10,8 +10,10 @@ import { HouseholdList } from "./household-list";
 type Member = { user_id: string; nickname: string; role: string; joined_at: string };
 
 export default async function MyPage() {
-  const { user, household: current } = await getCurrentHousehold();
-  const households = await getMyHouseholds();
+  const [{ user, household: current }, households] = await Promise.all([
+    getCurrentHousehold(),
+    getMyHouseholds(),
+  ]);
   const supabase = await createClient();
 
   const entries = await Promise.all(

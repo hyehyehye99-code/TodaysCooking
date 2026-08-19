@@ -4,12 +4,14 @@ import { TabBar } from "@/components/TabBar";
 import { AppHeader } from "@/components/AppHeader";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
-  const { user, household } = await getCurrentHousehold();
+  const [{ user, household }, households] = await Promise.all([
+    getCurrentHousehold(),
+    getMyHouseholds(),
+  ]);
 
   if (!user) redirect("/login");
   if (!household) redirect("/onboarding");
 
-  const households = await getMyHouseholds();
   const allHouseholds = households.map((h) => h.household);
 
   return (

@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { cookies } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 
@@ -8,14 +9,22 @@ function unwrapHousehold(value: unknown) {
   return (household as { id: string; name: string } | null) ?? null;
 }
 
-export async function getCurrentHousehold() {
+// Deduped per-request: layout + page both call getCurrentHousehold(), and
+// getMyHouseholds() needs the same user — cache() makes repeats free instead
+// of re-hitting Supabase Auth/DB for each caller in the same render.
+const getAuthUser = cache(async () => {
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
+  return user;
+});
 
+export const getCurrentHousehold = cache(async () => {
+  const user = await getAuthUser();
   if (!user) return { user: null, household: null };
 
+  const supabase = await createClient();
   const cookieStore = await cookies();
   const activeId = cookieStore.get(ACTIVE_HOUSEHOLD_COOKIE)?.value;
 
@@ -40,15 +49,13 @@ export async function getCurrentHousehold() {
     .maybeSingle();
 
   return { user, household: fallback ? unwrapHousehold(fallback.households) : null };
-}
+});
 
-export async function getMyHouseholds() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+export const getMyHouseholds = cache(async () => {
+  const user = await getAuthUser();
   if (!user) return [];
 
+  const supabase = await createClient();
   const { data } = await supabase
     .from("household_members")
     .select("role, households(id, name)")
@@ -58,4 +65,4 @@ export async function getMyHouseholds() {
   return (data ?? [])
     .map((m) => ({ role: m.role as string, household: unwrapHousehold(m.households) }))
     .filter((m): m is { role: string; household: { id: string; name: string } } => !!m.household);
-}
+});
