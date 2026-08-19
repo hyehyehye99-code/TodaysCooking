@@ -15,11 +15,13 @@ const TAB_TITLES: Record<string, string> = {
 };
 
 export function AppHeader({
+  currentId,
   currentName,
-  otherHouseholds,
+  households,
 }: {
+  currentId: string;
   currentName: string;
-  otherHouseholds: HouseholdOption[];
+  households: HouseholdOption[];
 }) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
@@ -32,7 +34,7 @@ export function AppHeader({
 
   return (
     <div className="mb-3">
-      {otherHouseholds.length === 0 ? (
+      {households.length <= 1 ? (
         <p className="mb-1 text-sm font-bold text-ink-soft">{currentName}</p>
       ) : (
         <div className="relative mb-1 inline-block">
@@ -67,17 +69,31 @@ export function AppHeader({
             }`}
           >
             <div className="flex min-w-[160px] flex-col gap-0.5 p-2">
-              {otherHouseholds.map((h) => (
-                <form key={h.id} action={switchHousehold}>
-                  <input type="hidden" name="householdId" value={h.id} />
-                  <button
-                    type="submit"
-                    className="w-full rounded-xl px-3 py-2.5 text-left text-sm font-semibold text-ink"
-                  >
-                    {h.name}
-                  </button>
-                </form>
-              ))}
+              {households.map((h) => {
+                const active = h.id === currentId;
+                if (active) {
+                  return (
+                    <div
+                      key={h.id}
+                      className="flex w-full items-center justify-between rounded-xl bg-accent/8 px-3 py-2.5 text-left text-sm font-bold text-accent-ink"
+                    >
+                      {h.name}
+                      <span className="ml-1.5 text-xs font-normal text-accent">사용 중</span>
+                    </div>
+                  );
+                }
+                return (
+                  <form key={h.id} action={switchHousehold}>
+                    <input type="hidden" name="householdId" value={h.id} />
+                    <button
+                      type="submit"
+                      className="w-full rounded-xl px-3 py-2.5 text-left text-sm font-semibold text-ink"
+                    >
+                      {h.name}
+                    </button>
+                  </form>
+                );
+              })}
             </div>
           </div>
         </div>

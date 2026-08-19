@@ -10,14 +10,12 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   if (!household) redirect("/onboarding");
 
   const households = await getMyHouseholds();
-  const otherHouseholds = households
-    .map((h) => h.household)
-    .filter((h) => h.id !== household.id);
+  const allHouseholds = households.map((h) => h.household);
 
   return (
     <div className="mx-auto flex h-dvh w-full max-w-[520px] flex-col">
       <div className="flex-1 overflow-y-auto px-5 pt-6 pb-[max(env(safe-area-inset-bottom),16px)]">
-        <AppHeader currentName={household.name} otherHouseholds={otherHouseholds} />
+        <AppHeader currentId={household.id} currentName={household.name} households={allHouseholds} />
         {children}
       </div>
       <TabBar />
