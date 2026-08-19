@@ -17,7 +17,7 @@ export function AppHeader({
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
 
-  if (pathname.startsWith("/mypage")) return null;
+  if (pathname.startsWith("/mypage") || pathname.startsWith("/recipes/")) return null;
 
   const showNewRecipeButton = pathname === "/recipes";
 
