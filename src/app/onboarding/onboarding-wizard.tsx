@@ -89,7 +89,7 @@ export function OnboardingWizard() {
           <div className="flex flex-1 flex-col">
             <BackButton href="/login" className="mb-3" />
 
-            <div className="flex flex-1 flex-col pt-4">
+            <div className="flex flex-col pt-4">
               <h1 className="mb-1 text-[22px] font-bold">요리책을 준비해볼까요?</h1>
               <p className="mb-10 text-sm text-ink-soft">새로 만들거나, 코드로 기존 요리책에 들어갈 수 있어요.</p>
 
@@ -125,6 +125,14 @@ export function OnboardingWizard() {
                   className="rounded-xl border border-transparent bg-surface px-4 py-3.5 text-sm uppercase tracking-widest outline-none focus:border-accent"
                 />
               )}
+
+              {step1Error && <p className="mt-3 text-sm text-warn-ink">{step1Error}</p>}
+              <button
+                onClick={primaryHandler}
+                className="mt-5 w-full rounded-xl bg-accent py-3.5 text-sm font-bold text-white"
+              >
+                {primaryLabel}
+              </button>
             </div>
           </div>
         )}
@@ -195,17 +203,18 @@ export function OnboardingWizard() {
         )}
       </div>
 
-      <div className="shrink-0 border-t border-border px-6 pt-3 pb-[max(env(safe-area-inset-bottom),20px)]">
-        {step === 1 && step1Error && <p className="mb-2 text-sm text-warn-ink">{step1Error}</p>}
-        {step === 3 && step3Error && <p className="mb-2 text-sm text-warn-ink">{step3Error}</p>}
-        <button
-          onClick={primaryHandler}
-          disabled={primaryDisabled}
-          className="w-full rounded-xl bg-accent py-3.5 text-sm font-bold text-white disabled:opacity-60"
-        >
-          {primaryLabel}
-        </button>
-      </div>
+      {step !== 1 && (
+        <div className="shrink-0 border-t border-border px-6 pt-3 pb-[max(env(safe-area-inset-bottom),20px)]">
+          {step === 3 && step3Error && <p className="mb-2 text-sm text-warn-ink">{step3Error}</p>}
+          <button
+            onClick={primaryHandler}
+            disabled={primaryDisabled}
+            className="w-full rounded-xl bg-accent py-3.5 text-sm font-bold text-white disabled:opacity-60"
+          >
+            {primaryLabel}
+          </button>
+        </div>
+      )}
     </div>
   );
 }
