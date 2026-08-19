@@ -157,7 +157,11 @@ export function FridgeEditor({ categories }: { categories: Category[] }) {
               </button>
 
               {!isOpen && (
-                <p className="mt-1.5 text-xs text-ink-faint">
+                <p
+                  className={`mt-1.5 text-xs ${
+                    ownedNames.length > 0 ? "font-semibold text-ink" : "text-ink-faint"
+                  }`}
+                >
                   {ownedNames.length > 0 ? ownedNames.join(", ") : "보유한 재료가 없어요"}
                 </p>
               )}
