@@ -24,12 +24,12 @@ async function applySetup(payload: SetupPayload) {
     const { error } = await supabase.rpc("create_household", {
       household_name: payload.name,
     });
-    if (error) return { error: "요리책을 만들지 못했어요. 다시 시도해주세요." };
+    if (error) return { error: "요리책을 만들지 못했어요. 다시 시도해주세요.", field: "name" as const };
   } else {
     const { error } = await supabase.rpc("join_household_with_code", {
       invite_code: payload.code,
     });
-    if (error) return { error: "코드가 올바르지 않거나 만료되었어요." };
+    if (error) return { error: "코드가 올바르지 않거나 만료되었어요.", field: "code" as const };
   }
 
   const { household } = await getCurrentHousehold();
@@ -60,28 +60,35 @@ export async function completeOnboardingAuthed(payload: SetupPayload) {
 export async function completeOnboardingWithSignup(
   payload: SetupPayload & { username: string; password: string }
 ) {
-  const username = payload.username.trim().toLowerCase();
-  if (!isValidUsername(username)) {
-    return { error: "아이디는 영문 소문자, 숫자, _ 로 4~20자여야 해요." };
-  }
-  if (payload.password.length < 6) {
-    return { error: "비밀번호는 6자 이상이어야 해요." };
-  }
-
   const supabase = await createClient();
-  const { error: signUpError } = await supabase.auth.signUp({
-    email: usernameToEmail(username),
-    password: payload.password,
-  });
-  if (signUpError) {
-    console.error("signUp error:", signUpError);
-    if (
-      signUpError.message.toLowerCase().includes("already registered") ||
-      signUpError.code === "user_already_exists"
-    ) {
-      return { error: "이미 사용 중인 아이디예요." };
+
+  const {
+    data: { user: existingUser },
+  } = await supabase.auth.getUser();
+
+  if (!existingUser) {
+    const username = payload.username.trim().toLowerCase();
+    if (!isValidUsername(username)) {
+      return { error: "아이디는 영문 소문자, 숫자, _ 로 4~20자여야 해요." };
     }
-    return { error: "회원가입에 실패했어요. 다시 시도해주세요." };
+    if (payload.password.length < 6) {
+      return { error: "비밀번호는 6자 이상이어야 해요." };
+    }
+
+    const { error: signUpError } = await supabase.auth.signUp({
+      email: usernameToEmail(username),
+      password: payload.password,
+    });
+    if (signUpError) {
+      console.error("signUp error:", signUpError);
+      if (
+        signUpError.message.toLowerCase().includes("already registered") ||
+        signUpError.code === "user_already_exists"
+      ) {
+        return { error: "이미 사용 중인 아이디예요." };
+      }
+      return { error: "회원가입에 실패했어요. 다시 시도해주세요." };
+    }
   }
 
   const result = await applySetup(payload);

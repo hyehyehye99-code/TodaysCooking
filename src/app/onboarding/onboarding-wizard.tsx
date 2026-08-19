@@ -49,11 +49,21 @@ export function OnboardingWizard({ authed }: { authed: boolean }) {
     return { mode, name: name.trim(), code: code.trim(), nickname: nickname.trim(), fridge };
   }
 
+  function handleSetupError(result: { error?: string; field?: "code" | "name" }) {
+    if (result.field === "code" || result.field === "name") {
+      setStep3Error("");
+      setStep1Error(result.error ?? "");
+      setStep(1);
+    } else {
+      setStep3Error(result.error ?? "");
+    }
+  }
+
   function handleFinishAuthed() {
     if (!nickname.trim()) return setStep3Error("닉네임을 입력해주세요.");
     startTransition(async () => {
       const result = await completeOnboardingAuthed(payload());
-      if (result && "error" in result) setStep3Error(result.error ?? "");
+      if (result && "error" in result) handleSetupError(result);
     });
   }
 
@@ -67,7 +77,7 @@ export function OnboardingWizard({ authed }: { authed: boolean }) {
         username: username.trim(),
         password,
       });
-      if (result && "error" in result) setStep3Error(result.error ?? "");
+      if (result && "error" in result) handleSetupError(result);
     });
   }
 
