@@ -35,6 +35,41 @@ async function assertPublicHost(hostname: string) {
   }
 }
 
+const NAMED_ENTITIES: Record<string, string> = {
+  amp: "&",
+  lt: "<",
+  gt: ">",
+  quot: '"',
+  apos: "'",
+  nbsp: " ",
+};
+
+function decodeHtmlEntities(text: string) {
+  return text.replace(/&(#x[0-9a-f]+|#\d+|[a-z]+);/gi, (entity, code) => {
+    if (code[0] === "#") {
+      const codePoint =
+        code[1] === "x" || code[1] === "X" ? parseInt(code.slice(2), 16) : parseInt(code.slice(1), 10);
+      return Number.isFinite(codePoint) ? String.fromCodePoint(codePoint) : entity;
+    }
+    return NAMED_ENTITIES[code.toLowerCase()] ?? entity;
+  });
+}
+
+function extractTitle(html: string) {
+  // some sites (Instagram reels included) stuff a multi-paragraph SEO blob
+  // into og:title — skip any candidate containing a raw newline, since a
+  // real single-line title never does, and fall through to the next tag.
+  const candidates = [
+    html.match(/<meta[^>]+property=["']og:title["'][^>]+content=["']([^"']+)["']/i)?.[1],
+    html.match(/<meta[^>]+name=["']twitter:title["'][^>]+content=["']([^"']+)["']/i)?.[1],
+    html.match(/<title[^>]*>([^<]+)<\/title>/i)?.[1],
+  ];
+  const raw = candidates.find((c) => c && !/[\r\n]/.test(c));
+  if (!raw) return null;
+  const decoded = decodeHtmlEntities(raw).trim().replace(/\s+/g, " ");
+  return decoded.length > 200 ? decoded.slice(0, 200).trim() + "…" : decoded;
+}
+
 export async function fetchLinkPreview(rawUrl: string) {
   const value = rawUrl.trim();
   if (!value) return { ok: false as const, error: "링크를 입력해주세요." };
@@ -54,9 +89,6 @@ export async function fetchLinkPreview(rawUrl: string) {
     });
     const html = await res.text();
 
-    const titleMatch =
-      html.match(/<meta[^>]+property=["']og:title["'][^>]+content=["']([^"']+)["']/i) ??
-      html.match(/<title[^>]*>([^<]+)<\/title>/i);
     const imageMatch = html.match(
       /<meta[^>]+property=["']og:image["'][^>]+content=["']([^"']+)["']/i
     );
@@ -65,8 +97,8 @@ export async function fetchLinkPreview(rawUrl: string) {
       ok: true as const,
       url: url.toString(),
       domain: url.hostname.replace(/^www\./, ""),
-      title: titleMatch?.[1]?.trim() ?? null,
-      thumbnailUrl: imageMatch?.[1]?.trim() ?? null,
+      title: extractTitle(html),
+      thumbnailUrl: imageMatch?.[1] ? decodeHtmlEntities(imageMatch[1]).trim() : null,
     };
   } catch {
     return {
