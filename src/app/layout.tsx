@@ -11,7 +11,7 @@ const suit = localFont({
 
 export const metadata: Metadata = {
   title: "우리집 메뉴판",
-  description: "부부/커플이 함께 쓰는 메뉴판 · 냉장고 · 장보기 앱",
+  description: "우리의 메뉴를 한 곳에, 필요한 재료를 한눈에!",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
