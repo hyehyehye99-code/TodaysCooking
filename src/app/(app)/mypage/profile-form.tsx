@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useEffect, useState } from "react";
 import { updateProfile } from "@/lib/actions/profile";
 import { EmojiPicker } from "@/components/EmojiPicker";
 import { ProfileAvatar } from "@/components/ProfileAvatar";
@@ -8,13 +8,19 @@ import { ProfileAvatar } from "@/components/ProfileAvatar";
 export function ProfileForm({
   currentNickname,
   currentIconEmoji,
+  onSuccess,
 }: {
   currentNickname: string;
   currentIconEmoji: string | null;
+  onSuccess?: () => void;
 }) {
   const [state, formAction, pending] = useActionState(updateProfile, undefined);
   const [nickname, setNickname] = useState(currentNickname);
   const [iconEmoji, setIconEmoji] = useState(currentIconEmoji ?? "");
+
+  useEffect(() => {
+    if (state?.success) onSuccess?.();
+  }, [state, onSuccess]);
 
   return (
     <form action={formAction} className="flex flex-col gap-4">

@@ -6,9 +6,11 @@ import { renameHousehold } from "@/lib/actions/household";
 export function RenameHouseholdForm({
   householdId,
   currentName,
+  onSuccess,
 }: {
   householdId: string;
   currentName: string;
+  onSuccess?: () => void;
 }) {
   const [value, setValue] = useState(currentName);
   const [error, setError] = useState<string | null>(null);
@@ -23,6 +25,7 @@ export function RenameHouseholdForm({
       else {
         setError(null);
         setSuccess(true);
+        onSuccess?.();
       }
     });
   }

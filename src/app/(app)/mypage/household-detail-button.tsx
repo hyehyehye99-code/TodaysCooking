@@ -43,7 +43,11 @@ export function HouseholdDetailButton({
             <p className="mb-4 text-[15px] font-bold">부엌 정보</p>
 
             <p className="mb-2 text-xs font-bold text-ink-soft">부엌 이름</p>
-            <RenameHouseholdForm householdId={householdId} currentName={householdName} />
+            <RenameHouseholdForm
+              householdId={householdId}
+              currentName={householdName}
+              onSuccess={() => setOpen(false)}
+            />
 
             <p className="mb-2.5 mt-6 text-xs font-bold text-ink-soft">참여 인원 ({members.length}명)</p>
             <div className="flex flex-col gap-3 overflow-y-auto">

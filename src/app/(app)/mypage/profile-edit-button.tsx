@@ -40,7 +40,11 @@ export function ProfileEditButton({
       <Modal open={open} onClose={() => setOpen(false)} variant="sheet">
         <div className="mx-auto flex max-h-[85vh] w-full max-w-[420px] flex-col rounded-t-3xl bg-white p-5 pb-[max(env(safe-area-inset-bottom),20px)]">
           <p className="mb-4 text-[15px] font-bold">프로필 수정</p>
-          <ProfileForm currentNickname={nickname} currentIconEmoji={iconEmoji} />
+          <ProfileForm
+            currentNickname={nickname}
+            currentIconEmoji={iconEmoji}
+            onSuccess={() => setOpen(false)}
+          />
           <button
             type="button"
             onClick={() => setOpen(false)}
