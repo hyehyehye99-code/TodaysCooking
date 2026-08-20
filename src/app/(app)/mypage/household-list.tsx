@@ -15,7 +15,7 @@ type HouseholdEntry = {
 
 type ShareChangeLog = {
   nickname: string;
-  action: "enabled" | "regenerated" | "disabled" | "tags_changed";
+  action: "enabled" | "disabled" | "tags_changed";
   at: string;
 } | null;
 

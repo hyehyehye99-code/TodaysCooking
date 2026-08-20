@@ -54,7 +54,7 @@ export default async function MyPage() {
     sharing?.share_updated_at && sharing.share_last_action
       ? {
           nickname: currentMembers.find((m) => m.user_id === sharing.share_updated_by)?.nickname ?? "누군가",
-          action: sharing.share_last_action as "enabled" | "regenerated" | "disabled" | "tags_changed",
+          action: sharing.share_last_action as "enabled" | "disabled" | "tags_changed",
           at: sharing.share_updated_at,
         }
       : null;

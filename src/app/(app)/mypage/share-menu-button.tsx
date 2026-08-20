@@ -6,13 +6,12 @@ import { Modal } from "@/components/Modal";
 
 type ShareChangeLog = {
   nickname: string;
-  action: "enabled" | "regenerated" | "disabled" | "tags_changed";
+  action: "enabled" | "disabled" | "tags_changed";
   at: string;
 } | null;
 
 const ACTION_LABELS: Record<NonNullable<ShareChangeLog>["action"], string> = {
   enabled: "공유를 켰어요",
-  regenerated: "링크를 재발급했어요",
   disabled: "공유를 껐어요",
   tags_changed: "공개 범위를 바꿨어요",
 };
@@ -64,9 +63,9 @@ export function ShareMenuButton({
         setError(result.error);
         return;
       }
-      // Turning it on fresh from an off state starts with no tag filter —
-      // regenerating an already-on link keeps whatever filter was set.
-      if (next && !shareCode) setSelectedTags([]);
+      // Turning sharing on always starts from an off state, so there's no
+      // previous tag filter to carry over.
+      if (next) setSelectedTags([]);
       setShareCode(result.shareCode);
     });
   }
@@ -158,27 +157,14 @@ export function ShareMenuButton({
 
               <div className="mt-5 border-t border-border pt-4">
                 <p className="mb-2 text-xs font-bold text-ink-soft">링크 관리</p>
-                <div className="flex gap-2">
-                  <button
-                    type="button"
-                    onClick={() => toggleSharing(true)}
-                    disabled={pending}
-                    className="flex-1 rounded-lg bg-surface py-2.5 text-xs font-bold text-ink-soft disabled:opacity-60"
-                  >
-                    재발급
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => toggleSharing(false)}
-                    disabled={pending}
-                    className="flex-1 rounded-lg bg-surface py-2.5 text-xs font-bold text-warn-ink disabled:opacity-60"
-                  >
-                    {pending ? "처리 중..." : "공유 끄기"}
-                  </button>
-                </div>
-                <p className="mt-2 text-[11px] text-ink-faint">
-                  재발급하면 기존 링크는 더 이상 열리지 않아요.
-                </p>
+                <button
+                  type="button"
+                  onClick={() => toggleSharing(false)}
+                  disabled={pending}
+                  className="w-full rounded-lg bg-surface py-2.5 text-xs font-bold text-warn-ink disabled:opacity-60"
+                >
+                  {pending ? "처리 중..." : "공유 끄기"}
+                </button>
               </div>
             </>
           ) : (
