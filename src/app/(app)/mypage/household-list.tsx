@@ -13,6 +13,12 @@ type HouseholdEntry = {
   members: Member[];
 };
 
+type ShareChangeLog = {
+  nickname: string;
+  action: "enabled" | "regenerated" | "disabled" | "tags_changed";
+  at: string;
+} | null;
+
 export function HouseholdList({
   entries,
   currentId,
@@ -20,6 +26,7 @@ export function HouseholdList({
   shareCode,
   shareTags,
   shareableTags,
+  shareChangeLog,
 }: {
   entries: HouseholdEntry[];
   currentId: string;
@@ -27,6 +34,7 @@ export function HouseholdList({
   shareCode: string | null;
   shareTags: string[];
   shareableTags: string[];
+  shareChangeLog: ShareChangeLog;
 }) {
   return (
     <div className="flex flex-col gap-2.5">
@@ -86,6 +94,7 @@ export function HouseholdList({
                   initialShareCode={shareCode}
                   initialShareTags={shareTags}
                   shareableTags={shareableTags}
+                  changeLog={shareChangeLog}
                 />
                 <InviteButton householdName={household.name} inviteCode={household.invite_code} />
               </div>

@@ -35,13 +35,29 @@ export default async function MyPage() {
   // the getMyHouseholds() shape every page pays for.
   const [{ data: sharing }, { data: recipeTagRows }] = current
     ? await Promise.all([
-        supabase.from("households").select("share_code, share_tags").eq("id", current.id).maybeSingle(),
+        supabase
+          .from("households")
+          .select("share_code, share_tags, share_updated_by, share_updated_at, share_last_action")
+          .eq("id", current.id)
+          .maybeSingle(),
         supabase.from("recipes").select("tags").eq("household_id", current.id),
       ])
     : [{ data: null }, { data: null }];
   const shareCode = sharing?.share_code ?? null;
   const shareTags = sharing?.share_tags ?? [];
   const shareableTags = [...new Set((recipeTagRows ?? []).flatMap((r) => r.tags ?? []))].sort();
+
+  // Who last touched the share settings — resolved from the members list
+  // already fetched above instead of a separate profiles lookup.
+  const currentMembers = entries.find((e) => e.household.id === current?.id)?.members ?? [];
+  const shareChangeLog =
+    sharing?.share_updated_at && sharing.share_last_action
+      ? {
+          nickname: currentMembers.find((m) => m.user_id === sharing.share_updated_by)?.nickname ?? "누군가",
+          action: sharing.share_last_action as "enabled" | "regenerated" | "disabled" | "tags_changed",
+          at: sharing.share_updated_at,
+        }
+      : null;
 
   return (
     <div>
@@ -60,6 +76,7 @@ export default async function MyPage() {
           shareCode={shareCode}
           shareTags={shareTags}
           shareableTags={shareableTags}
+          shareChangeLog={shareChangeLog}
         />
       </div>
       <div className="mb-8">

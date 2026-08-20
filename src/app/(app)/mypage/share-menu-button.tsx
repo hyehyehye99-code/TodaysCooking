@@ -4,18 +4,45 @@ import { useState, useTransition } from "react";
 import { setHouseholdSharing, setHouseholdShareTags } from "@/lib/actions/sharing";
 import { Modal } from "@/components/Modal";
 
+type ShareChangeLog = {
+  nickname: string;
+  action: "enabled" | "regenerated" | "disabled" | "tags_changed";
+  at: string;
+} | null;
+
+const ACTION_LABELS: Record<NonNullable<ShareChangeLog>["action"], string> = {
+  enabled: "공유를 켰어요",
+  regenerated: "링크를 재발급했어요",
+  disabled: "공유를 껐어요",
+  tags_changed: "공개 범위를 바꿨어요",
+};
+
+// Safe to compute plainly at render time (no SSR/client mismatch risk): this
+// only ever renders inside <Modal>, which itself renders null until opened,
+// so there's no server-rendered HTML for this text to disagree with.
+function relativeTimeFrom(iso: string) {
+  const diffMs = Date.now() - new Date(iso).getTime();
+  const minutes = Math.floor(diffMs / 60000);
+  if (minutes < 1) return "방금";
+  if (minutes < 60) return `${minutes}분 전`;
+  if (minutes < 60 * 24) return `${Math.floor(minutes / 60)}시간 전`;
+  return `${Math.floor(minutes / (60 * 24))}일 전`;
+}
+
 export function ShareMenuButton({
   householdId,
   householdName,
   initialShareCode,
   initialShareTags,
   shareableTags,
+  changeLog,
 }: {
   householdId: string;
   householdName: string;
   initialShareCode: string | null;
   initialShareTags: string[];
   shareableTags: string[];
+  changeLog: ShareChangeLog;
 }) {
   const [open, setOpen] = useState(false);
   const [shareCode, setShareCode] = useState(initialShareCode);
@@ -74,9 +101,15 @@ export function ShareMenuButton({
       <Modal open={open} onClose={() => setOpen(false)} variant="sheet">
         <div className="mx-auto w-full max-w-[420px] rounded-t-3xl bg-white p-5 pb-[max(env(safe-area-inset-bottom),20px)]">
           <p className="mb-1 text-[15px] font-bold">{householdName} 메뉴판 공유하기</p>
-          <p className="mb-4 text-xs text-ink-soft">
+          <p className={changeLog ? "mb-1.5 text-xs text-ink-soft" : "mb-4 text-xs text-ink-soft"}>
             누구나 로그인 없이 메뉴를 볼 수 있고, 로그인하면 하트로 반응을 남길 수 있어요.
           </p>
+          {changeLog && (
+            <p className="mb-4 text-[11px] text-ink-faint">
+              {changeLog.nickname}님이 {ACTION_LABELS[changeLog.action]} ·{" "}
+              {relativeTimeFrom(changeLog.at)}
+            </p>
+          )}
 
           {shareCode ? (
             <>
@@ -92,7 +125,7 @@ export function ShareMenuButton({
                 {copied ? "링크를 복사했어요!" : "공유 링크 복사하기"}
               </button>
 
-              <div className="mt-5">
+              <div className="mt-5 border-t border-border pt-4">
                 <p className="mb-2 text-xs font-bold text-ink-soft">공개 범위</p>
                 <p className="mb-2.5 text-[11px] text-ink-faint">
                   {selectedTags.length === 0
@@ -123,22 +156,30 @@ export function ShareMenuButton({
                 )}
               </div>
 
-              <button
-                type="button"
-                onClick={() => toggleSharing(true)}
-                disabled={pending}
-                className="mt-5 w-full text-center text-xs font-bold text-ink-faint underline disabled:opacity-60"
-              >
-                새 링크로 재발급 (기존 링크는 무효화돼요)
-              </button>
-              <button
-                type="button"
-                onClick={() => toggleSharing(false)}
-                disabled={pending}
-                className="mt-3 w-full rounded-xl bg-surface py-3 text-sm font-bold text-warn-ink disabled:opacity-60"
-              >
-                {pending ? "처리 중..." : "공유 끄기"}
-              </button>
+              <div className="mt-5 border-t border-border pt-4">
+                <p className="mb-2 text-xs font-bold text-ink-soft">링크 관리</p>
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => toggleSharing(true)}
+                    disabled={pending}
+                    className="flex-1 rounded-lg bg-surface py-2.5 text-xs font-bold text-ink-soft disabled:opacity-60"
+                  >
+                    재발급
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => toggleSharing(false)}
+                    disabled={pending}
+                    className="flex-1 rounded-lg bg-surface py-2.5 text-xs font-bold text-warn-ink disabled:opacity-60"
+                  >
+                    {pending ? "처리 중..." : "공유 끄기"}
+                  </button>
+                </div>
+                <p className="mt-2 text-[11px] text-ink-faint">
+                  재발급하면 기존 링크는 더 이상 열리지 않아요.
+                </p>
+              </div>
             </>
           ) : (
             <button
