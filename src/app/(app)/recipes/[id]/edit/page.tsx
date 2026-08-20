@@ -11,17 +11,21 @@ export default async function EditRecipePage({
   const { id } = await params;
   const supabase = await createClient();
 
-  const [{ data: recipe }, { data: referenceBookmark }] = await Promise.all([
-    supabase.from("recipes").select("*, recipe_ingredients(*)").eq("id", id).single(),
-    supabase.from("bookmarks").select("url").eq("recipe_id", id).maybeSingle(),
-  ]);
+  const { data: recipe } = await supabase
+    .from("recipes")
+    .select("*, recipe_ingredients(*)")
+    .eq("id", id)
+    .single();
 
   if (!recipe) notFound();
 
-  const { data: tagRows } = await supabase
-    .from("recipes")
-    .select("tags")
-    .eq("household_id", recipe.household_id);
+  // tagRows depends on recipe.household_id, so it can't start until the
+  // recipe query resolves — but referenceBookmark doesn't depend on either,
+  // so run it alongside instead of after.
+  const [{ data: referenceBookmark }, { data: tagRows }] = await Promise.all([
+    supabase.from("bookmarks").select("url").eq("recipe_id", id).maybeSingle(),
+    supabase.from("recipes").select("tags").eq("household_id", recipe.household_id),
+  ]);
   const existingTags = [...new Set((tagRows ?? []).flatMap((r) => r.tags ?? []))].sort();
 
   return (

@@ -18,35 +18,30 @@ export default async function RecipeDetailPage({
   const { household } = await getCurrentHousehold();
   const supabase = await createClient();
 
-  const [
-    { data: recipe },
-    { data: fridgeItems },
-    { data: shoppingItems },
-    { data: referenceBookmark },
-  ] = await Promise.all([
-    supabase
-      .from("recipes")
-      .select("*, recipe_ingredients(*)")
-      .eq("id", id)
-      .single(),
-    supabase.from("fridge_items").select("name, in_stock").eq("household_id", household!.id),
-    supabase.from("shopping_items").select("name").eq("household_id", household!.id),
-    supabase
-      .from("bookmarks")
-      .select("url, domain, title, thumbnail_url")
-      .eq("recipe_id", id)
-      .maybeSingle(),
-  ]);
+  const { data: recipe } = await supabase
+    .from("recipes")
+    .select("*, recipe_ingredients(*)")
+    .eq("id", id)
+    .single();
 
   if (!recipe) notFound();
 
   const r = recipe as RecipeWithIngredients;
 
-  const { data: creatorProfile } = await supabase
-    .from("profiles")
-    .select("nickname")
-    .eq("id", r.created_by)
-    .maybeSingle();
+  // creatorProfile depends on r.created_by, so it can't start until the
+  // recipe query resolves — but these four don't depend on each other,
+  // so running them together avoids paying for a 5th sequential round trip.
+  const [{ data: fridgeItems }, { data: shoppingItems }, { data: referenceBookmark }, { data: creatorProfile }] =
+    await Promise.all([
+      supabase.from("fridge_items").select("name, in_stock").eq("household_id", household!.id),
+      supabase.from("shopping_items").select("name").eq("household_id", household!.id),
+      supabase
+        .from("bookmarks")
+        .select("url, domain, title, thumbnail_url")
+        .eq("recipe_id", id)
+        .maybeSingle(),
+      supabase.from("profiles").select("nickname").eq("id", r.created_by).maybeSingle(),
+    ]);
 
   const owned = new Set((fridgeItems ?? []).filter((i) => i.in_stock).map((i) => i.name));
   const onShoppingList = new Set((shoppingItems ?? []).map((i) => i.name));

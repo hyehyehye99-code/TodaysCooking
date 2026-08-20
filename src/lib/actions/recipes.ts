@@ -286,14 +286,18 @@ export async function resolveMissingIngredients(payload: {
       );
     }
 
-    await Promise.all(
-      toUpdate.map((u) =>
-        supabase
-          .from("shopping_items")
-          .update({ source_recipe_title: u.source_recipe_title })
-          .eq("id", u.id)
-      )
-    );
+    if (toUpdate.length) {
+      // household_id is included so the upsert's INSERT-path RLS check
+      // (which requires it) is satisfied — every id here already exists, so
+      // the insert branch never actually runs, only the update does.
+      await supabase.from("shopping_items").upsert(
+        toUpdate.map((u) => ({
+          id: u.id,
+          household_id: household.id,
+          source_recipe_title: u.source_recipe_title,
+        }))
+      );
+    }
   }
 
   if (fridge.length) {
@@ -318,11 +322,7 @@ export async function reorderRecipes(order: string[]) {
   if (!household) return;
 
   const supabase = await createClient();
-  await Promise.all(
-    order.map((id, index) =>
-      supabase.from("recipes").update({ position: index }).eq("id", id)
-    )
-  );
+  await supabase.rpc("reorder_recipes", { recipe_ids: order });
 
   revalidatePath("/recipes");
 }

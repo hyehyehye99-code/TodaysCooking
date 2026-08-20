@@ -58,11 +58,7 @@ export async function reorderBookmarks(order: string[]) {
   if (!household) return;
 
   const supabase = await createClient();
-  await Promise.all(
-    order.map((id, index) =>
-      supabase.from("bookmarks").update({ position: index }).eq("id", id)
-    )
-  );
+  await supabase.rpc("reorder_bookmarks", { bookmark_ids: order });
 
   revalidatePath("/bookmarks");
 }
