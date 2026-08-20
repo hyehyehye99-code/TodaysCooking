@@ -89,7 +89,13 @@ export function PullToRefresh({
         onTouchEnd={handleTouchEnd}
         onTouchCancel={handleTouchEnd}
         style={{
-          transform: `translateY(${shown}px)`,
+          // Only set a transform while actually mid-pull — leaving it
+          // unset the rest of the time avoids the transform establishing
+          // a containing block for descendant position:fixed elements
+          // (modals, the sticky save bar), which would otherwise be
+          // positioned/clipped relative to this scroll container instead
+          // of the real viewport.
+          transform: shown ? `translateY(${shown}px)` : undefined,
           transition: dragging ? "none" : "transform 200ms ease-out",
         }}
         className={`h-full overflow-y-auto ${className ?? ""}`}
