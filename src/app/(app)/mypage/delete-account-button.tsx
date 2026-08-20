@@ -26,8 +26,15 @@ export function DeleteAccountButton() {
 
   return (
     <>
-      <button type="button" onClick={() => setConfirming(true)} className="text-xs text-ink-faint underline">
+      <button
+        type="button"
+        onClick={() => setConfirming(true)}
+        className="flex w-full items-center justify-between px-4 py-4 text-left text-sm font-semibold text-ink-faint"
+      >
         회원 탈퇴
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M9 6l6 6-6 6" />
+        </svg>
       </button>
 
       {confirming && (

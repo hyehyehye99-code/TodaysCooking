@@ -1,12 +1,11 @@
+import Link from "next/link";
 import { getCurrentHousehold, getMyHouseholds } from "@/lib/household";
 import { GlassCard, PageHeader } from "@/components/ui";
-import { signOut } from "@/lib/actions/auth";
 import { chefName } from "@/lib/format";
 import { createClient } from "@/lib/supabase/server";
 import { NicknameForm } from "./nickname-form";
 import { AddHouseholdSection } from "./add-household-section";
 import { HouseholdList } from "./household-list";
-import { DeleteAccountButton } from "./delete-account-button";
 
 type Member = { user_id: string; nickname: string; role: string; joined_at: string };
 
@@ -51,14 +50,17 @@ export default async function MyPage() {
       </div>
 
       <p className="mb-3 text-[13px] font-bold text-ink-soft">계정 관리</p>
-      <div className="flex items-center justify-between border-t border-border pt-5">
-        <form action={signOut}>
-          <button type="submit" className="text-sm text-ink-soft underline">
-            로그아웃
-          </button>
-        </form>
-        <DeleteAccountButton />
-      </div>
+      <GlassCard className="bg-white">
+        <Link
+          href="/mypage/account"
+          className="flex items-center justify-between px-4 py-4 text-sm font-semibold text-ink"
+        >
+          로그아웃 · 회원 탈퇴
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--color-ink-faint)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M9 6l6 6-6 6" />
+          </svg>
+        </Link>
+      </GlassCard>
     </div>
   );
 }
