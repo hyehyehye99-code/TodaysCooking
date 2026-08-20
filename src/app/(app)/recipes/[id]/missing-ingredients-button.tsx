@@ -37,10 +37,6 @@ export function MissingIngredientsButton({
     setOpen(true);
   }
 
-  function setAllShopping() {
-    setChoices(Object.fromEntries(missing.map((m) => [m.name, "shopping"])));
-  }
-
   function handleConfirm() {
     const shopping = missing.filter((m) => choices[m.name] === "shopping").map((m) => m.name);
     const fridge = missing.filter((m) => choices[m.name] === "fridge").map((m) => m.name);
@@ -71,15 +67,7 @@ export function MissingIngredientsButton({
               담을게요.
             </p>
 
-            <button
-              type="button"
-              onClick={setAllShopping}
-              className="mb-3 self-start rounded-full bg-surface px-3 py-1.5 text-[11px] font-bold text-ink-soft"
-            >
-              전부 장보기에 담기
-            </button>
-
-            <div className="flex flex-col gap-2 overflow-y-auto">
+            <div className="mt-1 flex flex-col gap-2 overflow-y-auto">
               {missing.map((m) => (
                 <div key={m.name} className="rounded-xl bg-surface px-3.5 py-2.5">
                   <div className="flex items-center justify-between gap-2">
