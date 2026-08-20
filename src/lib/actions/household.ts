@@ -104,6 +104,20 @@ export async function switchHousehold(formData: FormData) {
   redirect("/recipes");
 }
 
+// Called from the "이전 부엌이 사라졌어요" notice's 확인 button: persists the
+// household the user was silently moved to (or clears the stale cookie if
+// they had none left, en route to onboarding) so the notice doesn't reappear
+// on the next page load.
+export async function acknowledgeHouseholdChange(formData: FormData) {
+  const householdId = String(formData.get("householdId") ?? "");
+  if (householdId) {
+    await setActiveHouseholdCookie(householdId);
+  } else {
+    const cookieStore = await cookies();
+    cookieStore.delete(ACTIVE_HOUSEHOLD_COOKIE);
+  }
+}
+
 export async function leaveHousehold(formData: FormData) {
   const householdId = String(formData.get("householdId") ?? "");
   if (!householdId) return;

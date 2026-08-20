@@ -3,10 +3,10 @@ import { getCurrentHousehold } from "@/lib/household";
 import { OnboardingWizard } from "./onboarding-wizard";
 
 export default async function OnboardingPage() {
-  const { user, household } = await getCurrentHousehold();
+  const { user, household, previousHouseholdMissing } = await getCurrentHousehold();
 
   if (!user) redirect("/login");
   if (household) redirect("/recipes");
 
-  return <OnboardingWizard />;
+  return <OnboardingWizard householdMissingNotice={previousHouseholdMissing} />;
 }

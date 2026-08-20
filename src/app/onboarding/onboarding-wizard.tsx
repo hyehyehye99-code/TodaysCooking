@@ -18,7 +18,7 @@ function StepDots({ step, total }: { step: number; total: number }) {
   );
 }
 
-export function OnboardingWizard() {
+export function OnboardingWizard({ householdMissingNotice = false }: { householdMissingNotice?: boolean }) {
   const [step, setStep] = useState<1 | 2 | 3>(1);
 
   const [mode, setMode] = useState<"create" | "join">("create");
@@ -90,6 +90,11 @@ export function OnboardingWizard() {
             <BackButton href="/login" className="mb-3" />
 
             <div className="flex flex-1 flex-col pt-4">
+              {householdMissingNotice && (
+                <p className="mb-4 rounded-xl border border-accent/20 bg-accent/8 px-3.5 py-2.5 text-xs font-semibold leading-snug text-accent-ink">
+                  참여 중이던 부엌을 더 이상 이용할 수 없어서 새로 시작해요.
+                </p>
+              )}
               <h1 className="mb-1 text-[22px] font-bold">부엌을 준비해볼까요?</h1>
               <p className="mb-10 text-sm text-ink-soft">새로 만들거나, 코드로 기존 부엌에 들어갈 수 있어요.</p>
 

@@ -4,9 +4,11 @@ import { createClient } from "@/lib/supabase/server";
 
 const ACTIVE_HOUSEHOLD_COOKIE = "active_household_id";
 
+type HouseholdRow = { id: string; name: string; invite_code: string };
+
 function unwrapHousehold(value: unknown) {
   const household = Array.isArray(value) ? value[0] : value;
-  return (household as { id: string; name: string; invite_code?: string } | null) ?? null;
+  return (household as HouseholdRow | null) ?? null;
 }
 
 // Deduped per-request: layout + page both call getCurrentHousehold(), and
@@ -20,38 +22,12 @@ const getAuthUser = cache(async () => {
   return user;
 });
 
-export const getCurrentHousehold = cache(async () => {
-  const user = await getAuthUser();
-  if (!user) return { user: null, household: null };
-
-  const supabase = await createClient();
-  const cookieStore = await cookies();
-  const activeId = cookieStore.get(ACTIVE_HOUSEHOLD_COOKIE)?.value;
-
-  if (activeId) {
-    const { data } = await supabase
-      .from("household_members")
-      .select("households(id, name)")
-      .eq("user_id", user.id)
-      .eq("household_id", activeId)
-      .maybeSingle();
-
-    const household = data ? unwrapHousehold(data.households) : null;
-    if (household) return { user, household };
-  }
-
-  const { data: fallback } = await supabase
-    .from("household_members")
-    .select("households(id, name)")
-    .eq("user_id", user.id)
-    .order("joined_at", { ascending: true })
-    .limit(1)
-    .maybeSingle();
-
-  return { user, household: fallback ? unwrapHousehold(fallback.households) : null };
-});
-
-export const getMyHouseholds = cache(async () => {
+// getCurrentHousehold() and getMyHouseholds() both used to run their own
+// household_members query — every page paid for two round trips to resolve
+// "which household am I in" instead of one. They now share this single
+// membership fetch (cache()-deduped per request) and each derive their
+// answer from it in memory.
+const getMyMemberships = cache(async () => {
   const user = await getAuthUser();
   if (!user) return [];
 
@@ -64,8 +40,34 @@ export const getMyHouseholds = cache(async () => {
 
   return (data ?? [])
     .map((m) => ({ role: m.role as string, household: unwrapHousehold(m.households) }))
-    .filter(
-      (m): m is { role: string; household: { id: string; name: string; invite_code: string } } =>
-        !!m.household
-    );
+    .filter((m): m is { role: string; household: HouseholdRow } => !!m.household);
+});
+
+export const getCurrentHousehold = cache(async () => {
+  const user = await getAuthUser();
+  if (!user) return { user: null, household: null, previousHouseholdMissing: false };
+
+  const cookieStore = await cookies();
+  const activeId = cookieStore.get(ACTIVE_HOUSEHOLD_COOKIE)?.value;
+  const memberships = await getMyMemberships();
+
+  const active = activeId ? memberships.find((m) => m.household.id === activeId) : undefined;
+  if (active) return { user, household: active.household, previousHouseholdMissing: false };
+
+  // activeId pointed at a household this user can no longer see — either it
+  // was deleted (owner left solo, or delete_my_account handed it off/wiped
+  // it) or they were removed as a member — so the caller should tell them
+  // they landed somewhere else instead of silently swapping households.
+  const fallback = memberships[0];
+  return {
+    user,
+    household: fallback ? fallback.household : null,
+    previousHouseholdMissing: !!activeId,
+  };
+});
+
+export const getMyHouseholds = cache(async () => {
+  const user = await getAuthUser();
+  if (!user) return [];
+  return getMyMemberships();
 });
