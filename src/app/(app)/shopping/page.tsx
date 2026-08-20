@@ -26,7 +26,7 @@ export default async function ShoppingPage() {
   const allChecked = items.length > 0 && doneCount === items.length;
 
   return (
-    <div className={doneCount > 0 ? "pb-[calc(5.5rem+env(safe-area-inset-bottom))]" : ""}>
+    <div className={doneCount > 0 ? "pb-[calc(11.5rem+env(safe-area-inset-bottom))]" : ""}>
       <GlassCard className="mb-[18px] bg-white p-4">
         <div className="mb-2.5 flex items-center justify-between">
           <span className="text-[13px] font-bold">이번 장보기</span>
