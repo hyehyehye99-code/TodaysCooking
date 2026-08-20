@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentHousehold } from "@/lib/household";
 import { GlassCard } from "@/components/ui";
+import { ProfileAvatar } from "@/components/ProfileAvatar";
 import { chefName } from "@/lib/format";
 import type { RecipeWithIngredients } from "@/lib/types";
 import { DeleteRecipeButton } from "./delete-recipe-button";
@@ -40,7 +41,7 @@ export default async function RecipeDetailPage({
 
   const { data: creatorProfile } = await supabase
     .from("profiles")
-    .select("nickname")
+    .select("nickname, icon_emoji")
     .eq("id", r.created_by)
     .maybeSingle();
 
@@ -66,12 +67,6 @@ export default async function RecipeDetailPage({
               {r.icon_emoji}
             </div>
           )}
-          {r.cover_photo_urls.length === 0 && !r.icon_emoji && referenceBookmark?.thumbnail_url && (
-            <div className="h-14 w-14 shrink-0 overflow-hidden rounded-2xl bg-surface">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={referenceBookmark.thumbnail_url} alt="" className="h-full w-full object-cover" />
-            </div>
-          )}
           <div className="min-w-0 flex-1">
             <h1 className="text-[22px] font-bold">{r.title}</h1>
             {r.subtitle && <p className="mt-0.5 text-sm text-ink-soft">{r.subtitle}</p>}
@@ -91,7 +86,10 @@ export default async function RecipeDetailPage({
 
       <RecipePhotoGallery photos={r.cover_photo_urls} />
 
-      <p className="text-xs font-semibold text-accent">{chefName(creatorProfile?.nickname)} 등록</p>
+      <p className="flex items-center gap-1.5 text-xs font-semibold text-accent">
+        <ProfileAvatar iconEmoji={creatorProfile?.icon_emoji} nickname={creatorProfile?.nickname ?? ""} size={16} />
+        {chefName(creatorProfile?.nickname)} 등록
+      </p>
       {r.tags.length > 0 && (
         <div className="mt-2 flex flex-wrap gap-1.5">
           {r.tags.map((tag) => (

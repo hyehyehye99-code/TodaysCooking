@@ -2,21 +2,13 @@
 
 import { useState } from "react";
 import { chefName } from "@/lib/format";
+import { ProfileAvatar } from "@/components/ProfileAvatar";
 import { RenameHouseholdForm } from "./rename-household-form";
 import { RemoveMemberButton } from "./remove-member-button";
 import { LeaveHouseholdButton } from "./leave-household-button";
 import { Modal } from "@/components/Modal";
 
-type Member = { user_id: string; nickname: string; role: string; joined_at: string };
-
-function MemberAvatar({ nickname }: { nickname: string }) {
-  const initial = nickname.trim().charAt(0) || "?";
-  return (
-    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-accent/12 text-sm font-bold text-accent-ink">
-      {initial}
-    </div>
-  );
-}
+type Member = { user_id: string; nickname: string; icon_emoji: string | null; role: string; joined_at: string };
 
 export function HouseholdDetailButton({
   householdId,
@@ -57,7 +49,7 @@ export function HouseholdDetailButton({
             <div className="flex flex-col gap-3 overflow-y-auto">
               {members.map((m) => (
                 <div key={m.user_id} className="flex items-center gap-3">
-                  <MemberAvatar nickname={m.nickname} />
+                  <ProfileAvatar iconEmoji={m.icon_emoji} nickname={m.nickname} size={40} />
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-semibold">
                       {chefName(m.nickname)}

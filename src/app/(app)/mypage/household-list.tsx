@@ -5,7 +5,7 @@ import { GlassCard } from "@/components/ui";
 import { InviteButton } from "./invite-button";
 import { HouseholdDetailButton } from "./household-detail-button";
 
-type Member = { user_id: string; nickname: string; role: string; joined_at: string };
+type Member = { user_id: string; nickname: string; icon_emoji: string | null; role: string; joined_at: string };
 type HouseholdEntry = {
   household: { id: string; name: string; invite_code: string };
   role: string;

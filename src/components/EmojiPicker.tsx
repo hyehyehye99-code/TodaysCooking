@@ -7,7 +7,15 @@ const EMOJI_OPTIONS = [
   "🍕", "🥟", "🍚", "🍖", "🥩", "🍤", "🍙", "🧁", "🍞", "🥞",
 ];
 
-export function EmojiPicker({ name, defaultValue }: { name: string; defaultValue?: string | null }) {
+export function EmojiPicker({
+  name,
+  defaultValue,
+  onChange,
+}: {
+  name: string;
+  defaultValue?: string | null;
+  onChange?: (value: string) => void;
+}) {
   const [options, setOptions] = useState<string[]>(() =>
     defaultValue && !EMOJI_OPTIONS.includes(defaultValue)
       ? [...EMOJI_OPTIONS, defaultValue]
@@ -17,11 +25,16 @@ export function EmojiPicker({ name, defaultValue }: { name: string; defaultValue
   const [showCustom, setShowCustom] = useState(false);
   const [customInput, setCustomInput] = useState("");
 
+  function select(value: string) {
+    setSelected(value);
+    onChange?.(value);
+  }
+
   function addCustom() {
     const value = customInput.trim();
     if (!value) return;
     setOptions((prev) => (prev.includes(value) ? prev : [...prev, value]));
-    setSelected(value);
+    select(value);
     setCustomInput("");
     setShowCustom(false);
   }
@@ -34,7 +47,7 @@ export function EmojiPicker({ name, defaultValue }: { name: string; defaultValue
           <button
             key={emoji}
             type="button"
-            onClick={() => setSelected((prev) => (prev === emoji ? "" : emoji))}
+            onClick={() => select(selected === emoji ? "" : emoji)}
             className={`flex h-9 w-9 items-center justify-center rounded-full text-lg ${
               selected === emoji ? "bg-accent/14 ring-2 ring-accent" : "bg-surface"
             }`}
