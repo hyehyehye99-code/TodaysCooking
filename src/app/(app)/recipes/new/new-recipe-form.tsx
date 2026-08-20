@@ -73,25 +73,23 @@ export function NewRecipeForm({ existingTags }: { existingTags: string[] }) {
         </div>
 
         <GlassCard className="bg-white p-4">
+          <p className="mb-1 text-[13px] font-bold">참고 링크</p>
+          <p className="mb-3 text-xs text-ink-soft">여기 넣은 링크는 보관함 탭에도 함께 저장돼요</p>
+          <input
+            name="referenceUrl"
+            type="url"
+            placeholder="https://..."
+            className="w-full rounded-xl border border-transparent bg-surface px-3.5 py-3 text-sm outline-none focus:border-accent"
+          />
+        </GlassCard>
+
+        <GlassCard className="bg-white p-4">
           <FieldLabel>재료</FieldLabel>
           <p className="mb-3 text-xs text-ink-soft">한 줄에 하나씩 입력해주세요</p>
           <textarea
             name="ingredients"
             rows={12}
             placeholder={"김치\n돼지고기\n두부\n대파\n마늘\n고추장"}
-            className="w-full rounded-xl border border-transparent bg-surface px-3.5 py-3 text-sm outline-none focus:border-accent"
-          />
-        </GlassCard>
-
-        <GlassCard className="bg-white p-4">
-          <p className="mb-1 text-[13px] font-bold">
-            참고 링크<span className="ml-1.5 text-[11px] font-semibold text-ink-faint">선택</span>
-          </p>
-          <p className="mb-3 text-xs text-ink-soft">여기 넣은 링크는 보관함 탭에도 함께 저장돼요</p>
-          <input
-            name="referenceUrl"
-            type="url"
-            placeholder="https://..."
             className="w-full rounded-xl border border-transparent bg-surface px-3.5 py-3 text-sm outline-none focus:border-accent"
           />
         </GlassCard>
@@ -142,7 +140,7 @@ export function NewRecipeForm({ existingTags }: { existingTags: string[] }) {
 
         {state?.error && <p className="text-sm text-warn-ink">{state.error}</p>}
 
-        <div className="sticky bottom-0 -mx-5 mt-2 border-t border-border bg-white/95 px-5 pt-3 pb-[max(env(safe-area-inset-bottom),12px)] shadow-[0_-6px_16px_-8px_rgba(0,0,0,0.15)] backdrop-blur">
+        <div className="sticky bottom-0 -mx-5 mt-2 border-t border-border bg-white px-5 pt-3 pb-[max(env(safe-area-inset-bottom),12px)] shadow-[0_-6px_16px_-8px_rgba(0,0,0,0.15)]">
           <button
             type="submit"
             disabled={pending}
