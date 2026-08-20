@@ -8,6 +8,7 @@ import { EmojiPicker } from "@/components/EmojiPicker";
 import { TagPicker } from "@/components/TagPicker";
 import { PhotoPicker } from "@/components/PhotoPicker";
 import { FieldLabel } from "@/components/FieldLabel";
+import { StickyFormBar } from "@/components/StickyFormBar";
 import type { RecipeWithIngredients } from "@/lib/types";
 
 export function EditRecipeForm({
@@ -73,6 +74,7 @@ export function EditRecipeForm({
       )}
 
       <form
+        id="edit-recipe-form"
         action={formAction}
         className="flex flex-col gap-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))]"
       >
@@ -163,17 +165,9 @@ export function EditRecipeForm({
         </GlassCard>
 
         {state?.error && <p className="text-sm text-warn-ink">{state.error}</p>}
-
-        <div className="fixed inset-x-0 bottom-0 z-20 border-t border-border bg-white px-5 pt-3 pb-[max(env(safe-area-inset-bottom),12px)] shadow-[0_-6px_16px_-8px_rgba(0,0,0,0.15)]">
-          <button
-            type="submit"
-            disabled={pending}
-            className="w-full rounded-xl bg-accent py-3.5 text-sm font-bold text-white disabled:opacity-60"
-          >
-            {pending ? "저장 중..." : "저장하기"}
-          </button>
-        </div>
       </form>
+
+      <StickyFormBar formId="edit-recipe-form" pending={pending} label="저장하기" pendingLabel="저장 중..." />
     </div>
   );
 }
