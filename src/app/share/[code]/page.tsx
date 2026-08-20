@@ -66,7 +66,13 @@ export default async function SharePage({ params }: { params: Promise<{ code: st
 
   return shell(
     <div>
-      <div className="pb-6 pt-2 text-center">
+      <div className="flex items-center justify-center gap-1.5 pb-4 pt-1">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/logo-mark.svg" alt="" width={16} height={16} />
+        <span className="text-xs font-bold text-ink-faint">우리집 메뉴판</span>
+      </div>
+
+      <div className="pb-6 text-center">
         <h1 className="text-2xl font-bold">{household.name}</h1>
         <p className="mt-1.5 text-sm text-ink-soft">{household.name}의 메뉴판이에요</p>
       </div>
@@ -109,6 +115,19 @@ export default async function SharePage({ params }: { params: Promise<{ code: st
           ))}
         </div>
       )}
+
+      <div className="mt-10 rounded-2xl border border-border bg-surface p-6 text-center">
+        <p className="text-base font-bold">나도 이런 메뉴판 만들어볼까?</p>
+        <p className="mt-2 text-sm leading-relaxed text-ink-soft">
+          레시피, 냉장고, 장보기 목록까지 — 파트너와 함께 쓰는 우리집 메뉴판.
+        </p>
+        <Link
+          href="/"
+          className="mt-5 inline-block rounded-xl bg-accent px-6 py-3.5 text-sm font-bold text-white"
+        >
+          우리집 메뉴판 시작하기
+        </Link>
+      </div>
     </div>
   );
 }
