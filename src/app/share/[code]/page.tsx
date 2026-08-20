@@ -67,9 +67,8 @@ export default async function SharePage({ params }: { params: Promise<{ code: st
   return shell(
     <div>
       <div className="pb-6 pt-2 text-center">
-        <span className="text-[13px] font-bold text-accent">공유된 메뉴판</span>
-        <h1 className="mt-1 text-2xl font-bold">{household.name}</h1>
-        <p className="mt-1.5 text-sm text-ink-soft">이 부엌에서 만든 메뉴들이에요</p>
+        <h1 className="text-2xl font-bold">{household.name}</h1>
+        <p className="mt-1.5 text-sm text-ink-soft">{household.name}의 메뉴판이에요</p>
       </div>
 
       {list.length === 0 ? (

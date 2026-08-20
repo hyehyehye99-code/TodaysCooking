@@ -12,7 +12,7 @@ export async function setHouseholdSharing(
     target_household_id: householdId,
     enabled,
   });
-  if (error) return { ok: false, error: `공유 설정을 변경하지 못했어요. (${error.message})` };
+  if (error) return { ok: false, error: "공유 설정을 변경하지 못했어요." };
 
   revalidatePath("/mypage");
   return { ok: true, shareCode: (data as string | null) ?? null };
@@ -27,7 +27,7 @@ export async function setHouseholdShareTags(
     target_household_id: householdId,
     new_tags: tags,
   });
-  if (error) return { ok: false, error: `공유 범위를 저장하지 못했어요. (${error.message})` };
+  if (error) return { ok: false, error: "공유 범위를 저장하지 못했어요." };
 
   revalidatePath("/mypage");
   return { ok: true };
