@@ -3,17 +3,12 @@ import { GlassCard } from "@/components/ui";
 import { signOut } from "@/lib/actions/auth";
 import { createClient } from "@/lib/supabase/server";
 import { DeleteAccountButton } from "../delete-account-button";
-import { ProfileForm } from "./profile-form";
 
 export default async function AccountPage() {
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
-
-  const { data: profile } = user
-    ? await supabase.from("profiles").select("nickname, icon_emoji").eq("id", user.id).maybeSingle()
-    : { data: null };
 
   const isGoogleAccount = user?.app_metadata?.provider === "google";
 
@@ -32,11 +27,6 @@ export default async function AccountPage() {
           </svg>
         </Link>
       </div>
-
-      <p className="mb-3 text-[13px] font-bold text-ink-soft">프로필</p>
-      <GlassCard className="mb-6 bg-white p-4">
-        <ProfileForm currentNickname={profile?.nickname ?? ""} currentIconEmoji={profile?.icon_emoji ?? null} />
-      </GlassCard>
 
       {isGoogleAccount && (
         <>

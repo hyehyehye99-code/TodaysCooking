@@ -14,7 +14,7 @@ export function ProfileAvatar({
   return (
     <div
       style={{ width: size, height: size, fontSize: size * (iconEmoji ? 0.55 : 0.4) }}
-      className={`flex shrink-0 items-center justify-center rounded-full bg-accent/12 font-bold text-accent-ink ${className}`}
+      className={`flex shrink-0 items-center justify-center rounded-full bg-surface font-bold text-ink-soft ${className}`}
     >
       {iconEmoji || initial}
     </div>

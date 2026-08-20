@@ -1,9 +1,8 @@
 import Link from "next/link";
 import { getCurrentHousehold, getMyHouseholds } from "@/lib/household";
 import { GlassCard, PageHeader } from "@/components/ui";
-import { chefName } from "@/lib/format";
 import { createClient } from "@/lib/supabase/server";
-import { ProfileAvatar } from "@/components/ProfileAvatar";
+import { ProfileEditButton } from "./profile-edit-button";
 import { AddHouseholdSection } from "./add-household-section";
 import { HouseholdList } from "./household-list";
 
@@ -36,12 +35,8 @@ export default async function MyPage() {
     <div>
       <PageHeader title="마이페이지" />
 
-      <GlassCard className="mb-8 flex items-center gap-3 bg-white p-4">
-        <ProfileAvatar iconEmoji={myIconEmoji} nickname={myNickname} size={48} />
-        <div className="min-w-0 flex-1">
-          <p className="truncate text-lg font-bold">{chefName(myNickname)}</p>
-          {isGoogleAccount && <p className="mt-0.5 text-xs text-ink-soft">구글로 가입했어요</p>}
-        </div>
+      <GlassCard className="mb-8 bg-white p-4">
+        <ProfileEditButton nickname={myNickname} iconEmoji={myIconEmoji} isGoogleAccount={isGoogleAccount} />
       </GlassCard>
 
       <p className="mb-3 text-[13px] font-bold text-ink-soft">부엌 관리</p>
