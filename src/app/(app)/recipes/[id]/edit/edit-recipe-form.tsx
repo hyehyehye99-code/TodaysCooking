@@ -7,6 +7,7 @@ import { GlassCard } from "@/components/ui";
 import { EmojiPicker } from "@/components/EmojiPicker";
 import { TagPicker } from "@/components/TagPicker";
 import { PhotoPicker } from "@/components/PhotoPicker";
+import { ReferenceLinkField } from "@/components/ReferenceLinkField";
 import { FieldLabel } from "@/components/FieldLabel";
 import { StickyFormBar } from "@/components/StickyFormBar";
 import { Modal } from "@/components/Modal";
@@ -15,10 +16,12 @@ import type { RecipeWithIngredients } from "@/lib/types";
 export function EditRecipeForm({
   recipe,
   referenceUrl,
+  referencePreview,
   existingTags,
 }: {
   recipe: RecipeWithIngredients;
   referenceUrl: string;
+  referencePreview: { title: string | null; thumbnailUrl: string | null; domain: string | null } | null;
   existingTags: string[];
 }) {
   const [state, formAction, pending] = useActionState(updateRecipe, undefined);
@@ -92,13 +95,7 @@ export function EditRecipeForm({
         <GlassCard className="bg-white p-4">
           <p className="mb-1 text-[13px] font-bold">참고 링크</p>
           <p className="mb-3 text-xs text-ink-soft">여기 넣은 링크는 보관함 탭에도 함께 저장돼요</p>
-          <input
-            name="referenceUrl"
-            type="url"
-            defaultValue={referenceUrl}
-            placeholder="https://..."
-            className="w-full rounded-xl border border-transparent bg-surface px-3.5 py-3 text-sm outline-none focus:border-accent"
-          />
+          <ReferenceLinkField name="referenceUrl" defaultValue={referenceUrl} initialPreview={referencePreview} />
         </GlassCard>
 
         <GlassCard className="bg-white p-4">

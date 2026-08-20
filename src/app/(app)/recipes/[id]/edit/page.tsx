@@ -23,7 +23,11 @@ export default async function EditRecipePage({
   // recipe query resolves — but referenceBookmark doesn't depend on either,
   // so run it alongside instead of after.
   const [{ data: referenceBookmark }, { data: tagRows }] = await Promise.all([
-    supabase.from("bookmarks").select("url").eq("recipe_id", id).maybeSingle(),
+    supabase
+      .from("bookmarks")
+      .select("url, title, thumbnail_url, domain")
+      .eq("recipe_id", id)
+      .maybeSingle(),
     supabase.from("recipes").select("tags").eq("household_id", recipe.household_id),
   ]);
   const existingTags = [...new Set((tagRows ?? []).flatMap((r) => r.tags ?? []))].sort();
@@ -32,6 +36,15 @@ export default async function EditRecipePage({
     <EditRecipeForm
       recipe={recipe as RecipeWithIngredients}
       referenceUrl={referenceBookmark?.url ?? ""}
+      referencePreview={
+        referenceBookmark
+          ? {
+              title: referenceBookmark.title,
+              thumbnailUrl: referenceBookmark.thumbnail_url,
+              domain: referenceBookmark.domain,
+            }
+          : null
+      }
       existingTags={existingTags}
     />
   );
