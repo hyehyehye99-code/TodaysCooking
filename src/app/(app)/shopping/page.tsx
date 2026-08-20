@@ -5,10 +5,10 @@ import {
   toggleShoppingItem,
   addShoppingItem,
   deleteShoppingItem,
-  finishShoppingTrip,
   setAllShoppingItemsChecked,
 } from "@/lib/actions/shopping";
 import type { ShoppingItem } from "@/lib/types";
+import { FinishShoppingBar } from "./finish-shopping-bar";
 
 export default async function ShoppingPage() {
   const { household } = await getCurrentHousehold();
@@ -26,7 +26,7 @@ export default async function ShoppingPage() {
   const allChecked = items.length > 0 && doneCount === items.length;
 
   return (
-    <div>
+    <div className={doneCount > 0 ? "pb-[calc(5.5rem+env(safe-area-inset-bottom))]" : ""}>
       <GlassCard className="mb-[18px] bg-white p-4">
         <div className="mb-2.5 flex items-center justify-between">
           <span className="text-[13px] font-bold">이번 장보기</span>
@@ -112,19 +112,7 @@ export default async function ShoppingPage() {
         </>
       )}
 
-      {doneCount > 0 && (
-        <form action={finishShoppingTrip} className="mt-6">
-          <button
-            type="submit"
-            className="w-full rounded-xl bg-accent py-3.5 text-sm font-bold text-white"
-          >
-            오늘 장보기 끝내기
-          </button>
-          <p className="mt-2 text-center text-xs text-ink-faint">
-            체크한 {doneCount}개 재료가 냉장고로 이동해요
-          </p>
-        </form>
-      )}
+      <FinishShoppingBar doneCount={doneCount} />
     </div>
   );
 }

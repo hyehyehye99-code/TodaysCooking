@@ -304,7 +304,9 @@ export function RecipeList({
       ) : (
         <div className="flex flex-col gap-3">
           {filtered.map((recipe) => {
-            const makeable = recipe.recipe_ingredients.every((ing) => owned.has(ing.name));
+            const makeable = recipe.recipe_ingredients
+              .filter((ing) => !ing.skipped)
+              .every((ing) => owned.has(ing.name));
             return (
             <Link key={recipe.id} href={`/recipes/${recipe.id}`}>
               <GlassCard className="flex items-center gap-3 bg-white p-3.5">
