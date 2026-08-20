@@ -11,9 +11,7 @@ export function FridgeEditor({ categories }: { categories: Category[] }) {
   const [local, setLocal] = useState<Category[]>(categories);
   const [customInputs, setCustomInputs] = useState<Record<string, string>>({});
   const [search, setSearch] = useState("");
-  const [expanded, setExpanded] = useState<Set<string>>(
-    () => new Set(categories.filter((c) => c.items.some((i) => i.selected)).map((c) => c.name))
-  );
+  const [expanded, setExpanded] = useState<Set<string>>(() => new Set());
 
   function toggleExpand(catName: string) {
     setExpanded((prev) => {
