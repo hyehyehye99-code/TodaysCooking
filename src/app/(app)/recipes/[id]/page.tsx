@@ -18,21 +18,13 @@ export default async function RecipeDetailPage({
   const { household } = await getCurrentHousehold();
   const supabase = await createClient();
 
-  const { data: recipe } = await supabase
-    .from("recipes")
-    .select("*, recipe_ingredients(*)")
-    .eq("id", id)
-    .single();
-
-  if (!recipe) notFound();
-
-  const r = recipe as RecipeWithIngredients;
-
-  // creatorProfile depends on r.created_by, so it can't start until the
-  // recipe query resolves — but these four don't depend on each other,
-  // so running them together avoids paying for a 5th sequential round trip.
-  const [{ data: fridgeItems }, { data: shoppingItems }, { data: referenceBookmark }, { data: creatorProfile }] =
+  // None of these four need each other's result, so they all go out in one
+  // round trip instead of fetching the recipe first and waiting on it before
+  // starting the rest. Only creatorProfile (below) genuinely depends on the
+  // recipe row, since it needs r.created_by.
+  const [{ data: recipe }, { data: fridgeItems }, { data: shoppingItems }, { data: referenceBookmark }] =
     await Promise.all([
+      supabase.from("recipes").select("*, recipe_ingredients(*)").eq("id", id).single(),
       supabase.from("fridge_items").select("name, in_stock").eq("household_id", household!.id),
       supabase.from("shopping_items").select("name").eq("household_id", household!.id),
       supabase
@@ -40,8 +32,17 @@ export default async function RecipeDetailPage({
         .select("url, domain, title, thumbnail_url")
         .eq("recipe_id", id)
         .maybeSingle(),
-      supabase.from("profiles").select("nickname").eq("id", r.created_by).maybeSingle(),
     ]);
+
+  if (!recipe) notFound();
+
+  const r = recipe as RecipeWithIngredients;
+
+  const { data: creatorProfile } = await supabase
+    .from("profiles")
+    .select("nickname")
+    .eq("id", r.created_by)
+    .maybeSingle();
 
   const owned = new Set((fridgeItems ?? []).filter((i) => i.in_stock).map((i) => i.name));
   const onShoppingList = new Set((shoppingItems ?? []).map((i) => i.name));
@@ -63,6 +64,12 @@ export default async function RecipeDetailPage({
           {r.cover_photo_urls.length === 0 && r.icon_emoji && (
             <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-surface text-2xl">
               {r.icon_emoji}
+            </div>
+          )}
+          {r.cover_photo_urls.length === 0 && !r.icon_emoji && referenceBookmark?.thumbnail_url && (
+            <div className="h-14 w-14 shrink-0 overflow-hidden rounded-2xl bg-surface">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={referenceBookmark.thumbnail_url} alt="" className="h-full w-full object-cover" />
             </div>
           )}
           <div className="min-w-0 flex-1">

@@ -24,6 +24,7 @@ export type RecipeIngredient = {
 
 export type RecipeWithIngredients = Recipe & {
   recipe_ingredients: RecipeIngredient[];
+  bookmarks?: { thumbnail_url: string | null }[];
 };
 
 export type FridgeItem = {

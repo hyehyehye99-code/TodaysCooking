@@ -57,6 +57,15 @@ function RecipeThumb({ recipe }: { recipe: RecipeWithIngredients }) {
       </div>
     );
   }
+  const linkThumbnailUrl = recipe.bookmarks?.[0]?.thumbnail_url;
+  if (linkThumbnailUrl) {
+    return (
+      <div className="h-14 w-14 shrink-0 overflow-hidden rounded-2xl bg-surface">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={linkThumbnailUrl} alt="" className="h-full w-full object-cover" />
+      </div>
+    );
+  }
   return (
     <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-surface">
       <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="var(--color-accent)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
