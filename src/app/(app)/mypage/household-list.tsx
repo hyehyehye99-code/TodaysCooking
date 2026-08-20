@@ -4,6 +4,7 @@ import { switchHousehold } from "@/lib/actions/household";
 import { GlassCard } from "@/components/ui";
 import { InviteButton } from "./invite-button";
 import { HouseholdDetailButton } from "./household-detail-button";
+import { ShareMenuButton } from "./share-menu-button";
 
 type Member = { user_id: string; nickname: string; icon_emoji: string | null; role: string; joined_at: string };
 type HouseholdEntry = {
@@ -16,10 +17,16 @@ export function HouseholdList({
   entries,
   currentId,
   myUserId,
+  shareCode,
+  shareTags,
+  shareableTags,
 }: {
   entries: HouseholdEntry[];
   currentId: string;
   myUserId: string;
+  shareCode: string | null;
+  shareTags: string[];
+  shareableTags: string[];
 }) {
   return (
     <div className="flex flex-col gap-2.5">
@@ -72,7 +79,16 @@ export function HouseholdList({
 
             <div className="mt-3 flex items-center justify-between">
               <span className="text-xs text-ink-soft">참여 인원 {members.length}명</span>
-              <InviteButton householdName={household.name} inviteCode={household.invite_code} />
+              <div className="flex items-center gap-1.5">
+                <ShareMenuButton
+                  householdId={household.id}
+                  householdName={household.name}
+                  initialShareCode={shareCode}
+                  initialShareTags={shareTags}
+                  shareableTags={shareableTags}
+                />
+                <InviteButton householdName={household.name} inviteCode={household.invite_code} />
+              </div>
             </div>
           </GlassCard>
         );

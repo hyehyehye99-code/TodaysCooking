@@ -31,6 +31,19 @@ export default async function MyPage() {
   const myIconEmoji = me?.icon_emoji ?? null;
   const isGoogleAccount = user?.app_metadata?.provider === "google";
 
+  // Sharing (the public /share link) and its tag filter only matter for the
+  // active household, so this is a second small query rather than widening
+  // the getMyHouseholds() shape every page pays for.
+  const [{ data: sharing }, { data: recipeTagRows }] = current
+    ? await Promise.all([
+        supabase.from("households").select("share_code, share_tags").eq("id", current.id).maybeSingle(),
+        supabase.from("recipes").select("tags").eq("household_id", current.id),
+      ])
+    : [{ data: null }, { data: null }];
+  const shareCode = sharing?.share_code ?? null;
+  const shareTags = sharing?.share_tags ?? [];
+  const shareableTags = [...new Set((recipeTagRows ?? []).flatMap((r) => r.tags ?? []))].sort();
+
   return (
     <div>
       <PageHeader title="마이페이지" />
@@ -41,7 +54,14 @@ export default async function MyPage() {
 
       <p className="mb-3 text-[13px] font-bold text-ink-soft">부엌 관리</p>
       <div className="mb-4">
-        <HouseholdList entries={entries} currentId={current?.id ?? ""} myUserId={user?.id ?? ""} />
+        <HouseholdList
+          entries={entries}
+          currentId={current?.id ?? ""}
+          myUserId={user?.id ?? ""}
+          shareCode={shareCode}
+          shareTags={shareTags}
+          shareableTags={shareableTags}
+        />
       </div>
       <div className="mb-8">
         <AddHouseholdSection />

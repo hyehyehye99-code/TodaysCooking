@@ -9,6 +9,7 @@ import type { RecipeWithIngredients } from "@/lib/types";
 import { DeleteRecipeButton } from "./delete-recipe-button";
 import { MissingIngredientsButton } from "./missing-ingredients-button";
 import { RecipePhotoGallery } from "./recipe-photo-gallery";
+import { ReactionLog } from "./reaction-log";
 
 export default async function RecipeDetailPage({
   params,
@@ -23,7 +24,7 @@ export default async function RecipeDetailPage({
   // round trip instead of fetching the recipe first and waiting on it before
   // starting the rest. Only creatorProfile (below) genuinely depends on the
   // recipe row, since it needs r.created_by.
-  const [{ data: recipe }, { data: fridgeItems }, { data: shoppingItems }, { data: referenceBookmark }] =
+  const [{ data: recipe }, { data: fridgeItems }, { data: shoppingItems }, { data: referenceBookmark }, { data: reactions }] =
     await Promise.all([
       supabase.from("recipes").select("*, recipe_ingredients(*)").eq("id", id).single(),
       supabase.from("fridge_items").select("name, in_stock").eq("household_id", household!.id),
@@ -33,6 +34,7 @@ export default async function RecipeDetailPage({
         .select("url, domain, title, thumbnail_url")
         .eq("recipe_id", id)
         .maybeSingle(),
+      supabase.rpc("get_recipe_reactions", { target_recipe_id: id }),
     ]);
 
   if (!recipe) notFound();
@@ -195,6 +197,8 @@ export default async function RecipeDetailPage({
           수정하기
         </Link>
       </div>
+
+      <ReactionLog recipeId={r.id} reactions={reactions ?? []} />
     </div>
   );
 }
