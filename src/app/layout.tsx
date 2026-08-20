@@ -10,13 +10,13 @@ const suit = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "오늘은 내가 요리할게!",
-  description: "부부/커플이 함께 쓰는 요리책 · 냉장고 · 장보기 앱",
+  title: "우리집 메뉴판",
+  description: "부부/커플이 함께 쓰는 메뉴판 · 냉장고 · 장보기 앱",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "오내요",
+    title: "우리집 메뉴판",
   },
 };
 

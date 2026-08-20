@@ -30,7 +30,7 @@ export function EditRecipeForm({
   return (
     <div>
       <div className="mb-5 flex items-center justify-between">
-        <h1 className="text-[22px] font-bold">요리책 수정</h1>
+        <h1 className="text-[22px] font-bold">메뉴 수정</h1>
         <button
           type="button"
           onClick={() => setConfirmingClose(true)}

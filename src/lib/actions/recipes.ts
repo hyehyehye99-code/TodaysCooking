@@ -137,7 +137,7 @@ export async function createRecipe(_prevState: unknown, formData: FormData) {
     .select("id")
     .single();
 
-  if (error || !recipe) return { error: "요리책을 저장하지 못했어요." };
+  if (error || !recipe) return { error: "메뉴를 저장하지 못했어요." };
 
   const { error: ingredientsError } = await supabase.from("recipe_ingredients").insert(
     ingredients.map((name, i) => ({ recipe_id: recipe.id, name, position: i }))
@@ -164,7 +164,7 @@ export async function updateRecipe(_prevState: unknown, formData: FormData) {
   const notes = String(formData.get("notes") ?? "").trim();
   const referenceUrl = String(formData.get("referenceUrl") ?? "");
 
-  if (!id) return { error: "요리책을 찾을 수 없어요." };
+  if (!id) return { error: "메뉴를 찾을 수 없어요." };
   if (!title) return { error: "요리 이름을 입력해주세요." };
   if (ingredients.length === 0) return { error: "재료를 한 개 이상 입력해주세요." };
 
@@ -186,7 +186,7 @@ export async function updateRecipe(_prevState: unknown, formData: FormData) {
   };
 
   const { error } = await supabase.from("recipes").update(update).eq("id", id);
-  if (error) return { error: "요리책을 수정하지 못했어요." };
+  if (error) return { error: "메뉴를 수정하지 못했어요." };
 
   const { error: deleteError } = await supabase
     .from("recipe_ingredients")

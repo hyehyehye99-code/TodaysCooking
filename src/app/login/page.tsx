@@ -4,10 +4,10 @@ export default function LandingPage() {
   return (
     <div className="mx-auto flex h-dvh w-full max-w-[420px] flex-col px-7 pt-[max(env(safe-area-inset-top),64px)] pb-[max(env(safe-area-inset-bottom),64px)]">
       <div>
-        <p className="mb-5 text-xs font-bold tracking-wide text-ink-faint">오내요</p>
+        <p className="mb-5 text-xs font-bold tracking-wide text-ink-faint">우리집 메뉴판</p>
         <h1 className="mb-7 text-[32px] font-bold leading-tight">오늘은 내가 요리할게!</h1>
         <p className="text-sm leading-relaxed text-ink-soft">
-          우리의 요리책을 한 곳에, 필요한 재료를 한 눈에!
+          우리의 메뉴를 한 곳에, 필요한 재료를 한눈에!
         </p>
       </div>
 

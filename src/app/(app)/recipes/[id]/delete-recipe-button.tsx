@@ -22,14 +22,14 @@ export function DeleteRecipeButton({ recipeId }: { recipeId: string }) {
         onClick={() => setConfirming(true)}
         className="flex-1 rounded-xl bg-surface py-3 text-sm font-bold text-ink-soft"
       >
-        요리책 삭제
+        메뉴 삭제
       </button>
 
       {confirming && (
         <div className="fixed inset-0 z-50 flex items-center justify-center px-6">
           <div className="absolute inset-0 bg-black/40" onClick={() => setConfirming(false)} />
           <div className="relative w-full max-w-[360px] rounded-2xl bg-white p-5 shadow-xl">
-            <p className="text-sm font-bold text-ink">요리책을 삭제할까요?</p>
+            <p className="text-sm font-bold text-ink">메뉴를 삭제할까요?</p>
             <p className="mt-2 text-xs text-ink-soft">
               삭제하면 되돌릴 수 없어요. 재료와 메모도 함께 사라져요.
             </p>
