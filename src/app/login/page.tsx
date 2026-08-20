@@ -6,9 +6,13 @@ export default function LandingPage() {
       <div>
         <p className="mb-5 text-xs font-bold tracking-wide text-ink-faint">우리집 메뉴판</p>
         <h1 className="text-[32px] font-bold leading-tight">
-          흩어진 레시피를 한 곳에,
+          흩어진 레시피를
           <br />
-          필요한 재료를 한 눈에!
+          <span className="text-accent">한곳에,</span>
+          <br />
+          필요한 재료를,
+          <br />
+          <span className="text-accent">한 눈에!</span>
         </h1>
       </div>
 
