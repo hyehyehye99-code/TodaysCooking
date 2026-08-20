@@ -37,13 +37,13 @@ export function AppHeader({
       <div className="flex items-baseline justify-between gap-3">
         <h1 className="flex min-w-0 items-baseline gap-1.5 text-[26px] font-bold tracking-tight">
           {households.length <= 1 ? (
-            <span className="shrink-0 font-medium text-accent underline">{currentName}</span>
+            <span className="shrink-0 font-medium text-ink underline">{currentName}</span>
           ) : (
             <div className="relative shrink-0">
               <button
                 type="button"
                 onClick={() => setOpen((v) => !v)}
-                className="flex items-baseline gap-1 whitespace-nowrap font-medium text-accent underline"
+                className="flex items-baseline gap-1 whitespace-nowrap font-medium text-ink underline"
               >
                 {currentName}
                 <svg
