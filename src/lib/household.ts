@@ -6,7 +6,7 @@ const ACTIVE_HOUSEHOLD_COOKIE = "active_household_id";
 
 function unwrapHousehold(value: unknown) {
   const household = Array.isArray(value) ? value[0] : value;
-  return (household as { id: string; name: string } | null) ?? null;
+  return (household as { id: string; name: string; invite_code?: string } | null) ?? null;
 }
 
 // Deduped per-request: layout + page both call getCurrentHousehold(), and
@@ -58,11 +58,14 @@ export const getMyHouseholds = cache(async () => {
   const supabase = await createClient();
   const { data } = await supabase
     .from("household_members")
-    .select("role, households(id, name)")
+    .select("role, households(id, name, invite_code)")
     .eq("user_id", user.id)
     .order("joined_at", { ascending: true });
 
   return (data ?? [])
     .map((m) => ({ role: m.role as string, household: unwrapHousehold(m.households) }))
-    .filter((m): m is { role: string; household: { id: string; name: string } } => !!m.household);
+    .filter(
+      (m): m is { role: string; household: { id: string; name: string; invite_code: string } } =>
+        !!m.household
+    );
 });

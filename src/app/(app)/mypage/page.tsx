@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 import { NicknameForm } from "./nickname-form";
 import { AddHouseholdSection } from "./add-household-section";
 import { HouseholdList } from "./household-list";
+import { DeleteAccountButton } from "./delete-account-button";
 
 type Member = { user_id: string; nickname: string; role: string; joined_at: string };
 
@@ -48,12 +49,13 @@ export default async function MyPage() {
 
       <AddHouseholdSection />
 
-      <div className="mt-8 border-t border-border pt-5">
+      <div className="mt-8 flex items-center justify-between border-t border-border pt-5">
         <form action={signOut}>
           <button type="submit" className="text-sm text-ink-faint underline">
             로그아웃
           </button>
         </form>
+        <DeleteAccountButton />
       </div>
     </div>
   );

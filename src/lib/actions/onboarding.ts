@@ -26,9 +26,9 @@ async function applySetup(payload: SetupPayload) {
     if (error) return { error: "부엌을 만들지 못했어요. 다시 시도해주세요.", field: "name" as const };
   } else {
     const { error } = await supabase.rpc("join_household_with_code", {
-      invite_code: payload.code,
+      p_invite_code: payload.code,
     });
-    if (error) return { error: "코드가 올바르지 않거나 만료되었어요.", field: "code" as const };
+    if (error) return { error: "코드가 올바르지 않아요.", field: "code" as const };
   }
 
   const { household } = await getCurrentHousehold();

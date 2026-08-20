@@ -44,37 +44,27 @@ export async function joinHousehold(_prevState: unknown, formData: FormData) {
 
   const supabase = await createClient();
   const { data, error } = await supabase.rpc("join_household_with_code", {
-    invite_code: code,
+    p_invite_code: code,
   });
 
-  if (error) return { error: "초대 코드가 올바르지 않거나 만료되었어요." };
+  if (error) return { error: "초대 코드가 올바르지 않아요." };
   if (data) await setActiveHouseholdCookie(data as string);
 
   redirect("/recipes");
 }
 
-export async function createInvite(_prevState: unknown, formData: FormData) {
+export async function removeMember(formData: FormData) {
   const householdId = String(formData.get("householdId") ?? "");
-  if (!householdId) return { error: "부엌을 찾을 수 없어요." };
+  const userId = String(formData.get("userId") ?? "");
+  if (!householdId || !userId) return;
 
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return { error: "로그인이 필요해요." };
-
-  const code = Math.random().toString(36).slice(2, 8).toUpperCase();
-
-  const { error } = await supabase.from("household_invites").insert({
-    household_id: householdId,
-    code,
-    created_by: user.id,
+  await supabase.rpc("remove_household_member", {
+    target_household_id: householdId,
+    target_user_id: userId,
   });
 
-  if (error) return { error: "초대 코드를 만들지 못했어요." };
-
   revalidatePath("/mypage");
-  return { code };
 }
 
 export async function renameHousehold(_prevState: unknown, formData: FormData) {
@@ -126,4 +116,16 @@ export async function leaveHousehold(formData: FormData) {
 
   await clearActiveHouseholdCookieIfMatches(householdId);
   redirect("/");
+}
+
+// Hands off ownership (to whoever joined each owned household earliest) or
+// deletes households with no one left, then deletes the auth.users row
+// itself — see delete_my_account() in supabase/migrations.
+export async function deleteMyAccount(): Promise<{ error: string } | never> {
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("delete_my_account");
+  if (error) return { error: "탈퇴하지 못했어요. 다시 시도해주세요." };
+
+  await supabase.auth.signOut();
+  redirect("/login");
 }

@@ -7,10 +7,11 @@ import { chefName } from "@/lib/format";
 import { InviteForm } from "./invite-form";
 import { LeaveHouseholdButton } from "./leave-household-button";
 import { RenameHouseholdForm } from "./rename-household-form";
+import { RemoveMemberButton } from "./remove-member-button";
 
 type Member = { user_id: string; nickname: string; role: string; joined_at: string };
 type HouseholdEntry = {
-  household: { id: string; name: string };
+  household: { id: string; name: string; invite_code: string };
   role: string;
   members: Member[];
 };
@@ -103,11 +104,20 @@ export function HouseholdList({
                             <span className="ml-1.5 text-xs text-ink-faint">(나)</span>
                           )}
                         </span>
-                        {m.role === "owner" && (
-                          <span className="rounded-full bg-accent/8 px-2 py-0.5 text-[10px] font-bold text-accent">
-                            대장
-                          </span>
-                        )}
+                        <div className="flex items-center gap-2">
+                          {m.role === "owner" && (
+                            <span className="rounded-full bg-accent/8 px-2 py-0.5 text-[10px] font-bold text-accent">
+                              대장
+                            </span>
+                          )}
+                          {myRole === "owner" && m.user_id !== myUserId && (
+                            <RemoveMemberButton
+                              householdId={household.id}
+                              userId={m.user_id}
+                              nickname={chefName(m.nickname)}
+                            />
+                          )}
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -116,10 +126,9 @@ export function HouseholdList({
                 <div>
                   <p className="mb-1 text-xs font-bold text-ink-soft">함께 쓸 사람 초대하기</p>
                   <p className="mb-2.5 text-[11px] text-ink-faint">
-                    코드를 만들어 상대방에게 공유하면, 로그인 후 초대 코드로 이 부엌에 들어올 수
-                    있어요.
+                    이 코드를 상대방에게 알려주면, 로그인 후 코드로 이 부엌에 들어올 수 있어요.
                   </p>
-                  <InviteForm householdId={household.id} />
+                  <InviteForm inviteCode={household.invite_code} />
                 </div>
 
                 <div className="flex justify-end">
