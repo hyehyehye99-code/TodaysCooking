@@ -136,21 +136,24 @@ export default async function RecipeDetailPage({
           재료 {activeIngredients.length - missing.length}/{activeIngredients.length} 보유 중
         </p>
         <div className="flex flex-wrap gap-2">
-          {ingredients.map((ing) => (
-            <span
-              key={ing.id}
-              className={`rounded-full border px-3.5 py-2 text-[13px] font-semibold ${
-                ing.skipped
-                  ? "border-transparent bg-surface text-ink-faint line-through"
-                  : owned.has(ing.name)
-                    ? "border-accent bg-surface text-accent-ink"
-                    : "border-transparent bg-surface text-ink-soft"
-              }`}
-            >
-              {ing.name}
-              {ing.skipped && <span className="ml-1 text-[10px] font-normal no-underline">(생략됨)</span>}
-            </span>
-          ))}
+          {ingredients.map((ing) => {
+            const stateClass = ing.skipped
+              ? "border-ink-faint bg-surface text-ink-faint line-through"
+              : owned.has(ing.name)
+                ? "border-accent bg-surface text-accent-ink"
+                : onShoppingList.has(ing.name)
+                  ? "border-positive bg-surface text-positive-ink"
+                  : "border-transparent bg-surface text-ink-soft";
+            return (
+              <span
+                key={ing.id}
+                className={`rounded-full border px-3.5 py-2 text-[13px] font-semibold ${stateClass}`}
+              >
+                {ing.name}
+                {ing.skipped && <span className="ml-1 text-[10px] font-normal no-underline">(생략됨)</span>}
+              </span>
+            );
+          })}
         </div>
       </div>
 
