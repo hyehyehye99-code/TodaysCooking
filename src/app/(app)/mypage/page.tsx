@@ -35,23 +35,25 @@ export default async function MyPage() {
     <div>
       <PageHeader title="마이페이지" />
 
-      <GlassCard className="mb-6 bg-white p-4">
+      <p className="mb-3 text-[13px] font-bold text-ink-soft">닉네임</p>
+      <GlassCard className="mb-8 bg-white p-4">
         <p className="mb-1 text-[11px] font-bold text-ink-faint">닉네임</p>
         <p className="mb-3 text-xl font-bold">{chefName(myNickname)}</p>
         <NicknameForm currentNickname={myNickname} />
       </GlassCard>
 
-      <p className="mb-3 text-[13px] font-bold text-ink-soft">내 부엌</p>
-
+      <p className="mb-3 text-[13px] font-bold text-ink-soft">부엌 관리</p>
       <div className="mb-4">
         <HouseholdList entries={entries} currentId={current?.id ?? ""} myUserId={user?.id ?? ""} />
       </div>
+      <div className="mb-8">
+        <AddHouseholdSection />
+      </div>
 
-      <AddHouseholdSection />
-
-      <div className="mt-8 flex items-center justify-between border-t border-border pt-5">
+      <p className="mb-3 text-[13px] font-bold text-ink-soft">계정 관리</p>
+      <div className="flex items-center justify-between border-t border-border pt-5">
         <form action={signOut}>
-          <button type="submit" className="text-sm text-ink-faint underline">
+          <button type="submit" className="text-sm text-ink-soft underline">
             로그아웃
           </button>
         </form>

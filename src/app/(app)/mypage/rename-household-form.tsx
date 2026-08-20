@@ -10,32 +10,19 @@ export function RenameHouseholdForm({
   householdId: string;
   currentName: string;
 }) {
-  const [editing, setEditing] = useState(false);
+  const [value, setValue] = useState(currentName);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
   const [pending, startTransition] = useTransition();
 
-  if (!editing) {
-    return (
-      <button
-        type="button"
-        onClick={() => {
-          setError(null);
-          setEditing(true);
-        }}
-        className="text-xs font-bold text-ink-faint underline"
-      >
-        이름 바꾸기
-      </button>
-    );
-  }
-
   function handleSubmit(formData: FormData) {
+    setSuccess(false);
     startTransition(async () => {
       const result = await renameHousehold(undefined, formData);
-      if (result?.error) {
-        setError(result.error);
-      } else {
-        setEditing(false);
+      if (result?.error) setError(result.error);
+      else {
+        setError(null);
+        setSuccess(true);
       }
     });
   }
@@ -47,8 +34,8 @@ export function RenameHouseholdForm({
         <input
           name="name"
           required
-          autoFocus
-          defaultValue={currentName}
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
           className="min-w-0 flex-1 rounded-lg border border-transparent bg-surface px-3 py-2 text-sm outline-none focus:border-accent"
         />
         <button
@@ -58,15 +45,9 @@ export function RenameHouseholdForm({
         >
           {pending ? "저장 중..." : "저장"}
         </button>
-        <button
-          type="button"
-          onClick={() => setEditing(false)}
-          className="shrink-0 rounded-lg bg-surface px-3 py-2 text-xs font-bold text-ink-soft"
-        >
-          취소
-        </button>
       </div>
       {error && <p className="text-xs text-warn-ink">{error}</p>}
+      {success && <p className="text-xs text-positive-ink">이름을 저장했어요.</p>}
     </form>
   );
 }
