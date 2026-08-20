@@ -140,7 +140,7 @@ export function NewRecipeForm({ existingTags }: { existingTags: string[] }) {
 
         {state?.error && <p className="text-sm text-warn-ink">{state.error}</p>}
 
-        <div className="sticky bottom-0 -mx-5 mt-2 border-t border-border bg-white px-5 pt-3 pb-[max(env(safe-area-inset-bottom),12px)] shadow-[0_-6px_16px_-8px_rgba(0,0,0,0.15)]">
+        <div className="fixed inset-x-0 bottom-0 z-20 border-t border-border bg-white px-5 pt-3 pb-[max(env(safe-area-inset-bottom),12px)] shadow-[0_-6px_16px_-8px_rgba(0,0,0,0.15)]">
           <button
             type="submit"
             disabled={pending}
