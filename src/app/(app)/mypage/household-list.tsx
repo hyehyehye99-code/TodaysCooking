@@ -26,11 +26,37 @@ export function HouseholdList({
       {entries.map(({ household, role, members }) => {
         const active = household.id === currentId;
 
+        if (!active) {
+          return (
+            <form key={household.id} action={switchHousehold}>
+              <input type="hidden" name="householdId" value={household.id} />
+              <button type="submit" className="block w-full text-left">
+                <GlassCard className="flex items-center justify-between gap-2 bg-white p-4">
+                  <div className="min-w-0">
+                    <p className="truncate text-[15px] font-bold">{household.name}</p>
+                    <p className="mt-1 text-xs text-ink-soft">참여 인원 {members.length}명</p>
+                  </div>
+                  <svg
+                    viewBox="0 0 24 24"
+                    width="16"
+                    height="16"
+                    fill="none"
+                    stroke="var(--color-ink-faint)"
+                    strokeWidth="2.4"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="shrink-0"
+                  >
+                    <path d="M9 6l6 6-6 6" />
+                  </svg>
+                </GlassCard>
+              </button>
+            </form>
+          );
+        }
+
         return (
-          <GlassCard
-            key={household.id}
-            className={`bg-white p-4 ${active ? "ring-2 ring-accent" : ""}`}
-          >
+          <GlassCard key={household.id} className="bg-white p-4 ring-2 ring-accent">
             <div className="flex items-center justify-between gap-2">
               <HouseholdDetailButton
                 householdId={household.id}
@@ -39,21 +65,9 @@ export function HouseholdList({
                 myUserId={myUserId}
                 myRole={role}
               />
-              {active ? (
-                <span className="shrink-0 rounded-full bg-accent/10 px-2.5 py-1 text-xs font-bold text-accent">
-                  사용 중
-                </span>
-              ) : (
-                <form action={switchHousehold}>
-                  <input type="hidden" name="householdId" value={household.id} />
-                  <button
-                    type="submit"
-                    className="shrink-0 rounded-full bg-surface px-2.5 py-1 text-xs font-bold text-ink-soft"
-                  >
-                    전환하기
-                  </button>
-                </form>
-              )}
+              <span className="shrink-0 rounded-full bg-accent/10 px-2.5 py-1 text-xs font-bold text-accent">
+                사용 중
+              </span>
             </div>
 
             <div className="mt-3 flex items-center justify-between">

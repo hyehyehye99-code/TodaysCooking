@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import { switchHousehold } from "@/lib/actions/household";
 import { JoinConfirmForm } from "./join-confirm-form";
 import { JoinWithGoogleButton } from "./join-with-google-button";
 
@@ -71,12 +72,15 @@ export default async function JoinPage({
 
       <div className="mt-8 w-full">
         {alreadyMember ? (
-          <Link
-            href="/recipes"
-            className="block w-full rounded-xl bg-accent py-3.5 text-center text-sm font-bold text-white"
-          >
-            이미 참여 중이에요 · 메뉴판으로
-          </Link>
+          <form action={switchHousehold}>
+            <input type="hidden" name="householdId" value={household.id} />
+            <button
+              type="submit"
+              className="block w-full rounded-xl bg-accent py-3.5 text-center text-sm font-bold text-white"
+            >
+              이미 참여 중이에요 · 메뉴판으로
+            </button>
+          </form>
         ) : user ? (
           <JoinConfirmForm code={code} />
         ) : (
