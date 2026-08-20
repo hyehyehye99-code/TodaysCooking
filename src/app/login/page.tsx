@@ -16,9 +16,11 @@ export default function LandingPage() {
         </h1>
       </div>
 
-      <div className="flex-1" />
+      <div className="mt-10">
+        <GoogleSignInButton />
+      </div>
 
-      <GoogleSignInButton />
+      <div className="flex-1" />
     </div>
   );
 }
