@@ -75,8 +75,7 @@ export function ShareMenuButton({
         <div className="mx-auto w-full max-w-[420px] rounded-t-3xl bg-white p-5 pb-[max(env(safe-area-inset-bottom),20px)]">
           <p className="mb-1 text-[15px] font-bold">{householdName} 메뉴판 공유하기</p>
           <p className="mb-4 text-xs text-ink-soft">
-            링크를 받은 사람은 로그인 없이도 메뉴 목록을 볼 수 있고, 로그인하면 메뉴에 &ldquo;이거
-            먹고싶어요&rdquo;를 남길 수 있어요.
+            누구나 로그인 없이 메뉴를 볼 수 있고, 로그인하면 하트로 반응을 남길 수 있어요.
           </p>
 
           {shareCode ? (

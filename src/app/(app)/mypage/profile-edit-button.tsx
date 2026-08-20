@@ -9,11 +9,9 @@ import { ProfileForm } from "./profile-form";
 export function ProfileEditButton({
   nickname,
   iconEmoji,
-  isGoogleAccount,
 }: {
   nickname: string;
   iconEmoji: string | null;
-  isGoogleAccount: boolean;
 }) {
   const [open, setOpen] = useState(false);
 
@@ -23,7 +21,6 @@ export function ProfileEditButton({
         <ProfileAvatar iconEmoji={iconEmoji} nickname={nickname} size={48} />
         <div className="min-w-0 flex-1">
           <p className="truncate text-lg font-bold">{chefName(nickname)}</p>
-          {isGoogleAccount && <p className="mt-0.5 text-xs text-ink-soft">구글로 가입했어요</p>}
         </div>
         <svg
           viewBox="0 0 24 24"

@@ -29,7 +29,6 @@ export default async function MyPage() {
     ?.members.find((m) => m.user_id === user?.id);
   const myNickname = me?.nickname ?? "";
   const myIconEmoji = me?.icon_emoji ?? null;
-  const isGoogleAccount = user?.app_metadata?.provider === "google";
 
   // Sharing (the public /share link) and its tag filter only matter for the
   // active household, so this is a second small query rather than widening
@@ -49,7 +48,7 @@ export default async function MyPage() {
       <PageHeader title="마이페이지" />
 
       <GlassCard className="mb-8 bg-white p-4">
-        <ProfileEditButton nickname={myNickname} iconEmoji={myIconEmoji} isGoogleAccount={isGoogleAccount} />
+        <ProfileEditButton nickname={myNickname} iconEmoji={myIconEmoji} />
       </GlassCard>
 
       <p className="mb-3 text-[13px] font-bold text-ink-soft">부엌 관리</p>
