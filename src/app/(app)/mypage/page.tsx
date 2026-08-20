@@ -59,6 +59,33 @@ export default async function MyPage() {
         }
       : null;
 
+  // A member-facing preview of exactly what the public link currently shows
+  // (same RPC the /share page itself calls, so the filtering always matches
+  // exactly), plus like counts the public page intentionally doesn't show.
+  let sharedPreview: {
+    id: string;
+    title: string;
+    cover_photo_urls: string[];
+    icon_emoji: string | null;
+    likeCount: number;
+  }[] = [];
+  if (shareCode) {
+    const { data: sharedRecipes } = await supabase.rpc("get_shared_recipes", { p_share_code: shareCode });
+    const list =
+      (sharedRecipes as
+        | { id: string; title: string; cover_photo_urls: string[]; icon_emoji: string | null }[]
+        | null) ?? [];
+    if (list.length > 0) {
+      const { data: reactions } = await supabase
+        .from("recipe_reactions")
+        .select("recipe_id")
+        .in("recipe_id", list.map((r) => r.id));
+      const counts = new Map<string, number>();
+      (reactions ?? []).forEach((r) => counts.set(r.recipe_id, (counts.get(r.recipe_id) ?? 0) + 1));
+      sharedPreview = list.map((r) => ({ ...r, likeCount: counts.get(r.id) ?? 0 }));
+    }
+  }
+
   return (
     <div>
       <PageHeader title="마이페이지" />
@@ -77,6 +104,7 @@ export default async function MyPage() {
           shareTags={shareTags}
           shareableTags={shareableTags}
           shareChangeLog={shareChangeLog}
+          sharedPreview={sharedPreview}
         />
       </div>
       <div className="mb-8">

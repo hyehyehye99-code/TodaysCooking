@@ -19,6 +19,14 @@ type ShareChangeLog = {
   at: string;
 } | null;
 
+type SharedPreviewRecipe = {
+  id: string;
+  title: string;
+  cover_photo_urls: string[];
+  icon_emoji: string | null;
+  likeCount: number;
+};
+
 export function HouseholdList({
   entries,
   currentId,
@@ -27,6 +35,7 @@ export function HouseholdList({
   shareTags,
   shareableTags,
   shareChangeLog,
+  sharedPreview,
 }: {
   entries: HouseholdEntry[];
   currentId: string;
@@ -35,6 +44,7 @@ export function HouseholdList({
   shareTags: string[];
   shareableTags: string[];
   shareChangeLog: ShareChangeLog;
+  sharedPreview: SharedPreviewRecipe[];
 }) {
   return (
     <div className="flex flex-col gap-2.5">
@@ -95,6 +105,7 @@ export function HouseholdList({
                   initialShareTags={shareTags}
                   shareableTags={shareableTags}
                   changeLog={shareChangeLog}
+                  sharedPreview={sharedPreview}
                 />
                 <InviteButton householdName={household.name} inviteCode={household.invite_code} />
               </div>

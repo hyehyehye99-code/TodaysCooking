@@ -1,14 +1,24 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { setHouseholdSharing, setHouseholdShareTags } from "@/lib/actions/sharing";
 import { Modal } from "@/components/Modal";
+import { RecipeThumb } from "@/components/RecipeThumb";
 
 type ShareChangeLog = {
   nickname: string;
   action: "enabled" | "disabled" | "tags_changed";
   at: string;
 } | null;
+
+type SharedPreviewRecipe = {
+  id: string;
+  title: string;
+  cover_photo_urls: string[];
+  icon_emoji: string | null;
+  likeCount: number;
+};
 
 const ACTION_LABELS: Record<NonNullable<ShareChangeLog>["action"], string> = {
   enabled: "공유를 켰어요",
@@ -35,6 +45,7 @@ export function ShareMenuButton({
   initialShareTags,
   shareableTags,
   changeLog,
+  sharedPreview,
 }: {
   householdId: string;
   householdName: string;
@@ -42,7 +53,9 @@ export function ShareMenuButton({
   initialShareTags: string[];
   shareableTags: string[];
   changeLog: ShareChangeLog;
+  sharedPreview: SharedPreviewRecipe[];
 }) {
+  const router = useRouter();
   const [open, setOpen] = useState(false);
   const [shareCode, setShareCode] = useState(initialShareCode);
   const [selectedTags, setSelectedTags] = useState<string[]>(initialShareTags);
@@ -67,6 +80,7 @@ export function ShareMenuButton({
       // previous tag filter to carry over.
       if (next) setSelectedTags([]);
       setShareCode(result.shareCode);
+      router.refresh(); // re-fetch the preview list below to match
     });
   }
 
@@ -78,6 +92,7 @@ export function ShareMenuButton({
     startTagsTransition(async () => {
       const result = await setHouseholdShareTags(householdId, next);
       if (!result.ok) setError(result.error);
+      else router.refresh(); // re-fetch the preview list below to match
     });
   }
 
@@ -112,17 +127,62 @@ export function ShareMenuButton({
 
           {shareCode ? (
             <>
-              <button
-                type="button"
-                onClick={copyLink}
-                className={`w-full rounded-xl border py-3.5 text-sm font-bold ${
-                  copied
-                    ? "border-accent bg-white text-accent-ink"
-                    : "border-transparent bg-accent text-white"
-                }`}
-              >
-                {copied ? "링크를 복사했어요!" : "공유 링크 복사하기"}
-              </button>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={copyLink}
+                  className={`flex-1 rounded-xl border py-3.5 text-sm font-bold ${
+                    copied
+                      ? "border-accent bg-white text-accent-ink"
+                      : "border-transparent bg-accent text-white"
+                  }`}
+                >
+                  {copied ? "링크를 복사했어요!" : "공유 링크 복사하기"}
+                </button>
+                <a
+                  href={shareUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex shrink-0 items-center justify-center rounded-xl bg-surface px-4 text-sm font-bold text-ink-soft"
+                >
+                  미리보기
+                </a>
+              </div>
+
+              <div className="mt-5 border-t border-border pt-4">
+                <p className="mb-2 text-xs font-bold text-ink-soft">공유 중인 메뉴</p>
+                {sharedPreview.length === 0 ? (
+                  <p className="text-[11px] text-ink-faint">공개된 메뉴가 없어요.</p>
+                ) : (
+                  <div className="flex flex-col gap-2.5">
+                    {sharedPreview.map((recipe) => (
+                      <div key={recipe.id} className="flex items-center gap-2.5">
+                        <RecipeThumb
+                          coverPhotoUrl={recipe.cover_photo_urls[0]}
+                          iconEmoji={recipe.icon_emoji}
+                          size={36}
+                        />
+                        <p className="min-w-0 flex-1 truncate text-xs font-semibold">{recipe.title}</p>
+                        <span className="flex shrink-0 items-center gap-1 text-xs font-bold text-ink-faint">
+                          <svg
+                            viewBox="0 0 24 24"
+                            width="13"
+                            height="13"
+                            fill={recipe.likeCount > 0 ? "var(--color-warn)" : "none"}
+                            stroke={recipe.likeCount > 0 ? "var(--color-warn)" : "var(--color-ink-faint)"}
+                            strokeWidth="1.8"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          >
+                            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+                          </svg>
+                          {recipe.likeCount}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
 
               <div className="mt-5 border-t border-border pt-4">
                 <p className="mb-2 text-xs font-bold text-ink-soft">공개 범위</p>
