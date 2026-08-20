@@ -49,13 +49,12 @@ export default async function MyPage() {
         <AddHouseholdSection />
       </div>
 
-      <p className="mb-3 text-[13px] font-bold text-ink-soft">계정 관리</p>
       <GlassCard className="bg-white">
         <Link
           href="/mypage/account"
           className="flex items-center justify-between px-4 py-4 text-sm font-semibold text-ink"
         >
-          로그아웃 · 회원 탈퇴
+          계정 관리
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--color-ink-faint)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M9 6l6 6-6 6" />
           </svg>
