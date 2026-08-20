@@ -3,7 +3,6 @@
 import { switchHousehold } from "@/lib/actions/household";
 import { GlassCard } from "@/components/ui";
 import { InviteButton } from "./invite-button";
-import { LeaveHouseholdButton } from "./leave-household-button";
 import { HouseholdDetailButton } from "./household-detail-button";
 
 type Member = { user_id: string; nickname: string; role: string; joined_at: string };
@@ -49,9 +48,9 @@ export function HouseholdList({
                   <input type="hidden" name="householdId" value={household.id} />
                   <button
                     type="submit"
-                    className="shrink-0 text-xs font-bold text-ink-faint underline"
+                    className="shrink-0 rounded-full bg-surface px-2.5 py-1 text-xs font-bold text-ink-soft"
                   >
-                    사용 중으로 전환
+                    전환하기
                   </button>
                 </form>
               )}
@@ -59,15 +58,7 @@ export function HouseholdList({
 
             <div className="mt-3 flex items-center justify-between">
               <span className="text-xs text-ink-soft">참여 인원 {members.length}명</span>
-              <div className="flex items-center gap-3">
-                <InviteButton householdName={household.name} inviteCode={household.invite_code} />
-                <LeaveHouseholdButton
-                  householdId={household.id}
-                  householdName={household.name}
-                  isOwner={role === "owner"}
-                  hasOtherMembers={members.length > 1}
-                />
-              </div>
+              <InviteButton householdName={household.name} inviteCode={household.invite_code} />
             </div>
           </GlassCard>
         );

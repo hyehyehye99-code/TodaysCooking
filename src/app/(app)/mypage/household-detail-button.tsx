@@ -4,6 +4,7 @@ import { useState } from "react";
 import { chefName } from "@/lib/format";
 import { RenameHouseholdForm } from "./rename-household-form";
 import { RemoveMemberButton } from "./remove-member-button";
+import { LeaveHouseholdButton } from "./leave-household-button";
 
 type Member = { user_id: string; nickname: string; role: string; joined_at: string };
 
@@ -78,13 +79,21 @@ export function HouseholdDetailButton({
               ))}
             </div>
 
-            <button
-              type="button"
-              onClick={() => setOpen(false)}
-              className="mt-6 w-full rounded-xl bg-surface py-3 text-sm font-bold text-ink-soft"
-            >
-              닫기
-            </button>
+            <div className="mt-6 flex items-center justify-between border-t border-border pt-4">
+              <LeaveHouseholdButton
+                householdId={householdId}
+                householdName={householdName}
+                isOwner={myRole === "owner"}
+                hasOtherMembers={members.length > 1}
+              />
+              <button
+                type="button"
+                onClick={() => setOpen(false)}
+                className="rounded-xl bg-surface px-4 py-2.5 text-xs font-bold text-ink-soft"
+              >
+                닫기
+              </button>
+            </div>
           </div>
         </div>
       )}
