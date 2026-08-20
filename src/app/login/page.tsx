@@ -3,6 +3,8 @@ import { GoogleSignInButton } from "./google-signin-button";
 export default function LandingPage() {
   return (
     <div className="mx-auto flex h-dvh w-full max-w-[420px] flex-col px-7 pt-[max(env(safe-area-inset-top),64px)] pb-[max(env(safe-area-inset-bottom),64px)]">
+      <div className="flex-[1]" />
+
       <div>
         <p className="mb-5 text-xs font-bold tracking-wide text-ink-faint">우리집 메뉴판</p>
         <h1 className="text-[32px] font-bold leading-tight">
@@ -14,13 +16,13 @@ export default function LandingPage() {
           <br />
           <span className="text-accent">한 눈에!</span>
         </h1>
+
+        <div className="mt-10">
+          <GoogleSignInButton />
+        </div>
       </div>
 
-      <div className="mt-10">
-        <GoogleSignInButton />
-      </div>
-
-      <div className="flex-1" />
+      <div className="flex-[1.4]" />
     </div>
   );
 }
