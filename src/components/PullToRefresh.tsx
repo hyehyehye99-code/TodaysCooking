@@ -98,7 +98,7 @@ export function PullToRefresh({
           transform: shown ? `translateY(${shown}px)` : undefined,
           transition: dragging ? "none" : "transform 200ms ease-out",
         }}
-        className={`h-full overflow-y-auto ${className ?? ""}`}
+        className={`h-full overflow-y-auto overscroll-contain ${className ?? ""}`}
       >
         {children}
       </div>

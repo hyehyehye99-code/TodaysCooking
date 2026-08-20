@@ -57,7 +57,7 @@ export default async function RecipeDetailPage({
   const modalCandidates = ingredients.filter((ing) => ing.skipped || !owned.has(ing.name));
 
   return (
-    <div className="pt-2">
+    <div className="animate-fade-in-up pt-2">
       <div className="mb-4 flex items-start justify-between gap-3">
         <div className={`flex min-w-0 flex-1 gap-3 ${r.subtitle ? "items-start" : "items-center"}`}>
           {r.cover_photo_urls.length === 0 && r.icon_emoji && (

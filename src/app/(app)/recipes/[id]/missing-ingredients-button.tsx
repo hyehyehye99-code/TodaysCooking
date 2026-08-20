@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { resolveMissingIngredients } from "@/lib/actions/recipes";
 import { Modal } from "@/components/Modal";
 
@@ -30,6 +31,7 @@ export function MissingIngredientsButton({
   const [open, setOpen] = useState(false);
   const [choices, setChoices] = useState<Record<string, ChoiceState>>({});
   const [pending, startTransition] = useTransition();
+  const router = useRouter();
 
   function openModal() {
     setChoices(
@@ -45,6 +47,7 @@ export function MissingIngredientsButton({
     startTransition(async () => {
       await resolveMissingIngredients({ recipeId, shopping, fridge, skip });
       setOpen(false);
+      router.push("/recipes");
     });
   }
 

@@ -27,7 +27,19 @@
   --font-display: var(--font-suit);
 }
 
+/* Without this, iOS Safari's elastic overscroll bounces the whole document
+   (not just the inner scroll container below), which briefly reveals
+   whatever's beneath the fixed-position tab bar. The app shell already
+   fills the viewport (h-dvh) and only its own inner container should
+   scroll, so the outer document never needs to move at all. */
+html {
+  overscroll-behavior: none;
+}
+
 body {
+  height: 100%;
+  overflow: hidden;
+  overscroll-behavior: none;
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans), system-ui, sans-serif;
@@ -45,6 +57,20 @@ button:not(:disabled):active {
 }
 a:active {
   opacity: 0.7;
+}
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.animate-fade-in-up {
+  animation: fade-in-up 260ms ease-out;
 }
 
 @media (prefers-reduced-motion: reduce) {

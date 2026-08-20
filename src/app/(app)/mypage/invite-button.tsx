@@ -48,7 +48,11 @@ export function InviteButton({
             <button
               type="button"
               onClick={copyLink}
-              className="w-full rounded-xl bg-accent py-3.5 text-sm font-bold text-white"
+              className={`w-full rounded-xl border py-3.5 text-sm font-bold ${
+                copiedLink
+                  ? "border-accent bg-white text-accent-ink"
+                  : "border-transparent bg-accent text-white"
+              }`}
             >
               {copiedLink ? "링크를 복사했어요!" : "초대 링크 복사하기"}
             </button>
