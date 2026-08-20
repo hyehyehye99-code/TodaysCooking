@@ -81,10 +81,12 @@ export function PhotoPicker({
   name,
   existingUrls = [],
   max = MAX_RECIPE_PHOTOS,
+  onCountChange,
 }: {
   name: string;
   existingUrls?: string[];
   max?: number;
+  onCountChange?: (count: number) => void;
 }) {
   const inputId = useId();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -103,6 +105,7 @@ export function PhotoPicker({
     const transfer = new DataTransfer();
     newFiles.forEach((file) => transfer.items.add(file));
     if (fileInputRef.current) fileInputRef.current.files = transfer.files;
+    onCountChange?.(items.length);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [items]);
 

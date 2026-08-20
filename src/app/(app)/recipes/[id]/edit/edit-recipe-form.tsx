@@ -7,25 +7,32 @@ import { GlassCard } from "@/components/ui";
 import { EmojiPicker } from "@/components/EmojiPicker";
 import { TagPicker } from "@/components/TagPicker";
 import { PhotoPicker } from "@/components/PhotoPicker";
+import { IngredientPicker } from "@/components/IngredientPicker";
+import { FieldLabel } from "@/components/FieldLabel";
 import type { RecipeWithIngredients } from "@/lib/types";
 
 export function EditRecipeForm({
   recipe,
   referenceUrl,
   existingTags,
+  fridgeItems,
 }: {
   recipe: RecipeWithIngredients;
   referenceUrl: string;
   existingTags: string[];
+  fridgeItems: string[];
 }) {
   const [state, formAction, pending] = useActionState(updateRecipe, undefined);
   const [confirmingClose, setConfirmingClose] = useState(false);
+  const [photoSectionOpen, setPhotoSectionOpen] = useState(
+    recipe.cover_photo_urls.length > 0 || !!recipe.icon_emoji
+  );
+  const [photoCount, setPhotoCount] = useState(recipe.cover_photo_urls.length);
   const router = useRouter();
-  const ingredientsText = recipe.recipe_ingredients
+  const ingredientNames = recipe.recipe_ingredients
     .slice()
     .sort((a, b) => a.position - b.position)
-    .map((i) => i.name)
-    .join("\n");
+    .map((i) => i.name);
 
   return (
     <div>
@@ -70,49 +77,60 @@ export function EditRecipeForm({
         </div>
       )}
 
-      <form action={formAction} className="flex flex-col gap-4">
+      <form action={formAction} className="flex flex-col gap-4 pb-4">
         <input type="hidden" name="id" value={recipe.id} />
+
+        <div>
+          <FieldLabel required>요리 이름</FieldLabel>
+          <input
+            name="title"
+            required
+            defaultValue={recipe.title}
+            placeholder="요리 이름을 입력해주세요"
+            className="w-full rounded-xl border border-transparent bg-surface px-3.5 py-3 text-base font-bold outline-none focus:border-accent"
+          />
+        </div>
+
+        <GlassCard className="bg-white p-4">
+          <FieldLabel required>재료</FieldLabel>
+          <IngredientPicker name="ingredients" fridgeItems={fridgeItems} defaultSelected={ingredientNames} />
+        </GlassCard>
+
+        <GlassCard className="bg-white p-4">
+          <FieldLabel required>만드는법</FieldLabel>
+          <textarea
+            name="notes"
+            required
+            rows={8}
+            defaultValue={recipe.notes ?? ""}
+            placeholder="예) 다음엔 국물을 더 자작하게, 마늘은 좀 줄이기"
+            className="w-full rounded-xl border border-transparent bg-surface px-3.5 py-3 text-sm outline-none focus:border-accent"
+          />
+        </GlassCard>
 
         <GlassCard className="bg-white p-4">
           <p className="mb-3 text-[13px] font-bold">기본 정보</p>
-          <div className="flex flex-col gap-3">
-            <input
-              name="title"
-              required
-              defaultValue={recipe.title}
-              placeholder="요리 이름"
-              className="rounded-xl border border-transparent bg-surface px-3.5 py-3 text-sm outline-none focus:border-accent"
-            />
-            <input
-              name="subtitle"
-              defaultValue={recipe.subtitle ?? ""}
-              placeholder="설명 (선택)"
-              className="rounded-xl border border-transparent bg-surface px-3.5 py-3 text-sm outline-none focus:border-accent"
-            />
-          </div>
-        </GlassCard>
-
-        <GlassCard className="bg-white p-4">
-          <p className="mb-3 text-[13px] font-bold">사진 또는 이모지</p>
-          <div className="flex flex-col gap-3">
-            <div className="flex flex-col gap-1.5">
-              <span className="text-xs text-ink-soft">사진 (선택, 최대 5장)</span>
-              <PhotoPicker name="photos" existingUrls={recipe.cover_photo_urls} />
+          <div className="flex flex-col gap-4">
+            <div>
+              <FieldLabel>설명</FieldLabel>
+              <input
+                name="subtitle"
+                defaultValue={recipe.subtitle ?? ""}
+                placeholder="한 줄 설명"
+                className="w-full rounded-xl border border-transparent bg-surface px-3.5 py-3 text-sm outline-none focus:border-accent"
+              />
             </div>
-            <label className="flex flex-col gap-1.5">
-              <span className="text-xs text-ink-soft">아이콘 이모지 (사진이 없을 때 표시돼요)</span>
-              <EmojiPicker name="iconEmoji" defaultValue={recipe.icon_emoji} />
-            </label>
+            <div>
+              <FieldLabel>태그</FieldLabel>
+              <TagPicker name="tags" existingTags={existingTags} defaultSelected={recipe.tags} />
+            </div>
           </div>
         </GlassCard>
 
         <GlassCard className="bg-white p-4">
-          <p className="mb-3 text-[13px] font-bold">태그</p>
-          <TagPicker name="tags" existingTags={existingTags} defaultSelected={recipe.tags} />
-        </GlassCard>
-
-        <GlassCard className="bg-white p-4">
-          <p className="mb-1 text-[13px] font-bold">참고 링크</p>
+          <p className="mb-1 text-[13px] font-bold">
+            참고 링크<span className="ml-1.5 text-[11px] font-semibold text-ink-faint">선택</span>
+          </p>
           <p className="mb-3 text-xs text-ink-soft">여기 넣은 링크는 보관함 탭에도 함께 저장돼요</p>
           <input
             name="referenceUrl"
@@ -124,37 +142,61 @@ export function EditRecipeForm({
         </GlassCard>
 
         <GlassCard className="bg-white p-4">
-          <p className="mb-1 text-[13px] font-bold">재료</p>
-          <p className="mb-3 text-xs text-ink-soft">한 줄에 하나씩 입력해주세요</p>
-          <textarea
-            name="ingredients"
-            required
-            rows={12}
-            defaultValue={ingredientsText}
-            className="w-full rounded-xl border border-transparent bg-surface px-3.5 py-3 text-sm outline-none focus:border-accent"
-          />
-        </GlassCard>
+          <button
+            type="button"
+            onClick={() => setPhotoSectionOpen((v) => !v)}
+            className="flex w-full items-center justify-between"
+          >
+            <FieldLabel>사진 또는 이모지</FieldLabel>
+            <span className="flex items-center gap-1 text-xs font-bold text-accent">
+              {photoSectionOpen ? "접기" : "사진/아이콘 추가하기"}
+              <svg
+                viewBox="0 0 24 24"
+                width="14"
+                height="14"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.4"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className={`transition-transform duration-150 ${photoSectionOpen ? "rotate-180" : ""}`}
+              >
+                <path d="M6 9l6 6 6-6" />
+              </svg>
+            </span>
+          </button>
 
-        <GlassCard className="bg-white p-4">
-          <p className="mb-3 text-[13px] font-bold">만드는법</p>
-          <textarea
-            name="notes"
-            rows={8}
-            defaultValue={recipe.notes ?? ""}
-            placeholder="예) 다음엔 국물을 더 자작하게, 마늘은 좀 줄이기"
-            className="w-full rounded-xl border border-transparent bg-surface px-3.5 py-3 text-sm outline-none focus:border-accent"
-          />
+          {photoSectionOpen && (
+            <div className="mt-4 flex flex-col gap-3">
+              <div className="flex flex-col gap-1.5">
+                <span className="text-xs text-ink-soft">사진 (최대 5장)</span>
+                <PhotoPicker
+                  name="photos"
+                  existingUrls={recipe.cover_photo_urls}
+                  onCountChange={setPhotoCount}
+                />
+              </div>
+              {photoCount === 0 && (
+                <label className="flex flex-col gap-1.5">
+                  <span className="text-xs text-ink-soft">아이콘 이모지 (사진이 없을 때 표시돼요)</span>
+                  <EmojiPicker name="iconEmoji" defaultValue={recipe.icon_emoji} />
+                </label>
+              )}
+            </div>
+          )}
         </GlassCard>
 
         {state?.error && <p className="text-sm text-warn-ink">{state.error}</p>}
 
-        <button
-          type="submit"
-          disabled={pending}
-          className="mt-1 rounded-xl bg-accent py-3.5 text-sm font-bold text-white disabled:opacity-60"
-        >
-          {pending ? "저장 중..." : "저장하기"}
-        </button>
+        <div className="sticky bottom-0 -mx-5 mt-2 border-t border-border bg-white/95 px-5 py-3 backdrop-blur">
+          <button
+            type="submit"
+            disabled={pending}
+            className="w-full rounded-xl bg-accent py-3.5 text-sm font-bold text-white disabled:opacity-60"
+          >
+            {pending ? "저장 중..." : "저장하기"}
+          </button>
+        </div>
       </form>
     </div>
   );
