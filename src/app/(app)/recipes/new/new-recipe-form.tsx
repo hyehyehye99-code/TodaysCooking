@@ -65,7 +65,10 @@ export function NewRecipeForm({
         </div>
       )}
 
-      <form action={formAction} className="flex flex-col gap-4 pb-4">
+      <form
+        action={formAction}
+        className="flex flex-col gap-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))]"
+      >
         <div>
           <FieldLabel required>요리 이름</FieldLabel>
           <input
@@ -140,7 +143,7 @@ export function NewRecipeForm({
 
         {state?.error && <p className="text-sm text-warn-ink">{state.error}</p>}
 
-        <div className="sticky bottom-0 -mx-5 mt-2 border-t border-border bg-white/95 px-5 py-3 backdrop-blur">
+        <div className="sticky bottom-0 -mx-5 mt-2 border-t border-border bg-white/95 px-5 pt-3 pb-[max(env(safe-area-inset-bottom),12px)] shadow-[0_-6px_16px_-8px_rgba(0,0,0,0.15)] backdrop-blur">
           <button
             type="submit"
             disabled={pending}
