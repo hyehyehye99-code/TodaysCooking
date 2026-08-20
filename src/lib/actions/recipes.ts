@@ -220,14 +220,33 @@ export async function resolveMissingIngredients(payload: {
   recipeId: string;
   shopping: string[];
   fridge: string[];
+  skip: string[];
 }) {
-  const { recipeId, shopping, fridge } = payload;
+  const { recipeId, shopping, fridge, skip } = payload;
   if (!recipeId) return;
 
   const { household } = await getCurrentHousehold();
   if (!household) return;
 
   const supabase = await createClient();
+
+  const unskipped = [...shopping, ...fridge];
+  await Promise.all([
+    unskipped.length
+      ? supabase
+          .from("recipe_ingredients")
+          .update({ skipped: false })
+          .eq("recipe_id", recipeId)
+          .in("name", unskipped)
+      : Promise.resolve(),
+    skip.length
+      ? supabase
+          .from("recipe_ingredients")
+          .update({ skipped: true })
+          .eq("recipe_id", recipeId)
+          .in("name", skip)
+      : Promise.resolve(),
+  ]);
 
   if (shopping.length) {
     const [{ data: recipe }, { data: existing }] = await Promise.all([

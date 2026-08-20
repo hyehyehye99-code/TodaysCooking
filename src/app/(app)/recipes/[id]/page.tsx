@@ -52,9 +52,14 @@ export default async function RecipeDetailPage({
   const onShoppingList = new Set((shoppingItems ?? []).map((i) => i.name));
 
   const ingredients = r.recipe_ingredients;
-  const missing = ingredients.filter((ing) => !owned.has(ing.name));
+  // 생략(skipped) ingredients are excluded from the "보유 중" ratio and the
+  // makeable check entirely, but still surface in the resolve-missing modal
+  // (as long as something else is still unresolved) so a skip can be undone.
+  const activeIngredients = ingredients.filter((ing) => !ing.skipped);
+  const missing = activeIngredients.filter((ing) => !owned.has(ing.name));
   const makeable = missing.length === 0;
   const allAdded = missing.length > 0 && missing.every((m) => onShoppingList.has(m.name));
+  const modalCandidates = ingredients.filter((ing) => ing.skipped || !owned.has(ing.name));
 
   return (
     <div className="pt-2">
@@ -128,19 +133,22 @@ export default async function RecipeDetailPage({
 
       <div className="mt-5">
         <p className="mb-2 text-sm text-ink-soft">
-          재료 {ingredients.length - missing.length}/{ingredients.length} 보유 중
+          재료 {activeIngredients.length - missing.length}/{activeIngredients.length} 보유 중
         </p>
         <div className="flex flex-wrap gap-2">
           {ingredients.map((ing) => (
             <span
               key={ing.id}
               className={`rounded-full border px-3.5 py-2 text-[13px] font-semibold ${
-                owned.has(ing.name)
-                  ? "border-accent bg-surface text-accent-ink"
-                  : "border-transparent bg-surface text-ink-soft"
+                ing.skipped
+                  ? "border-transparent bg-surface text-ink-faint line-through"
+                  : owned.has(ing.name)
+                    ? "border-accent bg-surface text-accent-ink"
+                    : "border-transparent bg-surface text-ink-soft"
               }`}
             >
               {ing.name}
+              {ing.skipped && <span className="ml-1 text-[10px] font-normal no-underline">(생략됨)</span>}
             </span>
           ))}
         </div>
@@ -159,7 +167,10 @@ export default async function RecipeDetailPage({
             <span className="text-[13px] font-bold text-ink-faint">장보기에 담겨 있어요</span>
           </div>
         ) : (
-          <MissingIngredientsButton recipeId={r.id} missing={missing.map((m) => m.name)} />
+          <MissingIngredientsButton
+            recipeId={r.id}
+            missing={modalCandidates.map((m) => ({ name: m.name, skipped: m.skipped }))}
+          />
         )}
       </div>
 

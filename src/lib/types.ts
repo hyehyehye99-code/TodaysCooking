@@ -19,6 +19,7 @@ export type RecipeIngredient = {
   recipe_id: string;
   name: string;
   position: number;
+  skipped: boolean;
 };
 
 export type RecipeWithIngredients = Recipe & {

@@ -3,27 +3,50 @@
 import { useState, useTransition } from "react";
 import { resolveMissingIngredients } from "@/lib/actions/recipes";
 
+type ChoiceState = "shopping" | "fridge" | "skip";
+
+const STATES: ChoiceState[] = ["shopping", "fridge", "skip"];
+
+const STATE_LABELS: Record<ChoiceState, string> = {
+  shopping: "구매 필요",
+  fridge: "보유 중",
+  skip: "생략",
+};
+
+const STATE_STYLES: Record<ChoiceState, string> = {
+  shopping: "bg-accent text-white",
+  fridge: "bg-positive text-white",
+  skip: "bg-ink-soft text-white",
+};
+
 export function MissingIngredientsButton({
   recipeId,
   missing,
 }: {
   recipeId: string;
-  missing: string[];
+  missing: { name: string; skipped: boolean }[];
 }) {
   const [open, setOpen] = useState(false);
-  const [choices, setChoices] = useState<Record<string, "shopping" | "fridge">>({});
+  const [choices, setChoices] = useState<Record<string, ChoiceState>>({});
   const [pending, startTransition] = useTransition();
 
   function openModal() {
-    setChoices(Object.fromEntries(missing.map((name) => [name, "shopping" as const])));
+    setChoices(
+      Object.fromEntries(missing.map((m) => [m.name, m.skipped ? "skip" : "shopping"]))
+    );
     setOpen(true);
   }
 
+  function setAllShopping() {
+    setChoices(Object.fromEntries(missing.map((m) => [m.name, "shopping"])));
+  }
+
   function handleConfirm() {
-    const shopping = missing.filter((name) => choices[name] !== "fridge");
-    const fridge = missing.filter((name) => choices[name] === "fridge");
+    const shopping = missing.filter((m) => choices[m.name] === "shopping").map((m) => m.name);
+    const fridge = missing.filter((m) => choices[m.name] === "fridge").map((m) => m.name);
+    const skip = missing.filter((m) => choices[m.name] === "skip").map((m) => m.name);
     startTransition(async () => {
-      await resolveMissingIngredients({ recipeId, shopping, fridge });
+      await resolveMissingIngredients({ recipeId, shopping, fridge, skip });
       setOpen(false);
     });
   }
@@ -43,37 +66,42 @@ export function MissingIngredientsButton({
           <div className="absolute inset-0 bg-black/40" onClick={() => setOpen(false)} />
           <div className="relative flex max-h-[80vh] w-full max-w-[420px] flex-col rounded-t-3xl bg-white p-5 pb-[max(env(safe-area-inset-bottom),20px)]">
             <p className="mb-1 text-[15px] font-bold">부족한 재료 확인</p>
-            <p className="mb-4 text-xs text-ink-soft">
-              이미 있는 재료는 냉장고로 표시하고, 나머지만 장보기에 담을게요.
+            <p className="mb-3 text-xs text-ink-soft">
+              이미 있는 재료는 냉장고로, 필요 없는 재료는 생략으로 표시하고, 나머지만 장보기에
+              담을게요.
             </p>
 
+            <button
+              type="button"
+              onClick={setAllShopping}
+              className="mb-3 self-start rounded-full bg-surface px-3 py-1.5 text-[11px] font-bold text-ink-soft"
+            >
+              전부 장보기에 담기
+            </button>
+
             <div className="flex flex-col gap-2 overflow-y-auto">
-              {missing.map((name) => (
-                <div
-                  key={name}
-                  className="flex items-center justify-between gap-2 rounded-xl bg-surface px-3.5 py-2.5"
-                >
-                  <span className="text-sm font-semibold">{name}</span>
-                  <div className="flex shrink-0 rounded-lg bg-white p-0.5">
-                    <button
-                      type="button"
-                      onClick={() => setChoices((c) => ({ ...c, [name]: "shopping" }))}
-                      className={`rounded-md px-2.5 py-1.5 text-[11px] font-bold ${
-                        choices[name] !== "fridge" ? "bg-accent text-white" : "text-ink-soft"
-                      }`}
-                    >
-                      장보기
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setChoices((c) => ({ ...c, [name]: "fridge" }))}
-                      className={`rounded-md px-2.5 py-1.5 text-[11px] font-bold ${
-                        choices[name] === "fridge" ? "bg-positive text-white" : "text-ink-soft"
-                      }`}
-                    >
-                      냉장고에 있어요
-                    </button>
+              {missing.map((m) => (
+                <div key={m.name} className="rounded-xl bg-surface px-3.5 py-2.5">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-sm font-semibold">{m.name}</span>
+                    <div className="grid shrink-0 grid-cols-3 gap-0.5 rounded-lg bg-white p-0.5">
+                      {STATES.map((state) => (
+                        <button
+                          key={state}
+                          type="button"
+                          onClick={() => setChoices((c) => ({ ...c, [m.name]: state }))}
+                          className={`whitespace-nowrap rounded-md px-2 py-1.5 text-[11px] font-bold ${
+                            choices[m.name] === state ? STATE_STYLES[state] : "text-ink-soft"
+                          }`}
+                        >
+                          {STATE_LABELS[state]}
+                        </button>
+                      ))}
+                    </div>
                   </div>
+                  {choices[m.name] === "fridge" && (
+                    <p className="mt-1.5 text-[11px] text-positive-ink">냉장고에도 추가돼요</p>
+                  )}
                 </div>
               ))}
             </div>
