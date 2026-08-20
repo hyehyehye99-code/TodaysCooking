@@ -1,6 +1,7 @@
 "use client";
 
 import { startTransition, useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 
 const TRANSITION_MS = 220;
 
@@ -35,7 +36,13 @@ export function Modal({
 
   if (!mounted) return null;
 
-  return (
+  // Portaled straight to <body>: a modal opened from inside another modal
+  // (e.g. the remove-member confirm inside the household info sheet) would
+  // otherwise render as a DOM descendant of that modal's own transformed
+  // wrapper. A CSS `transform` on an ancestor makes it the containing block
+  // for `position: fixed` descendants, so the inner modal ends up boxed to
+  // the outer modal's bounds instead of covering the full viewport.
+  return createPortal(
     <div
       className={`fixed inset-0 z-50 flex justify-center ${variant === "sheet" ? "items-end" : "items-center px-6"}`}
     >
@@ -57,6 +64,7 @@ export function Modal({
       >
         {children}
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
