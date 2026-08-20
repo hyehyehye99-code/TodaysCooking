@@ -10,7 +10,7 @@ import { MAX_RECIPE_PHOTOS } from "@/lib/constants";
 
 function parseIngredients(raw: string) {
   return raw
-    .split(",")
+    .split(/[\n,]/)
     .map((s) => s.trim())
     .filter(Boolean);
 }
@@ -112,7 +112,6 @@ export async function createRecipe(_prevState: unknown, formData: FormData) {
   const referenceUrl = String(formData.get("referenceUrl") ?? "");
 
   if (!title) return { error: "요리 이름을 입력해주세요." };
-  if (ingredients.length === 0) return { error: "재료를 한 개 이상 입력해주세요." };
 
   const { user, household } = await getCurrentHousehold();
   if (!user || !household) return { error: "부엌을 먼저 만들어주세요." };
@@ -166,7 +165,6 @@ export async function updateRecipe(_prevState: unknown, formData: FormData) {
 
   if (!id) return { error: "메뉴를 찾을 수 없어요." };
   if (!title) return { error: "요리 이름을 입력해주세요." };
-  if (ingredients.length === 0) return { error: "재료를 한 개 이상 입력해주세요." };
 
   const { user, household } = await getCurrentHousehold();
   if (!user || !household) return { error: "부엌을 먼저 만들어주세요." };

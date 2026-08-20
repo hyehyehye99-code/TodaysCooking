@@ -7,7 +7,6 @@ import { GlassCard } from "@/components/ui";
 import { EmojiPicker } from "@/components/EmojiPicker";
 import { TagPicker } from "@/components/TagPicker";
 import { PhotoPicker } from "@/components/PhotoPicker";
-import { IngredientPicker } from "@/components/IngredientPicker";
 import { FieldLabel } from "@/components/FieldLabel";
 import type { RecipeWithIngredients } from "@/lib/types";
 
@@ -15,21 +14,20 @@ export function EditRecipeForm({
   recipe,
   referenceUrl,
   existingTags,
-  fridgeItems,
 }: {
   recipe: RecipeWithIngredients;
   referenceUrl: string;
   existingTags: string[];
-  fridgeItems: string[];
 }) {
   const [state, formAction, pending] = useActionState(updateRecipe, undefined);
   const [confirmingClose, setConfirmingClose] = useState(false);
   const [photoCount, setPhotoCount] = useState(recipe.cover_photo_urls.length);
   const router = useRouter();
-  const ingredientNames = recipe.recipe_ingredients
+  const ingredientsText = recipe.recipe_ingredients
     .slice()
     .sort((a, b) => a.position - b.position)
-    .map((i) => i.name);
+    .map((i) => i.name)
+    .join("\n");
 
   return (
     <div>
@@ -92,8 +90,14 @@ export function EditRecipeForm({
         </div>
 
         <GlassCard className="bg-white p-4">
-          <FieldLabel required>재료</FieldLabel>
-          <IngredientPicker name="ingredients" fridgeItems={fridgeItems} defaultSelected={ingredientNames} />
+          <FieldLabel>재료</FieldLabel>
+          <p className="mb-3 text-xs text-ink-soft">한 줄에 하나씩 입력해주세요</p>
+          <textarea
+            name="ingredients"
+            rows={12}
+            defaultValue={ingredientsText}
+            className="w-full rounded-xl border border-transparent bg-surface px-3.5 py-3 text-sm outline-none focus:border-accent"
+          />
         </GlassCard>
 
         <GlassCard className="bg-white p-4">

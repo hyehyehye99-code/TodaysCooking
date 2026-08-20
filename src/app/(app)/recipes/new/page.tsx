@@ -6,13 +6,12 @@ export default async function NewRecipePage() {
   const { household } = await getCurrentHousehold();
   const supabase = await createClient();
 
-  const [{ data: tagRows }, { data: fridgeRows }] = await Promise.all([
-    supabase.from("recipes").select("tags").eq("household_id", household!.id),
-    supabase.from("fridge_items").select("name").eq("household_id", household!.id),
-  ]);
+  const { data } = await supabase
+    .from("recipes")
+    .select("tags")
+    .eq("household_id", household!.id);
 
-  const existingTags = [...new Set((tagRows ?? []).flatMap((r) => r.tags ?? []))].sort();
-  const fridgeItems = [...new Set((fridgeRows ?? []).map((f) => f.name))].sort();
+  const existingTags = [...new Set((data ?? []).flatMap((r) => r.tags ?? []))].sort();
 
-  return <NewRecipeForm existingTags={existingTags} fridgeItems={fridgeItems} />;
+  return <NewRecipeForm existingTags={existingTags} />;
 }

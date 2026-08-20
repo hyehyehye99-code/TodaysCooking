@@ -18,19 +18,17 @@ export default async function EditRecipePage({
 
   if (!recipe) notFound();
 
-  const [{ data: tagRows }, { data: fridgeRows }] = await Promise.all([
-    supabase.from("recipes").select("tags").eq("household_id", recipe.household_id),
-    supabase.from("fridge_items").select("name").eq("household_id", recipe.household_id),
-  ]);
+  const { data: tagRows } = await supabase
+    .from("recipes")
+    .select("tags")
+    .eq("household_id", recipe.household_id);
   const existingTags = [...new Set((tagRows ?? []).flatMap((r) => r.tags ?? []))].sort();
-  const fridgeItems = [...new Set((fridgeRows ?? []).map((f) => f.name))].sort();
 
   return (
     <EditRecipeForm
       recipe={recipe as RecipeWithIngredients}
       referenceUrl={referenceBookmark?.url ?? ""}
       existingTags={existingTags}
-      fridgeItems={fridgeItems}
     />
   );
 }

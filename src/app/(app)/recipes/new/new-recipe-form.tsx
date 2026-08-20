@@ -7,16 +7,9 @@ import { GlassCard } from "@/components/ui";
 import { EmojiPicker } from "@/components/EmojiPicker";
 import { TagPicker } from "@/components/TagPicker";
 import { PhotoPicker } from "@/components/PhotoPicker";
-import { IngredientPicker } from "@/components/IngredientPicker";
 import { FieldLabel } from "@/components/FieldLabel";
 
-export function NewRecipeForm({
-  existingTags,
-  fridgeItems,
-}: {
-  existingTags: string[];
-  fridgeItems: string[];
-}) {
+export function NewRecipeForm({ existingTags }: { existingTags: string[] }) {
   const [state, formAction, pending] = useActionState(createRecipe, undefined);
   const [confirmingClose, setConfirmingClose] = useState(false);
   const [photoCount, setPhotoCount] = useState(0);
@@ -80,8 +73,14 @@ export function NewRecipeForm({
         </div>
 
         <GlassCard className="bg-white p-4">
-          <FieldLabel required>재료</FieldLabel>
-          <IngredientPicker name="ingredients" fridgeItems={fridgeItems} />
+          <FieldLabel>재료</FieldLabel>
+          <p className="mb-3 text-xs text-ink-soft">한 줄에 하나씩 입력해주세요</p>
+          <textarea
+            name="ingredients"
+            rows={12}
+            placeholder={"김치\n돼지고기\n두부\n대파\n마늘\n고추장"}
+            className="w-full rounded-xl border border-transparent bg-surface px-3.5 py-3 text-sm outline-none focus:border-accent"
+          />
         </GlassCard>
 
         <GlassCard className="bg-white p-4">
