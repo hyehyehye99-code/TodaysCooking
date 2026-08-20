@@ -33,18 +33,17 @@ export function Splash() {
         pointerEvents: fading ? "none" : "auto",
       }}
     >
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src="/logo-mark.svg"
-        alt=""
-        width={112}
-        height={112}
-        className="transition-transform ease-out"
+      <div
+        className="flex flex-col items-center gap-3 transition-transform ease-out"
         style={{
           transitionDuration: `${HOLD_MS + FADE_MS}ms`,
           transform: fading ? "scale(1.08)" : "scale(1)",
         }}
-      />
+      >
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/logo-mark.svg" alt="" width={112} height={112} />
+        <p className="text-sm font-bold tracking-wide text-accent">우리집 메뉴판</p>
+      </div>
     </div>
   );
 }
