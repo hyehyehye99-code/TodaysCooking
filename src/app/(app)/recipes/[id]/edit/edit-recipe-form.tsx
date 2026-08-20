@@ -24,9 +24,6 @@ export function EditRecipeForm({
 }) {
   const [state, formAction, pending] = useActionState(updateRecipe, undefined);
   const [confirmingClose, setConfirmingClose] = useState(false);
-  const [photoSectionOpen, setPhotoSectionOpen] = useState(
-    recipe.cover_photo_urls.length > 0 || !!recipe.icon_emoji
-  );
   const [photoCount, setPhotoCount] = useState(recipe.cover_photo_urls.length);
   const router = useRouter();
   const ingredientNames = recipe.recipe_ingredients
@@ -97,10 +94,23 @@ export function EditRecipeForm({
         </GlassCard>
 
         <GlassCard className="bg-white p-4">
-          <FieldLabel required>만드는법</FieldLabel>
+          <p className="mb-1 text-[13px] font-bold">
+            참고 링크<span className="ml-1.5 text-[11px] font-semibold text-ink-faint">선택</span>
+          </p>
+          <p className="mb-3 text-xs text-ink-soft">여기 넣은 링크는 보관함 탭에도 함께 저장돼요</p>
+          <input
+            name="referenceUrl"
+            type="url"
+            defaultValue={referenceUrl}
+            placeholder="https://..."
+            className="w-full rounded-xl border border-transparent bg-surface px-3.5 py-3 text-sm outline-none focus:border-accent"
+          />
+        </GlassCard>
+
+        <GlassCard className="bg-white p-4">
+          <FieldLabel>만드는법</FieldLabel>
           <textarea
             name="notes"
-            required
             rows={8}
             defaultValue={recipe.notes ?? ""}
             placeholder="예) 다음엔 국물을 더 자작하게, 마늘은 좀 줄이기"
@@ -109,7 +119,27 @@ export function EditRecipeForm({
         </GlassCard>
 
         <GlassCard className="bg-white p-4">
-          <p className="mb-3 text-[13px] font-bold">기본 정보</p>
+          <FieldLabel>사진 또는 이모지</FieldLabel>
+          <div className="flex flex-col gap-3">
+            <div className="flex flex-col gap-1.5">
+              <span className="text-xs text-ink-soft">사진 (최대 5장)</span>
+              <PhotoPicker
+                name="photos"
+                existingUrls={recipe.cover_photo_urls}
+                onCountChange={setPhotoCount}
+              />
+            </div>
+            {photoCount === 0 && (
+              <label className="flex flex-col gap-1.5">
+                <span className="text-xs text-ink-soft">아이콘 이모지 (사진이 없을 때 표시돼요)</span>
+                <EmojiPicker name="iconEmoji" defaultValue={recipe.icon_emoji} />
+              </label>
+            )}
+          </div>
+        </GlassCard>
+
+        <GlassCard className="bg-white p-4">
+          <p className="mb-3 text-[13px] font-bold">추가 정보</p>
           <div className="flex flex-col gap-4">
             <div>
               <FieldLabel>설명</FieldLabel>
@@ -125,65 +155,6 @@ export function EditRecipeForm({
               <TagPicker name="tags" existingTags={existingTags} defaultSelected={recipe.tags} />
             </div>
           </div>
-        </GlassCard>
-
-        <GlassCard className="bg-white p-4">
-          <p className="mb-1 text-[13px] font-bold">
-            참고 링크<span className="ml-1.5 text-[11px] font-semibold text-ink-faint">선택</span>
-          </p>
-          <p className="mb-3 text-xs text-ink-soft">여기 넣은 링크는 보관함 탭에도 함께 저장돼요</p>
-          <input
-            name="referenceUrl"
-            type="url"
-            defaultValue={referenceUrl}
-            placeholder="https://..."
-            className="w-full rounded-xl border border-transparent bg-surface px-3.5 py-3 text-sm outline-none focus:border-accent"
-          />
-        </GlassCard>
-
-        <GlassCard className="bg-white p-4">
-          <button
-            type="button"
-            onClick={() => setPhotoSectionOpen((v) => !v)}
-            className="flex w-full items-center justify-between"
-          >
-            <FieldLabel>사진 또는 이모지</FieldLabel>
-            <span className="flex items-center gap-1 text-xs font-bold text-accent">
-              {photoSectionOpen ? "접기" : "사진/아이콘 추가하기"}
-              <svg
-                viewBox="0 0 24 24"
-                width="14"
-                height="14"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2.4"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className={`transition-transform duration-150 ${photoSectionOpen ? "rotate-180" : ""}`}
-              >
-                <path d="M6 9l6 6 6-6" />
-              </svg>
-            </span>
-          </button>
-
-          {photoSectionOpen && (
-            <div className="mt-4 flex flex-col gap-3">
-              <div className="flex flex-col gap-1.5">
-                <span className="text-xs text-ink-soft">사진 (최대 5장)</span>
-                <PhotoPicker
-                  name="photos"
-                  existingUrls={recipe.cover_photo_urls}
-                  onCountChange={setPhotoCount}
-                />
-              </div>
-              {photoCount === 0 && (
-                <label className="flex flex-col gap-1.5">
-                  <span className="text-xs text-ink-soft">아이콘 이모지 (사진이 없을 때 표시돼요)</span>
-                  <EmojiPicker name="iconEmoji" defaultValue={recipe.icon_emoji} />
-                </label>
-              )}
-            </div>
-          )}
         </GlassCard>
 
         {state?.error && <p className="text-sm text-warn-ink">{state.error}</p>}
