@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Modal } from "@/components/Modal";
 
 export function InviteButton({
   householdName,
@@ -37,10 +38,8 @@ export function InviteButton({
         초대하기
       </button>
 
-      {open && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center">
-          <div className="absolute inset-0 bg-black/40" onClick={() => setOpen(false)} />
-          <div className="relative w-full max-w-[420px] rounded-t-3xl bg-white p-5 pb-[max(env(safe-area-inset-bottom),20px)]">
+      <Modal open={open} onClose={() => setOpen(false)} variant="sheet">
+        <div className="mx-auto w-full max-w-[420px] rounded-t-3xl bg-white p-5 pb-[max(env(safe-area-inset-bottom),20px)]">
             <p className="mb-1 text-[15px] font-bold">{householdName}에 초대하기</p>
             <p className="mb-4 text-xs text-ink-soft">
               링크를 보내면 상대방이 눌러서 로그인 후 바로 참여할 수 있어요.
@@ -82,9 +81,8 @@ export function InviteButton({
             >
               닫기
             </button>
-          </div>
         </div>
-      )}
+      </Modal>
     </>
   );
 }

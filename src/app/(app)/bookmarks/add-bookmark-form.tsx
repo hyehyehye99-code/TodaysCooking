@@ -3,6 +3,7 @@
 import { useActionState, useEffect, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { addBookmark } from "@/lib/actions/bookmarks";
+import { Modal } from "@/components/Modal";
 
 export function AddBookmarkForm() {
   const [state, formAction, pending] = useActionState(addBookmark, undefined);
@@ -22,12 +23,9 @@ export function AddBookmarkForm() {
     router.replace("/bookmarks");
   }
 
-  if (!open) return null;
-
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center">
-      <div className="absolute inset-0 bg-black/40" onClick={close} />
-      <div className="relative w-full max-w-[420px] rounded-t-3xl bg-white p-5 pb-[max(env(safe-area-inset-bottom),20px)]">
+    <Modal open={open} onClose={close} variant="sheet">
+      <div className="mx-auto w-full max-w-[420px] rounded-t-3xl bg-white p-5 pb-[max(env(safe-area-inset-bottom),20px)]">
         <div className="mb-4 flex items-center justify-between">
           <p className="text-[15px] font-bold">링크 추가하기</p>
           <button
@@ -66,6 +64,6 @@ export function AddBookmarkForm() {
           </button>
         </form>
       </div>
-    </div>
+    </Modal>
   );
 }

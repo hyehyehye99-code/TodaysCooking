@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { GlassCard } from "@/components/ui";
+import { Modal } from "@/components/Modal";
 import { createHousehold, joinHousehold } from "@/lib/actions/household";
 import { CreateHouseholdForm, JoinHouseholdForm } from "./forms";
 
@@ -18,33 +19,30 @@ export function AddHouseholdSection() {
         + 부엌 추가
       </button>
 
-      {open && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center">
-          <div className="absolute inset-0 bg-black/40" onClick={() => setOpen(false)} />
-          <div className="relative flex max-h-[85vh] w-full max-w-[420px] flex-col gap-3 overflow-y-auto rounded-t-3xl bg-white p-5 pb-[max(env(safe-area-inset-bottom),20px)]">
-            <div className="flex items-center justify-between">
-              <p className="text-[15px] font-bold">부엌 추가</p>
-              <button
-                type="button"
-                onClick={() => setOpen(false)}
-                className="text-xs text-ink-faint underline"
-              >
-                닫기
-              </button>
-            </div>
-
-            <GlassCard className="bg-white p-4">
-              <p className="mb-3 text-[13px] font-bold">새 부엌 만들기</p>
-              <CreateHouseholdForm action={createHousehold} />
-            </GlassCard>
-
-            <GlassCard className="bg-white p-4">
-              <p className="mb-3 text-[13px] font-bold">코드로 참여하기</p>
-              <JoinHouseholdForm action={joinHousehold} />
-            </GlassCard>
+      <Modal open={open} onClose={() => setOpen(false)} variant="sheet">
+        <div className="mx-auto flex max-h-[85vh] w-full max-w-[420px] flex-col gap-3 overflow-y-auto rounded-t-3xl bg-white p-5 pb-[max(env(safe-area-inset-bottom),20px)]">
+          <div className="flex items-center justify-between">
+            <p className="text-[15px] font-bold">부엌 추가</p>
+            <button
+              type="button"
+              onClick={() => setOpen(false)}
+              className="text-xs text-ink-faint underline"
+            >
+              닫기
+            </button>
           </div>
+
+          <GlassCard className="bg-white p-4">
+            <p className="mb-3 text-[13px] font-bold">새 부엌 만들기</p>
+            <CreateHouseholdForm action={createHousehold} />
+          </GlassCard>
+
+          <GlassCard className="bg-white p-4">
+            <p className="mb-3 text-[13px] font-bold">코드로 참여하기</p>
+            <JoinHouseholdForm action={joinHousehold} />
+          </GlassCard>
         </div>
-      )}
+      </Modal>
     </>
   );
 }

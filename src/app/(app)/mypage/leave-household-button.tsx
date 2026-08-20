@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { leaveHousehold } from "@/lib/actions/household";
+import { Modal } from "@/components/Modal";
 
 export function LeaveHouseholdButton({
   householdId,
@@ -46,52 +47,49 @@ export function LeaveHouseholdButton({
         나가기
       </button>
 
-      {confirming && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center px-6">
-          <div className="absolute inset-0 bg-black/40" onClick={close} />
-          <div className="relative w-full max-w-[360px] rounded-2xl bg-white p-5 shadow-xl">
-            <p className="text-sm font-bold text-ink">정말 이 부엌에서 나가시겠어요?</p>
-            <p className="mt-2 text-xs text-ink-soft">{message}</p>
+      <Modal open={confirming} onClose={close} variant="center">
+        <div className="mx-auto w-full max-w-[360px] rounded-2xl bg-white p-5 shadow-xl">
+          <p className="text-sm font-bold text-ink">정말 이 부엌에서 나가시겠어요?</p>
+          <p className="mt-2 text-xs text-ink-soft">{message}</p>
 
-            {destructive && (
-              <>
-                <p className="mt-3 text-xs text-ink-soft">
-                  확인을 위해 부엌 이름 <span className="font-bold text-ink">{householdName}</span>
-                  을(를) 입력해주세요.
-                </p>
-                <input
-                  value={typedName}
-                  onChange={(e) => setTypedName(e.target.value)}
-                  placeholder={householdName}
-                  className="mt-3 w-full rounded-lg border border-transparent bg-surface px-3 py-2.5 text-sm outline-none focus:border-warn"
-                />
-              </>
-            )}
+          {destructive && (
+            <>
+              <p className="mt-3 text-xs text-ink-soft">
+                확인을 위해 부엌 이름 <span className="font-bold text-ink">{householdName}</span>
+                을(를) 입력해주세요.
+              </p>
+              <input
+                value={typedName}
+                onChange={(e) => setTypedName(e.target.value)}
+                placeholder={householdName}
+                className="mt-3 w-full rounded-lg border border-transparent bg-surface px-3 py-2.5 text-sm outline-none focus:border-warn"
+              />
+            </>
+          )}
 
-            <div className="mt-4 flex justify-end gap-2">
+          <div className="mt-4 flex justify-end gap-2">
+            <button
+              type="button"
+              onClick={close}
+              className="rounded-lg bg-surface px-3.5 py-2 text-xs font-bold text-ink-soft"
+            >
+              취소
+            </button>
+            <form action={leaveHousehold}>
+              <input type="hidden" name="householdId" value={householdId} />
               <button
-                type="button"
-                onClick={close}
-                className="rounded-lg bg-surface px-3.5 py-2 text-xs font-bold text-ink-soft"
+                type="submit"
+                disabled={destructive && typedName !== householdName}
+                className={`rounded-lg px-3.5 py-2 text-xs font-bold text-white disabled:opacity-40 ${
+                  destructive ? "bg-warn" : "bg-accent"
+                }`}
               >
-                취소
+                나가기
               </button>
-              <form action={leaveHousehold}>
-                <input type="hidden" name="householdId" value={householdId} />
-                <button
-                  type="submit"
-                  disabled={destructive && typedName !== householdName}
-                  className={`rounded-lg px-3.5 py-2 text-xs font-bold text-white disabled:opacity-40 ${
-                    destructive ? "bg-warn" : "bg-accent"
-                  }`}
-                >
-                  나가기
-                </button>
-              </form>
-            </div>
+            </form>
           </div>
         </div>
-      )}
+      </Modal>
     </>
   );
 }

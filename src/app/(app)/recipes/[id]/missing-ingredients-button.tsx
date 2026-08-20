@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { resolveMissingIngredients } from "@/lib/actions/recipes";
+import { Modal } from "@/components/Modal";
 
 type ChoiceState = "shopping" | "fridge" | "skip";
 
@@ -57,10 +58,8 @@ export function MissingIngredientsButton({
         부족한 재료 장보기 담기
       </button>
 
-      {open && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center">
-          <div className="absolute inset-0 bg-black/40" onClick={() => setOpen(false)} />
-          <div className="relative flex max-h-[80vh] w-full max-w-[420px] flex-col rounded-t-3xl bg-white p-5 pb-[max(env(safe-area-inset-bottom),20px)]">
+      <Modal open={open} onClose={() => setOpen(false)} variant="sheet">
+        <div className="mx-auto flex max-h-[80vh] w-full max-w-[420px] flex-col rounded-t-3xl bg-white p-5 pb-[max(env(safe-area-inset-bottom),20px)]">
             <p className="mb-1 text-[15px] font-bold">부족한 재료 확인</p>
             <p className="mb-3 text-xs text-ink-soft">
               이미 있는 재료는 냉장고로, 필요 없는 재료는 생략으로 표시하고, 나머지만 장보기에
@@ -111,9 +110,8 @@ export function MissingIngredientsButton({
                 {pending ? "담는 중..." : "담기"}
               </button>
             </div>
-          </div>
         </div>
-      )}
+      </Modal>
     </>
   );
 }

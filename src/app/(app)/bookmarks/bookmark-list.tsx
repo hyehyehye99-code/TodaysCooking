@@ -4,6 +4,7 @@ import { useRef, useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { GlassCard } from "@/components/ui";
+import { Modal } from "@/components/Modal";
 import { deleteBookmark, updateBookmarkNote, reorderBookmarks } from "@/lib/actions/bookmarks";
 import type { Bookmark } from "@/lib/types";
 
@@ -114,35 +115,32 @@ function DeleteBookmarkButton({
         삭제
       </button>
 
-      {confirming && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center px-6">
-          <div className="absolute inset-0 bg-black/40" onClick={() => setConfirming(false)} />
-          <div className="relative w-full max-w-[360px] rounded-2xl bg-white p-5 shadow-xl">
-            <p className="text-sm font-bold text-ink">메뉴에서도 사라져요</p>
-            <p className="mt-2 text-xs text-ink-soft">
-              이 링크는 메뉴의 참고 링크로도 쓰이고 있어요. 삭제하면 메뉴에서도 이 링크가
-              사라져요.
-            </p>
-            <div className="mt-4 flex justify-end gap-2">
-              <button
-                type="button"
-                onClick={() => setConfirming(false)}
-                className="rounded-lg bg-surface px-3.5 py-2 text-xs font-bold text-ink-soft"
-              >
-                취소
-              </button>
-              <button
-                type="button"
-                onClick={doDelete}
-                disabled={pending}
-                className="rounded-lg bg-accent px-3.5 py-2 text-xs font-bold text-white disabled:opacity-60"
-              >
-                {pending ? "삭제 중..." : "삭제"}
-              </button>
-            </div>
+      <Modal open={confirming} onClose={() => setConfirming(false)} variant="center">
+        <div className="mx-auto w-full max-w-[360px] rounded-2xl bg-white p-5 shadow-xl">
+          <p className="text-sm font-bold text-ink">메뉴에서도 사라져요</p>
+          <p className="mt-2 text-xs text-ink-soft">
+            이 링크는 메뉴의 참고 링크로도 쓰이고 있어요. 삭제하면 메뉴에서도 이 링크가
+            사라져요.
+          </p>
+          <div className="mt-4 flex justify-end gap-2">
+            <button
+              type="button"
+              onClick={() => setConfirming(false)}
+              className="rounded-lg bg-surface px-3.5 py-2 text-xs font-bold text-ink-soft"
+            >
+              취소
+            </button>
+            <button
+              type="button"
+              onClick={doDelete}
+              disabled={pending}
+              className="rounded-lg bg-accent px-3.5 py-2 text-xs font-bold text-white disabled:opacity-60"
+            >
+              {pending ? "삭제 중..." : "삭제"}
+            </button>
           </div>
         </div>
-      )}
+      </Modal>
     </>
   );
 }

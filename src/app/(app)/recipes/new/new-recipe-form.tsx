@@ -9,6 +9,7 @@ import { TagPicker } from "@/components/TagPicker";
 import { PhotoPicker } from "@/components/PhotoPicker";
 import { FieldLabel } from "@/components/FieldLabel";
 import { StickyFormBar } from "@/components/StickyFormBar";
+import { Modal } from "@/components/Modal";
 
 export function NewRecipeForm({ existingTags }: { existingTags: string[] }) {
   const [state, formAction, pending] = useActionState(createRecipe, undefined);
@@ -33,31 +34,28 @@ export function NewRecipeForm({ existingTags }: { existingTags: string[] }) {
         </button>
       </div>
 
-      {confirmingClose && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center px-6">
-          <div className="absolute inset-0 bg-black/40" onClick={() => setConfirmingClose(false)} />
-          <div className="relative w-full max-w-[360px] rounded-2xl bg-white p-5 shadow-xl">
-            <p className="text-sm font-bold text-ink">작성 중인 내용이 저장되지 않아요</p>
-            <p className="mt-2 text-xs text-ink-soft">지금 나가면 입력한 내용이 모두 사라져요. 계속하시겠어요?</p>
-            <div className="mt-4 flex justify-end gap-2">
-              <button
-                type="button"
-                onClick={() => setConfirmingClose(false)}
-                className="rounded-lg bg-surface px-3.5 py-2 text-xs font-bold text-ink-soft"
-              >
-                계속 작성
-              </button>
-              <button
-                type="button"
-                onClick={() => router.push("/recipes")}
-                className="rounded-lg bg-accent px-3.5 py-2 text-xs font-bold text-white"
-              >
-                나가기
-              </button>
-            </div>
+      <Modal open={confirmingClose} onClose={() => setConfirmingClose(false)} variant="center">
+        <div className="mx-auto w-full max-w-[360px] rounded-2xl bg-white p-5 shadow-xl">
+          <p className="text-sm font-bold text-ink">작성 중인 내용이 저장되지 않아요</p>
+          <p className="mt-2 text-xs text-ink-soft">지금 나가면 입력한 내용이 모두 사라져요. 계속하시겠어요?</p>
+          <div className="mt-4 flex justify-end gap-2">
+            <button
+              type="button"
+              onClick={() => setConfirmingClose(false)}
+              className="rounded-lg bg-surface px-3.5 py-2 text-xs font-bold text-ink-soft"
+            >
+              계속 작성
+            </button>
+            <button
+              type="button"
+              onClick={() => router.push("/recipes")}
+              className="rounded-lg bg-accent px-3.5 py-2 text-xs font-bold text-white"
+            >
+              나가기
+            </button>
           </div>
         </div>
-      )}
+      </Modal>
 
       <form
         id="new-recipe-form"

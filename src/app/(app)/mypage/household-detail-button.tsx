@@ -5,6 +5,7 @@ import { chefName } from "@/lib/format";
 import { RenameHouseholdForm } from "./rename-household-form";
 import { RemoveMemberButton } from "./remove-member-button";
 import { LeaveHouseholdButton } from "./leave-household-button";
+import { Modal } from "@/components/Modal";
 
 type Member = { user_id: string; nickname: string; role: string; joined_at: string };
 
@@ -45,10 +46,8 @@ export function HouseholdDetailButton({
         </svg>
       </button>
 
-      {open && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center">
-          <div className="absolute inset-0 bg-black/40" onClick={() => setOpen(false)} />
-          <div className="relative flex max-h-[85vh] w-full max-w-[420px] flex-col rounded-t-3xl bg-white p-5 pb-[max(env(safe-area-inset-bottom),20px)]">
+      <Modal open={open} onClose={() => setOpen(false)} variant="sheet">
+        <div className="mx-auto flex max-h-[85vh] w-full max-w-[420px] flex-col rounded-t-3xl bg-white p-5 pb-[max(env(safe-area-inset-bottom),20px)]">
             <p className="mb-4 text-[15px] font-bold">부엌 정보</p>
 
             <p className="mb-2 text-xs font-bold text-ink-soft">부엌 이름</p>
@@ -94,9 +93,8 @@ export function HouseholdDetailButton({
                 닫기
               </button>
             </div>
-          </div>
         </div>
-      )}
+      </Modal>
     </>
   );
 }

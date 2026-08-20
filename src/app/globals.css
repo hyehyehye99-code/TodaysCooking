@@ -32,3 +32,25 @@ body {
   color: var(--foreground);
   font-family: var(--font-sans), system-ui, sans-serif;
 }
+
+/* App-wide tactile feedback: every button/link gets a quick press-down
+   without needing per-component classes. Scoped to :not(:disabled) so
+   disabled submit buttons don't look interactive. */
+button:not(:disabled),
+a {
+  transition: transform 120ms ease, opacity 120ms ease;
+}
+button:not(:disabled):active {
+  transform: scale(0.97);
+}
+a:active {
+  opacity: 0.7;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
