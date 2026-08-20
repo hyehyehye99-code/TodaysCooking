@@ -44,8 +44,12 @@ end;
 $$;
 
 -- Renamed the parameter (p_invite_code) so it can't shadow the
--- households.invite_code column it's compared against below.
-create or replace function join_household_with_code(p_invite_code text)
+-- households.invite_code column it's compared against below. Postgres
+-- won't let CREATE OR REPLACE change an existing parameter's name, so
+-- the old signature has to be dropped first.
+drop function if exists join_household_with_code(text);
+
+create function join_household_with_code(p_invite_code text)
 returns uuid
 language plpgsql
 security definer
