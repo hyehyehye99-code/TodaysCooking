@@ -70,6 +70,18 @@ function extractTitle(html: string) {
   return decoded.length > 200 ? decoded.slice(0, 200).trim() + "…" : decoded;
 }
 
+function extractDescription(html: string) {
+  const candidates = [
+    html.match(/<meta[^>]+property=["']og:description["'][^>]+content=["']([^"']+)["']/i)?.[1],
+    html.match(/<meta[^>]+name=["']twitter:description["'][^>]+content=["']([^"']+)["']/i)?.[1],
+    html.match(/<meta[^>]+name=["']description["'][^>]+content=["']([^"']+)["']/i)?.[1],
+  ];
+  const raw = candidates.find((c) => c && !/[\r\n]/.test(c));
+  if (!raw) return null;
+  const decoded = decodeHtmlEntities(raw).trim().replace(/\s+/g, " ");
+  return decoded.length > 500 ? decoded.slice(0, 500).trim() + "…" : decoded;
+}
+
 const YOUTUBE_HOSTS = new Set(["youtube.com", "www.youtube.com", "m.youtube.com", "youtu.be"]);
 
 // YouTube's watch-page HTML is scraped by the generic path below, but that
@@ -110,6 +122,7 @@ export async function fetchLinkPreview(rawUrl: string) {
           domain: url.hostname.replace(/^www\./, ""),
           title: oembed.title,
           thumbnailUrl: oembed.thumbnailUrl,
+          description: null, // oEmbed doesn't carry one
         };
       }
     } catch {
@@ -134,6 +147,7 @@ export async function fetchLinkPreview(rawUrl: string) {
       domain: url.hostname.replace(/^www\./, ""),
       title: extractTitle(html),
       thumbnailUrl: imageMatch?.[1] ? decodeHtmlEntities(imageMatch[1]).trim() : null,
+      description: extractDescription(html),
     };
   } catch {
     return {
@@ -142,6 +156,7 @@ export async function fetchLinkPreview(rawUrl: string) {
       domain: url.hostname.replace(/^www\./, ""),
       title: null,
       thumbnailUrl: null,
+      description: null,
     };
   }
 }

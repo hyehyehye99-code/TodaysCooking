@@ -2,8 +2,10 @@
 
 import { useEffect, useRef, useState } from "react";
 import { fetchLinkPreview } from "@/lib/actions/link-preview";
+import { generateRecipeFromLink } from "@/lib/actions/ai-recipe";
 
 type Preview = { title: string | null; thumbnailUrl: string | null; domain: string | null };
+type AiResult = { title: string | null; ingredients: string[]; instructions: string; tags: string[] };
 
 const DEBOUNCE_MS = 700;
 
@@ -11,14 +13,18 @@ export function ReferenceLinkField({
   name,
   defaultValue = "",
   initialPreview = null,
+  onAiResult,
 }: {
   name: string;
   defaultValue?: string;
   initialPreview?: Preview | null;
+  onAiResult?: (result: AiResult) => void;
 }) {
   const [url, setUrl] = useState(defaultValue);
   const [preview, setPreview] = useState<Preview | null>(initialPreview);
   const [loading, setLoading] = useState(false);
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiError, setAiError] = useState<string | null>(null);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const requestedUrlRef = useRef<string>(defaultValue);
 
@@ -52,6 +58,20 @@ export function ReferenceLinkField({
   function handleBlur() {
     if (timerRef.current) clearTimeout(timerRef.current);
     load(url);
+  }
+
+  async function handleAiFill() {
+    const trimmed = url.trim();
+    if (!trimmed) return;
+    setAiLoading(true);
+    setAiError(null);
+    const result = await generateRecipeFromLink(trimmed);
+    setAiLoading(false);
+    if (!result.ok) {
+      setAiError(result.error);
+      return;
+    }
+    onAiResult?.(result);
   }
 
   useEffect(() => {
@@ -95,6 +115,20 @@ export function ReferenceLinkField({
             {preview.domain && <span className="text-[11px] text-ink-faint">{preview.domain}</span>}
           </div>
         </div>
+      )}
+
+      {!loading && preview && onAiResult && (
+        <>
+          <button
+            type="button"
+            onClick={handleAiFill}
+            disabled={aiLoading}
+            className="mt-3 w-full rounded-xl border border-accent bg-white py-2.5 text-xs font-bold text-accent-ink disabled:opacity-60"
+          >
+            {aiLoading ? "AI가 작성하는 중..." : "✨ AI로 재료·레시피 자동 작성"}
+          </button>
+          {aiError && <p className="mt-2 text-xs text-warn-ink">{aiError}</p>}
+        </>
       )}
     </div>
   );

@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createRecipe } from "@/lib/actions/recipes";
 import { GlassCard } from "@/components/ui";
@@ -17,6 +17,21 @@ export function NewRecipeForm({ existingTags }: { existingTags: string[] }) {
   const [confirmingClose, setConfirmingClose] = useState(false);
   const [photoCount, setPhotoCount] = useState(0);
   const router = useRouter();
+  const titleRef = useRef<HTMLInputElement>(null);
+  const ingredientsRef = useRef<HTMLTextAreaElement>(null);
+  const notesRef = useRef<HTMLTextAreaElement>(null);
+
+  function handleAiResult(result: { title: string | null; ingredients: string[]; instructions: string }) {
+    if (titleRef.current && !titleRef.current.value.trim() && result.title) {
+      titleRef.current.value = result.title;
+    }
+    if (ingredientsRef.current && result.ingredients.length > 0) {
+      ingredientsRef.current.value = result.ingredients.join("\n");
+    }
+    if (notesRef.current && result.instructions) {
+      notesRef.current.value = result.instructions;
+    }
+  }
 
   return (
     <div>
@@ -66,6 +81,7 @@ export function NewRecipeForm({ existingTags }: { existingTags: string[] }) {
         <div>
           <FieldLabel required>요리 이름</FieldLabel>
           <input
+            ref={titleRef}
             name="title"
             required
             placeholder="요리 이름을 입력해주세요"
@@ -76,13 +92,14 @@ export function NewRecipeForm({ existingTags }: { existingTags: string[] }) {
         <GlassCard className="bg-white p-4">
           <p className="mb-1 text-[13px] font-bold">참고 링크</p>
           <p className="mb-3 text-xs text-ink-soft">여기 넣은 링크는 보관함 탭에도 함께 저장돼요</p>
-          <ReferenceLinkField name="referenceUrl" />
+          <ReferenceLinkField name="referenceUrl" onAiResult={handleAiResult} />
         </GlassCard>
 
         <GlassCard className="bg-white p-4">
           <FieldLabel>재료</FieldLabel>
           <p className="mb-3 text-xs text-ink-soft">한 줄에 하나씩 입력해주세요</p>
           <textarea
+            ref={ingredientsRef}
             name="ingredients"
             rows={12}
             placeholder={"김치\n돼지고기\n두부\n대파\n마늘\n고추장"}
@@ -93,6 +110,7 @@ export function NewRecipeForm({ existingTags }: { existingTags: string[] }) {
         <GlassCard className="bg-white p-4">
           <FieldLabel>만드는법</FieldLabel>
           <textarea
+            ref={notesRef}
             name="notes"
             rows={8}
             placeholder="예) 다음엔 국물을 더 자작하게, 마늘은 좀 줄이기"
