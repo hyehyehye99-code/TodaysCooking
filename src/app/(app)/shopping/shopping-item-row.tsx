@@ -65,7 +65,7 @@ export function ShoppingItemRow({ item }: { item: ShoppingItem }) {
       </button>
 
       <div
-        className="group flex items-center gap-3 bg-white py-2.5"
+        className="flex items-center gap-3 bg-white py-2.5"
         style={{
           transform: `translateX(${dragX}px)`,
           transition: dragging ? "none" : "transform 150ms ease-out",
@@ -100,30 +100,13 @@ export function ShoppingItemRow({ item }: { item: ShoppingItem }) {
 
         <p
           className={`min-w-0 flex-1 truncate text-sm font-semibold transition-colors duration-150 ${
-            item.checked ? "text-ink-faint line-through" : "text-ink"
+            item.checked ? "text-ink-faint" : "text-ink"
           }`}
         >
           {item.name}
         </p>
 
         <ShoppingItemLink id={item.id} name={item.name} checked={item.checked} />
-
-        {/* Tailwind's hover variant only matches @media (hover: hover), so
-            this stays invisible (and inert-looking) on touch devices, which
-            get the swipe-to-delete gesture above instead. */}
-        <button
-          type="button"
-          onClick={handleDelete}
-          disabled={deletePending}
-          aria-label="삭제"
-          title="삭제"
-          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-ink-faint opacity-0 transition-opacity duration-150 hover:bg-surface group-hover:opacity-100 disabled:opacity-40"
-        >
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M18 6L6 18" />
-            <path d="M6 6l12 12" />
-          </svg>
-        </button>
       </div>
     </div>
   );

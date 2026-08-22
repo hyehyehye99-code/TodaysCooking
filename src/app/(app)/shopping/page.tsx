@@ -1,11 +1,10 @@
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentHousehold } from "@/lib/household";
 import { GlassCard, ProgressBar } from "@/components/ui";
-import { addShoppingItem, setAllShoppingItemsChecked } from "@/lib/actions/shopping";
+import { addShoppingItem } from "@/lib/actions/shopping";
 import type { ShoppingItem } from "@/lib/types";
 import { FinishShoppingBar } from "./finish-shopping-bar";
-import { ClearShoppingListButton } from "./clear-shopping-list-button";
-import { ShoppingItemRow } from "./shopping-item-row";
+import { ShoppingItemsSection } from "./shopping-items-section";
 
 export default async function ShoppingPage() {
   const { household } = await getCurrentHousehold();
@@ -26,7 +25,6 @@ export default async function ShoppingPage() {
   const items = (data as ShoppingItem[] | null) ?? [];
   const doneCount = items.filter((i) => i.checked).length;
   const percent = items.length ? (doneCount / items.length) * 100 : 0;
-  const allChecked = items.length > 0 && doneCount === items.length;
 
   return (
     <div className="pb-[calc(11.5rem+env(safe-area-inset-bottom))]">
@@ -59,22 +57,7 @@ export default async function ShoppingPage() {
           장보기 목록이 비어 있어요.
         </p>
       ) : (
-        <>
-          <div className="mt-6 mb-4 flex items-center justify-end gap-1">
-            <form action={setAllShoppingItemsChecked}>
-              <input type="hidden" name="checked" value={(!allChecked).toString()} />
-              <button type="submit" className="px-4 py-2 text-xs font-bold text-ink-soft">
-                {allChecked ? "전체 해제" : "전체 선택"}
-              </button>
-            </form>
-            {allChecked && <ClearShoppingListButton />}
-          </div>
-          <div className="flex flex-col">
-            {items.map((item) => (
-              <ShoppingItemRow key={item.id} item={item} />
-            ))}
-          </div>
-        </>
+        <ShoppingItemsSection items={items} />
       )}
 
       <FinishShoppingBar doneCount={doneCount} />
