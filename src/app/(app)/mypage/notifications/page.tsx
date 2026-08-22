@@ -1,10 +1,8 @@
 import Link from "next/link";
-import { getMyNotifications, markAllNotificationsRead } from "@/lib/actions/notifications";
+import { getMyNotifications } from "@/lib/actions/notifications";
 import { NotificationsList } from "./notifications-list";
 
 export default async function NotificationsPage() {
-  // Visiting this page is what clears the unread badge on 마이페이지.
-  await markAllNotificationsRead();
   const notifications = await getMyNotifications();
 
   return (

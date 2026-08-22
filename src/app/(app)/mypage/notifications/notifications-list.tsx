@@ -1,11 +1,15 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { GlassCard } from "@/components/ui";
 import { ConfirmModal } from "@/components/ConfirmModal";
-import { deleteNotification, deleteAllNotifications } from "@/lib/actions/notifications";
+import {
+  deleteNotification,
+  deleteAllNotifications,
+  markAllNotificationsRead,
+} from "@/lib/actions/notifications";
 
 type Notification = {
   id: string;
@@ -83,6 +87,14 @@ export function NotificationsList({ notifications }: { notifications: Notificati
   const [confirmingClear, setConfirmingClear] = useState(false);
   const [pending, startTransition] = useTransition();
   const router = useRouter();
+
+  // revalidatePath (inside markAllNotificationsRead) is only valid from a
+  // real Server Action invocation, not while a page is rendering — so this
+  // has to be triggered from here (a client component, after mount) rather
+  // than awaited directly in the server page component.
+  useEffect(() => {
+    markAllNotificationsRead();
+  }, []);
 
   function doClearAll() {
     startTransition(async () => {
