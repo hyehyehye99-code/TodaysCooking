@@ -16,8 +16,22 @@ const RECIPE_SCHEMA = {
     title: { type: Type.STRING, description: "요리 이름. 원래 제목이 이미 요리 이름이면 그대로. isRecipe가 false면 생략." },
     ingredients: {
       type: Type.ARRAY,
-      items: { type: Type.STRING },
-      description: "재료 목록. 각 항목은 '재료명' 또는 '재료명 분량' 형태의 짧은 한국어 문자열. isRecipe가 false면 빈 배열.",
+      items: {
+        type: Type.OBJECT,
+        properties: {
+          name: {
+            type: Type.STRING,
+            description: "재료 이름만. 용량·수량은 절대 포함하지 마. 예: '돼지고기', '신김치'.",
+          },
+          amount: {
+            type: Type.STRING,
+            description: "용량이나 수량만. 예: '200g', '2컵', '1큰술'. 알 수 없으면 빈 문자열.",
+          },
+        },
+        required: ["name", "amount"],
+      },
+      description:
+        "재료 목록. 냉장고·장보기 목록의 재료명과 그대로 매칭돼야 하므로, name에는 반드시 이름만 넣고 amount에 용량을 분리해서 넣어. isRecipe가 false면 빈 배열.",
     },
     instructions: {
       type: Type.STRING,
@@ -86,18 +100,34 @@ export async function generateRecipeFromLink(
       return { ok: false, error: "이 링크는 요리 레시피가 아닌 것 같아요." };
     }
 
-    const ingredients = Array.isArray(data.ingredients)
-      ? data.ingredients.filter((i: unknown): i is string => typeof i === "string")
+    const rawIngredients: { name: string; amount: string }[] = Array.isArray(data.ingredients)
+      ? data.ingredients
+          .map((i: unknown) => {
+            if (typeof i !== "object" || i === null) return null;
+            const { name, amount } = i as { name?: unknown; amount?: unknown };
+            if (typeof name !== "string" || !name.trim()) return null;
+            return { name: name.trim(), amount: typeof amount === "string" ? amount.trim() : "" };
+          })
+          .filter((i: { name: string; amount: string } | null): i is { name: string; amount: string } => i !== null)
       : [];
-    if (ingredients.length === 0) {
+    if (rawIngredients.length === 0) {
       return { ok: false, error: "AI가 재료를 만들어내지 못했어요." };
     }
+
+    // The ingredients field has to match fridge/shopping items by name alone
+    // (see recipe_ingredients — there's no amount column), so only the bare
+    // name goes there. The amounts aren't dropped though — they're prepended
+    // to the instructions as a reference block.
+    const ingredients = rawIngredients.map((i) => i.name);
+    const prepLine = rawIngredients.map((i) => (i.amount ? `${i.name} ${i.amount}` : i.name)).join(", ");
+    const rawInstructions = typeof data.instructions === "string" ? data.instructions : "";
+    const instructions = prepLine ? `[재료 준비] ${prepLine}\n\n${rawInstructions}` : rawInstructions;
 
     return {
       ok: true,
       title: typeof data.title === "string" ? data.title : null,
       ingredients,
-      instructions: typeof data.instructions === "string" ? data.instructions : "",
+      instructions,
       tags: Array.isArray(data.tags) ? data.tags.filter((t: unknown): t is string => typeof t === "string") : [],
     };
   } catch {
