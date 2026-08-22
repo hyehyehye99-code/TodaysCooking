@@ -134,8 +134,11 @@ export default async function RecipeDetailPage({
       )}
 
       <div className="mt-5">
-        <p className="mb-2 text-sm text-ink-soft">
-          재료 {activeIngredients.length - missing.length}/{activeIngredients.length} 보유 중
+        <p className="mb-2 flex items-center gap-1.5">
+          <span className="text-xs text-ink-faint">
+            {activeIngredients.length - missing.length}/{activeIngredients.length} 보유 중
+          </span>
+          <span className="text-[15px] font-bold">재료</span>
         </p>
         <div className="flex flex-wrap gap-2">
           {ingredients.map((ing) => {
