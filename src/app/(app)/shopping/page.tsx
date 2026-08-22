@@ -111,7 +111,7 @@ export default async function ShoppingPage() {
                   type="submit"
                   className="shrink-0 rounded-lg bg-surface px-2.5 py-1.5 text-[11px] font-bold text-ink-soft"
                 >
-                  제거하기
+                  삭제하기
                 </button>
               </form>
             </div>
