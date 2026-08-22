@@ -89,9 +89,6 @@ export function MissingIngredientsButton({
                       ))}
                     </div>
                   </div>
-                  {choices[m.name] === "fridge" && (
-                    <p className="mt-1.5 text-[11px] text-positive-ink">냉장고에도 추가돼요</p>
-                  )}
                 </div>
               ))}
             </div>
