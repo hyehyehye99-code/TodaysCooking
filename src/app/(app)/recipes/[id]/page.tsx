@@ -140,7 +140,7 @@ export default async function RecipeDetailPage({
         <div className="flex flex-wrap gap-2">
           {ingredients.map((ing) => {
             const stateClass = ing.skipped
-              ? "border-ink-faint bg-surface text-ink-faint line-through"
+              ? "border-ink-faint bg-surface text-ink-faint"
               : owned.has(ing.name)
                 ? "border-accent bg-surface text-accent-ink"
                 : onShoppingList.has(ing.name)
@@ -153,7 +153,7 @@ export default async function RecipeDetailPage({
               >
                 {ing.name}
                 {ing.amount && <span className="ml-1 font-normal opacity-70">{ing.amount}</span>}
-                {ing.skipped && <span className="ml-1 text-[10px] font-normal no-underline">(생략됨)</span>}
+                {ing.skipped && <span className="ml-1 text-[10px] font-normal">(생략됨)</span>}
               </span>
             );
           })}
