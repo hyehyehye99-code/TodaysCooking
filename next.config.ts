@@ -13,6 +13,16 @@ const nextConfig: NextConfig = {
     serverActions: {
       bodySizeLimit: "4mb",
     },
+    // Dynamic pages default to 0s client-router-cache staleTime (Next 15+),
+    // so switching tabs and back always re-fetches from scratch even a
+    // second later. A short window lets that feel instant while a mutation
+    // anywhere still calls revalidatePath, which invalidates this cache
+    // immediately regardless of staleTime — so it never shows data that's
+    // stale relative to something the user (or another household member,
+    // once they revisit) just changed themselves.
+    staleTimes: {
+      dynamic: 15,
+    },
   },
 };
 
