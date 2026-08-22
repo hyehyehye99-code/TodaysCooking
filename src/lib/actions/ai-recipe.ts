@@ -1,6 +1,7 @@
 "use server";
 
 import { GoogleGenAI, Type } from "@google/genai";
+import { createClient } from "@/lib/supabase/server";
 import { fetchLinkPreview } from "@/lib/actions/link-preview";
 import { extractYoutubeVideoId, fetchYoutubeVideoDetails } from "@/lib/actions/youtube";
 
@@ -57,6 +58,16 @@ export async function generateRecipeFromLink(
   if (!process.env.GEMINI_API_KEY) {
     return { ok: false, error: "AI 기능이 아직 설정되지 않았어요." };
   }
+
+  // Server Actions are reachable directly (their endpoint ships in the
+  // client bundle), not just through this button — without this check,
+  // anyone who found the action id could rack up Gemini/YouTube API calls
+  // without ever logging in.
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { ok: false, error: "로그인이 필요해요." };
 
   const preview = await fetchLinkPreview(url);
   if (!preview.ok) return { ok: false, error: preview.error };
@@ -145,7 +156,12 @@ export async function generateRecipeFromLink(
     // to the instructions as a reference block.
     const ingredients = rawIngredients.map((i) => i.name);
     const prepLine = rawIngredients.map((i) => (i.amount ? `${i.name} ${i.amount}` : i.name)).join(", ");
-    const rawInstructions = typeof data.instructions === "string" ? data.instructions : "";
+    // The model occasionally emits a literal backslash-n instead of an
+    // actual line break (an inconsistent JSON-escaping quirk, not specific
+    // to any one input) — normalize both to real newlines so the textarea
+    // never shows a stray "\n" instead of wrapping.
+    const rawInstructions =
+      typeof data.instructions === "string" ? data.instructions.replace(/\\n/g, "\n") : "";
     const instructions = prepLine ? `[재료 준비] ${prepLine}\n\n${rawInstructions}` : rawInstructions;
 
     return {
