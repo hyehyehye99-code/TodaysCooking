@@ -5,8 +5,12 @@ import { createClient } from "@/lib/supabase/client";
 
 // Needs the "Kakao" provider configured in Supabase Auth (REST API key as
 // Client ID, Client Secret, and the redirect URI registered in the Kakao
-// Developers console) before this actually works — the button/flow itself
-// is ready either way.
+// Developers console) before this actually works. Supabase's GoTrue always
+// requests account_email for this provider regardless of the `scopes`
+// option passed here (it appends rather than overrides) — that scope 401s
+// with KOE205 until the Kakao app has gone through the "individual
+// developer business app" conversion, so that has to happen on Kakao's
+// side, not here.
 export function KakaoSignInButton() {
   const [pending, setPending] = useState(false);
 
