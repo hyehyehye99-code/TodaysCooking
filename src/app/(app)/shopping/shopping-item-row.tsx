@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toggleShoppingItem, deleteShoppingItem } from "@/lib/actions/shopping";
 import { ShoppingItemLink } from "./shopping-item-link";
@@ -22,6 +22,21 @@ export function ShoppingItemRow({ item }: { item: ShoppingItem }) {
   const [, startToggleTransition] = useTransition();
   const [deletePending, startDeleteTransition] = useTransition();
   const router = useRouter();
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // Tapping anywhere outside this row while it's swiped open snaps it back
+  // closed, so only one row's delete action stays revealed at a time.
+  useEffect(() => {
+    if (!open) return;
+    function handleOutsidePointerDown(e: PointerEvent) {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        setOpen(false);
+        setDragX(0);
+      }
+    }
+    document.addEventListener("pointerdown", handleOutsidePointerDown);
+    return () => document.removeEventListener("pointerdown", handleOutsidePointerDown);
+  }, [open]);
 
   // Capture is deferred until the pointer has actually moved past a small
   // threshold — capturing on every pointerdown (including a plain tap on the
@@ -75,7 +90,7 @@ export function ShoppingItemRow({ item }: { item: ShoppingItem }) {
   }
 
   return (
-    <div className="relative overflow-hidden border-b border-border">
+    <div ref={containerRef} className="relative overflow-hidden border-b border-border">
       <button
         type="button"
         onClick={handleDelete}
