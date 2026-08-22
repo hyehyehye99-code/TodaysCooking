@@ -7,6 +7,17 @@ import { extractYoutubeVideoId, fetchYoutubeVideoDetails } from "@/lib/actions/y
 
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
+const DAILY_LIMIT = 20;
+
+// Comma-separated emails (e.g. in .env.local) that skip the daily cap
+// entirely — for the developer's own test account.
+const UNLIMITED_EMAILS = new Set(
+  (process.env.AI_RECIPE_UNLIMITED_EMAILS ?? "")
+    .split(",")
+    .map((e) => e.trim().toLowerCase())
+    .filter(Boolean)
+);
+
 const RECIPE_SCHEMA = {
   type: Type.OBJECT,
   properties: {
@@ -68,6 +79,23 @@ export async function generateRecipeFromLink(
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) return { ok: false, error: "로그인이 필요해요." };
+
+  const isUnlimited = !!user.email && UNLIMITED_EMAILS.has(user.email.toLowerCase());
+  if (!isUnlimited) {
+    const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+    const { count } = await supabase
+      .from("ai_recipe_generations")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", user.id)
+      .gte("created_at", since);
+    if ((count ?? 0) >= DAILY_LIMIT) {
+      return {
+        ok: false,
+        error: `하루 AI 사용 횟수(${DAILY_LIMIT}회)를 다 썼어요. 내일 다시 시도해주세요.`,
+      };
+    }
+  }
+  await supabase.from("ai_recipe_generations").insert({ user_id: user.id });
 
   const preview = await fetchLinkPreview(url);
   if (!preview.ok) return { ok: false, error: preview.error };
