@@ -374,7 +374,7 @@ export function WelcomeContent() {
 
   return (
     <div className="mx-auto flex h-dvh w-full max-w-[420px] flex-col px-7 pt-[calc(max(env(safe-area-inset-top),32px)+16px)] pb-[max(env(safe-area-inset-bottom),32px)]">
-      <div className="mb-4 flex items-center justify-between">
+      <div className="mb-9 flex items-center justify-between">
         <button
           type="button"
           onClick={() => setSlideIndex((i) => Math.max(0, i - 1))}
