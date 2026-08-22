@@ -162,7 +162,9 @@ export async function generateRecipeFromLink(
     // never shows a stray "\n" instead of wrapping.
     const rawInstructions =
       typeof data.instructions === "string" ? data.instructions.replace(/\\n/g, "\n") : "";
-    const instructions = prepLine ? `[재료 준비] ${prepLine}\n\n${rawInstructions}` : rawInstructions;
+    const instructions = prepLine
+      ? `[재료 준비]\n${prepLine}\n\n[만드는 법]\n${rawInstructions}`
+      : rawInstructions;
 
     return {
       ok: true,
