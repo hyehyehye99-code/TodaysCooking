@@ -18,13 +18,16 @@ const AI_INGREDIENTS = ["살치살 400g", "트러플 소금", "백후추", "올�
 const AI_INSTRUCTIONS = "1. 키친타월로 핏물을 깔끔히 제거합니다.\n2. 소금 후추를 앞뒤로 발라 밑간을 합니다.\n3. 팬에 올리브 오일을 두르고 중약불로 고기를 구워줍니다.";
 
 // Points at whichever element the slide wants the user to actually tap —
-// the subtext already says so in words, but a bouncing badge is what makes
-// people realize the demo is real and not just a screenshot.
-function TapHint() {
+// the subtext already says so in words, but a highlight is what makes
+// people realize the demo is real and not just a screenshot. Sized via
+// inset-0 against the nearest `relative` ancestor (the target itself)
+// instead of an offset + translate — that way it can't drift off the
+// target the way a corner-positioned icon did on real devices.
+function TapHint({ rounded = "rounded-xl" }: { rounded?: string }) {
   return (
-    <span className="pointer-events-none absolute -top-6 left-1/2 -translate-x-1/2 animate-bounce text-lg leading-none">
-      👆
-    </span>
+    <span
+      className={`pointer-events-none absolute inset-0 ${rounded} ring-2 ring-accent animate-ping`}
+    />
   );
 }
 
@@ -295,7 +298,7 @@ function FridgeDemo() {
                     >
                       {item}
                     </button>
-                    {isHintTarget && !active && <TapHint />}
+                    {isHintTarget && !active && <TapHint rounded="rounded-full" />}
                   </span>
                 );
               })}
@@ -370,7 +373,7 @@ export function WelcomeContent() {
   const isFirst = slideIndex === 0;
 
   return (
-    <div className="mx-auto flex h-dvh w-full max-w-[420px] flex-col px-7 pt-[max(env(safe-area-inset-top),32px)] pb-[max(env(safe-area-inset-bottom),32px)]">
+    <div className="mx-auto flex h-dvh w-full max-w-[420px] flex-col px-7 pt-[calc(max(env(safe-area-inset-top),32px)+16px)] pb-[max(env(safe-area-inset-bottom),32px)]">
       <div className="mb-6 flex items-center justify-between">
         <button
           type="button"

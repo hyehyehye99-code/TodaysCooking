@@ -45,7 +45,6 @@ export function AddBookmarkForm() {
           <input
             name="url"
             required
-            autoFocus
             placeholder="링크를 붙여넣으세요"
             className="rounded-xl border border-transparent bg-surface px-3.5 py-3 text-sm outline-none focus:border-accent"
           />

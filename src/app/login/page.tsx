@@ -1,8 +1,15 @@
+import { redirect } from "next/navigation";
+import { getCurrentHousehold } from "@/lib/household";
 import { BackButton } from "@/components/ui";
 import { GoogleSignInButton } from "./google-signin-button";
 import { AppleSignInButton } from "./apple-signin-button";
+import { LoginConsentGate } from "./login-consent";
 
-export default function LandingPage() {
+export default async function LandingPage() {
+  const { user, household } = await getCurrentHousehold();
+  if (user && household) redirect("/recipes");
+  if (user && !household) redirect("/onboarding");
+
   return (
     <div className="relative mx-auto flex h-dvh w-full max-w-[420px] flex-col px-7 pt-[max(env(safe-area-inset-top),64px)] pb-[max(env(safe-area-inset-bottom),64px)]">
       <div className="absolute left-7 top-[max(env(safe-area-inset-top),20px)]">
@@ -23,9 +30,13 @@ export default function LandingPage() {
           <span className="text-accent">한 눈에!</span>
         </h1>
 
-        <div className="mt-10 flex flex-col gap-2.5">
-          <GoogleSignInButton />
-          <AppleSignInButton />
+        <div className="mt-10">
+          <LoginConsentGate>
+            <div className="flex flex-col gap-2.5">
+              <GoogleSignInButton />
+              <AppleSignInButton />
+            </div>
+          </LoginConsentGate>
         </div>
       </div>
 

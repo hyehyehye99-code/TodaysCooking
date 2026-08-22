@@ -12,6 +12,12 @@ const config: CapacitorConfig = {
     // desktop marketing landing page and should never appear inside the
     // native app.
     url: "https://ourhomemenu.vercel.app/welcome",
+    // Distribution (TestFlight/App Store) builds enforce a much stricter
+    // WKWebView navigation policy than dev builds — without the app's own
+    // domain listed here, even a same-origin server redirect (e.g. an
+    // already-logged-in user hitting /welcome and being sent to /recipes)
+    // gets treated as "external" and kicked out to Safari.
+    allowNavigation: ["ourhomemenu.vercel.app"],
   },
 };
 
