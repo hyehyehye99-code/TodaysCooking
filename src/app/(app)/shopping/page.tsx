@@ -98,11 +98,6 @@ export default async function ShoppingPage() {
               </form>
               <div className="min-w-0 flex-1 text-left">
                 <p className="truncate text-sm font-semibold">{item.name}</p>
-                {item.source_recipe_title && (
-                  <p className="mt-0.5 text-[11px] text-ink-faint">
-                    {item.source_recipe_title} 재료
-                  </p>
-                )}
               </div>
               <ShoppingItemLink id={item.id} name={item.name} checked={item.checked} />
               <form action={deleteShoppingItem}>
