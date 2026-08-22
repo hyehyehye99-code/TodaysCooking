@@ -47,7 +47,7 @@ export function MissingIngredientsButton({
     startTransition(async () => {
       await resolveMissingIngredients({ recipeId, shopping, fridge, skip });
       setOpen(false);
-      router.push("/recipes");
+      router.refresh();
     });
   }
 
