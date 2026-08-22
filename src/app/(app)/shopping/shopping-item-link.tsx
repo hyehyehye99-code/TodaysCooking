@@ -20,7 +20,7 @@ export function ShoppingItemLink({ name }: { name: string }) {
           if (win) win.location.href = url;
         });
       }}
-      className="shrink-0 rounded-lg bg-accent/10 px-2.5 py-1.5 text-[11px] font-bold text-accent-ink"
+      className="shrink-0 rounded-lg border border-accent bg-white px-2.5 py-1.5 text-[11px] font-bold text-accent-ink"
     >
       구매하기
     </button>
