@@ -142,16 +142,13 @@ export default async function LandingPage() {
         <div className="mx-auto w-full max-w-[300px]">
           <div className="rounded-[32px] border border-border bg-cream p-5 shadow-[0_20px_60px_-24px_rgba(25,31,40,0.25)]">
             <p className="mb-4 text-xs font-bold text-ink-faint">오늘의 냉장고</p>
-            <div className="space-y-2.5">
-              {["감자", "대파", "두부", "계란"].map((item) => (
-                <div
-                  key={item}
-                  className="flex items-center justify-between rounded-xl bg-surface px-4 py-3"
-                >
-                  <span className="text-sm font-bold text-ink">{item}</span>
-                  <span className="text-xs text-ink-faint">냉장</span>
-                </div>
-              ))}
+            <div className="flex aspect-[3/4] w-full flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-border bg-surface text-ink-faint">
+              <svg width="28" height="28" viewBox="0 0 22 22" fill="none" aria-hidden="true">
+                <rect x="2.5" y="3.5" width="17" height="15" rx="2" stroke="currentColor" strokeWidth="1.5" />
+                <circle cx="7.5" cy="8.5" r="1.5" stroke="currentColor" strokeWidth="1.5" />
+                <path d="M4 15.5l4.5-4.5 3 3 2.5-2.5 4 4" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
+              </svg>
+              <span className="text-xs font-semibold">스크린샷 자리</span>
             </div>
           </div>
         </div>
@@ -179,7 +176,7 @@ export default async function LandingPage() {
 
       <section className="py-20">
         <div className="mx-auto w-full max-w-5xl px-6">
-          <h2 className="text-2xl font-bold text-ink md:text-3xl">이렇게 달라져요</h2>
+          <h2 className="text-2xl font-bold text-ink md:text-3xl">이런 기능이 있어요</h2>
           <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {FEATURES.map((f) => (
               <div key={f.title} className="rounded-2xl border border-border bg-cream p-6">
@@ -188,6 +185,14 @@ export default async function LandingPage() {
                 </div>
                 <h3 className="text-base font-bold text-ink">{f.title}</h3>
                 <p className="mt-2 text-sm leading-relaxed text-ink-soft">{f.description}</p>
+                <div className="mt-4 flex aspect-[16/10] w-full flex-col items-center justify-center gap-1.5 rounded-xl border border-dashed border-border bg-surface text-ink-faint">
+                  <svg width="20" height="20" viewBox="0 0 22 22" fill="none" aria-hidden="true">
+                    <rect x="2.5" y="3.5" width="17" height="15" rx="2" stroke="currentColor" strokeWidth="1.5" />
+                    <circle cx="7.5" cy="8.5" r="1.5" stroke="currentColor" strokeWidth="1.5" />
+                    <path d="M4 15.5l4.5-4.5 3 3 2.5-2.5 4 4" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
+                  </svg>
+                  <span className="text-[11px] font-semibold">스크린샷 자리</span>
+                </div>
               </div>
             ))}
           </div>
