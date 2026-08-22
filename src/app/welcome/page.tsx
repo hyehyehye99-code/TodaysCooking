@@ -3,17 +3,51 @@
 import { useState } from "react";
 import Link from "next/link";
 import { GlassCard } from "@/components/ui";
-import { Modal } from "@/components/Modal";
+
+const SAMPLE_RECIPES = [
+  { name: "비프 부르기뇽", tag: "#프랑스" },
+  { name: "짜글이", tag: "#한식" },
+  { name: "광어 세비체", tag: "#홈파티" },
+  { name: "크림브륄레", tag: "#디저트" },
+];
 
 const AI_INGREDIENTS = ["살치살 400g", "트러플 소금", "백후추", "올리브유", "통마늘", "방울 토마토", "양송이 버섯", "미니 아스파라거스", "와사비"];
 const AI_INSTRUCTIONS = "1. 키친타월로 핏물을 깔끔히 제거합니다.\n2. 소금 후추를 앞뒤로 발라 밑간을 합니다.\n3. 팬에 올리브 오일을 두르고 중약불로 고기를 구워줍니다.";
 
 function RecipeCollectDemo() {
-  const [phase, setPhase] = useState<"form" | "loading" | "result">("form");
+  const [phase, setPhase] = useState<"list" | "form" | "loading" | "result">("list");
 
   function runAi() {
     setPhase("loading");
     setTimeout(() => setPhase("result"), 900);
+  }
+
+  if (phase === "list") {
+    return (
+      <GlassCard className="mx-auto w-full max-w-[280px] bg-white p-4">
+        <div className="mb-3 flex items-center justify-between">
+          <p className="text-[15px] font-bold text-ink">메뉴판</p>
+          <button
+            type="button"
+            onClick={() => setPhase("form")}
+            className="text-xs font-bold text-accent"
+          >
+            + 새 메뉴
+          </button>
+        </div>
+        <div className="flex flex-col divide-y divide-border">
+          {SAMPLE_RECIPES.map((r) => (
+            <div key={r.name} className="flex items-center gap-2.5 py-2.5 first:pt-0 last:pb-0">
+              <div className="h-9 w-9 shrink-0 rounded-lg bg-surface" />
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-xs font-bold text-ink">{r.name}</p>
+                <p className="truncate text-[10px] text-ink-faint">{r.tag}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </GlassCard>
+    );
   }
 
   return (
@@ -75,46 +109,72 @@ const SHOPPING_ITEMS = ["살치살", "트러플 소금", "백후추", "통마늘
 const OWNED_INGREDIENTS = new Set(["방울 토마토", "와사비"]);
 
 function ShoppingSyncDemo() {
-  const [phase, setPhase] = useState<"detail" | "modal" | "done">("detail");
+  const [phase, setPhase] = useState<"detail" | "confirm" | "done">("detail");
 
   return (
     <>
       <GlassCard className="mx-auto w-full max-w-[280px] bg-white p-4">
-        <p className="mb-1 text-[15px] font-bold text-ink">스테이크 굽는 법</p>
-        <p className="mb-2 text-xs text-ink-soft">2/9 보유 중 · 재료</p>
-        <div className="mb-3 flex flex-wrap gap-1.5">
-          {AI_INGREDIENTS.map((item) => {
-            const isOwned = OWNED_INGREDIENTS.has(item);
-            const onList = phase === "done" && !isOwned;
-            return (
-              <span
-                key={item}
-                className={`rounded-full border px-2.5 py-1 text-[11px] font-semibold ${
-                  isOwned
-                    ? "border-accent bg-surface text-accent-ink"
-                    : onList
-                      ? "border-positive bg-surface text-positive-ink"
-                      : "border-transparent bg-surface text-ink-soft"
-                }`}
-              >
-                {item}
-              </span>
-            );
-          })}
-        </div>
-
-        {phase === "done" ? (
-          <div className="rounded-xl bg-surface py-2.5 text-center text-xs font-bold text-ink-faint">
-            장보기에 담겨 있어요
+        {phase === "confirm" ? (
+          <div className="animate-fade-in-up">
+            <p className="mb-1 text-[15px] font-bold">부족한 재료 확인</p>
+            <p className="mb-3 text-xs text-ink-soft">
+              이미 있는 재료는 냉장고로, 나머지는 장보기에 담을게요.
+            </p>
+            <div className="mb-4 flex flex-col gap-2">
+              {SHOPPING_ITEMS.slice(0, 3).map((item) => (
+                <div key={item} className="flex items-center justify-between rounded-xl bg-surface px-3.5 py-2.5">
+                  <span className="text-sm font-semibold">{item}</span>
+                  <span className="rounded-md bg-accent px-2 py-1 text-[11px] font-bold text-white">구매 필요</span>
+                </div>
+              ))}
+            </div>
+            <button
+              type="button"
+              onClick={() => setPhase("done")}
+              className="w-full rounded-xl bg-accent py-3 text-sm font-bold text-white"
+            >
+              담기
+            </button>
           </div>
         ) : (
-          <button
-            type="button"
-            onClick={() => setPhase("modal")}
-            className="w-full rounded-xl bg-accent py-2.5 text-xs font-bold text-white"
-          >
-            부족한 재료 장보기 담기
-          </button>
+          <>
+            <p className="mb-1 text-[15px] font-bold text-ink">스테이크 굽는 법</p>
+            <p className="mb-2 text-xs text-ink-soft">2/9 보유 중 · 재료</p>
+            <div className="mb-3 flex flex-wrap gap-1.5">
+              {AI_INGREDIENTS.map((item) => {
+                const isOwned = OWNED_INGREDIENTS.has(item);
+                const onList = phase === "done" && !isOwned;
+                return (
+                  <span
+                    key={item}
+                    className={`rounded-full border px-2.5 py-1 text-[11px] font-semibold ${
+                      isOwned
+                        ? "border-accent bg-surface text-accent-ink"
+                        : onList
+                          ? "border-positive bg-surface text-positive-ink"
+                          : "border-transparent bg-surface text-ink-soft"
+                    }`}
+                  >
+                    {item}
+                  </span>
+                );
+              })}
+            </div>
+
+            {phase === "done" ? (
+              <div className="rounded-xl bg-surface py-2.5 text-center text-xs font-bold text-ink-faint">
+                장보기에 담겨 있어요
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setPhase("confirm")}
+                className="w-full rounded-xl bg-accent py-2.5 text-xs font-bold text-white"
+              >
+                부족한 재료 장보기 담기
+              </button>
+            )}
+          </>
         )}
       </GlassCard>
 
@@ -133,30 +193,6 @@ function ShoppingSyncDemo() {
           </GlassCard>
         </div>
       )}
-
-      <Modal open={phase === "modal"} onClose={() => setPhase("detail")} variant="sheet">
-        <div className="mx-auto w-full max-w-[420px] rounded-t-3xl bg-white p-5">
-          <p className="mb-1 text-[15px] font-bold">부족한 재료 확인</p>
-          <p className="mb-3 text-xs text-ink-soft">
-            이미 있는 재료는 냉장고로, 필요 없는 재료는 생략으로 표시하고, 나머지는 장보기에 담을게요.
-          </p>
-          <div className="mb-4 flex flex-col gap-2">
-            {SHOPPING_ITEMS.slice(0, 3).map((item) => (
-              <div key={item} className="flex items-center justify-between rounded-xl bg-surface px-3.5 py-2.5">
-                <span className="text-sm font-semibold">{item}</span>
-                <span className="rounded-md bg-accent px-2 py-1 text-[11px] font-bold text-white">구매 필요</span>
-              </div>
-            ))}
-          </div>
-          <button
-            type="button"
-            onClick={() => setPhase("done")}
-            className="w-full rounded-xl bg-accent py-3 text-sm font-bold text-white"
-          >
-            담기
-          </button>
-        </div>
-      </Modal>
     </>
   );
 }
@@ -215,26 +251,26 @@ function HouseholdShareDemo() {
   const [phase, setPhase] = useState<"mypage" | "invite" | "copied">("mypage");
 
   return (
-    <>
-      <GlassCard className="mx-auto w-full max-w-[280px] bg-white p-4 ring-2 ring-accent">
-        <div className="mb-3 flex items-center justify-between">
-          <p className="text-sm font-bold text-ink">혜콩이네 🏠</p>
-          <span className="rounded-full bg-accent/10 px-2.5 py-1 text-[11px] font-bold text-accent">사용 중</span>
-        </div>
-        <div className="flex items-center justify-between">
-          <span className="text-xs text-ink-soft">참여 인원 2명</span>
-          <button
-            type="button"
-            onClick={() => setPhase("invite")}
-            className="rounded-lg bg-accent px-3 py-1.5 text-xs font-bold text-white"
-          >
-            초대하기
-          </button>
-        </div>
-      </GlassCard>
-
-      <Modal open={phase !== "mypage"} onClose={() => setPhase("mypage")} variant="sheet">
-        <div className="mx-auto w-full max-w-[420px] rounded-t-3xl bg-white p-5">
+    <GlassCard className="mx-auto w-full max-w-[280px] bg-white p-4 ring-2 ring-accent">
+      {phase === "mypage" ? (
+        <>
+          <div className="mb-3 flex items-center justify-between">
+            <p className="text-sm font-bold text-ink">혜콩이네 🏠</p>
+            <span className="rounded-full bg-accent/10 px-2.5 py-1 text-[11px] font-bold text-accent">사용 중</span>
+          </div>
+          <div className="flex items-center justify-between">
+            <span className="text-xs text-ink-soft">참여 인원 2명</span>
+            <button
+              type="button"
+              onClick={() => setPhase("invite")}
+              className="rounded-lg bg-accent px-3 py-1.5 text-xs font-bold text-white"
+            >
+              초대하기
+            </button>
+          </div>
+        </>
+      ) : (
+        <div className="animate-fade-in-up">
           <p className="mb-1 text-[15px] font-bold">혜콩이네 🏠 에 초대하기</p>
           <p className="mb-4 text-xs text-ink-soft">
             링크를 보내면 상대방이 눌러서 로그인 후 바로 참여할 수 있어요.
@@ -249,8 +285,8 @@ function HouseholdShareDemo() {
             {phase === "copied" ? "링크를 복사했어요!" : "초대 링크 복사하기"}
           </button>
         </div>
-      </Modal>
-    </>
+      )}
+    </GlassCard>
   );
 }
 
@@ -281,10 +317,24 @@ export default function WelcomePage() {
   const [slideIndex, setSlideIndex] = useState(0);
   const slide = SLIDES[slideIndex];
   const isLast = slideIndex === SLIDES.length - 1;
+  const isFirst = slideIndex === 0;
 
   return (
     <div className="mx-auto flex h-dvh w-full max-w-[420px] flex-col px-7 pt-[max(env(safe-area-inset-top),32px)] pb-[max(env(safe-area-inset-bottom),32px)]">
       <div className="mb-6 flex items-center justify-between">
+        <button
+          type="button"
+          onClick={() => setSlideIndex((i) => Math.max(0, i - 1))}
+          aria-label="이전"
+          className={`flex h-8 w-8 items-center justify-center rounded-full bg-surface text-ink-soft ${
+            isFirst ? "invisible" : ""
+          }`}
+        >
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M15 6l-6 6 6 6" />
+          </svg>
+        </button>
+
         <div className="flex gap-1.5">
           {SLIDES.map((_, i) => (
             <span
@@ -293,6 +343,7 @@ export default function WelcomePage() {
             />
           ))}
         </div>
+
         <Link href="/login" className="text-xs font-bold text-ink-faint">
           건너뛰기
         </Link>
@@ -302,7 +353,7 @@ export default function WelcomePage() {
         <h1 className="mb-2 text-xl font-bold leading-snug text-ink">{slide.headline}</h1>
         <p className="mb-6 text-sm text-ink-soft">{slide.subtext}</p>
 
-        {slide.render()}
+        <div key={slideIndex}>{slide.render()}</div>
       </div>
 
       <div className="mt-6">

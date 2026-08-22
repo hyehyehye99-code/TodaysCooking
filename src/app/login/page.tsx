@@ -14,7 +14,7 @@ export default function LandingPage() {
           <br />
           <span className="text-accent">한곳에,</span>
           <br />
-          필요한 재료를,
+          필요한 재료를
           <br />
           <span className="text-accent">한 눈에!</span>
         </h1>
