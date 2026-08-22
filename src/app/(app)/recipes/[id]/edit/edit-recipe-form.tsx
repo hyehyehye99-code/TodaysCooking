@@ -31,7 +31,7 @@ export function EditRecipeForm({
   const ingredientsText = recipe.recipe_ingredients
     .slice()
     .sort((a, b) => a.position - b.position)
-    .map((i) => i.name)
+    .map((i) => (i.amount ? `${i.name} ${i.amount}` : i.name))
     .join("\n");
 
   return (

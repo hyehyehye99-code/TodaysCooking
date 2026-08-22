@@ -18,6 +18,7 @@ export type RecipeIngredient = {
   id: string;
   recipe_id: string;
   name: string;
+  amount: string | null;
   position: number;
   skipped: boolean;
 };

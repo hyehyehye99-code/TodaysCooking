@@ -8,11 +8,34 @@ import { uploadRecipePhotos } from "@/lib/actions/storage";
 import { fetchLinkPreview } from "@/lib/actions/link-preview";
 import { MAX_RECIPE_PHOTOS } from "@/lib/constants";
 
+// A few common amount-only words that carry no digit, so the digit check
+// below wouldn't catch them on their own.
+const QUANTITY_ONLY_WORDS = new Set(["약간", "적당량", "조금", "약간씩", "넉넉히", "소량", "한꼬집", "한줌"]);
+
+// Splits a manually-typed line like "돼지고기 200g" into name + amount, so
+// the name alone can still match fridge/shopping items by exact string (see
+// resolveMissingIngredients) while the amount isn't lost — it's just kept
+// alongside instead of baked into the name. Only the trailing whitespace-
+// delimited token is treated as a candidate amount; if it doesn't look like
+// one (no digit, not a known quantity word), the whole line stays the name
+// unchanged — the common single-word-ingredient case is never touched.
+function splitIngredientLine(raw: string): { name: string; amount: string | null } {
+  const trimmed = raw.trim();
+  const match = trimmed.match(/^(.+?)\s+(\S+)$/);
+  if (!match) return { name: trimmed, amount: null };
+  const [, namePart, lastToken] = match;
+  const looksLikeAmount = /\d/.test(lastToken) || QUANTITY_ONLY_WORDS.has(lastToken);
+  if (!looksLikeAmount) return { name: trimmed, amount: null };
+  return { name: namePart.trim(), amount: lastToken };
+}
+
 function parseIngredients(raw: string) {
   return raw
     .split(/[\n,]/)
     .map((s) => s.trim())
-    .filter(Boolean);
+    .filter(Boolean)
+    .map(splitIngredientLine)
+    .filter((i) => i.name.length > 0);
 }
 
 // PhotoPicker submits an ordered token list ("existing:<url>" or "new:<i>",
@@ -139,7 +162,7 @@ export async function createRecipe(_prevState: unknown, formData: FormData) {
   if (error || !recipe) return { error: "메뉴를 저장하지 못했어요." };
 
   const { error: ingredientsError } = await supabase.from("recipe_ingredients").insert(
-    ingredients.map((name, i) => ({ recipe_id: recipe.id, name, position: i }))
+    ingredients.map((ing, i) => ({ recipe_id: recipe.id, name: ing.name, amount: ing.amount, position: i }))
   );
   if (ingredientsError) {
     await supabase.from("recipes").delete().eq("id", recipe.id);
@@ -194,7 +217,7 @@ export async function updateRecipe(_prevState: unknown, formData: FormData) {
     ? { error: deleteError }
     : await supabase
         .from("recipe_ingredients")
-        .insert(ingredients.map((name, i) => ({ recipe_id: id, name, position: i })));
+        .insert(ingredients.map((ing, i) => ({ recipe_id: id, name: ing.name, amount: ing.amount, position: i })));
   if (deleteError || insertError) return { error: "재료를 저장하지 못했어요. 다시 시도해주세요." };
 
   await saveReferenceLink(supabase, household.id, user.id, id, referenceUrl);
