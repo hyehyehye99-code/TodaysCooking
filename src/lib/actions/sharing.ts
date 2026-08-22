@@ -38,11 +38,10 @@ export async function reactToRecipe(recipeId: string) {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return { error: "로그인이 필요해요." };
 
   const { error } = await supabase
     .from("recipe_reactions")
-    .insert({ recipe_id: recipeId, user_id: user.id });
+    .insert({ recipe_id: recipeId, user_id: user?.id ?? null });
   // 23505 = unique_violation — a double-click landed two inserts for the
   // same (recipe, user); the row is already there, which is the goal.
   if (error && error.code !== "23505") return { error: "표현하지 못했어요." };
@@ -60,8 +59,8 @@ export async function unreactToRecipe(recipeId: string) {
   return { success: true as const };
 }
 
-export async function deleteRecipeReaction(reactionId: string, recipeId: string) {
+export async function clearRecipeReactions(recipeId: string) {
   const supabase = await createClient();
-  await supabase.from("recipe_reactions").delete().eq("id", reactionId);
+  await supabase.from("recipe_reactions").delete().eq("recipe_id", recipeId);
   revalidatePath(`/recipes/${recipeId}`);
 }

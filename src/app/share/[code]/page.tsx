@@ -107,7 +107,6 @@ export default async function SharePage({ params }: { params: Promise<{ code: st
               </div>
               <ReactButton
                 recipeId={recipe.id}
-                shareCode={code}
                 isLoggedIn={!!user}
                 initiallyReacted={reactedIds.has(recipe.id)}
               />
@@ -116,18 +115,11 @@ export default async function SharePage({ params }: { params: Promise<{ code: st
         </div>
       )}
 
-      <div className="mt-10 rounded-2xl border border-border bg-surface p-6 text-center">
-        <p className="text-base font-bold">나도 이런 메뉴판 만들어볼까?</p>
-        <p className="mt-2 text-sm leading-relaxed text-ink-soft">
-          레시피, 냉장고, 장보기 목록까지 — 파트너와 함께 쓰는 우리집 메뉴판.
-        </p>
-        <Link
-          href="/"
-          className="mt-5 inline-block rounded-xl bg-accent px-6 py-3.5 text-sm font-bold text-white"
-        >
-          우리집 메뉴판 시작하기
+      <p className="mt-10 text-center text-[11px] text-ink-faint">
+        <Link href="/" className="underline">
+          나도 이런 메뉴판 만들어볼까?
         </Link>
-      </div>
+      </p>
     </div>
   );
 }

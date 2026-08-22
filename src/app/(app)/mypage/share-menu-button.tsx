@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import { setHouseholdSharing, setHouseholdShareTags } from "@/lib/actions/sharing";
 import { Modal } from "@/components/Modal";
@@ -57,6 +58,7 @@ export function ShareMenuButton({
 }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
+  const [previewOpen, setPreviewOpen] = useState(false);
   const [shareCode, setShareCode] = useState(initialShareCode);
   const [selectedTags, setSelectedTags] = useState<string[]>(initialShareTags);
   const [copied, setCopied] = useState(false);
@@ -116,7 +118,7 @@ export function ShareMenuButton({
         <div className="mx-auto w-full max-w-[420px] rounded-t-3xl bg-white p-5 pb-[max(env(safe-area-inset-bottom),20px)]">
           <p className="mb-1 text-[15px] font-bold">{householdName} 메뉴판 공유하기</p>
           <p className={changeLog ? "mb-1.5 text-xs text-ink-soft" : "mb-4 text-xs text-ink-soft"}>
-            누구나 로그인 없이 메뉴를 볼 수 있고, 로그인하면 하트로 반응을 남길 수 있어요.
+            누구나 로그인 없이 메뉴를 보고 하트로 반응을 남길 수 있어요.
           </p>
           {changeLog && (
             <p className="mb-4 text-[11px] text-ink-faint">
@@ -139,14 +141,13 @@ export function ShareMenuButton({
                 >
                   {copied ? "링크를 복사했어요!" : "공유 링크 복사하기"}
                 </button>
-                <a
-                  href={shareUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                <button
+                  type="button"
+                  onClick={() => setPreviewOpen(true)}
                   className="flex shrink-0 items-center justify-center rounded-xl bg-surface px-4 text-sm font-bold text-ink-soft"
                 >
                   미리보기
-                </a>
+                </button>
               </div>
 
               <div className="mt-5 border-t border-border pt-4">
@@ -249,6 +250,26 @@ export function ShareMenuButton({
           </button>
         </div>
       </Modal>
+
+      {previewOpen &&
+        createPortal(
+          <div className="fixed inset-0 z-[60] bg-white">
+            <button
+              type="button"
+              onClick={() => setPreviewOpen(false)}
+              aria-label="미리보기 닫기"
+              className="absolute right-4 flex h-9 w-9 items-center justify-center rounded-full bg-ink/70 text-white"
+              style={{ top: "max(env(safe-area-inset-top), 16px)" }}
+            >
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M18 6L6 18" />
+                <path d="M6 6l12 12" />
+              </svg>
+            </button>
+            <iframe src={shareUrl} title="메뉴판 미리보기" className="h-full w-full border-0" />
+          </div>,
+          document.body
+        )}
     </>
   );
 }

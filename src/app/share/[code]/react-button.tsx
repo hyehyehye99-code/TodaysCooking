@@ -1,43 +1,71 @@
 "use client";
 
-import { useState, useTransition } from "react";
-import { createClient } from "@/lib/supabase/client";
+import { useState, useSyncExternalStore, useTransition } from "react";
 import { reactToRecipe, unreactToRecipe } from "@/lib/actions/sharing";
 
-const POST_LOGIN_REDIRECT_COOKIE = "post_login_redirect";
+const REACTED_STORAGE_KEY = "reacted_recipe_ids";
+
+function getReactedSet(): Set<string> {
+  try {
+    return new Set(JSON.parse(localStorage.getItem(REACTED_STORAGE_KEY) ?? "[]"));
+  } catch {
+    return new Set();
+  }
+}
+
+function rememberReacted(recipeId: string) {
+  const set = getReactedSet();
+  set.add(recipeId);
+  localStorage.setItem(REACTED_STORAGE_KEY, JSON.stringify([...set]));
+}
+
+function noopSubscribe() {
+  return () => {};
+}
 
 export function ReactButton({
   recipeId,
-  shareCode,
   isLoggedIn,
   initiallyReacted,
 }: {
   recipeId: string;
-  shareCode: string;
   isLoggedIn: boolean;
   initiallyReacted: boolean;
 }) {
-  const [reacted, setReacted] = useState(initiallyReacted);
+  // Anonymous visitors have no server-checkable identity, so "already
+  // reacted" for them lives in this browser's localStorage. Read via
+  // useSyncExternalStore rather than an effect + setState: its server
+  // snapshot is always false (the server can't see localStorage), so the
+  // first client render can safely differ from there afterward without
+  // that being a hydration mismatch.
+  const reactedLocally = useSyncExternalStore(
+    noopSubscribe,
+    () => getReactedSet().has(recipeId),
+    () => false
+  );
+
+  const [optimistic, setOptimistic] = useState<boolean | null>(null);
   const [pending, startTransition] = useTransition();
 
-  async function loginThenReact() {
-    // Read back by /auth/callback once Google redirects here, so the
-    // visitor lands back on this share page instead of inside the app.
-    document.cookie = `${POST_LOGIN_REDIRECT_COOKIE}=/share/${shareCode}; path=/; max-age=600`;
-    const supabase = createClient();
-    await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: { redirectTo: `${window.location.origin}/auth/callback` },
-    });
-  }
+  const reacted = optimistic ?? (isLoggedIn ? initiallyReacted : reactedLocally);
 
   function toggle() {
+    if (pending) return;
+
     if (!isLoggedIn) {
-      loginThenReact();
+      // One-way for anonymous visitors: there's no identity to undo a
+      // reaction by, so once reacted (per this browser) it stays reacted.
+      if (reacted) return;
+      setOptimistic(true);
+      rememberReacted(recipeId);
+      startTransition(async () => {
+        await reactToRecipe(recipeId);
+      });
       return;
     }
+
     const next = !reacted;
-    setReacted(next);
+    setOptimistic(next);
     startTransition(async () => {
       if (next) await reactToRecipe(recipeId);
       else await unreactToRecipe(recipeId);
