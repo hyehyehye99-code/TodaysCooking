@@ -97,14 +97,16 @@ export default async function ShoppingPage() {
                 </button>
               </form>
               <div className="min-w-0 flex-1 text-left">
-                <p className="text-sm font-semibold">{item.name}</p>
+                <div className="flex min-w-0 items-center gap-2">
+                  <p className="truncate text-sm font-semibold">{item.name}</p>
+                  <ShoppingItemLink id={item.id} name={item.name} checked={item.checked} />
+                </div>
                 {item.source_recipe_title && (
                   <p className="mt-0.5 text-[11px] text-ink-faint">
                     {item.source_recipe_title} 재료
                   </p>
                 )}
               </div>
-              <ShoppingItemLink id={item.id} name={item.name} checked={item.checked} />
               <form action={deleteShoppingItem}>
                 <input type="hidden" name="id" value={item.id} />
                 <button
