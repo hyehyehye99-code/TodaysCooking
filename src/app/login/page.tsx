@@ -1,4 +1,5 @@
 import { GoogleSignInButton } from "./google-signin-button";
+import { AppleSignInButton } from "./apple-signin-button";
 
 export default function LandingPage() {
   return (
@@ -17,8 +18,9 @@ export default function LandingPage() {
           <span className="text-accent">한 눈에!</span>
         </h1>
 
-        <div className="mt-10">
+        <div className="mt-10 flex flex-col gap-2.5">
           <GoogleSignInButton />
+          <AppleSignInButton />
         </div>
       </div>
 
