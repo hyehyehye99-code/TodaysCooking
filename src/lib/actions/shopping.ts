@@ -39,15 +39,6 @@ export async function deleteShoppingItem(formData: FormData) {
   revalidatePath("/shopping");
 }
 
-export async function deleteShoppingItems(ids: string[]) {
-  if (ids.length === 0) return;
-
-  const supabase = await createClient();
-  await supabase.from("shopping_items").delete().in("id", ids);
-
-  revalidatePath("/shopping");
-}
-
 export async function setAllShoppingItemsChecked(formData: FormData) {
   const checked = formData.get("checked") === "true";
 
