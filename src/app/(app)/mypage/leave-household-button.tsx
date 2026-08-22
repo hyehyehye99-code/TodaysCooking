@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { leaveHousehold } from "@/lib/actions/household";
 import { ConfirmModal } from "@/components/ConfirmModal";
+import { ClearableInput } from "@/components/ClearableInput";
 
 export function LeaveHouseholdButton({
   householdId,
@@ -73,7 +74,7 @@ export function LeaveHouseholdButton({
               확인을 위해 부엌 이름 <span className="font-bold text-ink">{householdName}</span>
               을(를) 입력해주세요.
             </p>
-            <input
+            <ClearableInput
               value={typedName}
               onChange={(e) => setTypedName(e.target.value)}
               placeholder={householdName}

@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import { INGREDIENT_CATEGORIES } from "@/lib/ingredients";
 import { completeOnboardingAuthed } from "@/lib/actions/onboarding";
 import { BackButton } from "@/components/ui";
+import { ClearableInput } from "@/components/ClearableInput";
 
 function StepDots({ step, total }: { step: number; total: number }) {
   return (
@@ -116,18 +117,18 @@ export function OnboardingWizard({ householdMissingNotice = false }: { household
               </div>
 
               {mode === "create" ? (
-                <input
+                <ClearableInput
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="예) 혜동이의 부엌"
-                  className="rounded-xl border border-transparent bg-surface px-4 py-3.5 text-sm outline-none focus:border-accent"
+                  className="w-full rounded-xl border border-transparent bg-surface px-4 py-3.5 text-sm outline-none focus:border-accent"
                 />
               ) : (
-                <input
+                <ClearableInput
                   value={code}
                   onChange={(e) => setCode(e.target.value)}
                   placeholder="부엌 코드 입력"
-                  className="rounded-xl border border-transparent bg-surface px-4 py-3.5 text-sm uppercase tracking-widest outline-none focus:border-accent"
+                  className="w-full rounded-xl border border-transparent bg-surface px-4 py-3.5 text-sm uppercase tracking-widest outline-none focus:border-accent"
                 />
               )}
             </div>
@@ -184,11 +185,11 @@ export function OnboardingWizard({ householdMissingNotice = false }: { household
               <div className="flex flex-col gap-5">
                 <label className="flex flex-col gap-1.5">
                   <span className="text-xs font-bold text-ink-soft">닉네임</span>
-                  <input
+                  <ClearableInput
                     value={nickname}
                     onChange={(e) => setNickname(e.target.value)}
                     placeholder="예) 혜지"
-                    className="rounded-xl border border-transparent bg-surface px-4 py-3.5 text-sm outline-none focus:border-accent"
+                    className="w-full rounded-xl border border-transparent bg-surface px-4 py-3.5 text-sm outline-none focus:border-accent"
                   />
                   <span className="text-[11px] text-ink-faint">
                     부엌 안에서 &ldquo;{nickname.trim() || "닉네임"}셰프&rdquo;로 불려요

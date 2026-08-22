@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
+import { ClearableInput } from "@/components/ClearableInput";
 
 export function CreateHouseholdForm({
   action,
@@ -11,11 +12,11 @@ export function CreateHouseholdForm({
 
   return (
     <form action={formAction} className="flex flex-col gap-2.5">
-      <input
+      <ClearableInput
         name="name"
         required
         placeholder="예) 혜동이의 부엌"
-        className="rounded-xl border border-transparent bg-surface px-3.5 py-3 text-sm outline-none focus:border-accent"
+        className="w-full rounded-xl border border-transparent bg-surface px-3.5 py-3 text-sm outline-none focus:border-accent"
       />
       {state?.error && <p className="text-xs text-warn-ink">{state.error}</p>}
       <button
@@ -38,11 +39,11 @@ export function JoinHouseholdForm({
 
   return (
     <form action={formAction} className="flex flex-col gap-2.5">
-      <input
+      <ClearableInput
         name="code"
         required
         placeholder="초대 코드 입력"
-        className="rounded-xl border border-transparent bg-surface px-3.5 py-3 text-sm uppercase tracking-widest outline-none focus:border-accent"
+        className="w-full rounded-xl border border-transparent bg-surface px-3.5 py-3 text-sm uppercase tracking-widest outline-none focus:border-accent"
       />
       {state?.error && <p className="text-xs text-warn-ink">{state.error}</p>}
       <button

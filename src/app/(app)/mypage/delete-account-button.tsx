@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { deleteMyAccount } from "@/lib/actions/household";
 import { ConfirmModal } from "@/components/ConfirmModal";
+import { ClearableInput } from "@/components/ClearableInput";
 
 const CONFIRM_WORD = "탈퇴";
 
@@ -57,7 +58,7 @@ export function DeleteAccountButton() {
         <p className="mt-3 text-xs text-ink-soft">
           확인을 위해 <span className="font-bold text-ink">{CONFIRM_WORD}</span>를 입력해주세요.
         </p>
-        <input
+        <ClearableInput
           value={typed}
           onChange={(e) => setTyped(e.target.value)}
           placeholder={CONFIRM_WORD}

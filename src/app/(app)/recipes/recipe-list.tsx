@@ -6,6 +6,7 @@ import Link from "next/link";
 import { GlassCard } from "@/components/ui";
 import { ConfirmModal } from "@/components/ConfirmModal";
 import { RecipeThumb } from "@/components/RecipeThumb";
+import { ClearableInput } from "@/components/ClearableInput";
 import { reorderRecipes, toggleFavoriteRecipe, deleteRecipes } from "@/lib/actions/recipes";
 import { useDragReorder } from "@/lib/useDragReorder";
 import type { RecipeWithIngredients } from "@/lib/types";
@@ -167,12 +168,14 @@ export function RecipeList({
         </div>
       ) : (
         <div className="mb-4 flex gap-2">
-          <input
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="메뉴, 재료 검색"
-            className="min-w-0 flex-1 rounded-xl border border-transparent bg-surface px-3.5 py-2.5 text-sm outline-none focus:border-accent"
-          />
+          <div className="min-w-0 flex-1">
+            <ClearableInput
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="메뉴, 재료 검색"
+              className="w-full rounded-xl border border-transparent bg-surface px-3.5 py-2.5 text-sm outline-none focus:border-accent"
+            />
+          </div>
           {recipes.length > 1 && (
             <button
               onClick={startEditing}

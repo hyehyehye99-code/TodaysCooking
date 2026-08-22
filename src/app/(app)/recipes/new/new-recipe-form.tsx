@@ -11,6 +11,7 @@ import { ReferenceLinkField } from "@/components/ReferenceLinkField";
 import { FieldLabel } from "@/components/FieldLabel";
 import { StickyFormBar } from "@/components/StickyFormBar";
 import { Modal } from "@/components/Modal";
+import { ClearableInput } from "@/components/ClearableInput";
 
 export function NewRecipeForm({ existingTags }: { existingTags: string[] }) {
   const [state, formAction, pending] = useActionState(createRecipe, undefined);
@@ -24,6 +25,10 @@ export function NewRecipeForm({ existingTags }: { existingTags: string[] }) {
   function handleAiResult(result: { title: string | null; ingredients: string[]; instructions: string }) {
     if (titleRef.current && !titleRef.current.value.trim() && result.title) {
       titleRef.current.value = result.title;
+      // ClearableInput's own clear-button visibility tracks the input's
+      // change events, not just its value — without this it wouldn't know
+      // the field just got filled in.
+      titleRef.current.dispatchEvent(new Event("input", { bubbles: true }));
     }
     if (ingredientsRef.current && result.ingredients.length > 0) {
       ingredientsRef.current.value = result.ingredients.join("\n");
@@ -80,7 +85,7 @@ export function NewRecipeForm({ existingTags }: { existingTags: string[] }) {
       >
         <div>
           <FieldLabel required>요리 이름</FieldLabel>
-          <input
+          <ClearableInput
             ref={titleRef}
             name="title"
             required
@@ -91,7 +96,11 @@ export function NewRecipeForm({ existingTags }: { existingTags: string[] }) {
 
         <GlassCard className="bg-white p-4">
           <p className="mb-1 text-[13px] font-bold">참고 링크</p>
-          <p className="mb-3 text-xs text-ink-soft">여기 넣은 링크는 보관함 탭에도 함께 저장돼요</p>
+          <p className="mb-1 text-xs text-ink-soft">여기 넣은 링크는 보관함 탭에도 함께 저장돼요</p>
+          <p className="mb-3 text-[11px] text-ink-faint">
+            AI 자동 정리는 유튜브 링크만 지원해요. 인스타그램 등 다른 링크는 제목만으로 추정해서
+            작성돼요.
+          </p>
           <ReferenceLinkField name="referenceUrl" onAiResult={handleAiResult} />
         </GlassCard>
 
@@ -139,7 +148,7 @@ export function NewRecipeForm({ existingTags }: { existingTags: string[] }) {
           <div className="flex flex-col gap-4">
             <div>
               <FieldLabel>설명</FieldLabel>
-              <input
+              <ClearableInput
                 name="subtitle"
                 placeholder="한 줄 설명"
                 className="w-full rounded-xl border border-transparent bg-surface px-3.5 py-3 text-sm outline-none focus:border-accent"

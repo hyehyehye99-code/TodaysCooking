@@ -4,6 +4,7 @@ import { useActionState, useEffect, useState } from "react";
 import { updateProfile } from "@/lib/actions/profile";
 import { EmojiPicker } from "@/components/EmojiPicker";
 import { ProfileAvatar } from "@/components/ProfileAvatar";
+import { ClearableInput } from "@/components/ClearableInput";
 
 export function ProfileForm({
   currentNickname,
@@ -26,14 +27,16 @@ export function ProfileForm({
     <form action={formAction} className="flex flex-col gap-4">
       <div className="flex items-center gap-3">
         <ProfileAvatar iconEmoji={iconEmoji} nickname={nickname} size={48} />
-        <input
-          name="nickname"
-          required
-          value={nickname}
-          onChange={(e) => setNickname(e.target.value)}
-          placeholder="닉네임"
-          className="min-w-0 flex-1 rounded-xl border border-transparent bg-surface px-3.5 py-3 text-sm font-bold outline-none focus:border-accent"
-        />
+        <div className="min-w-0 flex-1">
+          <ClearableInput
+            name="nickname"
+            required
+            value={nickname}
+            onChange={(e) => setNickname(e.target.value)}
+            placeholder="닉네임"
+            className="w-full rounded-xl border border-transparent bg-surface px-3.5 py-3 text-sm font-bold outline-none focus:border-accent"
+          />
+        </div>
       </div>
 
       <div>

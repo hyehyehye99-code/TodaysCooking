@@ -3,7 +3,6 @@ import { getCurrentHousehold } from "@/lib/household";
 import { BackButton } from "@/components/ui";
 import { GoogleSignInButton } from "./google-signin-button";
 import { AppleSignInButton } from "./apple-signin-button";
-import { LoginConsentGate } from "./login-consent";
 
 export default async function LandingPage() {
   const { user, household } = await getCurrentHousehold();
@@ -30,13 +29,9 @@ export default async function LandingPage() {
           <span className="text-accent">한 눈에!</span>
         </h1>
 
-        <div className="mt-10">
-          <LoginConsentGate>
-            <div className="flex flex-col gap-2.5">
-              <GoogleSignInButton />
-              <AppleSignInButton />
-            </div>
-          </LoginConsentGate>
+        <div className="mt-10 flex flex-col gap-2.5">
+          <GoogleSignInButton />
+          <AppleSignInButton />
         </div>
       </div>
 

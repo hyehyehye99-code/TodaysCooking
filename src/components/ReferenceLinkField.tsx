@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { fetchLinkPreview } from "@/lib/actions/link-preview";
 import { generateRecipeFromLink } from "@/lib/actions/ai-recipe";
+import { ClearableInput } from "@/components/ClearableInput";
 
 type Preview = { title: string | null; thumbnailUrl: string | null; domain: string | null };
 type AiResult = { title: string | null; ingredients: string[]; instructions: string; tags: string[] };
@@ -82,7 +83,7 @@ export function ReferenceLinkField({
 
   return (
     <div>
-      <input
+      <ClearableInput
         name={name}
         type="url"
         value={url}

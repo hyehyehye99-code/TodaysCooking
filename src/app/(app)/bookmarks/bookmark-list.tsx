@@ -7,6 +7,7 @@ import { GlassCard } from "@/components/ui";
 import { ConfirmModal } from "@/components/ConfirmModal";
 import { deleteBookmark, updateBookmarkNote, reorderBookmarks } from "@/lib/actions/bookmarks";
 import { useDragReorder } from "@/lib/useDragReorder";
+import { ClearableInput } from "@/components/ClearableInput";
 import type { Bookmark } from "@/lib/types";
 
 type BookmarkWithRecipe = Bookmark & { recipes: { title: string } | null };
@@ -28,19 +29,21 @@ function BookmarkNote({ id, note }: { id: string; note: string | null }) {
   if (editing) {
     return (
       <div className="flex items-center gap-1.5 border-t border-border pt-2">
-        <input
-          value={value}
-          onChange={(e) => setValue(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              e.preventDefault();
-              save();
-            }
-          }}
-          autoFocus
-          placeholder="메모 입력"
-          className="min-w-0 flex-1 rounded-lg bg-surface px-2 py-1.5 text-xs outline-none"
-        />
+        <div className="min-w-0 flex-1">
+          <ClearableInput
+            value={value}
+            onChange={(e) => setValue(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                save();
+              }
+            }}
+            autoFocus
+            placeholder="메모 입력"
+            className="w-full rounded-lg bg-surface px-2 py-1.5 text-xs outline-none"
+          />
+        </div>
         <button
           type="button"
           onClick={save}
@@ -197,12 +200,14 @@ export function BookmarkList({ bookmarks }: { bookmarks: BookmarkWithRecipe[] })
         </div>
       ) : (
         <div className="mb-4 flex gap-2">
-          <input
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="보관함 검색"
-            className="min-w-0 flex-1 rounded-xl border border-transparent bg-surface px-3.5 py-2.5 text-sm outline-none focus:border-accent"
-          />
+          <div className="min-w-0 flex-1">
+            <ClearableInput
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="보관함 검색"
+              className="w-full rounded-xl border border-transparent bg-surface px-3.5 py-2.5 text-sm outline-none focus:border-accent"
+            />
+          </div>
           {bookmarks.length > 1 && (
             <button
               onClick={startReorder}

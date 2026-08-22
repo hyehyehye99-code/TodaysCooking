@@ -6,6 +6,7 @@ import type { ShoppingItem } from "@/lib/types";
 import { FinishShoppingBar } from "./finish-shopping-bar";
 import { ShoppingItemRow } from "./shopping-item-row";
 import { ShoppingBulkActions } from "./shopping-bulk-actions";
+import { ClearableInput } from "@/components/ClearableInput";
 
 export default async function ShoppingPage() {
   const { household } = await getCurrentHousehold();
@@ -41,11 +42,13 @@ export default async function ShoppingPage() {
       </GlassCard>
 
       <form action={addShoppingItem} className="mb-2 flex gap-2">
-        <input
-          name="name"
-          placeholder="+ 항목 추가"
-          className="flex-1 rounded-xl border border-transparent bg-surface px-3.5 py-2.5 text-sm outline-none focus:border-accent"
-        />
+        <div className="min-w-0 flex-1">
+          <ClearableInput
+            name="name"
+            placeholder="+ 항목 추가"
+            className="w-full rounded-xl border border-transparent bg-surface px-3.5 py-2.5 text-sm outline-none focus:border-accent"
+          />
+        </div>
         <button
           type="submit"
           className="rounded-xl bg-accent px-4 py-2.5 text-sm font-bold text-white"

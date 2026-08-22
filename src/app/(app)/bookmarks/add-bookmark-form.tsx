@@ -4,6 +4,7 @@ import { useActionState, useEffect, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { addBookmark } from "@/lib/actions/bookmarks";
 import { Modal } from "@/components/Modal";
+import { ClearableInput } from "@/components/ClearableInput";
 
 export function AddBookmarkForm() {
   const [state, formAction, pending] = useActionState(addBookmark, undefined);
@@ -42,16 +43,16 @@ export function AddBookmarkForm() {
         </div>
 
         <form ref={formRef} action={formAction} className="flex flex-col gap-3">
-          <input
+          <ClearableInput
             name="url"
             required
             placeholder="링크를 붙여넣으세요"
-            className="rounded-xl border border-transparent bg-surface px-3.5 py-3 text-sm outline-none focus:border-accent"
+            className="w-full rounded-xl border border-transparent bg-surface px-3.5 py-3 text-sm outline-none focus:border-accent"
           />
-          <input
+          <ClearableInput
             name="note"
             placeholder="메모 (선택)"
-            className="rounded-xl border border-transparent bg-surface px-3.5 py-3 text-sm outline-none focus:border-accent"
+            className="w-full rounded-xl border border-transparent bg-surface px-3.5 py-3 text-sm outline-none focus:border-accent"
           />
           {state?.error && <p className="text-xs text-warn-ink">{state.error}</p>}
           <button

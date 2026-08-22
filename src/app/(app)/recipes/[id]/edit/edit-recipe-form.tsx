@@ -11,6 +11,7 @@ import { ReferenceLinkField } from "@/components/ReferenceLinkField";
 import { FieldLabel } from "@/components/FieldLabel";
 import { StickyFormBar } from "@/components/StickyFormBar";
 import { Modal } from "@/components/Modal";
+import { ClearableInput } from "@/components/ClearableInput";
 import type { RecipeWithIngredients } from "@/lib/types";
 
 export function EditRecipeForm({
@@ -83,7 +84,7 @@ export function EditRecipeForm({
 
         <div>
           <FieldLabel required>요리 이름</FieldLabel>
-          <input
+          <ClearableInput
             name="title"
             required
             defaultValue={recipe.title}
@@ -145,7 +146,7 @@ export function EditRecipeForm({
           <div className="flex flex-col gap-4">
             <div>
               <FieldLabel>설명</FieldLabel>
-              <input
+              <ClearableInput
                 name="subtitle"
                 defaultValue={recipe.subtitle ?? ""}
                 placeholder="한 줄 설명"

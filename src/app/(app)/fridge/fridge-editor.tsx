@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { saveFridge } from "@/lib/actions/fridge";
 import { GlassCard } from "@/components/ui";
+import { ClearableInput } from "@/components/ClearableInput";
 
 type Item = { name: string; selected: boolean; custom: boolean };
 type Category = { name: string; items: Item[] };
@@ -95,7 +96,7 @@ export function FridgeEditor({ categories }: { categories: Category[] }) {
         {ownedCount}개 재료 보유 중 · 탭하면 바로 추가되거나 빠져요
       </p>
 
-      <input
+      <ClearableInput
         value={search}
         onChange={(e) => setSearch(e.target.value)}
         placeholder="재료 검색"

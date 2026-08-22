@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { renameHousehold } from "@/lib/actions/household";
+import { ClearableInput } from "@/components/ClearableInput";
 
 export function RenameHouseholdForm({
   householdId,
@@ -34,13 +35,15 @@ export function RenameHouseholdForm({
     <form action={handleSubmit} className="flex flex-col gap-2">
       <input type="hidden" name="householdId" value={householdId} />
       <div className="flex gap-2">
-        <input
-          name="name"
-          required
-          value={value}
-          onChange={(e) => setValue(e.target.value)}
-          className="min-w-0 flex-1 rounded-lg border border-transparent bg-surface px-3 py-2 text-sm outline-none focus:border-accent"
-        />
+        <div className="min-w-0 flex-1">
+          <ClearableInput
+            name="name"
+            required
+            value={value}
+            onChange={(e) => setValue(e.target.value)}
+            className="w-full rounded-lg border border-transparent bg-surface px-3 py-2 text-sm outline-none focus:border-accent"
+          />
+        </div>
         <button
           type="submit"
           disabled={pending}
