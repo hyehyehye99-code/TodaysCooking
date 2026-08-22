@@ -2,7 +2,6 @@
 
 import { useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { getCoupangSearchLink } from "@/lib/actions/coupang";
 import { toggleShoppingItem } from "@/lib/actions/shopping";
 
 export function ShoppingItemLink({
@@ -21,20 +20,16 @@ export function ShoppingItemLink({
     <button
       type="button"
       onClick={() => {
-        // Open the tab synchronously on the click itself and point it at the
-        // real URL once we have it — waiting for the fetch before calling
-        // window.open loses the user-gesture context and gets blocked as a
-        // popup in most browsers.
-        const win = window.open("", "_blank");
+        // Opens our own branded interstitial (logo + "이동중이에요~" + the
+        // Coupang Partners disclosure) which itself resolves the affiliate
+        // link and redirects — keeps this click a plain synchronous
+        // window.open so it's never blocked as a popup.
+        window.open(`/redirect/coupang?name=${encodeURIComponent(name)}`, "_blank");
         startTransition(async () => {
           const formData = new FormData();
           formData.set("id", id);
           formData.set("nextChecked", (!checked).toString());
-          const [{ url }] = await Promise.all([
-            getCoupangSearchLink(name),
-            toggleShoppingItem(formData),
-          ]);
-          if (win) win.location.href = url;
+          await toggleShoppingItem(formData);
           router.refresh();
         });
       }}
