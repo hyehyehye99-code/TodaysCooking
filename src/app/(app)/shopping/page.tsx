@@ -60,14 +60,17 @@ export default async function ShoppingPage() {
         </p>
       ) : (
         <>
-          <div className="mt-6 mb-4 flex items-center justify-between">
-            <ClearShoppingListButton />
-            <form action={setAllShoppingItemsChecked}>
-              <input type="hidden" name="checked" value={(!allChecked).toString()} />
-              <button type="submit" className="px-4 py-2 text-xs font-bold text-ink-soft">
-                {allChecked ? "전체 해제" : "전체 선택"}
-              </button>
-            </form>
+          <div className="mt-6 mb-4 flex items-center justify-end">
+            {allChecked ? (
+              <ClearShoppingListButton />
+            ) : (
+              <form action={setAllShoppingItemsChecked}>
+                <input type="hidden" name="checked" value="true" />
+                <button type="submit" className="px-4 py-2 text-xs font-bold text-ink-soft">
+                  전체 선택
+                </button>
+              </form>
+            )}
           </div>
           <div className="flex flex-col">
             {items.map((item) => (
