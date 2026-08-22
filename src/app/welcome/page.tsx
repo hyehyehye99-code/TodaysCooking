@@ -8,7 +8,10 @@ const SAMPLE_RECIPES = [
   { name: "비프 부르기뇽", tag: "#프랑스" },
   { name: "짜글이", tag: "#한식" },
   { name: "광어 세비체", tag: "#홈파티" },
+  { name: "비프 웰링턴", tag: "#홈파티" },
   { name: "크림브륄레", tag: "#디저트" },
+  { name: "된장찌개", tag: "#한식" },
+  { name: "김치볶음밥", tag: "#간단요리" },
 ];
 
 const AI_INGREDIENTS = ["살치살 400g", "트러플 소금", "백후추", "올리브유", "통마늘", "방울 토마토", "양송이 버섯", "미니 아스파라거스", "와사비"];
@@ -104,8 +107,21 @@ const SHOPPING_ITEMS = ["살치살", "트러플 소금", "백후추", "통마늘
 
 const OWNED_INGREDIENTS = new Set(["방울 토마토", "와사비"]);
 
+const CONFIRM_STATES = ["shopping", "fridge", "skip"] as const;
+type ConfirmState = (typeof CONFIRM_STATES)[number];
+const CONFIRM_LABELS: Record<ConfirmState, string> = { shopping: "구매 필요", fridge: "보유 중", skip: "생략" };
+const CONFIRM_STYLES: Record<ConfirmState, string> = {
+  shopping: "bg-accent text-white",
+  fridge: "bg-positive text-white",
+  skip: "bg-ink-soft text-white",
+};
+
 function ShoppingSyncDemo() {
   const [phase, setPhase] = useState<"detail" | "confirm" | "done">("detail");
+  const [choices, setChoices] = useState<Record<string, ConfirmState>>(
+    () => Object.fromEntries(SHOPPING_ITEMS.map((item) => [item, "shopping"])) as Record<string, ConfirmState>
+  );
+  const shoppingList = SHOPPING_ITEMS.filter((item) => choices[item] === "shopping");
 
   return (
     <>
@@ -114,23 +130,48 @@ function ShoppingSyncDemo() {
           <div className="animate-fade-in-up">
             <p className="mb-1 text-[15px] font-bold">부족한 재료 확인</p>
             <p className="mb-3 text-xs text-ink-soft">
-              이미 있는 재료는 냉장고로, 나머지는 장보기에 담을게요.
+              이미 있는 재료는 냉장고로, 필요 없는 재료는 생략으로 표시하고, 나머지만 장보기에
+              담을게요.
             </p>
-            <div className="mb-4 flex flex-col gap-2">
-              {SHOPPING_ITEMS.slice(0, 3).map((item) => (
-                <div key={item} className="flex items-center justify-between rounded-xl bg-surface px-3.5 py-2.5">
-                  <span className="text-sm font-semibold">{item}</span>
-                  <span className="rounded-md bg-accent px-2 py-1 text-[11px] font-bold text-white">구매 필요</span>
+            <div className="mb-4 flex max-h-[220px] flex-col gap-2 overflow-y-auto">
+              {SHOPPING_ITEMS.map((item) => (
+                <div key={item} className="rounded-xl bg-surface px-3 py-2.5">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-xs font-semibold">{item}</span>
+                    <div className="grid shrink-0 grid-cols-3 gap-0.5 rounded-lg bg-white p-0.5">
+                      {CONFIRM_STATES.map((state) => (
+                        <button
+                          key={state}
+                          type="button"
+                          onClick={() => setChoices((c) => ({ ...c, [item]: state }))}
+                          className={`whitespace-nowrap rounded-md px-1.5 py-1 text-[10px] font-bold ${
+                            choices[item] === state ? CONFIRM_STYLES[state] : "text-ink-soft"
+                          }`}
+                        >
+                          {CONFIRM_LABELS[state]}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                 </div>
               ))}
             </div>
-            <button
-              type="button"
-              onClick={() => setPhase("done")}
-              className="w-full rounded-xl bg-accent py-3 text-sm font-bold text-white"
-            >
-              담기
-            </button>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => setPhase("detail")}
+                className="flex-1 rounded-xl bg-surface py-3 text-sm font-bold text-ink-soft"
+              >
+                취소
+              </button>
+              <button
+                type="button"
+                onClick={() => setPhase("done")}
+                className="flex-1 rounded-xl bg-accent py-3 text-sm font-bold text-white"
+              >
+                담기
+              </button>
+            </div>
           </div>
         ) : (
           <>
@@ -179,7 +220,7 @@ function ShoppingSyncDemo() {
           <p className="mb-1.5 text-xs font-bold text-ink-soft">장보기</p>
           <GlassCard className="bg-white p-3">
             <div className="flex flex-col divide-y divide-border">
-              {SHOPPING_ITEMS.map((item) => (
+              {shoppingList.map((item) => (
                 <div key={item} className="flex items-center gap-2 py-2 first:pt-0 last:pb-0">
                   <span className="h-4 w-4 shrink-0 rounded border border-border bg-surface" />
                   <span className="text-xs font-semibold text-ink">{item}</span>
@@ -243,17 +284,26 @@ function FridgeDemo() {
   );
 }
 
+const HOUSEHOLD_MEMBERS = [
+  { name: "혜동세프", role: "대장 (나)" },
+  { name: "콩이세프", role: null },
+];
+
 function HouseholdShareDemo() {
-  const [phase, setPhase] = useState<"mypage" | "invite" | "copied">("mypage");
+  const [phase, setPhase] = useState<"mypage" | "info" | "invite" | "copied">("mypage");
 
   return (
     <GlassCard className="mx-auto w-full max-w-[280px] bg-white p-4 ring-2 ring-accent">
-      {phase === "mypage" ? (
+      {phase === "mypage" && (
         <>
-          <div className="mb-3 flex items-center justify-between">
-            <p className="text-sm font-bold text-ink">혜콩이네 🏠</p>
+          <button
+            type="button"
+            onClick={() => setPhase("info")}
+            className="mb-3 flex w-full items-center justify-between text-left"
+          >
+            <span className="text-sm font-bold text-ink">혜콩이네 🏠 ›</span>
             <span className="rounded-full bg-accent/10 px-2.5 py-1 text-[11px] font-bold text-accent">사용 중</span>
-          </div>
+          </button>
           <div className="flex items-center justify-between">
             <span className="text-xs text-ink-soft">참여 인원 2명</span>
             <button
@@ -265,7 +315,34 @@ function HouseholdShareDemo() {
             </button>
           </div>
         </>
-      ) : (
+      )}
+
+      {phase === "info" && (
+        <div className="animate-fade-in-up">
+          <p className="mb-3 text-[15px] font-bold">부엌 정보</p>
+          <p className="mb-1.5 text-xs font-bold text-ink-soft">참여 인원 (2명)</p>
+          <div className="mb-4 flex flex-col gap-2">
+            {HOUSEHOLD_MEMBERS.map((m) => (
+              <div key={m.name} className="flex items-center gap-2 rounded-xl bg-surface px-3.5 py-2.5">
+                <div className="h-7 w-7 shrink-0 rounded-full bg-white" />
+                <div>
+                  <p className="text-xs font-bold text-ink">{m.name}</p>
+                  {m.role && <p className="text-[10px] text-accent-ink">{m.role}</p>}
+                </div>
+              </div>
+            ))}
+          </div>
+          <button
+            type="button"
+            onClick={() => setPhase("mypage")}
+            className="w-full rounded-xl bg-surface py-3 text-sm font-bold text-ink-soft"
+          >
+            닫기
+          </button>
+        </div>
+      )}
+
+      {(phase === "invite" || phase === "copied") && (
         <div className="animate-fade-in-up">
           <p className="mb-1 text-[15px] font-bold">혜콩이네 🏠 에 초대하기</p>
           <p className="mb-4 text-xs text-ink-soft">
