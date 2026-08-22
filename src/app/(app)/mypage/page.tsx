@@ -7,6 +7,11 @@ import { AddHouseholdSection } from "./add-household-section";
 import { HouseholdList } from "./household-list";
 import { PushNotificationToggle } from "@/components/PushNotificationToggle";
 
+// TODO: replace with the real pages once they exist.
+const PRIVACY_POLICY_URL = "#";
+const CONTACT_URL = "#";
+const ABOUT_URL = "#";
+
 type Member = { user_id: string; nickname: string; icon_emoji: string | null; role: string; joined_at: string };
 
 export default async function MyPage() {
@@ -95,9 +100,45 @@ export default async function MyPage() {
         <ProfileEditButton nickname={myNickname} iconEmoji={myIconEmoji} />
       </GlassCard>
 
-      <div className="mb-8">
-        <PushNotificationToggle />
-      </div>
+      <p className="mb-3 text-[13px] font-bold text-ink-soft">설정</p>
+      <GlassCard className="mb-8 bg-white">
+        <div className="divide-y divide-border">
+          <PushNotificationToggle />
+          <a
+            href={PRIVACY_POLICY_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-between px-4 py-4 text-sm font-semibold text-ink"
+          >
+            개인정보처리방침
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--color-ink-faint)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M9 6l6 6-6 6" />
+            </svg>
+          </a>
+          <a
+            href={CONTACT_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-between px-4 py-4 text-sm font-semibold text-ink"
+          >
+            문의하기
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--color-ink-faint)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M9 6l6 6-6 6" />
+            </svg>
+          </a>
+          <a
+            href={ABOUT_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-between px-4 py-4 text-sm font-semibold text-ink"
+          >
+            소개
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--color-ink-faint)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M9 6l6 6-6 6" />
+            </svg>
+          </a>
+        </div>
+      </GlassCard>
 
       <p className="mb-3 text-[13px] font-bold text-ink-soft">부엌 관리</p>
       <div className="mb-4">

@@ -11,11 +11,30 @@ export function CoupangRedirect() {
   useEffect(() => {
     if (!name) return;
     let cancelled = false;
+    let redirected = false;
     getCoupangSearchLink(name).then(({ url }) => {
-      if (!cancelled) window.location.replace(url);
+      if (cancelled) return;
+      redirected = true;
+      window.location.replace(url);
     });
+
+    // In a standalone PWA, the app has no real "tab" of its own — the
+    // location.replace() above either hands off to the system browser
+    // (leaving this page as the app's last-rendered state) or, in some
+    // browser/OS combinations, silently does nothing at all. Either way, if
+    // the user comes back to this page and it's still just sitting here, it
+    // never actually got anywhere — send them back to the shopping list
+    // instead of leaving them stuck on "이동중이에요~" forever.
+    function handleVisible() {
+      if (document.visibilityState === "visible" && redirected) {
+        window.location.replace("/shopping");
+      }
+    }
+    document.addEventListener("visibilitychange", handleVisible);
+
     return () => {
       cancelled = true;
+      document.removeEventListener("visibilitychange", handleVisible);
     };
   }, [name]);
 

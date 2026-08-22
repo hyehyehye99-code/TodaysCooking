@@ -35,7 +35,7 @@ export function ShoppingBulkActions({
 
   return (
     <>
-      <div className="mt-6 mb-4 flex items-center justify-between gap-2">
+      <div className="mt-8 mb-6 flex items-center justify-between gap-2">
         <div className="flex gap-1">
           <button
             type="button"

@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState, useSyncExternalStore } from "react";
-import { GlassCard } from "@/components/ui";
 import { savePushSubscription, removePushSubscription } from "@/lib/actions/push";
 
 const VAPID_PUBLIC_KEY = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY ?? "";
@@ -95,29 +94,27 @@ export function PushNotificationToggle() {
   if (!supported || status === "checking") return null;
 
   return (
-    <GlassCard className="bg-white p-4">
-      <div className="flex items-center justify-between gap-3">
-        <div>
-          <p className="text-[13px] font-bold">알림</p>
-          <p className="mt-0.5 text-xs text-ink-soft">
-            {status === "denied"
-              ? "브라우저 설정에서 알림 권한을 허용해주세요."
-              : "다른 가족이 장보기에 항목을 추가하면 알려드려요."}
-          </p>
-        </div>
-        {status !== "denied" && (
-          <button
-            type="button"
-            onClick={status === "on" ? disable : enable}
-            disabled={status === "working"}
-            className={`shrink-0 rounded-lg px-3 py-2 text-xs font-bold disabled:opacity-60 ${
-              status === "on" ? "bg-surface text-ink-soft" : "bg-accent text-white"
-            }`}
-          >
-            {status === "working" ? "처리 중..." : status === "on" ? "알림 끄기" : "알림 받기"}
-          </button>
-        )}
+    <div className="flex items-center justify-between gap-3 px-4 py-4">
+      <div>
+        <p className="text-sm font-semibold text-ink">알림</p>
+        <p className="mt-0.5 text-xs text-ink-soft">
+          {status === "denied"
+            ? "브라우저 설정에서 알림 권한을 허용해주세요."
+            : "다른 가족이 장보기에 항목을 추가하면 알려드려요."}
+        </p>
       </div>
-    </GlassCard>
+      {status !== "denied" && (
+        <button
+          type="button"
+          onClick={status === "on" ? disable : enable}
+          disabled={status === "working"}
+          className={`shrink-0 rounded-lg px-3 py-2 text-xs font-bold disabled:opacity-60 ${
+            status === "on" ? "bg-surface text-ink-soft" : "bg-accent text-white"
+          }`}
+        >
+          {status === "working" ? "처리 중..." : status === "on" ? "알림 끄기" : "알림 받기"}
+        </button>
+      )}
+    </div>
   );
 }
