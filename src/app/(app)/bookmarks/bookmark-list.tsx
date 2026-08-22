@@ -1,11 +1,12 @@
 "use client";
 
-import { useRef, useState, useTransition } from "react";
+import { useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { GlassCard } from "@/components/ui";
-import { Modal } from "@/components/Modal";
+import { ConfirmModal } from "@/components/ConfirmModal";
 import { deleteBookmark, updateBookmarkNote, reorderBookmarks } from "@/lib/actions/bookmarks";
+import { useDragReorder } from "@/lib/useDragReorder";
 import type { Bookmark } from "@/lib/types";
 
 type BookmarkWithRecipe = Bookmark & { recipes: { title: string } | null };
@@ -115,32 +116,22 @@ function DeleteBookmarkButton({
         삭제
       </button>
 
-      <Modal open={confirming} onClose={() => setConfirming(false)} variant="center">
-        <div className="mx-auto w-full max-w-[360px] rounded-2xl bg-white p-5 shadow-xl">
-          <p className="text-sm font-bold text-ink">메뉴에서도 사라져요</p>
-          <p className="mt-2 text-xs text-ink-soft">
-            이 링크는 메뉴의 참고 링크로도 쓰이고 있어요. 삭제하면 메뉴에서도 이 링크가
-            사라져요.
-          </p>
-          <div className="mt-4 flex justify-end gap-2">
-            <button
-              type="button"
-              onClick={() => setConfirming(false)}
-              className="rounded-lg bg-surface px-3.5 py-2 text-xs font-bold text-ink-soft"
-            >
-              취소
-            </button>
-            <button
-              type="button"
-              onClick={doDelete}
-              disabled={pending}
-              className="rounded-lg bg-accent px-3.5 py-2 text-xs font-bold text-white disabled:opacity-60"
-            >
-              {pending ? "삭제 중..." : "삭제"}
-            </button>
-          </div>
-        </div>
-      </Modal>
+      <ConfirmModal
+        open={confirming}
+        onClose={() => setConfirming(false)}
+        title="메뉴에서도 사라져요"
+        description="이 링크는 메뉴의 참고 링크로도 쓰이고 있어요. 삭제하면 메뉴에서도 이 링크가 사라져요."
+        confirmSlot={
+          <button
+            type="button"
+            onClick={doDelete}
+            disabled={pending}
+            className="rounded-lg bg-accent px-3.5 py-2 text-xs font-bold text-white disabled:opacity-60"
+          >
+            {pending ? "삭제 중..." : "삭제"}
+          </button>
+        }
+      />
     </>
   );
 }
@@ -148,11 +139,16 @@ function DeleteBookmarkButton({
 export function BookmarkList({ bookmarks }: { bookmarks: BookmarkWithRecipe[] }) {
   const [query, setQuery] = useState("");
   const [reordering, setReordering] = useState(false);
-  const [order, setOrder] = useState<BookmarkWithRecipe[]>(bookmarks);
-  const [dragId, setDragId] = useState<string | null>(null);
-  const [dragOffset, setDragOffset] = useState(0);
-  const dragStateRef = useRef<{ startY: number; rowHeight: number; index: number } | null>(null);
-  const rowRefs = useRef<Map<string, HTMLDivElement>>(new Map());
+  const {
+    order,
+    setOrder,
+    dragId,
+    registerRow,
+    handlePointerDown,
+    handlePointerMove,
+    handlePointerUp,
+    dragTransform,
+  } = useDragReorder<BookmarkWithRecipe>(bookmarks);
   const [pending, startTransition] = useTransition();
   const router = useRouter();
 
@@ -170,45 +166,6 @@ export function BookmarkList({ bookmarks }: { bookmarks: BookmarkWithRecipe[] })
   function startReorder() {
     setOrder(bookmarks);
     setReordering(true);
-  }
-
-  function handleDragPointerDown(e: React.PointerEvent, id: string, index: number) {
-    const row = rowRefs.current.get(id);
-    if (!row) return;
-    e.currentTarget.setPointerCapture(e.pointerId);
-    dragStateRef.current = { startY: e.clientY, rowHeight: row.getBoundingClientRect().height, index };
-    setDragId(id);
-    setDragOffset(0);
-  }
-
-  function handleDragPointerMove(e: React.PointerEvent) {
-    const dragState = dragStateRef.current;
-    if (!dragState) return;
-    const deltaY = e.clientY - dragState.startY;
-    const steps = Math.round(deltaY / dragState.rowHeight);
-    if (steps !== 0) {
-      setOrder((prev) => {
-        const from = dragState.index;
-        const to = Math.min(Math.max(from + steps, 0), prev.length - 1);
-        if (to === from) return prev;
-        const next = [...prev];
-        const [item] = next.splice(from, 1);
-        next.splice(to, 0, item);
-        dragState.index = to;
-        return next;
-      });
-      dragState.startY += steps * dragState.rowHeight;
-      setDragOffset(deltaY - steps * dragState.rowHeight);
-    } else {
-      setDragOffset(deltaY);
-    }
-  }
-
-  function handleDragPointerUp(e: React.PointerEvent) {
-    e.currentTarget.releasePointerCapture(e.pointerId);
-    dragStateRef.current = null;
-    setDragId(null);
-    setDragOffset(0);
   }
 
   function saveOrder() {
@@ -270,15 +227,8 @@ export function BookmarkList({ bookmarks }: { bookmarks: BookmarkWithRecipe[] })
             return (
               <div
                 key={b.id}
-                ref={(el) => {
-                  if (el) rowRefs.current.set(b.id, el);
-                  else rowRefs.current.delete(b.id);
-                }}
-                style={
-                  dragging
-                    ? { transform: `translateY(${dragOffset}px)`, position: "relative", zIndex: 10 }
-                    : undefined
-                }
+                ref={registerRow(b.id)}
+                style={dragTransform(b.id)}
               >
                 <GlassCard
                   className={`flex items-center gap-3 bg-white p-2.5 ${dragging ? "shadow-lg" : ""}`}
@@ -300,10 +250,10 @@ export function BookmarkList({ bookmarks }: { bookmarks: BookmarkWithRecipe[] })
                   </div>
                   <button
                     type="button"
-                    onPointerDown={(e) => handleDragPointerDown(e, b.id, index)}
-                    onPointerMove={handleDragPointerMove}
-                    onPointerUp={handleDragPointerUp}
-                    onPointerCancel={handleDragPointerUp}
+                    onPointerDown={(e) => handlePointerDown(e, b.id, index)}
+                    onPointerMove={handlePointerMove}
+                    onPointerUp={handlePointerUp}
+                    onPointerCancel={handlePointerUp}
                     aria-label="드래그해서 순서 변경"
                     className="flex h-8 w-8 shrink-0 touch-none items-center justify-center rounded-full bg-surface text-ink-soft"
                   >

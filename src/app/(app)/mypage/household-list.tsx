@@ -1,5 +1,3 @@
-"use client";
-
 import { switchHousehold } from "@/lib/actions/household";
 import { GlassCard } from "@/components/ui";
 import { InviteButton } from "./invite-button";

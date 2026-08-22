@@ -2,6 +2,7 @@
 
 import { useEffect, useId, useRef, useState } from "react";
 import { MAX_RECIPE_PHOTOS } from "@/lib/constants";
+import { useDragReorder } from "@/lib/useDragReorder";
 
 const MAX_DIMENSION = 1080;
 const JPEG_QUALITY = 0.85;
@@ -90,14 +91,21 @@ export function PhotoPicker({
 }) {
   const inputId = useId();
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [items, setItems] = useState<PhotoItem[]>(() => existingUrls.map((url) => ({ id: url, url })));
+  const {
+    order: items,
+    setOrder: setItems,
+    dragId,
+    registerRow,
+    handlePointerDown,
+    handlePointerMove,
+    handlePointerUp,
+    dragTransform,
+  } = useDragReorder<PhotoItem>(
+    existingUrls.map((url) => ({ id: url, url })),
+    { axis: "x", gap: TILE_GAP }
+  );
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  const [dragId, setDragId] = useState<string | null>(null);
-  const [dragOffset, setDragOffset] = useState(0);
-  const dragStateRef = useRef<{ startX: number; colWidth: number; index: number } | null>(null);
-  const tileRefs = useRef<Map<string, HTMLDivElement>>(new Map());
 
   const { tokens: orderTokens, newFiles } = buildOrderTokens(items);
 
@@ -105,7 +113,6 @@ export function PhotoPicker({
     const transfer = new DataTransfer();
     newFiles.forEach((file) => transfer.items.add(file));
     if (fileInputRef.current) fileInputRef.current.files = transfer.files;
-    onCountChange?.(items.length);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [items]);
 
@@ -121,10 +128,12 @@ export function PhotoPicker({
     setProcessing(true);
     try {
       const resized = await Promise.all(accepted.map(cropAndResizeToSquare));
-      setItems((prev) => [
-        ...prev,
+      const next = [
+        ...items,
         ...resized.map((file) => ({ id: crypto.randomUUID(), url: URL.createObjectURL(file), file })),
-      ]);
+      ];
+      setItems(next);
+      onCountChange?.(next.length);
     } catch {
       setError("사진을 처리하지 못했어요. 다른 사진으로 시도해주세요.");
     } finally {
@@ -134,54 +143,11 @@ export function PhotoPicker({
   }
 
   function removeItem(id: string) {
-    setItems((prev) => {
-      const target = prev.find((i) => i.id === id);
-      if (target?.file) URL.revokeObjectURL(target.url);
-      return prev.filter((i) => i.id !== id);
-    });
-  }
-
-  function handleDragPointerDown(e: React.PointerEvent, id: string, index: number) {
-    const tile = tileRefs.current.get(id);
-    if (!tile) return;
-    e.currentTarget.setPointerCapture(e.pointerId);
-    dragStateRef.current = {
-      startX: e.clientX,
-      colWidth: tile.getBoundingClientRect().width + TILE_GAP,
-      index,
-    };
-    setDragId(id);
-    setDragOffset(0);
-  }
-
-  function handleDragPointerMove(e: React.PointerEvent) {
-    const dragState = dragStateRef.current;
-    if (!dragState) return;
-    const deltaX = e.clientX - dragState.startX;
-    const steps = Math.round(deltaX / dragState.colWidth);
-    if (steps !== 0) {
-      setItems((prev) => {
-        const from = dragState.index;
-        const to = Math.min(Math.max(from + steps, 0), prev.length - 1);
-        if (to === from) return prev;
-        const next = [...prev];
-        const [moved] = next.splice(from, 1);
-        next.splice(to, 0, moved);
-        dragState.index = to;
-        return next;
-      });
-      dragState.startX += steps * dragState.colWidth;
-      setDragOffset(deltaX - steps * dragState.colWidth);
-    } else {
-      setDragOffset(deltaX);
-    }
-  }
-
-  function handleDragPointerUp(e: React.PointerEvent) {
-    e.currentTarget.releasePointerCapture(e.pointerId);
-    dragStateRef.current = null;
-    setDragId(null);
-    setDragOffset(0);
+    const target = items.find((i) => i.id === id);
+    if (target?.file) URL.revokeObjectURL(target.url);
+    const next = items.filter((i) => i.id !== id);
+    setItems(next);
+    onCountChange?.(next.length);
   }
 
   return (
@@ -192,19 +158,12 @@ export function PhotoPicker({
           return (
             <div
               key={item.id}
-              ref={(el) => {
-                if (el) tileRefs.current.set(item.id, el);
-                else tileRefs.current.delete(item.id);
-              }}
-              onPointerDown={(e) => handleDragPointerDown(e, item.id, index)}
-              onPointerMove={handleDragPointerMove}
-              onPointerUp={handleDragPointerUp}
-              onPointerCancel={handleDragPointerUp}
-              style={
-                dragging
-                  ? { transform: `translateX(${dragOffset}px)`, position: "relative", zIndex: 10 }
-                  : undefined
-              }
+              ref={registerRow(item.id)}
+              onPointerDown={(e) => handlePointerDown(e, item.id, index)}
+              onPointerMove={handlePointerMove}
+              onPointerUp={handlePointerUp}
+              onPointerCancel={handlePointerUp}
+              style={dragTransform(item.id)}
               className={`relative aspect-square w-20 shrink-0 touch-none overflow-hidden rounded-2xl bg-surface ${dragging ? "shadow-lg" : ""}`}
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}

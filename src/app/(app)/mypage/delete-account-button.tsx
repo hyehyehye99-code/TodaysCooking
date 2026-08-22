@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { deleteMyAccount } from "@/lib/actions/household";
-import { Modal } from "@/components/Modal";
+import { ConfirmModal } from "@/components/ConfirmModal";
 
 const CONFIRM_WORD = "탈퇴";
 
@@ -38,42 +38,33 @@ export function DeleteAccountButton() {
         </svg>
       </button>
 
-      <Modal open={confirming} onClose={close} variant="center">
-        <div className="mx-auto w-full max-w-[360px] rounded-2xl bg-white p-5 shadow-xl">
-          <p className="text-sm font-bold text-ink">탈퇴하면 계정이 완전히 삭제돼요</p>
-          <p className="mt-2 text-xs text-ink-soft">
-            내가 대장인 부엌은 가장 먼저 들어온 다른 참여자에게 넘어가고, 나 혼자 있는 부엌은 함께
-            삭제돼요. 되돌릴 수 없어요.
-          </p>
-          <p className="mt-3 text-xs text-ink-soft">
-            확인을 위해 <span className="font-bold text-ink">{CONFIRM_WORD}</span>를 입력해주세요.
-          </p>
-          <input
-            value={typed}
-            onChange={(e) => setTyped(e.target.value)}
-            placeholder={CONFIRM_WORD}
-            className="mt-3 w-full rounded-lg border border-transparent bg-surface px-3 py-2.5 text-sm outline-none focus:border-ink-soft"
-          />
-          {error && <p className="mt-2 text-xs text-warn-ink">{error}</p>}
-          <div className="mt-4 flex justify-end gap-2">
-            <button
-              type="button"
-              onClick={close}
-              className="rounded-lg bg-surface px-3.5 py-2 text-xs font-bold text-ink-soft"
-            >
-              취소
-            </button>
-            <button
-              type="button"
-              onClick={doDelete}
-              disabled={typed !== CONFIRM_WORD || pending}
-              className="rounded-lg bg-ink px-3.5 py-2 text-xs font-bold text-white disabled:opacity-40"
-            >
-              {pending ? "탈퇴하는 중..." : "탈퇴하기"}
-            </button>
-          </div>
-        </div>
-      </Modal>
+      <ConfirmModal
+        open={confirming}
+        onClose={close}
+        title="탈퇴하면 계정이 완전히 삭제돼요"
+        description="내가 대장인 부엌은 가장 먼저 들어온 다른 참여자에게 넘어가고, 나 혼자 있는 부엌은 함께 삭제돼요. 되돌릴 수 없어요."
+        confirmSlot={
+          <button
+            type="button"
+            onClick={doDelete}
+            disabled={typed !== CONFIRM_WORD || pending}
+            className="rounded-lg bg-ink px-3.5 py-2 text-xs font-bold text-white disabled:opacity-40"
+          >
+            {pending ? "탈퇴하는 중..." : "탈퇴하기"}
+          </button>
+        }
+      >
+        <p className="mt-3 text-xs text-ink-soft">
+          확인을 위해 <span className="font-bold text-ink">{CONFIRM_WORD}</span>를 입력해주세요.
+        </p>
+        <input
+          value={typed}
+          onChange={(e) => setTyped(e.target.value)}
+          placeholder={CONFIRM_WORD}
+          className="mt-3 w-full rounded-lg border border-transparent bg-surface px-3 py-2.5 text-sm outline-none focus:border-ink-soft"
+        />
+        {error && <p className="mt-2 text-xs text-warn-ink">{error}</p>}
+      </ConfirmModal>
     </>
   );
 }

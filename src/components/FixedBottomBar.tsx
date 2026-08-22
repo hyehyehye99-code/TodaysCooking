@@ -1,12 +1,24 @@
 "use client";
 
-import { startTransition, useEffect, useState } from "react";
+import { useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
 
 // Matches TabBar's own rendered height (pt-3 + icon + gap + label + py-1) so
 // a bar placed above the tab bar doesn't overlap it. TabBar's own bottom
 // safe-area padding is added on top of this.
 const TAB_BAR_CONTENT_HEIGHT = 62;
+
+function subscribeNever() {
+  return () => {};
+}
+
+function getMountedSnapshot() {
+  return true;
+}
+
+function getMountedServerSnapshot() {
+  return false;
+}
 
 // Rendered via a portal straight into document.body so it's a true
 // viewport-fixed element, independent of any ancestor's scroll container or
@@ -20,11 +32,7 @@ export function FixedBottomBar({
   children: React.ReactNode;
   aboveTabBar?: boolean;
 }) {
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    startTransition(() => setMounted(true));
-  }, []);
+  const mounted = useSyncExternalStore(subscribeNever, getMountedSnapshot, getMountedServerSnapshot);
 
   if (!mounted) return null;
 

@@ -1,12 +1,13 @@
 "use client";
 
-import { useMemo, useRef, useState, useTransition } from "react";
+import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { GlassCard } from "@/components/ui";
-import { Modal } from "@/components/Modal";
+import { ConfirmModal } from "@/components/ConfirmModal";
 import { RecipeThumb } from "@/components/RecipeThumb";
 import { reorderRecipes, toggleFavoriteRecipe, deleteRecipes } from "@/lib/actions/recipes";
+import { useDragReorder } from "@/lib/useDragReorder";
 import type { RecipeWithIngredients } from "@/lib/types";
 
 function FavoriteButton({ recipe }: { recipe: RecipeWithIngredients }) {
@@ -54,11 +55,16 @@ export function RecipeList({
   const [activeTag, setActiveTag] = useState<string | null>(null);
   const [favoritesOnly, setFavoritesOnly] = useState(false);
   const [editing, setEditing] = useState(false);
-  const [order, setOrder] = useState<RecipeWithIngredients[]>(recipes);
-  const [dragId, setDragId] = useState<string | null>(null);
-  const [dragOffset, setDragOffset] = useState(0);
-  const dragStateRef = useRef<{ startY: number; rowHeight: number; index: number } | null>(null);
-  const rowRefs = useRef<Map<string, HTMLDivElement>>(new Map());
+  const {
+    order,
+    setOrder,
+    dragId,
+    registerRow,
+    handlePointerDown,
+    handlePointerMove,
+    handlePointerUp,
+    dragTransform,
+  } = useDragReorder<RecipeWithIngredients>(recipes);
   const [pending, startTransition] = useTransition();
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [confirmingDelete, setConfirmingDelete] = useState(false);
@@ -103,45 +109,6 @@ export function RecipeList({
       else next.add(id);
       return next;
     });
-  }
-
-  function handleDragPointerDown(e: React.PointerEvent, id: string, index: number) {
-    const row = rowRefs.current.get(id);
-    if (!row) return;
-    e.currentTarget.setPointerCapture(e.pointerId);
-    dragStateRef.current = { startY: e.clientY, rowHeight: row.getBoundingClientRect().height, index };
-    setDragId(id);
-    setDragOffset(0);
-  }
-
-  function handleDragPointerMove(e: React.PointerEvent) {
-    const dragState = dragStateRef.current;
-    if (!dragState) return;
-    const deltaY = e.clientY - dragState.startY;
-    const steps = Math.round(deltaY / dragState.rowHeight);
-    if (steps !== 0) {
-      setOrder((prev) => {
-        const from = dragState.index;
-        const to = Math.min(Math.max(from + steps, 0), prev.length - 1);
-        if (to === from) return prev;
-        const next = [...prev];
-        const [item] = next.splice(from, 1);
-        next.splice(to, 0, item);
-        dragState.index = to;
-        return next;
-      });
-      dragState.startY += steps * dragState.rowHeight;
-      setDragOffset(deltaY - steps * dragState.rowHeight);
-    } else {
-      setDragOffset(deltaY);
-    }
-  }
-
-  function handleDragPointerUp(e: React.PointerEvent) {
-    e.currentTarget.releasePointerCapture(e.pointerId);
-    dragStateRef.current = null;
-    setDragId(null);
-    setDragOffset(0);
   }
 
   function saveOrder() {
@@ -278,15 +245,8 @@ export function RecipeList({
             return (
               <div
                 key={recipe.id}
-                ref={(el) => {
-                  if (el) rowRefs.current.set(recipe.id, el);
-                  else rowRefs.current.delete(recipe.id);
-                }}
-                style={
-                  dragging
-                    ? { transform: `translateY(${dragOffset}px)`, position: "relative", zIndex: 10 }
-                    : undefined
-                }
+                ref={registerRow(recipe.id)}
+                style={dragTransform(recipe.id)}
               >
                 <GlassCard
                   className={`flex items-center gap-2 p-3.5 ${dragging ? "shadow-lg" : ""} ${
@@ -322,11 +282,11 @@ export function RecipeList({
                     type="button"
                     onPointerDown={(e) => {
                       e.stopPropagation();
-                      handleDragPointerDown(e, recipe.id, index);
+                      handlePointerDown(e, recipe.id, index);
                     }}
-                    onPointerMove={handleDragPointerMove}
-                    onPointerUp={handleDragPointerUp}
-                    onPointerCancel={handleDragPointerUp}
+                    onPointerMove={handlePointerMove}
+                    onPointerUp={handlePointerUp}
+                    onPointerCancel={handlePointerUp}
                     aria-label="드래그해서 순서 변경"
                     className="flex h-8 w-8 shrink-0 touch-none items-center justify-center rounded-full bg-surface text-ink-soft"
                   >
@@ -389,29 +349,22 @@ export function RecipeList({
         </div>
       )}
 
-      <Modal open={confirmingDelete} onClose={() => setConfirmingDelete(false)} variant="center">
-        <div className="mx-auto w-full max-w-[360px] rounded-2xl bg-white p-5 shadow-xl">
-          <p className="text-sm font-bold text-ink">선택한 메뉴 {selectedIds.size}개를 삭제할까요?</p>
-          <p className="mt-2 text-xs text-ink-soft">삭제하면 되돌릴 수 없어요. 재료와 메모도 함께 사라져요.</p>
-          <div className="mt-4 flex justify-end gap-2">
-            <button
-              type="button"
-              onClick={() => setConfirmingDelete(false)}
-              className="rounded-lg bg-surface px-3.5 py-2 text-xs font-bold text-ink-soft"
-            >
-              취소
-            </button>
-            <button
-              type="button"
-              onClick={confirmDelete}
-              disabled={deletePending}
-              className="rounded-lg bg-warn px-3.5 py-2 text-xs font-bold text-white disabled:opacity-60"
-            >
-              {deletePending ? "삭제 중..." : "삭제"}
-            </button>
-          </div>
-        </div>
-      </Modal>
+      <ConfirmModal
+        open={confirmingDelete}
+        onClose={() => setConfirmingDelete(false)}
+        title={`선택한 메뉴 ${selectedIds.size}개를 삭제할까요?`}
+        description="삭제하면 되돌릴 수 없어요. 재료와 메모도 함께 사라져요."
+        confirmSlot={
+          <button
+            type="button"
+            onClick={confirmDelete}
+            disabled={deletePending}
+            className="rounded-lg bg-warn px-3.5 py-2 text-xs font-bold text-white disabled:opacity-60"
+          >
+            {deletePending ? "삭제 중..." : "삭제"}
+          </button>
+        }
+      />
     </div>
   );
 }
