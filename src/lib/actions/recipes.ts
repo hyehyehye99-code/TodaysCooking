@@ -236,6 +236,7 @@ export async function deleteRecipe(formData: FormData) {
   await supabase.from("recipes").delete().eq("id", id);
 
   revalidatePath("/recipes");
+  revalidatePath("/bookmarks");
   redirect("/recipes");
 }
 
@@ -249,6 +250,7 @@ export async function deleteRecipes(ids: string[]) {
   await supabase.from("recipes").delete().in("id", ids);
 
   revalidatePath("/recipes");
+  revalidatePath("/bookmarks");
 }
 
 export async function resolveMissingIngredients(payload: {

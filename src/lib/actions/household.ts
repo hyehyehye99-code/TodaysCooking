@@ -77,7 +77,10 @@ export async function renameHousehold(_prevState: unknown, formData: FormData) {
   const { error } = await supabase.from("households").update({ name }).eq("id", householdId);
   if (error) return { error: "이름을 저장하지 못했어요." };
 
-  revalidatePath("/mypage");
+  // AppHeader (shared (app)/layout.tsx) also shows the household name on
+  // every route under it, not just /mypage — revalidating the layout keeps
+  // /recipes, /fridge, /bookmarks, /shopping in sync too.
+  revalidatePath("/mypage", "layout");
   return { success: true as const };
 }
 
