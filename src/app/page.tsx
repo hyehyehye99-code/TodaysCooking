@@ -4,8 +4,8 @@ import { getCurrentHousehold } from "@/lib/household";
 
 const FEATURES = [
   {
-    title: "레시피 모아보기",
-    description: "여기저기 흩어진 레시피를 한곳에 정리해요.",
+    title: "AI가 재료·레시피를 대신 정리해요",
+    description: "유튜브·인스타·블로그 링크만 넣으면 재료와 만드는 법을 AI가 알아서 정리해요. 손으로 옮겨 적을 필요 없어요.",
     icon: (
       <svg width="22" height="22" viewBox="0 0 22 22" fill="none" aria-hidden="true">
         <path
@@ -20,8 +20,8 @@ const FEATURES = [
     ),
   },
   {
-    title: "냉장고 재료 관리",
-    description: "지금 냉장고에 뭐가 있는지 한눈에 확인해요.",
+    title: "냉장고, 탭 한 번이면 끝",
+    description: "지금 냉장고에 뭐가 있는지 탭 한 번으로 체크해요. 뭘 사야 할지 매번 고민할 필요 없어요.",
     icon: (
       <svg width="22" height="22" viewBox="0 0 22 22" fill="none" aria-hidden="true">
         <rect x="5" y="3" width="12" height="16" rx="2" stroke="currentColor" strokeWidth="1.75" />
@@ -31,22 +31,8 @@ const FEATURES = [
     ),
   },
   {
-    title: "북마크로 저장",
-    description: "유튜브·블로그 레시피 링크를 저장해두고 나중에 찾아봐요.",
-    icon: (
-      <svg width="22" height="22" viewBox="0 0 22 22" fill="none" aria-hidden="true">
-        <path
-          d="M6.5 3.5h9a1 1 0 011 1V19l-5.5-3.5L5.5 19V4.5a1 1 0 011-1z"
-          stroke="currentColor"
-          strokeWidth="1.75"
-          strokeLinejoin="round"
-        />
-      </svg>
-    ),
-  },
-  {
-    title: "장보기 리스트",
-    description: "필요한 재료를 담아 장보기 목록으로 정리해요.",
+    title: "부족한 재료는 장보기로, 장보기는 다시 냉장고로",
+    description: "레시피에 부족한 재료를 누르면 장보기 목록에 자동으로 담기고, 장보기를 끝내면 냉장고에도 알아서 반영돼요.",
     icon: (
       <svg width="22" height="22" viewBox="0 0 22 22" fill="none" aria-hidden="true">
         <path
@@ -59,6 +45,53 @@ const FEATURES = [
       </svg>
     ),
   },
+  {
+    title: "가족과 함께 쓰는 부엌",
+    description: "초대 코드 하나로 가족을 부엌에 초대해요. 레시피도, 냉장고도, 장보기 목록도 다 같이 봐요.",
+    icon: (
+      <svg width="22" height="22" viewBox="0 0 22 22" fill="none" aria-hidden="true">
+        <circle cx="8" cy="7" r="3" stroke="currentColor" strokeWidth="1.75" />
+        <path d="M3 19c0-3 2.5-5.5 5-5.5S13 16 13 19" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" />
+        <circle cx="16" cy="8" r="2.5" stroke="currentColor" strokeWidth="1.75" />
+        <path d="M14.5 13.5c2.5 0 4.5 2 4.5 5" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" />
+      </svg>
+    ),
+  },
+  {
+    title: "가족이 장을 봤는지, 알림으로 바로 확인",
+    description: "누가 장보기에 뭘 추가했는지, 장보기를 끝냈는지 알림으로 바로 알려드려요.",
+    icon: (
+      <svg width="22" height="22" viewBox="0 0 22 22" fill="none" aria-hidden="true">
+        <path
+          d="M11 3.5a4.5 4.5 0 00-4.5 4.5v3l-1.5 3h12l-1.5-3v-3A4.5 4.5 0 0011 3.5z"
+          stroke="currentColor"
+          strokeWidth="1.75"
+          strokeLinejoin="round"
+        />
+        <path d="M9 16.5a2 2 0 004 0" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" />
+      </svg>
+    ),
+  },
+  {
+    title: "메뉴판을 자랑해보세요",
+    description: "메뉴판을 공개 링크로 공유하고, 방문자의 하트 반응도 받아볼 수 있어요.",
+    icon: (
+      <svg width="22" height="22" viewBox="0 0 22 22" fill="none" aria-hidden="true">
+        <path
+          d="M11 18.5s-7-4.2-7-9.2a3.8 3.8 0 017-2.1 3.8 3.8 0 017 2.1c0 5-7 9.2-7 9.2z"
+          stroke="currentColor"
+          strokeWidth="1.75"
+          strokeLinejoin="round"
+        />
+      </svg>
+    ),
+  },
+];
+
+const PAIN_POINTS = [
+  "유튜브·인스타에 저장만 해두고, 막상 요리할 땐 어디 있는지 못 찾아요",
+  "장 보러 가서는 뭘 사야 할지 헷갈려요",
+  "냉장고를 열어봐도 뭐가 있는지 몰라서 요리를 미뤄요",
 ];
 
 export default async function LandingPage() {
@@ -92,7 +125,8 @@ export default async function LandingPage() {
             <span className="text-accent">한눈에!</span>
           </h1>
           <p className="mt-6 max-w-sm text-base leading-relaxed text-ink-soft">
-            레시피, 냉장고, 장보기 목록까지 — 파트너와 함께 쓰는 우리집 메뉴판.
+            레시피 링크만 넣으면 AI가 재료를 정리하고, 부족한 재료는 장보기로, 장보기가 끝나면
+            냉장고로 — 저절로 이어져요. 가족과 함께 쓰는 우리집 메뉴판.
           </p>
           <div className="mt-8">
             <Link
@@ -101,6 +135,7 @@ export default async function LandingPage() {
             >
               무료로 시작하기
             </Link>
+            <p className="mt-3 text-xs text-ink-faint">가입 30초, 완전 무료예요.</p>
           </div>
         </div>
 
@@ -123,9 +158,29 @@ export default async function LandingPage() {
       </section>
 
       <section className="border-t border-border bg-surface py-20">
+        <div className="mx-auto w-full max-w-3xl px-6 text-center">
+          <h2 className="text-2xl font-bold text-ink md:text-3xl">이런 적, 있지 않나요?</h2>
+          <div className="mt-8 flex flex-col gap-3">
+            {PAIN_POINTS.map((point) => (
+              <div
+                key={point}
+                className="rounded-2xl border border-border bg-cream px-5 py-4 text-sm font-semibold text-ink-soft md:text-base"
+              >
+                {point}
+              </div>
+            ))}
+          </div>
+          <p className="mt-8 text-base font-bold text-ink md:text-lg">
+            그 불편함을 하나씩 없애다 보니, <span className="text-accent">우리집 메뉴판</span>이
+            됐어요.
+          </p>
+        </div>
+      </section>
+
+      <section className="py-20">
         <div className="mx-auto w-full max-w-5xl px-6">
-          <h2 className="text-2xl font-bold text-ink md:text-3xl">이런 것도 할 수 있어요</h2>
-          <div className="mt-10 grid gap-5 sm:grid-cols-2">
+          <h2 className="text-2xl font-bold text-ink md:text-3xl">이렇게 달라져요</h2>
+          <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {FEATURES.map((f) => (
               <div key={f.title} className="rounded-2xl border border-border bg-cream p-6">
                 <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-full bg-accent/10 text-accent">
@@ -139,20 +194,17 @@ export default async function LandingPage() {
         </div>
       </section>
 
-      <section className="mx-auto w-full max-w-5xl px-6 py-20">
-        <div className="flex flex-col items-start gap-6 rounded-3xl border border-border bg-surface p-10 md:flex-row md:items-center md:justify-between">
-          <div>
-            <h2 className="text-2xl font-bold text-ink">초대 코드 하나로, 파트너와 함께</h2>
-            <p className="mt-3 max-w-md text-sm leading-relaxed text-ink-soft">
-              설정에서 초대 코드를 만들면 상대방이 코드를 입력해 같은 가족 공간에 들어와요. 레시피도,
-              냉장고도, 장보기 목록도 함께 봐요.
-            </p>
-          </div>
+      <section className="border-t border-border bg-surface py-20">
+        <div className="mx-auto w-full max-w-5xl px-6 text-center">
+          <h2 className="text-2xl font-bold text-ink md:text-3xl">지금, 무료로 시작해보세요</h2>
+          <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed text-ink-soft">
+            혼자여도, 가족과 함께여도 좋아요. 로그인 한 번이면 바로 시작할 수 있어요.
+          </p>
           <Link
             href="/login"
-            className="shrink-0 rounded-xl bg-ink px-6 py-3.5 text-sm font-bold text-white"
+            className="mt-7 inline-block rounded-xl bg-accent px-8 py-4 text-sm font-bold text-white"
           >
-            시작하기
+            무료로 시작하기
           </Link>
         </div>
       </section>
