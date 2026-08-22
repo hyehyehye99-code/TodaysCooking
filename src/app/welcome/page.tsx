@@ -304,16 +304,14 @@ function HouseholdShareDemo() {
             <span className="text-sm font-bold text-ink">혜콩이네 🏠 ›</span>
             <span className="rounded-full bg-accent/10 px-2.5 py-1 text-[11px] font-bold text-accent">사용 중</span>
           </button>
-          <div className="flex items-center justify-between">
-            <span className="text-xs text-ink-soft">참여 인원 2명</span>
-            <button
-              type="button"
-              onClick={() => setPhase("invite")}
-              className="rounded-lg bg-accent px-3 py-1.5 text-xs font-bold text-white"
-            >
-              초대하기
-            </button>
-          </div>
+          <p className="mb-3 text-xs text-ink-soft">참여 인원 2명</p>
+          <button
+            type="button"
+            onClick={() => setPhase("invite")}
+            className="w-full rounded-lg bg-accent py-2.5 text-xs font-bold text-white"
+          >
+            초대하기
+          </button>
         </>
       )}
 
