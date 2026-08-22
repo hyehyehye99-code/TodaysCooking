@@ -144,6 +144,19 @@ export async function createRecipe(_prevState: unknown, formData: FormData) {
   const photos = await resolvePhotoUrls(supabase, household.id, formData);
   if ("error" in photos) return { error: photos.error };
 
+  // The list sorts by position first (nulls last), so a plain insert with
+  // no position would land at the very bottom regardless of created_at.
+  // Placing new recipes one below the current lowest position — instead of
+  // renumbering every other row — is what puts them at the top.
+  const { data: topRecipe } = await supabase
+    .from("recipes")
+    .select("position")
+    .eq("household_id", household.id)
+    .order("position", { ascending: true, nullsFirst: false })
+    .limit(1)
+    .maybeSingle();
+  const newPosition = (topRecipe?.position ?? 0) - 1;
+
   const { data: recipe, error } = await supabase
     .from("recipes")
     .insert({
@@ -155,6 +168,7 @@ export async function createRecipe(_prevState: unknown, formData: FormData) {
       tags,
       notes: notes || null,
       created_by: user.id,
+      position: newPosition,
     })
     .select("id")
     .single();
