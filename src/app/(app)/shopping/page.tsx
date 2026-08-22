@@ -45,6 +45,11 @@ export default async function ShoppingPage() {
         <ProgressBar percent={percent} colorClass="bg-accent" />
       </GlassCard>
 
+      <p className="mb-4 text-[11px] leading-relaxed text-ink-faint">
+        쿠팡파트너스 활동의 일환으로 &quot;구매하기&quot; 버튼을 클릭하면 이에 따른 일정 금액의
+        수수료를 제공받습니다.
+      </p>
+
       <form action={addShoppingItem} className="mb-2 flex gap-2">
         <input
           name="name"
