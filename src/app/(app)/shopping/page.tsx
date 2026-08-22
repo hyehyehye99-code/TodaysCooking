@@ -97,27 +97,21 @@ export default async function ShoppingPage() {
                 </button>
               </form>
               <div className="min-w-0 flex-1 text-left">
-                <div className="flex min-w-0 items-center gap-2">
-                  <p className="truncate text-sm font-semibold">{item.name}</p>
-                  <ShoppingItemLink id={item.id} name={item.name} checked={item.checked} />
-                </div>
+                <p className="truncate text-sm font-semibold">{item.name}</p>
                 {item.source_recipe_title && (
                   <p className="mt-0.5 text-[11px] text-ink-faint">
                     {item.source_recipe_title} 재료
                   </p>
                 )}
               </div>
+              <ShoppingItemLink id={item.id} name={item.name} checked={item.checked} />
               <form action={deleteShoppingItem}>
                 <input type="hidden" name="id" value={item.id} />
                 <button
                   type="submit"
-                  aria-label="삭제"
-                  className="flex h-6 w-6 shrink-0 items-center justify-center text-ink-faint"
+                  className="shrink-0 rounded-lg bg-surface px-2.5 py-1.5 text-[11px] font-bold text-ink-soft"
                 >
-                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M18 6L6 18" />
-                    <path d="M6 6l12 12" />
-                  </svg>
+                  제거하기
                 </button>
               </form>
             </div>
