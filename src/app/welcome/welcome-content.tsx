@@ -17,14 +17,28 @@ const SAMPLE_RECIPES = [
 const AI_INGREDIENTS = ["살치살 400g", "트러플 소금", "백후추", "올리브유", "통마늘", "방울 토마토", "양송이 버섯", "미니 아스파라거스", "와사비"];
 const AI_INSTRUCTIONS = "1. 키친타월로 핏물을 깔끔히 제거합니다.\n2. 소금 후추를 앞뒤로 발라 밑간을 합니다.\n3. 팬에 올리브 오일을 두르고 중약불로 고기를 구워줍니다.";
 
+// Points at whichever element the slide wants the user to actually tap —
+// the subtext already says so in words, but a bouncing badge is what makes
+// people realize the demo is real and not just a screenshot.
+function TapHint() {
+  return (
+    <span className="pointer-events-none absolute -top-6 left-1/2 -translate-x-1/2 animate-bounce text-lg leading-none">
+      👆
+    </span>
+  );
+}
+
 function RecipeListDemo({ onNext }: { onNext: () => void }) {
   return (
-    <GlassCard className="mx-auto w-full max-w-[280px] bg-white p-4">
+    <GlassCard className="mx-auto w-full bg-white p-4">
       <div className="mb-3 flex items-center justify-between">
         <p className="text-[15px] font-bold text-ink">메뉴판</p>
-        <button type="button" onClick={onNext} className="text-xs font-bold text-accent">
-          + 새 메뉴
-        </button>
+        <span className="relative inline-block">
+          <button type="button" onClick={onNext} className="text-xs font-bold text-accent">
+            + 새 메뉴
+          </button>
+          <TapHint />
+        </span>
       </div>
       <div className="flex flex-col divide-y divide-border">
         {SAMPLE_RECIPES.map((r) => (
@@ -50,7 +64,7 @@ function RecipeCollectDemo() {
   }
 
   return (
-    <GlassCard className="mx-auto w-full max-w-[280px] bg-white p-4">
+    <GlassCard className="mx-auto w-full bg-white p-4">
       <p className="mb-1 text-xs font-bold text-ink-soft">요리 이름</p>
       <div className="mb-3 rounded-xl bg-surface px-3.5 py-2.5 text-sm font-bold text-ink">스테이크 굽는 법</div>
 
@@ -65,16 +79,19 @@ function RecipeCollectDemo() {
         </div>
       </div>
 
-      <button
-        type="button"
-        onClick={runAi}
-        disabled={phase !== "form"}
-        className="mb-3 w-full rounded-xl border border-accent py-2.5 text-xs font-bold text-accent-ink disabled:opacity-60"
-      >
-        {phase === "form" && "✨ AI로 재료·레시피 자동 작성"}
-        {phase === "loading" && "AI가 작성하는 중..."}
-        {phase === "result" && "✓ AI가 작성했어요"}
-      </button>
+      <div className="relative mb-3">
+        <button
+          type="button"
+          onClick={runAi}
+          disabled={phase !== "form"}
+          className="w-full rounded-xl border border-accent py-2.5 text-xs font-bold text-accent-ink disabled:opacity-60"
+        >
+          {phase === "form" && "✨ AI로 재료·레시피 자동 작성"}
+          {phase === "loading" && "AI가 작성하는 중..."}
+          {phase === "result" && "✓ AI가 작성했어요"}
+        </button>
+        {phase === "form" && <TapHint />}
+      </div>
 
       <p className="mb-1 text-xs font-bold text-ink-soft">재료</p>
       <div className="min-h-[88px] rounded-xl bg-surface p-2.5 text-xs leading-relaxed text-ink">
@@ -125,7 +142,7 @@ function ShoppingSyncDemo() {
 
   return (
     <>
-      <GlassCard className="mx-auto w-full max-w-[280px] bg-white p-4">
+      <GlassCard className="mx-auto w-full bg-white p-4">
         {phase === "confirm" ? (
           <div className="animate-fade-in-up">
             <p className="mb-1 text-[15px] font-bold">부족한 재료 확인</p>
@@ -203,20 +220,23 @@ function ShoppingSyncDemo() {
                 장보기에 담겨 있어요
               </div>
             ) : (
-              <button
-                type="button"
-                onClick={() => setPhase("confirm")}
-                className="w-full rounded-xl bg-accent py-2.5 text-xs font-bold text-white"
-              >
-                부족한 재료 장보기 담기
-              </button>
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => setPhase("confirm")}
+                  className="w-full rounded-xl bg-accent py-2.5 text-xs font-bold text-white"
+                >
+                  부족한 재료 장보기 담기
+                </button>
+                <TapHint />
+              </div>
             )}
           </>
         )}
       </GlassCard>
 
       {phase === "done" && (
-        <div className="animate-fade-in-up mx-auto mt-3 w-full max-w-[280px]">
+        <div className="animate-fade-in-up mx-auto mt-3 w-full">
           <p className="mb-1.5 text-xs font-bold text-ink-soft">장보기</p>
           <GlassCard className="bg-white p-3">
             <div className="flex flex-col divide-y divide-border">
@@ -254,7 +274,7 @@ function FridgeDemo() {
   }
 
   return (
-    <GlassCard className="mx-auto w-full max-w-[280px] bg-white p-4">
+    <GlassCard className="mx-auto w-full bg-white p-4">
       <p className="mb-4 text-xs text-ink-faint">탭하면 바로 추가되거나 빠져요</p>
       <div className="flex flex-col gap-4">
         {FRIDGE_CATEGORIES.map((cat) => (
@@ -263,17 +283,20 @@ function FridgeDemo() {
             <div className="flex flex-wrap gap-1.5">
               {cat.items.map((item) => {
                 const active = owned.has(item);
+                const isHintTarget = cat.name === "채소" && item === "쪽파";
                 return (
-                  <button
-                    key={item}
-                    type="button"
-                    onClick={() => toggle(item)}
-                    className={`rounded-full border border-transparent px-3 py-1.5 text-[13px] font-semibold transition-colors ${
-                      active ? "bg-accent text-white" : "bg-surface text-ink-soft"
-                    }`}
-                  >
-                    {item}
-                  </button>
+                  <span key={item} className="relative inline-block">
+                    <button
+                      type="button"
+                      onClick={() => toggle(item)}
+                      className={`rounded-full border border-transparent px-3 py-1.5 text-[13px] font-semibold transition-colors ${
+                        active ? "bg-accent text-white" : "bg-surface text-ink-soft"
+                      }`}
+                    >
+                      {item}
+                    </button>
+                    {isHintTarget && !active && <TapHint />}
+                  </span>
                 );
               })}
             </div>
@@ -291,7 +314,7 @@ const HOUSEHOLD_MEMBERS = [
 
 function HouseholdShareDemo() {
   return (
-    <GlassCard className="mx-auto w-full max-w-[280px] bg-white p-4 ring-2 ring-accent">
+    <GlassCard className="mx-auto w-full bg-white p-4 ring-2 ring-accent">
       <div className="mb-3 flex items-center justify-between">
         <span className="text-sm font-bold text-ink">혜콩이네 🏠</span>
         <span className="rounded-full bg-accent/10 px-2.5 py-1 text-[11px] font-bold text-accent">사용 중</span>
