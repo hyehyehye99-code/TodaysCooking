@@ -1,6 +1,5 @@
 import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
-import { Splash } from "@/components/Splash";
 import "./globals.css";
 
 const suit = localFont({
@@ -36,7 +35,6 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     >
       <body className="min-h-full flex flex-col">
         {children}
-        <Splash />
       </body>
     </html>
   );
