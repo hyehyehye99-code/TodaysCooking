@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentHousehold } from "@/lib/household";
 import { INGREDIENT_CATEGORIES } from "@/lib/ingredients";
+import { notifyShoppingItemAdded } from "@/lib/actions/push";
 
 export async function toggleShoppingItem(formData: FormData) {
   const id = String(formData.get("id") ?? "");
@@ -20,13 +21,17 @@ export async function addShoppingItem(formData: FormData) {
   const name = String(formData.get("name") ?? "").trim();
   if (!name) return;
 
-  const { household } = await getCurrentHousehold();
-  if (!household) return;
+  const { user, household } = await getCurrentHousehold();
+  if (!household || !user) return;
 
   const supabase = await createClient();
   await supabase.from("shopping_items").insert({ household_id: household.id, name });
 
   revalidatePath("/shopping");
+
+  // Notify other household members — never let a push failure affect the
+  // add-item response itself.
+  notifyShoppingItemAdded(household.id, user.id, name).catch(() => {});
 }
 
 export async function deleteShoppingItem(formData: FormData) {

@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { ProfileEditButton } from "./profile-edit-button";
 import { AddHouseholdSection } from "./add-household-section";
 import { HouseholdList } from "./household-list";
+import { PushNotificationToggle } from "@/components/PushNotificationToggle";
 
 type Member = { user_id: string; nickname: string; icon_emoji: string | null; role: string; joined_at: string };
 
@@ -90,9 +91,13 @@ export default async function MyPage() {
     <div>
       <PageHeader title="마이페이지" />
 
-      <GlassCard className="mb-8 bg-white p-4">
+      <GlassCard className="mb-4 bg-white p-4">
         <ProfileEditButton nickname={myNickname} iconEmoji={myIconEmoji} />
       </GlassCard>
+
+      <div className="mb-8">
+        <PushNotificationToggle />
+      </div>
 
       <p className="mb-3 text-[13px] font-bold text-ink-soft">부엌 관리</p>
       <div className="mb-4">
