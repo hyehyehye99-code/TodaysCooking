@@ -3,9 +3,6 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { GoogleSignInButton } from "@/app/login/google-signin-button";
-import { AppleSignInButton } from "@/app/login/apple-signin-button";
-import { KakaoSignInButton } from "@/app/login/kakao-signin-button";
 
 type Hotspot = { top: string; left: string };
 type Step = { image: string; hotspot?: Hotspot; auto?: boolean };
@@ -198,12 +195,12 @@ export default function WelcomePage() {
 
       <div className="mt-6">
         {isLast && atLastStep ? (
-          <div className="flex flex-col gap-2.5">
-            <p className="mb-1 text-center text-sm font-bold text-ink">지금 시작해볼까요?</p>
-            <GoogleSignInButton />
-            <AppleSignInButton />
-            <KakaoSignInButton />
-          </div>
+          <Link
+            href="/login"
+            className="block w-full rounded-xl bg-accent py-4 text-center text-sm font-bold text-white"
+          >
+            지금 시작해볼까요?
+          </Link>
         ) : (
           <button
             type="button"
