@@ -10,6 +10,7 @@ import {
 import type { ShoppingItem } from "@/lib/types";
 import { FinishShoppingBar } from "./finish-shopping-bar";
 import { ClearShoppingListButton } from "./clear-shopping-list-button";
+import { ShoppingItemLink } from "./shopping-item-link";
 
 export default async function ShoppingPage() {
   const { household } = await getCurrentHousehold();
@@ -96,7 +97,7 @@ export default async function ShoppingPage() {
                 </button>
               </form>
               <div className="min-w-0 flex-1 text-left">
-                <p className="text-sm font-semibold">{item.name}</p>
+                <ShoppingItemLink name={item.name} />
                 {item.source_recipe_title && (
                   <p className="mt-0.5 text-[11px] text-ink-faint">
                     {item.source_recipe_title} 재료
