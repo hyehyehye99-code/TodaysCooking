@@ -41,11 +41,14 @@ export async function removePushSubscription(endpoint: string) {
   await supabase.from("push_subscriptions").delete().eq("endpoint", endpoint);
 }
 
-// Fire-and-forget from server actions that mutate shared household data —
-// callers should not await this on the critical path of their own response.
-// Cleans up subscriptions the push service reports as gone (404/410 — the
-// browser unsubscribed, or the endpoint expired) as it goes.
-async function sendToHousehold(householdId: string, excludeUserId: string, payload: string) {
+// Fire-and-forget from callers — never let a push failure affect their own
+// response. Cleans up subscriptions the push service reports as gone
+// (404/410 — the browser unsubscribed, or the endpoint expired) as it goes.
+export async function sendPushToHousehold(
+  householdId: string,
+  excludeUserId: string,
+  notification: { title: string; body: string; url?: string }
+) {
   if (!VAPID_PUBLIC_KEY || !VAPID_PRIVATE_KEY) return;
 
   const supabase = await createClient();
@@ -54,6 +57,8 @@ async function sendToHousehold(householdId: string, excludeUserId: string, paylo
     p_exclude_user_id: excludeUserId,
   });
   if (!subs || subs.length === 0) return;
+
+  const payload = JSON.stringify(notification);
 
   await Promise.allSettled(
     (subs as { endpoint: string; p256dh: string; auth: string }[]).map(async (s) => {
@@ -68,26 +73,6 @@ async function sendToHousehold(householdId: string, excludeUserId: string, paylo
           await supabase.from("push_subscriptions").delete().eq("endpoint", s.endpoint);
         }
       }
-    })
-  );
-}
-
-export async function notifyShoppingItemAdded(householdId: string, actorUserId: string, itemName: string) {
-  const supabase = await createClient();
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("nickname")
-    .eq("id", actorUserId)
-    .maybeSingle();
-  const nickname = profile?.nickname ?? "누군가";
-
-  await sendToHousehold(
-    householdId,
-    actorUserId,
-    JSON.stringify({
-      title: "장보기 목록 추가",
-      body: `${nickname}님이 "${itemName}"을(를) 장보기에 추가했어요`,
-      url: "/shopping",
     })
   );
 }

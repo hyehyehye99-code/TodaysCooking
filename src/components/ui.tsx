@@ -42,8 +42,16 @@ export function GlassCard({
   return <div className={`rounded-2xl border border-border ${className}`}>{children}</div>;
 }
 
-export function PageHeader({ title }: { title: string }) {
-  return <h1 className="mb-4 text-[22px] font-bold tracking-tight">{title}</h1>;
+export function PageHeader({ title, right }: { title: string; right?: ReactNode }) {
+  if (!right) {
+    return <h1 className="mb-4 text-[22px] font-bold tracking-tight">{title}</h1>;
+  }
+  return (
+    <div className="mb-4 flex items-center justify-between gap-3">
+      <h1 className="text-[22px] font-bold tracking-tight">{title}</h1>
+      {right}
+    </div>
+  );
 }
 
 export function ProgressBar({ percent, colorClass = "bg-positive" }: { percent: number; colorClass?: string }) {

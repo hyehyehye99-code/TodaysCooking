@@ -4,7 +4,12 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentHousehold } from "@/lib/household";
 import { INGREDIENT_CATEGORIES } from "@/lib/ingredients";
-import { notifyShoppingItemAdded } from "@/lib/actions/push";
+import { notifyHousehold } from "@/lib/actions/notifications";
+
+async function getNickname(supabase: Awaited<ReturnType<typeof createClient>>, userId: string) {
+  const { data } = await supabase.from("profiles").select("nickname").eq("id", userId).maybeSingle();
+  return data?.nickname ?? "누군가";
+}
 
 export async function toggleShoppingItem(formData: FormData) {
   const id = String(formData.get("id") ?? "");
@@ -29,9 +34,12 @@ export async function addShoppingItem(formData: FormData) {
 
   revalidatePath("/shopping");
 
-  // Notify other household members — never let a push failure affect the
-  // add-item response itself.
-  notifyShoppingItemAdded(household.id, user.id, name).catch(() => {});
+  const nickname = await getNickname(supabase, user.id);
+  notifyHousehold(household.id, user.id, {
+    title: "장보기 목록 추가",
+    body: `${nickname}님이 "${name}"을(를) 장보기에 추가했어요`,
+    url: "/shopping",
+  }).catch(() => {});
 }
 
 export async function deleteShoppingItem(formData: FormData) {
@@ -88,8 +96,8 @@ const CATEGORY_BY_NAME = new Map(
 );
 
 export async function finishShoppingTrip() {
-  const { household } = await getCurrentHousehold();
-  if (!household) return;
+  const { user, household } = await getCurrentHousehold();
+  if (!household || !user) return;
 
   const supabase = await createClient();
 
@@ -118,4 +126,11 @@ export async function finishShoppingTrip() {
   revalidatePath("/shopping");
   revalidatePath("/fridge");
   revalidatePath("/recipes");
+
+  const nickname = await getNickname(supabase, user.id);
+  notifyHousehold(household.id, user.id, {
+    title: "장보기 완료",
+    body: `${nickname}님이 장보기를 완료하고 재료 ${checked.length}개를 냉장고에 추가했어요`,
+    url: "/fridge",
+  }).catch(() => {});
 }
