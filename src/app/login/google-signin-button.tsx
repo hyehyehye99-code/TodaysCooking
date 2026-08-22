@@ -1,18 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { createClient } from "@/lib/supabase/client";
+import { signInWithProvider } from "@/lib/oauth-signin";
 
 export function GoogleSignInButton() {
   const [pending, setPending] = useState(false);
 
   async function handleClick() {
     setPending(true);
-    const supabase = createClient();
-    await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: { redirectTo: `${window.location.origin}/auth/callback` },
-    });
+    await signInWithProvider("google");
   }
 
   return (

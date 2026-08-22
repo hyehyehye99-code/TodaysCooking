@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { createClient } from "@/lib/supabase/client";
+import { signInWithProvider } from "@/lib/oauth-signin";
 
 // Needs the "Apple" provider configured in Supabase Auth (Services ID,
 // Team ID, Key ID, and the .p8 private key from an Apple Developer account)
@@ -11,11 +11,7 @@ export function AppleSignInButton() {
 
   async function handleClick() {
     setPending(true);
-    const supabase = createClient();
-    await supabase.auth.signInWithOAuth({
-      provider: "apple",
-      options: { redirectTo: `${window.location.origin}/auth/callback` },
-    });
+    await signInWithProvider("apple");
   }
 
   return (

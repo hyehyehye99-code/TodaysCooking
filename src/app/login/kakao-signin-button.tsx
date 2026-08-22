@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { createClient } from "@/lib/supabase/client";
+import { signInWithProvider } from "@/lib/oauth-signin";
 
 // Needs the "Kakao" provider configured in Supabase Auth (REST API key as
 // Client ID, Client Secret, and the redirect URI registered in the Kakao
@@ -16,11 +16,7 @@ export function KakaoSignInButton() {
 
   async function handleClick() {
     setPending(true);
-    const supabase = createClient();
-    await supabase.auth.signInWithOAuth({
-      provider: "kakao",
-      options: { redirectTo: `${window.location.origin}/auth/callback` },
-    });
+    await signInWithProvider("kakao");
   }
 
   return (
