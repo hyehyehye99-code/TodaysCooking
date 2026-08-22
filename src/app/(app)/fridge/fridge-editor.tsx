@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { saveFridge } from "@/lib/actions/fridge";
 import { GlassCard } from "@/components/ui";
 import { ClearableInput } from "@/components/ClearableInput";
@@ -8,11 +8,101 @@ import { ClearableInput } from "@/components/ClearableInput";
 type Item = { name: string; selected: boolean; custom: boolean };
 type Category = { name: string; items: Item[] };
 
+const LONG_PRESS_MS = 350;
+const MOVE_CANCEL_PX = 10;
+
 export function FridgeEditor({ categories }: { categories: Category[] }) {
   const [local, setLocal] = useState<Category[]>(categories);
   const [customInputs, setCustomInputs] = useState<Record<string, string>>({});
   const [search, setSearch] = useState("");
   const [expanded, setExpanded] = useState<Set<string>>(() => new Set());
+
+  // Long-press-then-drag a chip into a different (open) category. The press
+  // timer is what separates this from a normal tap — pointer capture is
+  // deferred until the timer actually fires (not on every pointerdown),
+  // otherwise capturing retargets the click and swallows plain taps.
+  const [dragging, setDragging] = useState<{ catName: string; itemName: string; x: number; y: number } | null>(null);
+  const [dropTarget, setDropTarget] = useState<string | null>(null);
+  const pressRef = useRef<{ catName: string; itemName: string; x: number; y: number; timer: ReturnType<typeof setTimeout> } | null>(null);
+  const catRefs = useRef<Map<string, HTMLElement>>(new Map());
+
+  function registerCatRef(name: string) {
+    return (el: HTMLElement | null) => {
+      if (el) catRefs.current.set(name, el);
+      else catRefs.current.delete(name);
+    };
+  }
+
+  function findDropTarget(x: number, y: number, excludeCat: string) {
+    for (const [name, el] of catRefs.current) {
+      if (name === excludeCat) continue;
+      const r = el.getBoundingClientRect();
+      if (x >= r.left && x <= r.right && y >= r.top && y <= r.bottom) return name;
+    }
+    return null;
+  }
+
+  function handleChipPointerDown(e: React.PointerEvent<HTMLButtonElement>, catName: string, itemName: string) {
+    const startX = e.clientX;
+    const startY = e.clientY;
+    const target = e.currentTarget;
+    const pointerId = e.pointerId;
+    const timer = setTimeout(() => {
+      target.setPointerCapture(pointerId);
+      setDragging({ catName, itemName, x: startX, y: startY });
+      pressRef.current = null;
+    }, LONG_PRESS_MS);
+    pressRef.current = { catName, itemName, x: startX, y: startY, timer };
+  }
+
+  function handleChipPointerMove(e: React.PointerEvent<HTMLButtonElement>) {
+    if (dragging) {
+      const x = e.clientX;
+      const y = e.clientY;
+      setDragging((d) => (d ? { ...d, x, y } : d));
+      setDropTarget(findDropTarget(x, y, dragging.catName));
+      return;
+    }
+    const press = pressRef.current;
+    if (!press) return;
+    if (Math.hypot(e.clientX - press.x, e.clientY - press.y) > MOVE_CANCEL_PX) {
+      clearTimeout(press.timer);
+      pressRef.current = null;
+    }
+  }
+
+  function handleChipPointerUp(e: React.PointerEvent<HTMLButtonElement>) {
+    if (pressRef.current) {
+      clearTimeout(pressRef.current.timer);
+      pressRef.current = null;
+    }
+    if (dragging) {
+      if (dropTarget && dropTarget !== dragging.catName) {
+        moveItem(dragging.catName, dropTarget, dragging.itemName);
+      }
+      try {
+        e.currentTarget.releasePointerCapture(e.pointerId);
+      } catch {
+        // already released
+      }
+      setDragging(null);
+      setDropTarget(null);
+    }
+  }
+
+  function moveItem(fromCat: string, toCat: string, itemName: string) {
+    const item = local.find((c) => c.name === fromCat)?.items.find((i) => i.name === itemName);
+    if (!item || fromCat === toCat) return;
+
+    setLocal((prev) =>
+      prev.map((c) => {
+        if (c.name === fromCat) return { ...c, items: c.items.filter((i) => i.name !== itemName) };
+        if (c.name === toCat) return { ...c, items: [...c.items, item] };
+        return c;
+      })
+    );
+    void saveFridge([{ name: itemName, category: toCat, inStock: item.selected }]);
+  }
 
   function toggleExpand(catName: string) {
     setExpanded((prev) => {
@@ -93,7 +183,7 @@ export function FridgeEditor({ categories }: { categories: Category[] }) {
   return (
     <div>
       <p className="mb-5 text-sm text-ink-soft">
-        {ownedCount}개 재료 보유 중 · 탭하면 바로 추가되거나 빠져요
+        {ownedCount}개 재료 보유 중 · 탭하면 바로 추가되거나 빠져요, 길게 눌러서 다른 칸으로 옮길 수 있어요
       </p>
 
       <ClearableInput
@@ -139,6 +229,7 @@ export function FridgeEditor({ categories }: { categories: Category[] }) {
           .map((cat) => {
             const isOpen = !!q || expanded.has(cat.name);
             const ownedNames = cat.items.filter((i) => i.selected).map((i) => i.name);
+            const isDropTarget = dropTarget === cat.name;
             return (
             <div key={cat.name} className="border-b border-border py-3 last:border-none">
               <button
@@ -173,22 +264,33 @@ export function FridgeEditor({ categories }: { categories: Category[] }) {
               )}
 
               {isOpen && (
-              <div className="mt-3 flex flex-wrap items-center gap-2">
+              <div
+                ref={registerCatRef(cat.name)}
+                className={`mt-3 flex flex-wrap items-center gap-2 rounded-2xl border-2 p-1.5 transition-colors ${
+                  isDropTarget ? "border-dashed border-accent bg-accent/5" : "border-transparent"
+                }`}
+              >
                 {cat.items.map((item) => {
                   const chipClass = item.selected
                     ? "bg-accent text-white"
                     : "bg-surface text-ink-soft";
+                  const isBeingDragged = dragging?.catName === cat.name && dragging.itemName === item.name;
 
                   if (item.custom) {
                     return (
                       <span
                         key={item.name}
-                        className={`inline-flex items-center rounded-full border border-transparent ${chipClass}`}
+                        className={`inline-flex items-center rounded-full border border-transparent ${chipClass} ${
+                          isBeingDragged ? "opacity-40" : ""
+                        }`}
                       >
                         <button
                           type="button"
                           onClick={() => toggle(cat.name, item.name)}
-                          className="py-2 pl-3.5 pr-1.5 text-[13px] font-semibold"
+                          onPointerDown={(e) => handleChipPointerDown(e, cat.name, item.name)}
+                          onPointerMove={handleChipPointerMove}
+                          onPointerUp={handleChipPointerUp}
+                          className="touch-none py-2 pl-3.5 pr-1.5 text-[13px] font-semibold"
                         >
                           {item.name}
                         </button>
@@ -209,7 +311,12 @@ export function FridgeEditor({ categories }: { categories: Category[] }) {
                       key={item.name}
                       type="button"
                       onClick={() => toggle(cat.name, item.name)}
-                      className={`rounded-full border border-transparent px-3.5 py-2 text-[13px] font-semibold ${chipClass}`}
+                      onPointerDown={(e) => handleChipPointerDown(e, cat.name, item.name)}
+                      onPointerMove={handleChipPointerMove}
+                      onPointerUp={handleChipPointerUp}
+                      className={`touch-none rounded-full border border-transparent px-3.5 py-2 text-[13px] font-semibold ${chipClass} ${
+                        isBeingDragged ? "opacity-40" : ""
+                      }`}
                     >
                       {item.name}
                     </button>
@@ -245,6 +352,15 @@ export function FridgeEditor({ categories }: { categories: Category[] }) {
             );
           })}
       </div>
+
+      {dragging && (
+        <div
+          className="pointer-events-none fixed z-50 -translate-x-1/2 -translate-y-1/2 rounded-full bg-accent px-3.5 py-2 text-[13px] font-semibold text-white shadow-lg"
+          style={{ left: dragging.x, top: dragging.y }}
+        >
+          {dragging.itemName}
+        </div>
+      )}
     </div>
   );
 }

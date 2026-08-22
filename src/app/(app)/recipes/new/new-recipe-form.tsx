@@ -97,10 +97,7 @@ export function NewRecipeForm({ existingTags }: { existingTags: string[] }) {
         <GlassCard className="bg-white p-4">
           <p className="mb-1 text-[13px] font-bold">참고 링크</p>
           <p className="mb-1 text-xs text-ink-soft">여기 넣은 링크는 보관함 탭에도 함께 저장돼요</p>
-          <p className="mb-3 text-[11px] text-ink-faint">
-            AI 자동 정리는 유튜브 링크만 지원해요. 인스타그램 등 다른 링크는 제목만으로 추정해서
-            작성돼요.
-          </p>
+          <p className="mb-3 text-[11px] text-ink-faint">AI 자동 정리는 유튜브 링크만 지원해요</p>
           <ReferenceLinkField name="referenceUrl" onAiResult={handleAiResult} />
         </GlassCard>
 
