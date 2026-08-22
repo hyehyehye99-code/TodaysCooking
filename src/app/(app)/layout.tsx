@@ -18,7 +18,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
   return (
     <div className="mx-auto flex h-dvh w-full max-w-[520px] flex-col">
-      <PullToRefresh className="px-5 pt-[max(env(safe-area-inset-top),24px)] pb-[max(env(safe-area-inset-bottom),40px)]">
+      <PullToRefresh className="px-5 pt-[calc(max(env(safe-area-inset-top),24px)+16px)] pb-[max(env(safe-area-inset-bottom),40px)]">
         {previousHouseholdMissing && (
           <form
             action={acknowledgeHouseholdChange}

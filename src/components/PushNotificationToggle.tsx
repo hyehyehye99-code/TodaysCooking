@@ -59,16 +59,24 @@ export function PushNotificationToggle() {
   useEffect(() => {
     if (isNative) {
       (async () => {
-        const { receive } = await FirebaseMessaging.checkPermissions();
-        if (receive === "denied") {
-          setStatus("denied");
-          return;
-        }
-        if (receive === "granted") {
-          const { token } = await FirebaseMessaging.getToken();
-          setFcmToken(token);
-          setStatus("on");
-        } else {
+        try {
+          const { receive } = await FirebaseMessaging.checkPermissions();
+          if (receive === "denied") {
+            setStatus("denied");
+            return;
+          }
+          if (receive === "granted") {
+            const { token } = await FirebaseMessaging.getToken();
+            setFcmToken(token);
+            setStatus("on");
+          } else {
+            setStatus("off");
+          }
+        } catch {
+          // The native Firebase Messaging plugin isn't in the installed
+          // build yet (e.g. right after adding it, before the next
+          // TestFlight archive) — fail open to "off" instead of getting
+          // stuck on "checking" forever, which renders nothing.
           setStatus("off");
         }
       })();
