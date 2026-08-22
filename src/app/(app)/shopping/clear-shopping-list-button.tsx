@@ -23,7 +23,7 @@ export function ClearShoppingListButton() {
       <button
         type="button"
         onClick={() => setConfirming(true)}
-        className="px-4 py-2 text-xs font-bold text-warn-ink"
+        className="px-4 py-2 text-xs font-bold text-ink-soft"
       >
         전체 삭제
       </button>

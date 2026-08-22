@@ -1,16 +1,11 @@
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentHousehold } from "@/lib/household";
 import { GlassCard, ProgressBar } from "@/components/ui";
-import {
-  toggleShoppingItem,
-  addShoppingItem,
-  deleteShoppingItem,
-  setAllShoppingItemsChecked,
-} from "@/lib/actions/shopping";
+import { addShoppingItem, setAllShoppingItemsChecked } from "@/lib/actions/shopping";
 import type { ShoppingItem } from "@/lib/types";
 import { FinishShoppingBar } from "./finish-shopping-bar";
 import { ClearShoppingListButton } from "./clear-shopping-list-button";
-import { ShoppingItemLink } from "./shopping-item-link";
+import { ShoppingItemRow } from "./shopping-item-row";
 
 export default async function ShoppingPage() {
   const { household } = await getCurrentHousehold();
@@ -34,7 +29,7 @@ export default async function ShoppingPage() {
   const allChecked = items.length > 0 && doneCount === items.length;
 
   return (
-    <div className={doneCount > 0 ? "pb-[calc(11.5rem+env(safe-area-inset-bottom))]" : ""}>
+    <div className="pb-[calc(11.5rem+env(safe-area-inset-bottom))]">
       <GlassCard className="mb-[18px] bg-white p-4">
         <div className="mb-2.5 flex items-center justify-between">
           <span className="text-[13px] font-bold">이번 장보기</span>
@@ -69,48 +64,15 @@ export default async function ShoppingPage() {
             <ClearShoppingListButton />
             <form action={setAllShoppingItemsChecked}>
               <input type="hidden" name="checked" value={(!allChecked).toString()} />
-              <button type="submit" className="px-4 py-2 text-xs font-bold text-accent">
+              <button type="submit" className="px-4 py-2 text-xs font-bold text-ink-soft">
                 {allChecked ? "전체 해제" : "전체 선택"}
               </button>
             </form>
           </div>
           <div className="flex flex-col">
-          {items.map((item) => (
-            <div
-              key={item.id}
-              className="flex items-center gap-3 border-b border-border py-3"
-            >
-              <form action={toggleShoppingItem}>
-                <input type="hidden" name="id" value={item.id} />
-                <input type="hidden" name="nextChecked" value={(!item.checked).toString()} />
-                <button
-                  type="submit"
-                  className={`flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-[7px] border-[1.5px] ${
-                    item.checked ? "border-positive bg-positive" : "border-border bg-surface"
-                  }`}
-                >
-                  {item.checked && (
-                    <svg viewBox="0 0 14 14" width="13" height="13" fill="none" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M2.5 7.5l3 3 6-7" />
-                    </svg>
-                  )}
-                </button>
-              </form>
-              <div className="min-w-0 flex-1 text-left">
-                <p className="truncate text-sm font-semibold">{item.name}</p>
-              </div>
-              <ShoppingItemLink id={item.id} name={item.name} checked={item.checked} />
-              <form action={deleteShoppingItem}>
-                <input type="hidden" name="id" value={item.id} />
-                <button
-                  type="submit"
-                  className="shrink-0 rounded-lg bg-surface px-2.5 py-1.5 text-[11px] font-bold text-ink-soft"
-                >
-                  삭제하기
-                </button>
-              </form>
-            </div>
-          ))}
+            {items.map((item) => (
+              <ShoppingItemRow key={item.id} item={item} />
+            ))}
           </div>
         </>
       )}

@@ -89,7 +89,7 @@ export function TabBar() {
           <Link
             key={tab.href}
             href={tab.href}
-            className="flex flex-1 flex-col items-center gap-1 py-1"
+            className="flex flex-1 flex-col items-center gap-1 py-1 outline-none focus-visible:rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
             style={{ color: active ? "var(--color-accent)" : "var(--color-ink-faint)" }}
           >
             <svg
