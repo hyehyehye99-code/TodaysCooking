@@ -2,7 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getCurrentHousehold } from "@/lib/household";
 
-const FEATURES = [
+const HIGHLIGHT_FEATURES = [
   {
     title: "AI가 재료·레시피를 대신 정리해요",
     description: "유튜브·인스타·블로그 링크만 넣으면 재료와 만드는 법을 AI가 알아서 정리해요. 손으로 옮겨 적을 필요 없어요.",
@@ -16,17 +16,6 @@ const FEATURES = [
         />
         <path d="M5 16.5A1.5 1.5 0 016.5 15H16" stroke="currentColor" strokeWidth="1.75" />
         <path d="M8.5 7h4.5M8.5 10h4.5" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" />
-      </svg>
-    ),
-  },
-  {
-    title: "냉장고, 탭 한 번이면 끝",
-    description: "지금 냉장고에 뭐가 있는지 탭 한 번으로 체크해요. 뭘 사야 할지 매번 고민할 필요 없어요.",
-    icon: (
-      <svg width="22" height="22" viewBox="0 0 22 22" fill="none" aria-hidden="true">
-        <rect x="5" y="3" width="12" height="16" rx="2" stroke="currentColor" strokeWidth="1.75" />
-        <path d="M5 9h12" stroke="currentColor" strokeWidth="1.75" />
-        <path d="M8 5.5v1.5M8 11.5v1.5" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" />
       </svg>
     ),
   },
@@ -54,6 +43,20 @@ const FEATURES = [
         <path d="M3 19c0-3 2.5-5.5 5-5.5S13 16 13 19" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" />
         <circle cx="16" cy="8" r="2.5" stroke="currentColor" strokeWidth="1.75" />
         <path d="M14.5 13.5c2.5 0 4.5 2 4.5 5" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" />
+      </svg>
+    ),
+  },
+];
+
+const MORE_FEATURES = [
+  {
+    title: "냉장고, 탭 한 번이면 끝",
+    description: "지금 냉장고에 뭐가 있는지 탭 한 번으로 체크해요. 뭘 사야 할지 매번 고민할 필요 없어요.",
+    icon: (
+      <svg width="22" height="22" viewBox="0 0 22 22" fill="none" aria-hidden="true">
+        <rect x="5" y="3" width="12" height="16" rx="2" stroke="currentColor" strokeWidth="1.75" />
+        <path d="M5 9h12" stroke="currentColor" strokeWidth="1.75" />
+        <path d="M8 5.5v1.5M8 11.5v1.5" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" />
       </svg>
     ),
   },
@@ -177,22 +180,46 @@ export default async function LandingPage() {
       <section className="py-20">
         <div className="mx-auto w-full max-w-5xl px-6">
           <h2 className="text-2xl font-bold text-ink md:text-3xl">이런 기능이 있어요</h2>
-          <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {FEATURES.map((f) => (
+
+          <div className="mt-14 flex flex-col gap-16 md:gap-24">
+            {HIGHLIGHT_FEATURES.map((f, i) => (
+              <div
+                key={f.title}
+                className={`flex flex-col items-center gap-8 md:gap-14 ${
+                  i % 2 === 1 ? "md:flex-row-reverse" : "md:flex-row"
+                }`}
+              >
+                <div className="w-full md:flex-1">
+                  <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-full bg-accent/10 text-accent">
+                    {f.icon}
+                  </div>
+                  <h3 className="text-lg font-bold text-ink md:text-xl">{f.title}</h3>
+                  <p className="mt-3 max-w-sm text-sm leading-relaxed text-ink-soft md:text-base">
+                    {f.description}
+                  </p>
+                </div>
+                <div className="w-full md:flex-1">
+                  <div className="mx-auto flex aspect-[3/4] w-full max-w-[280px] flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-border bg-surface text-ink-faint">
+                    <svg width="28" height="28" viewBox="0 0 22 22" fill="none" aria-hidden="true">
+                      <rect x="2.5" y="3.5" width="17" height="15" rx="2" stroke="currentColor" strokeWidth="1.5" />
+                      <circle cx="7.5" cy="8.5" r="1.5" stroke="currentColor" strokeWidth="1.5" />
+                      <path d="M4 15.5l4.5-4.5 3 3 2.5-2.5 4 4" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
+                    </svg>
+                    <span className="text-xs font-semibold">스크린샷 자리</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-20 grid gap-5 sm:grid-cols-3">
+            {MORE_FEATURES.map((f) => (
               <div key={f.title} className="rounded-2xl border border-border bg-cream p-6">
                 <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-full bg-accent/10 text-accent">
                   {f.icon}
                 </div>
                 <h3 className="text-base font-bold text-ink">{f.title}</h3>
                 <p className="mt-2 text-sm leading-relaxed text-ink-soft">{f.description}</p>
-                <div className="mt-4 flex aspect-[16/10] w-full flex-col items-center justify-center gap-1.5 rounded-xl border border-dashed border-border bg-surface text-ink-faint">
-                  <svg width="20" height="20" viewBox="0 0 22 22" fill="none" aria-hidden="true">
-                    <rect x="2.5" y="3.5" width="17" height="15" rx="2" stroke="currentColor" strokeWidth="1.5" />
-                    <circle cx="7.5" cy="8.5" r="1.5" stroke="currentColor" strokeWidth="1.5" />
-                    <path d="M4 15.5l4.5-4.5 3 3 2.5-2.5 4 4" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
-                  </svg>
-                  <span className="text-[11px] font-semibold">스크린샷 자리</span>
-                </div>
               </div>
             ))}
           </div>
