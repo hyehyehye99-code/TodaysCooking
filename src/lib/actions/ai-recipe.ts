@@ -150,21 +150,19 @@ export async function generateRecipeFromLink(
       return { ok: false, error: "AI가 재료를 만들어내지 못했어요." };
     }
 
-    // The ingredients field has to match fridge/shopping items by name alone
-    // (see recipe_ingredients — there's no amount column), so only the bare
-    // name goes there. The amounts aren't dropped though — they're prepended
-    // to the instructions as a reference block.
-    const ingredients = rawIngredients.map((i) => i.name);
-    const prepLine = rawIngredients.map((i) => (i.amount ? `${i.name} ${i.amount}` : i.name)).join(", ");
+    // Each line goes into the same "재료" box a manual entry would use, in
+    // the same "이름 용량" shape (e.g. "문어 400g") — saving the recipe runs
+    // this through the very same name/amount split as manual entries, so the
+    // ingredients box is naturally its own section, separate from
+    // instructions, with the amount preserved and shown on the recipe's
+    // ingredient chips instead of being folded into the instructions text.
+    const ingredients = rawIngredients.map((i) => (i.amount ? `${i.name} ${i.amount}` : i.name));
     // The model occasionally emits a literal backslash-n instead of an
     // actual line break (an inconsistent JSON-escaping quirk, not specific
     // to any one input) — normalize both to real newlines so the textarea
     // never shows a stray "\n" instead of wrapping.
-    const rawInstructions =
+    const instructions =
       typeof data.instructions === "string" ? data.instructions.replace(/\\n/g, "\n") : "";
-    const instructions = prepLine
-      ? `[재료 준비]\n${prepLine}\n\n[만드는 법]\n${rawInstructions}`
-      : rawInstructions;
 
     return {
       ok: true,
