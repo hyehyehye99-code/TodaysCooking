@@ -1,10 +1,15 @@
+import { BackButton } from "@/components/ui";
 import { GoogleSignInButton } from "./google-signin-button";
 import { AppleSignInButton } from "./apple-signin-button";
 import { KakaoSignInButton } from "./kakao-signin-button";
 
 export default function LandingPage() {
   return (
-    <div className="mx-auto flex h-dvh w-full max-w-[420px] flex-col px-7 pt-[max(env(safe-area-inset-top),64px)] pb-[max(env(safe-area-inset-bottom),64px)]">
+    <div className="relative mx-auto flex h-dvh w-full max-w-[420px] flex-col px-7 pt-[max(env(safe-area-inset-top),64px)] pb-[max(env(safe-area-inset-bottom),64px)]">
+      <div className="absolute left-7 top-[max(env(safe-area-inset-top),20px)]">
+        <BackButton href="/welcome" />
+      </div>
+
       <div className="flex-[1]" />
 
       <div>

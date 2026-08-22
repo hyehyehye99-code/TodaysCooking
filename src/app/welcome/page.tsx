@@ -290,74 +290,59 @@ const HOUSEHOLD_MEMBERS = [
 ];
 
 function HouseholdShareDemo() {
-  const [phase, setPhase] = useState<"mypage" | "info" | "invite" | "copied">("mypage");
+  const [phase, setPhase] = useState<"mypage" | "invite" | "copied">("mypage");
 
   return (
-    <GlassCard className="mx-auto w-full max-w-[280px] bg-white p-4 ring-2 ring-accent">
-      {phase === "mypage" && (
-        <>
-          <button
-            type="button"
-            onClick={() => setPhase("info")}
-            className="mb-3 flex w-full items-center justify-between text-left"
-          >
-            <span className="text-sm font-bold text-ink">혜콩이네 🏠 ›</span>
-            <span className="rounded-full bg-accent/10 px-2.5 py-1 text-[11px] font-bold text-accent">사용 중</span>
-          </button>
-          <p className="mb-3 text-xs text-ink-soft">참여 인원 2명</p>
-          <button
-            type="button"
-            onClick={() => setPhase("invite")}
-            className="w-full rounded-lg bg-accent py-2.5 text-xs font-bold text-white"
-          >
-            초대하기
-          </button>
-        </>
-      )}
-
-      {phase === "info" && (
-        <div className="animate-fade-in-up">
-          <p className="mb-3 text-[15px] font-bold">부엌 정보</p>
-          <p className="mb-1.5 text-xs font-bold text-ink-soft">참여 인원 (2명)</p>
-          <div className="mb-4 flex flex-col gap-2">
-            {HOUSEHOLD_MEMBERS.map((m) => (
-              <div key={m.name} className="flex items-center gap-2 rounded-xl bg-surface px-3.5 py-2.5">
-                <div className="h-7 w-7 shrink-0 rounded-full bg-white" />
-                <div>
-                  <p className="text-xs font-bold text-ink">{m.name}</p>
-                  {m.role && <p className="text-[10px] text-accent-ink">{m.role}</p>}
+    <>
+      <GlassCard className="mx-auto w-full max-w-[280px] bg-white p-4 ring-2 ring-accent">
+        {phase === "mypage" ? (
+          <>
+            <div className="mb-3 flex items-center justify-between">
+              <span className="text-sm font-bold text-ink">혜콩이네 🏠</span>
+              <span className="rounded-full bg-accent/10 px-2.5 py-1 text-[11px] font-bold text-accent">사용 중</span>
+            </div>
+            <p className="mb-2 text-xs font-bold text-ink-soft">참여 인원 (2명)</p>
+            <div className="flex flex-col gap-2">
+              {HOUSEHOLD_MEMBERS.map((m) => (
+                <div key={m.name} className="flex items-center gap-2 rounded-xl bg-surface px-3.5 py-2.5">
+                  <div className="h-8 w-8 shrink-0 rounded-full bg-white" />
+                  <div>
+                    <p className="text-xs font-bold text-ink">{m.name}</p>
+                    {m.role && <p className="text-[10px] text-accent-ink">{m.role}</p>}
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
+          </>
+        ) : (
+          <div className="animate-fade-in-up">
+            <p className="mb-1 text-[15px] font-bold">혜콩이네 🏠 에 초대하기</p>
+            <p className="mb-4 text-xs text-ink-soft">
+              링크를 보내면 상대방이 눌러서 로그인 후 바로 참여할 수 있어요.
+            </p>
+            <button
+              type="button"
+              onClick={() => setPhase("copied")}
+              className={`w-full rounded-xl py-3.5 text-sm font-bold ${
+                phase === "copied" ? "border border-accent bg-white text-accent-ink" : "bg-accent text-white"
+              }`}
+            >
+              {phase === "copied" ? "링크를 복사했어요!" : "초대 링크 복사하기"}
+            </button>
           </div>
-          <button
-            type="button"
-            onClick={() => setPhase("mypage")}
-            className="w-full rounded-xl bg-surface py-3 text-sm font-bold text-ink-soft"
-          >
-            닫기
-          </button>
-        </div>
-      )}
+        )}
+      </GlassCard>
 
-      {(phase === "invite" || phase === "copied") && (
-        <div className="animate-fade-in-up">
-          <p className="mb-1 text-[15px] font-bold">혜콩이네 🏠 에 초대하기</p>
-          <p className="mb-4 text-xs text-ink-soft">
-            링크를 보내면 상대방이 눌러서 로그인 후 바로 참여할 수 있어요.
-          </p>
-          <button
-            type="button"
-            onClick={() => setPhase("copied")}
-            className={`w-full rounded-xl py-3.5 text-sm font-bold ${
-              phase === "copied" ? "border border-accent bg-white text-accent-ink" : "bg-accent text-white"
-            }`}
-          >
-            {phase === "copied" ? "링크를 복사했어요!" : "초대 링크 복사하기"}
-          </button>
-        </div>
+      {phase === "mypage" && (
+        <button
+          type="button"
+          onClick={() => setPhase("invite")}
+          className="animate-fade-in-up mx-auto mt-3 block w-full max-w-[280px] rounded-xl bg-accent py-3 text-sm font-bold text-white"
+        >
+          초대하기
+        </button>
       )}
-    </GlassCard>
+    </>
   );
 }
 
@@ -425,7 +410,7 @@ export default function WelcomePage() {
         </Link>
       </div>
 
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-hidden">
         <h1 className="mb-2 text-xl font-bold leading-snug text-ink">{slide.headline}</h1>
         <p className="mb-6 text-sm text-ink-soft">{slide.subtext}</p>
 
