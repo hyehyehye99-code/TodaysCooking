@@ -13,27 +13,50 @@ export function ShoppingItemRow({ item }: { item: ShoppingItem }) {
   const [dragX, setDragX] = useState(0);
   const [open, setOpen] = useState(false);
   const [dragging, setDragging] = useState(false);
-  const dragStateRef = useRef<{ startX: number; startOffset: number } | null>(null);
+  const dragStateRef = useRef<{
+    pointerId: number;
+    startX: number;
+    startOffset: number;
+    captured: boolean;
+  } | null>(null);
   const [, startToggleTransition] = useTransition();
   const [deletePending, startDeleteTransition] = useTransition();
   const router = useRouter();
 
+  // Capture is deferred until the pointer has actually moved past a small
+  // threshold — capturing on every pointerdown (including a plain tap on the
+  // checkbox or cart-icon link nested inside this row) retargets the
+  // resulting click to this div, silently swallowing taps on those buttons
+  // before they ever reach the real target.
+  const DRAG_THRESHOLD = 8;
+
   function handlePointerDown(e: React.PointerEvent) {
-    e.currentTarget.setPointerCapture(e.pointerId);
-    dragStateRef.current = { startX: e.clientX, startOffset: open ? -REVEAL_WIDTH : 0 };
-    setDragging(true);
+    dragStateRef.current = {
+      pointerId: e.pointerId,
+      startX: e.clientX,
+      startOffset: open ? -REVEAL_WIDTH : 0,
+      captured: false,
+    };
   }
 
   function handlePointerMove(e: React.PointerEvent) {
     const drag = dragStateRef.current;
     if (!drag) return;
     const delta = e.clientX - drag.startX;
+    if (!drag.captured) {
+      if (Math.abs(delta) < DRAG_THRESHOLD) return;
+      e.currentTarget.setPointerCapture(drag.pointerId);
+      drag.captured = true;
+      setDragging(true);
+    }
     setDragX(Math.min(0, Math.max(-REVEAL_WIDTH - OVERDRAG, drag.startOffset + delta)));
   }
 
   function endDrag() {
-    if (!dragStateRef.current) return;
+    const drag = dragStateRef.current;
+    if (!drag) return;
     dragStateRef.current = null;
+    if (!drag.captured) return;
     setDragging(false);
     setDragX((current) => {
       const shouldOpen = current < -REVEAL_WIDTH / 2;
