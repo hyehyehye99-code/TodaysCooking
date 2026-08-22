@@ -2,6 +2,7 @@
 
 import { GoogleGenAI, Type } from "@google/genai";
 import { fetchLinkPreview } from "@/lib/actions/link-preview";
+import { extractYoutubeVideoId, fetchYoutubeVideoDetails } from "@/lib/actions/youtube";
 
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
@@ -63,26 +64,50 @@ export async function generateRecipeFromLink(
     return { ok: false, error: "링크에서 정보를 가져오지 못했어요." };
   }
 
-  const context = [
-    `링크: ${preview.url}`,
-    `제목: ${preview.title}`,
-    preview.description ? `설명: ${preview.description}` : null,
-  ]
-    .filter(Boolean)
-    .join("\n");
+  // oEmbed (used for the title/thumbnail above) doesn't expose the video's
+  // description or comments — but that's frequently exactly where a creator
+  // pastes the actual written recipe. Pull it via the YouTube Data API when
+  // configured, so the model can extract the real thing instead of guessing.
+  const videoId = extractYoutubeVideoId(url);
+  const videoDetails = videoId ? await fetchYoutubeVideoDetails(videoId) : null;
+
+  const contextLines = [`링크: ${preview.url}`, `제목: ${preview.title}`];
+  if (videoDetails?.description) {
+    contextLines.push(`영상 설명란:\n${videoDetails.description}`);
+  } else if (preview.description) {
+    contextLines.push(`설명: ${preview.description}`);
+  }
+  if (videoDetails?.comments.length) {
+    contextLines.push(
+      "댓글:",
+      ...videoDetails.comments.map(
+        (c, i) => `${i + 1}. ${c.isCreator ? "[창작자 댓글] " : ""}${c.text}`
+      )
+    );
+  }
+  const context = contextLines.join("\n");
+  const hasRealContent = !!(videoDetails?.description || videoDetails?.comments.length || preview.description);
 
   try {
     const response = await ai.models.generateContent({
       model: "gemini-3.6-flash",
       contents: [
-        "아래는 어떤 링크(영상/게시물)의 제목과 설명이야. 먼저 이 내용이 실제 요리·음식 레시피가",
-        "맞는지 판단해. 요리와 무관한 내용이라면 isRecipe를 false로 하고 나머지 필드는 비워둬 —",
-        "제목에 있는 단어를 억지로 요리나 칵테일 등에 끼워맞추지 마.",
+        "아래는 어떤 링크(영상/게시물)의 정보야. 먼저 이 내용이 실제 요리·음식 레시피가 맞는지",
+        "판단해. 요리와 무관한 내용이라면 isRecipe를 false로 하고 나머지 필드는 비워둬 — 제목에",
+        "있는 단어를 억지로 요리나 칵테일 등에 끼워맞추지 마.",
         "",
-        "레시피가 맞다면, 그 요리를 만들기 위한 재료 목록과 만드는 법을 한국어로 작성해줘.",
-        "영상 내용을 직접 볼 수는 없으니, 제목과 설명에서 짐작할 수 있는 일반적이고 실제로",
-        "통용되는 방식으로 작성해. 확실하지 않은 세부 분량은 일반적인 가정 요리 기준으로",
-        "합리적으로 채워.",
+        hasRealContent
+          ? [
+              "레시피가 맞다면, 아래 영상 설명란·댓글 중에 작성자가 실제로 올려둔 재료·분량·조리",
+              "순서가 있으면 그 내용을 최대한 그대로 가져와서 정리해줘 (재료명, 분량, 순서 포함).",
+              "절대 지어내지 말고 실제로 적힌 내용을 우선해. 설명/댓글에 일부만 나와 있으면 그",
+              "부분은 그대로 쓰고, 빠진 부분만 일반적인 조리법으로 합리적으로 채워.",
+            ].join("\n")
+          : [
+              "이 링크에서는 제목 외에 실제 내용을 가져올 수 없었어. 제목에서 짐작할 수 있는",
+              "일반적이고 실제로 통용되는 방식으로 재료와 만드는 법을 작성해. 확실하지 않은 세부",
+              "분량은 일반적인 가정 요리 기준으로 합리적으로 채워.",
+            ].join("\n"),
         "",
         context,
       ].join("\n"),
