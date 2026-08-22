@@ -22,7 +22,7 @@ export default async function JoinPage({
     return shell(
       <div className="text-center">
         <p className="text-lg font-bold">유효하지 않은 초대 링크예요</p>
-        <Link href="/" className="mt-4 inline-block text-sm font-bold text-accent underline">
+        <Link href="/welcome" className="mt-4 inline-block text-sm font-bold text-accent underline">
           홈으로 가기
         </Link>
       </div>
@@ -38,7 +38,7 @@ export default async function JoinPage({
       <div className="text-center">
         <p className="text-lg font-bold">유효하지 않은 초대 코드예요</p>
         <p className="mt-2 text-sm text-ink-soft">코드가 정확한지 다시 확인해주세요.</p>
-        <Link href="/" className="mt-4 inline-block text-sm font-bold text-accent underline">
+        <Link href="/welcome" className="mt-4 inline-block text-sm font-bold text-accent underline">
           홈으로 가기
         </Link>
       </div>

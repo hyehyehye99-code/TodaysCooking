@@ -39,7 +39,7 @@ export default async function SharePage({ params }: { params: Promise<{ code: st
         <span className="text-[48px] leading-none">🍳</span>
         <p className="mt-4 text-lg font-bold">유효하지 않은 공유 링크예요</p>
         <p className="mt-2 text-sm text-ink-soft">링크가 꺼져 있거나 잘못된 주소예요.</p>
-        <Link href="/" className="mt-4 text-sm font-bold text-accent underline">
+        <Link href="/welcome" className="mt-4 text-sm font-bold text-accent underline">
           홈으로 가기
         </Link>
       </div>
@@ -116,7 +116,7 @@ export default async function SharePage({ params }: { params: Promise<{ code: st
       )}
 
       <p className="mt-10 text-center text-[11px] text-ink-faint">
-        <Link href="/" className="underline">
+        <Link href="/welcome" className="underline">
           나도 이런 메뉴판 만들어볼까?
         </Link>
       </p>
