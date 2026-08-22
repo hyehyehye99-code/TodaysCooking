@@ -104,7 +104,7 @@ export function ShoppingItemRow({ item }: { item: ShoppingItem }) {
       </button>
 
       <div
-        className="flex items-center gap-3 bg-white py-2.5"
+        className="flex items-center gap-3 bg-white py-3.5"
         style={{
           transform: `translateX(${dragX}px)`,
           transition: dragging ? "none" : "transform 150ms ease-out",
