@@ -1,4 +1,9 @@
-"use server";
+// Not "use server" — this module is only ever imported by ai-recipe.ts (a
+// server action file), and one of its exports (extractYoutubeVideoId) is a
+// synchronous function. Next.js requires every export in a "use server" file
+// to be async (it treats each one as a directly callable Server Action), so
+// marking this file that way fails the build; as a plain server-only helper
+// module it doesn't need the directive at all.
 
 const YOUTUBE_HOSTS = new Set(["youtube.com", "www.youtube.com", "m.youtube.com", "youtu.be"]);
 
