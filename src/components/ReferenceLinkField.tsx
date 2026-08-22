@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { fetchLinkPreview } from "@/lib/actions/link-preview";
 import { generateRecipeFromLink } from "@/lib/actions/ai-recipe";
 import { ClearableInput } from "@/components/ClearableInput";
+import { useClipboardLinkSuggestion } from "@/lib/useClipboardLinkSuggestion";
 
 type Preview = { title: string | null; thumbnailUrl: string | null; domain: string | null };
 type AiResult = { title: string | null; ingredients: string[]; instructions: string; tags: string[] };
@@ -28,6 +29,14 @@ export function ReferenceLinkField({
   const [aiError, setAiError] = useState<string | null>(null);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const requestedUrlRef = useRef<string>(defaultValue);
+  const { suggestion, dismiss } = useClipboardLinkSuggestion(defaultValue);
+
+  function useSuggestion() {
+    if (!suggestion) return;
+    setUrl(suggestion);
+    load(suggestion);
+    dismiss();
+  }
 
   function load(value: string) {
     const trimmed = value.trim();
@@ -83,6 +92,28 @@ export function ReferenceLinkField({
 
   return (
     <div>
+      {suggestion && (
+        <div className="mb-2 flex items-center gap-2 rounded-xl bg-accent/8 px-3 py-2">
+          <span className="min-w-0 flex-1 truncate text-xs text-ink-soft">
+            복사한 링크가 있어요: <span className="font-semibold text-ink">{suggestion}</span>
+          </span>
+          <button
+            type="button"
+            onClick={useSuggestion}
+            className="shrink-0 rounded-lg bg-accent px-2.5 py-1 text-xs font-bold text-white"
+          >
+            사용
+          </button>
+          <button
+            type="button"
+            onClick={dismiss}
+            aria-label="닫기"
+            className="shrink-0 text-xs text-ink-faint"
+          >
+            ×
+          </button>
+        </div>
+      )}
       <ClearableInput
         name={name}
         type="url"

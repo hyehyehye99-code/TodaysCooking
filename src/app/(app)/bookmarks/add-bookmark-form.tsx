@@ -5,13 +5,25 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { addBookmark } from "@/lib/actions/bookmarks";
 import { Modal } from "@/components/Modal";
 import { ClearableInput } from "@/components/ClearableInput";
+import { useClipboardLinkSuggestion } from "@/lib/useClipboardLinkSuggestion";
 
 export function AddBookmarkForm() {
   const [state, formAction, pending] = useActionState(addBookmark, undefined);
   const formRef = useRef<HTMLFormElement>(null);
+  const urlInputRef = useRef<HTMLInputElement>(null);
   const searchParams = useSearchParams();
   const router = useRouter();
   const open = searchParams.get("add") === "1";
+  const { suggestion, dismiss } = useClipboardLinkSuggestion("", open);
+
+  function useSuggestion() {
+    const input = urlInputRef.current;
+    if (!input || !suggestion) return;
+    const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value")?.set;
+    setter?.call(input, suggestion);
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+    dismiss();
+  }
 
   useEffect(() => {
     if (state?.success) {
@@ -43,7 +55,30 @@ export function AddBookmarkForm() {
         </div>
 
         <form ref={formRef} action={formAction} className="flex flex-col gap-3">
+          {suggestion && (
+            <div className="flex items-center gap-2 rounded-xl bg-accent/8 px-3 py-2">
+              <span className="min-w-0 flex-1 truncate text-xs text-ink-soft">
+                복사한 링크가 있어요: <span className="font-semibold text-ink">{suggestion}</span>
+              </span>
+              <button
+                type="button"
+                onClick={useSuggestion}
+                className="shrink-0 rounded-lg bg-accent px-2.5 py-1 text-xs font-bold text-white"
+              >
+                사용
+              </button>
+              <button
+                type="button"
+                onClick={dismiss}
+                aria-label="닫기"
+                className="shrink-0 text-xs text-ink-faint"
+              >
+                ×
+              </button>
+            </div>
+          )}
           <ClearableInput
+            ref={urlInputRef}
             name="url"
             required
             placeholder="링크를 붙여넣으세요"
