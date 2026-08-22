@@ -14,40 +14,36 @@ const SAMPLE_RECIPES = [
 const AI_INGREDIENTS = ["살치살 400g", "트러플 소금", "백후추", "올리브유", "통마늘", "방울 토마토", "양송이 버섯", "미니 아스파라거스", "와사비"];
 const AI_INSTRUCTIONS = "1. 키친타월로 핏물을 깔끔히 제거합니다.\n2. 소금 후추를 앞뒤로 발라 밑간을 합니다.\n3. 팬에 올리브 오일을 두르고 중약불로 고기를 구워줍니다.";
 
+function RecipeListDemo({ onNext }: { onNext: () => void }) {
+  return (
+    <GlassCard className="mx-auto w-full max-w-[280px] bg-white p-4">
+      <div className="mb-3 flex items-center justify-between">
+        <p className="text-[15px] font-bold text-ink">메뉴판</p>
+        <button type="button" onClick={onNext} className="text-xs font-bold text-accent">
+          + 새 메뉴
+        </button>
+      </div>
+      <div className="flex flex-col divide-y divide-border">
+        {SAMPLE_RECIPES.map((r) => (
+          <div key={r.name} className="flex items-center gap-2.5 py-2.5 first:pt-0 last:pb-0">
+            <div className="h-9 w-9 shrink-0 rounded-lg bg-surface" />
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-xs font-bold text-ink">{r.name}</p>
+              <p className="truncate text-[10px] text-ink-faint">{r.tag}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+    </GlassCard>
+  );
+}
+
 function RecipeCollectDemo() {
-  const [phase, setPhase] = useState<"list" | "form" | "loading" | "result">("list");
+  const [phase, setPhase] = useState<"form" | "loading" | "result">("form");
 
   function runAi() {
     setPhase("loading");
     setTimeout(() => setPhase("result"), 900);
-  }
-
-  if (phase === "list") {
-    return (
-      <GlassCard className="mx-auto w-full max-w-[280px] bg-white p-4">
-        <div className="mb-3 flex items-center justify-between">
-          <p className="text-[15px] font-bold text-ink">메뉴판</p>
-          <button
-            type="button"
-            onClick={() => setPhase("form")}
-            className="text-xs font-bold text-accent"
-          >
-            + 새 메뉴
-          </button>
-        </div>
-        <div className="flex flex-col divide-y divide-border">
-          {SAMPLE_RECIPES.map((r) => (
-            <div key={r.name} className="flex items-center gap-2.5 py-2.5 first:pt-0 last:pb-0">
-              <div className="h-9 w-9 shrink-0 rounded-lg bg-surface" />
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-xs font-bold text-ink">{r.name}</p>
-                <p className="truncate text-[10px] text-ink-faint">{r.tag}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </GlassCard>
-    );
   }
 
   return (
@@ -293,7 +289,12 @@ function HouseholdShareDemo() {
 const SLIDES = [
   {
     headline: "여기저기 흩어진 레시피, 한곳에 모아보세요",
-    subtext: "링크 하나만 넣으면 재료랑 만드는 법을 AI가 알아서 정리해줘요. 버튼을 눌러보세요",
+    subtext: "새 메뉴를 눌러 등록을 시작해보세요",
+    render: (onNext: () => void) => <RecipeListDemo onNext={onNext} />,
+  },
+  {
+    headline: "링크 하나만 넣으면 AI가 알아서 정리해줘요",
+    subtext: "AI로 재료·레시피 자동 작성 버튼을 눌러보세요",
     render: () => <RecipeCollectDemo />,
   },
   {
@@ -353,7 +354,7 @@ export default function WelcomePage() {
         <h1 className="mb-2 text-xl font-bold leading-snug text-ink">{slide.headline}</h1>
         <p className="mb-6 text-sm text-ink-soft">{slide.subtext}</p>
 
-        <div key={slideIndex}>{slide.render()}</div>
+        <div key={slideIndex}>{slide.render(() => setSlideIndex((i) => i + 1))}</div>
       </div>
 
       <div className="mt-6">
