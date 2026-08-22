@@ -104,7 +104,7 @@ export default async function ShoppingPage() {
                   </p>
                 )}
               </div>
-              <ShoppingItemLink name={item.name} />
+              <ShoppingItemLink id={item.id} name={item.name} checked={item.checked} />
               <form action={deleteShoppingItem}>
                 <input type="hidden" name="id" value={item.id} />
                 <button

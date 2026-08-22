@@ -1,10 +1,21 @@
 "use client";
 
 import { useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { getCoupangSearchLink } from "@/lib/actions/coupang";
+import { toggleShoppingItem } from "@/lib/actions/shopping";
 
-export function ShoppingItemLink({ name }: { name: string }) {
+export function ShoppingItemLink({
+  id,
+  name,
+  checked,
+}: {
+  id: string;
+  name: string;
+  checked: boolean;
+}) {
   const [, startTransition] = useTransition();
+  const router = useRouter();
 
   return (
     <button
@@ -16,8 +27,15 @@ export function ShoppingItemLink({ name }: { name: string }) {
         // popup in most browsers.
         const win = window.open("", "_blank");
         startTransition(async () => {
-          const { url } = await getCoupangSearchLink(name);
+          const formData = new FormData();
+          formData.set("id", id);
+          formData.set("nextChecked", (!checked).toString());
+          const [{ url }] = await Promise.all([
+            getCoupangSearchLink(name),
+            toggleShoppingItem(formData),
+          ]);
           if (win) win.location.href = url;
+          router.refresh();
         });
       }}
       className="shrink-0 rounded-lg border border-accent bg-white px-2.5 py-1.5 text-[11px] font-bold text-accent-ink"
