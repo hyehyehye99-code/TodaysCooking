@@ -3,9 +3,7 @@
 import { useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Capacitor } from "@capacitor/core";
-import { Browser } from "@capacitor/browser";
 import { toggleShoppingItem } from "@/lib/actions/shopping";
-import { getCoupangSearchLink } from "@/lib/actions/coupang";
 
 export function ShoppingItemLink({
   id,
@@ -29,19 +27,18 @@ export function ShoppingItemLink({
     });
   }
 
-  // In the native app, target="_blank" hands off to the system browser —
-  // which is also where /redirect/coupang's own client-side redirect would
-  // otherwise have to run, showing our own domain in Safari before it ever
-  // reaches Coupang. Skipping straight to the server action and opening the
-  // resulting URL in Capacitor's in-app browser cuts that hop entirely; the
-  // web PWA keeps the anchor-based flow that's already tuned for its quirks.
+  // In the native app, target="_blank" hands off to the system browser
+  // instead of Capacitor's in-app browser, so /redirect/coupang is reached
+  // via a normal same-webview navigation here — the page itself branches on
+  // Capacitor.isNativePlatform() to open the result via @capacitor/browser
+  // and bounce back, instead of window.location.replace()'ing to it.
   if (Capacitor.isNativePlatform()) {
     return (
       <button
         type="button"
         onClick={() => {
           toggleChecked();
-          getCoupangSearchLink(name).then(({ url }) => Browser.open({ url }));
+          router.push(`/redirect/coupang?name=${encodeURIComponent(name)}`);
         }}
         className="shrink-0 rounded-lg bg-surface px-2.5 py-1.5 text-[11px] font-bold text-ink-soft"
       >

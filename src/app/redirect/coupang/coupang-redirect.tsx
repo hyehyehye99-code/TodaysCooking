@@ -1,11 +1,14 @@
 "use client";
 
 import { useEffect } from "react";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Capacitor } from "@capacitor/core";
+import { Browser } from "@capacitor/browser";
 import { getCoupangSearchLink } from "@/lib/actions/coupang";
 
 export function CoupangRedirect() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const name = searchParams.get("name") ?? "";
 
   useEffect(() => {
@@ -15,6 +18,15 @@ export function CoupangRedirect() {
     getCoupangSearchLink(name).then(({ url }) => {
       if (cancelled) return;
       redirected = true;
+      // The native app opens the result in Capacitor's in-app browser and
+      // returns to /shopping itself, instead of navigating the WKWebView's
+      // own history to an external domain — allowNavigation would just
+      // kick that out to the system browser instead.
+      if (Capacitor.isNativePlatform()) {
+        Browser.open({ url });
+        router.replace("/shopping");
+        return;
+      }
       window.location.replace(url);
     });
 
@@ -36,7 +48,7 @@ export function CoupangRedirect() {
       cancelled = true;
       document.removeEventListener("visibilitychange", handleVisible);
     };
-  }, [name]);
+  }, [name, router]);
 
   return (
     <div className="mx-auto flex h-dvh w-full max-w-[420px] flex-col items-center justify-center px-7 text-center">
