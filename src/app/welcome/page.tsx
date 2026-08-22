@@ -1,89 +1,163 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
+import { GlassCard } from "@/components/ui";
+import { Modal } from "@/components/Modal";
 
-type Hotspot = { top: string; left: string };
-type Step = { image: string; hotspot?: Hotspot; auto?: boolean };
-type ImageSlide = {
-  kind: "images";
-  headline: string;
-  subtext: string;
-  steps: Step[];
-};
-type FridgeSlide = { kind: "fridge"; headline: string; subtext: string };
-type Slide = ImageSlide | FridgeSlide;
+const AI_INGREDIENTS = ["살치살 400g", "트러플 소금", "백후추", "올리브유", "통마늘", "방울 토마토", "양송이 버섯", "미니 아스파라거스", "와사비"];
+const AI_INSTRUCTIONS = "1. 키친타월로 핏물을 깔끔히 제거합니다.\n2. 소금 후추를 앞뒤로 발라 밑간을 합니다.\n3. 팬에 올리브 오일을 두르고 중약불로 고기를 구워줍니다.";
 
-const SLIDES: Slide[] = [
-  {
-    kind: "images",
-    headline: "여기저기 흩어진 레시피, 한곳에 모아보세요",
-    subtext: "링크 하나만 넣으면 재료랑 만드는 법을 AI가 알아서 정리해줘요",
-    steps: [
-      { image: "/onboarding/recipe-list.png", hotspot: { top: "20%", left: "82%" } },
-      { image: "/onboarding/new-recipe-form.png", hotspot: { top: "49%", left: "50%" } },
-      { image: "/onboarding/ai-loading.png", auto: true },
-      { image: "/onboarding/ai-result.png" },
-    ],
-  },
-  {
-    kind: "images",
-    headline: "부족한 재료는 장보기에 자동으로",
-    subtext: "장보기를 끝내면 냉장고에도 알아서 채워져요",
-    steps: [
-      { image: "/onboarding/recipe-detail-need-shopping.png", hotspot: { top: "51%", left: "50%" } },
-      { image: "/onboarding/missing-ingredients-modal.png", hotspot: { top: "88%", left: "74%" } },
-      { image: "/onboarding/recipe-detail-added.png", auto: true },
-      { image: "/onboarding/shopping-list.png" },
-    ],
-  },
-  {
-    kind: "fridge",
-    headline: "냉장고에 있는 재료, 탭 한 번으로 체크",
-    subtext: "직접 눌러보세요",
-  },
-  {
-    kind: "images",
-    headline: "가족과 함께 관리해요",
-    subtext: "부엌은 여럿이 같이 쓰고, 초대 링크로 간편하게 초대할 수 있어요",
-    steps: [
-      { image: "/onboarding/mypage-household.png", hotspot: { top: "50%", left: "84%" } },
-      { image: "/onboarding/invite-modal.png", hotspot: { top: "83%", left: "50%" } },
-      { image: "/onboarding/household-info-modal.png" },
-    ],
-  },
-];
+function RecipeCollectDemo() {
+  const [phase, setPhase] = useState<"form" | "loading" | "result">("form");
 
-const AUTO_ADVANCE_MS = 700;
+  function runAi() {
+    setPhase("loading");
+    setTimeout(() => setPhase("result"), 900);
+  }
 
-function Hotspot({ top, left }: Hotspot) {
   return (
-    <span
-      className="pointer-events-none absolute -translate-x-1/2 -translate-y-1/2"
-      style={{ top, left }}
-    >
-      <span className="absolute inset-0 m-auto h-10 w-10 animate-ping rounded-full bg-accent opacity-60" />
-      <span className="relative block h-5 w-5 rounded-full bg-accent" />
-    </span>
+    <GlassCard className="mx-auto w-full max-w-[280px] bg-white p-4">
+      <p className="mb-1 text-xs font-bold text-ink-soft">요리 이름</p>
+      <div className="mb-3 rounded-xl bg-surface px-3.5 py-2.5 text-sm font-bold text-ink">스테이크 굽는 법</div>
+
+      <p className="mb-1 text-xs font-bold text-ink-soft">참고 링크</p>
+      <div className="mb-3 rounded-xl bg-surface p-2.5">
+        <p className="mb-2 truncate text-xs text-ink-soft">youtube.com/shorts/ReaQrFMWh7c</p>
+        <div className="flex gap-2 rounded-lg bg-white p-1.5">
+          <div className="h-10 w-10 shrink-0 rounded-md bg-ink/10" />
+          <p className="line-clamp-2 text-[11px] leading-snug text-ink-soft">
+            인스타 200만뷰 라면보다 쉬운 스테이크 굽는 법! #shorts #스테이크
+          </p>
+        </div>
+      </div>
+
+      <button
+        type="button"
+        onClick={runAi}
+        disabled={phase !== "form"}
+        className="mb-3 w-full rounded-xl border border-accent py-2.5 text-xs font-bold text-accent-ink disabled:opacity-60"
+      >
+        {phase === "form" && "✨ AI로 재료·레시피 자동 작성"}
+        {phase === "loading" && "AI가 작성하는 중..."}
+        {phase === "result" && "✓ AI가 작성했어요"}
+      </button>
+
+      <p className="mb-1 text-xs font-bold text-ink-soft">재료</p>
+      <div className="min-h-[88px] rounded-xl bg-surface p-2.5 text-xs leading-relaxed text-ink">
+        {phase === "result" ? (
+          <div className="animate-fade-in-up flex flex-wrap gap-1.5">
+            {AI_INGREDIENTS.map((item) => (
+              <span key={item} className="rounded-full bg-white px-2.5 py-1 font-semibold text-ink">
+                {item}
+              </span>
+            ))}
+          </div>
+        ) : (
+          <span className="text-ink-faint">한 줄에 하나씩 입력해주세요</span>
+        )}
+      </div>
+
+      {phase === "result" && (
+        <div className="animate-fade-in-up mt-3">
+          <p className="mb-1 text-xs font-bold text-ink-soft">만드는법</p>
+          <p className="whitespace-pre-line rounded-xl bg-surface p-2.5 text-xs leading-relaxed text-ink">
+            {AI_INSTRUCTIONS}
+          </p>
+        </div>
+      )}
+    </GlassCard>
   );
 }
 
-function PhoneShot({ step, onAdvance }: { step: Step; onAdvance: () => void }) {
+const SHOPPING_ITEMS = ["살치살", "트러플 소금", "백후추", "통마늘", "방울 토마토", "양송이 버섯", "미니 아스파라거스"];
+
+const OWNED_INGREDIENTS = new Set(["방울 토마토", "와사비"]);
+
+function ShoppingSyncDemo() {
+  const [phase, setPhase] = useState<"detail" | "modal" | "done">("detail");
+
   return (
-    <div
-      role="button"
-      tabIndex={0}
-      onClick={onAdvance}
-      onKeyDown={(e) => {
-        if (e.key === "Enter" || e.key === " ") onAdvance();
-      }}
-      className="relative mx-auto w-full max-w-[240px] cursor-pointer select-none"
-      style={{ aspectRatio: "466 / 893" }}
-    >
-      <Image src={step.image} alt="" fill className="object-contain" draggable={false} priority />
-      {step.hotspot && <Hotspot {...step.hotspot} />}
-    </div>
+    <>
+      <GlassCard className="mx-auto w-full max-w-[280px] bg-white p-4">
+        <p className="mb-1 text-[15px] font-bold text-ink">스테이크 굽는 법</p>
+        <p className="mb-2 text-xs text-ink-soft">2/9 보유 중 · 재료</p>
+        <div className="mb-3 flex flex-wrap gap-1.5">
+          {AI_INGREDIENTS.map((item) => {
+            const isOwned = OWNED_INGREDIENTS.has(item);
+            const onList = phase === "done" && !isOwned;
+            return (
+              <span
+                key={item}
+                className={`rounded-full border px-2.5 py-1 text-[11px] font-semibold ${
+                  isOwned
+                    ? "border-accent bg-surface text-accent-ink"
+                    : onList
+                      ? "border-positive bg-surface text-positive-ink"
+                      : "border-transparent bg-surface text-ink-soft"
+                }`}
+              >
+                {item}
+              </span>
+            );
+          })}
+        </div>
+
+        {phase === "done" ? (
+          <div className="rounded-xl bg-surface py-2.5 text-center text-xs font-bold text-ink-faint">
+            장보기에 담겨 있어요
+          </div>
+        ) : (
+          <button
+            type="button"
+            onClick={() => setPhase("modal")}
+            className="w-full rounded-xl bg-accent py-2.5 text-xs font-bold text-white"
+          >
+            부족한 재료 장보기 담기
+          </button>
+        )}
+      </GlassCard>
+
+      {phase === "done" && (
+        <div className="animate-fade-in-up mx-auto mt-3 w-full max-w-[280px]">
+          <p className="mb-1.5 text-xs font-bold text-ink-soft">장보기</p>
+          <GlassCard className="bg-white p-3">
+            <div className="flex flex-col divide-y divide-border">
+              {SHOPPING_ITEMS.map((item) => (
+                <div key={item} className="flex items-center gap-2 py-2 first:pt-0 last:pb-0">
+                  <span className="h-4 w-4 shrink-0 rounded border border-border bg-surface" />
+                  <span className="text-xs font-semibold text-ink">{item}</span>
+                </div>
+              ))}
+            </div>
+          </GlassCard>
+        </div>
+      )}
+
+      <Modal open={phase === "modal"} onClose={() => setPhase("detail")} variant="sheet">
+        <div className="mx-auto w-full max-w-[420px] rounded-t-3xl bg-white p-5">
+          <p className="mb-1 text-[15px] font-bold">부족한 재료 확인</p>
+          <p className="mb-3 text-xs text-ink-soft">
+            이미 있는 재료는 냉장고로, 필요 없는 재료는 생략으로 표시하고, 나머지는 장보기에 담을게요.
+          </p>
+          <div className="mb-4 flex flex-col gap-2">
+            {SHOPPING_ITEMS.slice(0, 3).map((item) => (
+              <div key={item} className="flex items-center justify-between rounded-xl bg-surface px-3.5 py-2.5">
+                <span className="text-sm font-semibold">{item}</span>
+                <span className="rounded-md bg-accent px-2 py-1 text-[11px] font-bold text-white">구매 필요</span>
+              </div>
+            ))}
+          </div>
+          <button
+            type="button"
+            onClick={() => setPhase("done")}
+            className="w-full rounded-xl bg-accent py-3 text-sm font-bold text-white"
+          >
+            담기
+          </button>
+        </div>
+      </Modal>
+    </>
   );
 }
 
@@ -107,7 +181,7 @@ function FridgeDemo() {
   }
 
   return (
-    <div className="mx-auto w-full max-w-[280px] rounded-[28px] border border-border bg-white p-5 shadow-[0_20px_60px_-24px_rgba(25,31,40,0.25)]">
+    <GlassCard className="mx-auto w-full max-w-[280px] bg-white p-4">
       <p className="mb-4 text-xs text-ink-faint">탭하면 바로 추가되거나 빠져요</p>
       <div className="flex flex-col gap-4">
         {FRIDGE_CATEGORIES.map((cat) => (
@@ -133,39 +207,80 @@ function FridgeDemo() {
           </div>
         ))}
       </div>
-    </div>
+    </GlassCard>
   );
 }
 
+function HouseholdShareDemo() {
+  const [phase, setPhase] = useState<"mypage" | "invite" | "copied">("mypage");
+
+  return (
+    <>
+      <GlassCard className="mx-auto w-full max-w-[280px] bg-white p-4 ring-2 ring-accent">
+        <div className="mb-3 flex items-center justify-between">
+          <p className="text-sm font-bold text-ink">혜콩이네 🏠</p>
+          <span className="rounded-full bg-accent/10 px-2.5 py-1 text-[11px] font-bold text-accent">사용 중</span>
+        </div>
+        <div className="flex items-center justify-between">
+          <span className="text-xs text-ink-soft">참여 인원 2명</span>
+          <button
+            type="button"
+            onClick={() => setPhase("invite")}
+            className="rounded-lg bg-accent px-3 py-1.5 text-xs font-bold text-white"
+          >
+            초대하기
+          </button>
+        </div>
+      </GlassCard>
+
+      <Modal open={phase !== "mypage"} onClose={() => setPhase("mypage")} variant="sheet">
+        <div className="mx-auto w-full max-w-[420px] rounded-t-3xl bg-white p-5">
+          <p className="mb-1 text-[15px] font-bold">혜콩이네 🏠 에 초대하기</p>
+          <p className="mb-4 text-xs text-ink-soft">
+            링크를 보내면 상대방이 눌러서 로그인 후 바로 참여할 수 있어요.
+          </p>
+          <button
+            type="button"
+            onClick={() => setPhase("copied")}
+            className={`w-full rounded-xl py-3.5 text-sm font-bold ${
+              phase === "copied" ? "border border-accent bg-white text-accent-ink" : "bg-accent text-white"
+            }`}
+          >
+            {phase === "copied" ? "링크를 복사했어요!" : "초대 링크 복사하기"}
+          </button>
+        </div>
+      </Modal>
+    </>
+  );
+}
+
+const SLIDES = [
+  {
+    headline: "여기저기 흩어진 레시피, 한곳에 모아보세요",
+    subtext: "링크 하나만 넣으면 재료랑 만드는 법을 AI가 알아서 정리해줘요. 버튼을 눌러보세요",
+    render: () => <RecipeCollectDemo />,
+  },
+  {
+    headline: "부족한 재료는 장보기에 자동으로",
+    subtext: "장보기를 끝내면 냉장고에도 알아서 채워져요. 버튼을 눌러보세요",
+    render: () => <ShoppingSyncDemo />,
+  },
+  {
+    headline: "냉장고에 있는 재료, 탭 한 번으로 체크",
+    subtext: "직접 눌러보세요",
+    render: () => <FridgeDemo />,
+  },
+  {
+    headline: "가족과 함께 관리해요",
+    subtext: "부엌은 여럿이 같이 쓰고, 초대 링크로 간편하게 초대할 수 있어요",
+    render: () => <HouseholdShareDemo />,
+  },
+];
+
 export default function WelcomePage() {
   const [slideIndex, setSlideIndex] = useState(0);
-  const [stepIndex, setStepIndex] = useState(0);
   const slide = SLIDES[slideIndex];
   const isLast = slideIndex === SLIDES.length - 1;
-
-  const currentStep = slide.kind === "images" ? slide.steps[stepIndex] : null;
-
-  useEffect(() => {
-    if (!currentStep?.auto) return;
-    const timer = setTimeout(() => {
-      setStepIndex((i) => i + 1);
-    }, AUTO_ADVANCE_MS);
-    return () => clearTimeout(timer);
-  }, [currentStep]);
-
-  function goToSlide(next: number) {
-    setSlideIndex(next);
-    setStepIndex(0);
-  }
-
-  function advanceStep() {
-    if (slide.kind !== "images") return;
-    if (stepIndex < slide.steps.length - 1) {
-      setStepIndex((i) => i + 1);
-    }
-  }
-
-  const atLastStep = slide.kind === "fridge" || stepIndex === slide.steps.length - 1;
 
   return (
     <div className="mx-auto flex h-dvh w-full max-w-[420px] flex-col px-7 pt-[max(env(safe-area-inset-top),32px)] pb-[max(env(safe-area-inset-bottom),32px)]">
@@ -187,14 +302,11 @@ export default function WelcomePage() {
         <h1 className="mb-2 text-xl font-bold leading-snug text-ink">{slide.headline}</h1>
         <p className="mb-6 text-sm text-ink-soft">{slide.subtext}</p>
 
-        {slide.kind === "images" && currentStep && (
-          <PhoneShot step={currentStep} onAdvance={advanceStep} />
-        )}
-        {slide.kind === "fridge" && <FridgeDemo />}
+        {slide.render()}
       </div>
 
       <div className="mt-6">
-        {isLast && atLastStep ? (
+        {isLast ? (
           <Link
             href="/login"
             className="block w-full rounded-xl bg-accent py-4 text-center text-sm font-bold text-white"
@@ -204,9 +316,8 @@ export default function WelcomePage() {
         ) : (
           <button
             type="button"
-            onClick={() => goToSlide(slideIndex + 1)}
-            disabled={!atLastStep}
-            className="w-full rounded-xl bg-accent py-4 text-sm font-bold text-white disabled:opacity-40"
+            onClick={() => setSlideIndex((i) => i + 1)}
+            className="w-full rounded-xl bg-accent py-4 text-sm font-bold text-white"
           >
             다음
           </button>
