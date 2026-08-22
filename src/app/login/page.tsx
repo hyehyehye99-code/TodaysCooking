@@ -3,6 +3,7 @@ import { getCurrentHousehold } from "@/lib/household";
 import { BackButton } from "@/components/ui";
 import { GoogleSignInButton } from "./google-signin-button";
 import { AppleSignInButton } from "./apple-signin-button";
+import { KakaoSignInButton } from "./kakao-signin-button";
 
 export default async function LandingPage() {
   const { user, household } = await getCurrentHousehold();
@@ -32,6 +33,7 @@ export default async function LandingPage() {
         <div className="mt-10 flex flex-col gap-2.5">
           <GoogleSignInButton />
           <AppleSignInButton />
+          <KakaoSignInButton />
         </div>
       </div>
 

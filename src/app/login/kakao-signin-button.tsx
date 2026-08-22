@@ -4,13 +4,13 @@ import { useState } from "react";
 import { signInWithProvider } from "@/lib/oauth-signin";
 
 // Needs the "Kakao" provider configured in Supabase Auth (REST API key as
-// Client ID, Client Secret, and the redirect URI registered in the Kakao
-// Developers console) before this actually works. Supabase's GoTrue always
-// requests account_email for this provider regardless of the `scopes`
-// option passed here (it appends rather than overrides) — that scope 401s
-// with KOE205 until the Kakao app has gone through the "individual
-// developer business app" conversion, so that has to happen on Kakao's
-// side, not here.
+// Client ID, matching Client Secret Code, and the redirect URI registered
+// under [플랫폼 키] > [REST API 키] in the Kakao Developers console — not
+// under the 카카오 로그인 menu). Supabase's GoTrue always requests
+// account_email/profile_nickname/profile_image for this provider regardless
+// of the `scopes` option passed here (it appends rather than overrides), so
+// all three consent items must stay enabled on Kakao's side even though this
+// app doesn't read the nickname/avatar.
 export function KakaoSignInButton() {
   const [pending, setPending] = useState(false);
 
