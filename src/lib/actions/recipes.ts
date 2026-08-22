@@ -239,6 +239,18 @@ export async function deleteRecipe(formData: FormData) {
   redirect("/recipes");
 }
 
+// Used by the recipe list's 선택삭제 mode — unlike deleteRecipe (a single
+// detail-page delete that redirects away), this deletes several at once and
+// the caller is already on /recipes, so no redirect.
+export async function deleteRecipes(ids: string[]) {
+  if (ids.length === 0) return;
+
+  const supabase = await createClient();
+  await supabase.from("recipes").delete().in("id", ids);
+
+  revalidatePath("/recipes");
+}
+
 export async function resolveMissingIngredients(payload: {
   recipeId: string;
   shopping: string[];

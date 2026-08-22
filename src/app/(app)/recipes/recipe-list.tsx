@@ -4,8 +4,9 @@ import { useMemo, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { GlassCard } from "@/components/ui";
+import { Modal } from "@/components/Modal";
 import { RecipeThumb } from "@/components/RecipeThumb";
-import { reorderRecipes, toggleFavoriteRecipe } from "@/lib/actions/recipes";
+import { reorderRecipes, toggleFavoriteRecipe, deleteRecipes } from "@/lib/actions/recipes";
 import type { RecipeWithIngredients } from "@/lib/types";
 
 function FavoriteButton({ recipe }: { recipe: RecipeWithIngredients }) {
@@ -59,6 +60,10 @@ export function RecipeList({
   const dragStateRef = useRef<{ startY: number; rowHeight: number; index: number } | null>(null);
   const rowRefs = useRef<Map<string, HTMLDivElement>>(new Map());
   const [pending, startTransition] = useTransition();
+  const [selecting, setSelecting] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
+  const [deletePending, startDeleteTransition] = useTransition();
   const router = useRouter();
 
   const owned = useMemo(() => new Set(ownedIngredients), [ownedIngredients]);
@@ -133,6 +138,35 @@ export function RecipeList({
     });
   }
 
+  function startSelecting() {
+    setSelectedIds(new Set());
+    setSelecting(true);
+  }
+
+  function cancelSelecting() {
+    setSelecting(false);
+    setSelectedIds(new Set());
+  }
+
+  function toggleSelected(id: string) {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
+
+  function confirmDelete() {
+    startDeleteTransition(async () => {
+      await deleteRecipes([...selectedIds]);
+      setConfirmingDelete(false);
+      setSelecting(false);
+      setSelectedIds(new Set());
+      router.refresh();
+    });
+  }
+
   return (
     <div>
       {reordering ? (
@@ -152,6 +186,28 @@ export function RecipeList({
             {pending ? "저장 중..." : "완료"}
           </button>
         </div>
+      ) : selecting ? (
+        <div className="mb-4 flex items-center justify-between gap-2">
+          <span className="text-xs font-bold text-ink-soft">
+            {selectedIds.size > 0 ? `${selectedIds.size}개 선택됨` : "삭제할 메뉴를 선택하세요"}
+          </span>
+          <div className="flex gap-2">
+            <button
+              onClick={cancelSelecting}
+              disabled={deletePending}
+              className="rounded-lg bg-surface px-3 py-1.5 text-xs font-bold text-ink-soft disabled:opacity-60"
+            >
+              취소
+            </button>
+            <button
+              onClick={() => setConfirmingDelete(true)}
+              disabled={selectedIds.size === 0 || deletePending}
+              className="rounded-lg bg-warn px-3 py-1.5 text-xs font-bold text-white disabled:opacity-40"
+            >
+              삭제
+            </button>
+          </div>
+        </div>
       ) : (
         <div className="mb-4 flex gap-2">
           <input
@@ -161,23 +217,39 @@ export function RecipeList({
             className="min-w-0 flex-1 rounded-xl border border-transparent bg-surface px-3.5 py-2.5 text-sm outline-none focus:border-accent"
           />
           {recipes.length > 1 && (
+            <>
             <button
               onClick={startReorder}
               aria-label="순서 변경"
               className="flex h-[42px] w-[42px] shrink-0 items-center justify-center rounded-xl bg-surface text-ink-soft"
             >
-              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M8 7l4-4 4 4" />
-                <path d="M12 3v14" />
-                <path d="M16 17l-4 4-4-4" />
-                <path d="M12 21V7" />
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                <circle cx="9" cy="6" r="1.4" />
+                <circle cx="15" cy="6" r="1.4" />
+                <circle cx="9" cy="12" r="1.4" />
+                <circle cx="15" cy="12" r="1.4" />
+                <circle cx="9" cy="18" r="1.4" />
+                <circle cx="15" cy="18" r="1.4" />
               </svg>
             </button>
+            <button
+              onClick={startSelecting}
+              aria-label="선택 삭제"
+              className="flex h-[42px] w-[42px] shrink-0 items-center justify-center rounded-xl bg-surface text-ink-soft"
+            >
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M4 7h16" />
+                <path d="M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
+                <path d="M6 7l1 12.5a1.5 1.5 0 0 0 1.5 1.5h7a1.5 1.5 0 0 0 1.5-1.5L18 7" />
+                <path d="M10 11v6M14 11v6" />
+              </svg>
+            </button>
+            </>
           )}
         </div>
       )}
 
-      {!reordering && (recipes.length > 0 || allTags.length > 0) && (
+      {!reordering && !selecting && (recipes.length > 0 || allTags.length > 0) && (
         <div className="mb-4 flex flex-wrap gap-1.5">
           <button
             onClick={() => setActiveTag(null)}
@@ -221,7 +293,7 @@ export function RecipeList({
         </div>
       )}
 
-      {!reordering && filtered.length === 0 && (
+      {!reordering && !selecting && filtered.length === 0 && (
         <p className="mt-10 text-center text-sm text-ink-soft">
           {recipes.length === 0
             ? "아직 등록된 메뉴가 없어요. 첫 메뉴를 등록해보세요."
@@ -280,6 +352,44 @@ export function RecipeList({
             );
           })}
         </div>
+      ) : selecting ? (
+        <div className="flex flex-col gap-3">
+          {recipes.map((recipe) => {
+            const checked = selectedIds.has(recipe.id);
+            return (
+              <button
+                key={recipe.id}
+                type="button"
+                onClick={() => toggleSelected(recipe.id)}
+                className="block w-full text-left"
+              >
+                <GlassCard
+                  className={`flex items-center gap-3 p-3.5 ${checked ? "bg-accent/8 ring-2 ring-accent" : "bg-white"}`}
+                >
+                  <RecipeThumb
+                    coverPhotoUrl={recipe.cover_photo_urls[0]}
+                    iconEmoji={recipe.icon_emoji}
+                    linkThumbnailUrl={recipe.bookmarks?.[0]?.thumbnail_url}
+                  />
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[15px] font-bold">{recipe.title}</p>
+                  </div>
+                  <div
+                    className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 ${
+                      checked ? "border-accent bg-accent" : "border-border bg-white"
+                    }`}
+                  >
+                    {checked && (
+                      <svg viewBox="0 0 14 14" width="10" height="10" fill="none" stroke="#fff" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M2.5 7.5l3 3 6-7" />
+                      </svg>
+                    )}
+                  </div>
+                </GlassCard>
+              </button>
+            );
+          })}
+        </div>
       ) : (
         <div className="flex flex-col gap-3">
           {filtered.map((recipe) => {
@@ -324,6 +434,30 @@ export function RecipeList({
           })}
         </div>
       )}
+
+      <Modal open={confirmingDelete} onClose={() => setConfirmingDelete(false)} variant="center">
+        <div className="mx-auto w-full max-w-[360px] rounded-2xl bg-white p-5 shadow-xl">
+          <p className="text-sm font-bold text-ink">선택한 메뉴 {selectedIds.size}개를 삭제할까요?</p>
+          <p className="mt-2 text-xs text-ink-soft">삭제하면 되돌릴 수 없어요. 재료와 메모도 함께 사라져요.</p>
+          <div className="mt-4 flex justify-end gap-2">
+            <button
+              type="button"
+              onClick={() => setConfirmingDelete(false)}
+              className="rounded-lg bg-surface px-3.5 py-2 text-xs font-bold text-ink-soft"
+            >
+              취소
+            </button>
+            <button
+              type="button"
+              onClick={confirmDelete}
+              disabled={deletePending}
+              className="rounded-lg bg-warn px-3.5 py-2 text-xs font-bold text-white disabled:opacity-60"
+            >
+              {deletePending ? "삭제 중..." : "삭제"}
+            </button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }
