@@ -11,7 +11,6 @@ import { getUnreadNotificationCount } from "@/lib/actions/notifications";
 // TODO: replace with the real pages once they exist.
 const PRIVACY_POLICY_URL = "#";
 const CONTACT_URL = "#";
-const ABOUT_URL = "#";
 
 type Member = { user_id: string; nickname: string; icon_emoji: string | null; role: string; joined_at: string };
 
@@ -155,17 +154,15 @@ export default async function MyPage() {
 
       <GlassCard className="bg-white">
         <div className="divide-y divide-border">
-          <a
-            href={ABOUT_URL}
-            target="_blank"
-            rel="noopener noreferrer"
+          <Link
+            href="/mypage/about"
             className="flex items-center justify-between px-4 py-4 text-sm font-semibold text-ink"
           >
             소개
             <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--color-ink-faint)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M9 6l6 6-6 6" />
             </svg>
-          </a>
+          </Link>
           <a
             href={CONTACT_URL}
             target="_blank"
