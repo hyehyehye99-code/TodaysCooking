@@ -1,10 +1,11 @@
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentHousehold } from "@/lib/household";
 import { GlassCard, ProgressBar } from "@/components/ui";
-import { addShoppingItem, setAllShoppingItemsChecked } from "@/lib/actions/shopping";
+import { addShoppingItem } from "@/lib/actions/shopping";
 import type { ShoppingItem } from "@/lib/types";
 import { FinishShoppingBar } from "./finish-shopping-bar";
 import { ShoppingItemRow } from "./shopping-item-row";
+import { ShoppingBulkActions } from "./shopping-bulk-actions";
 
 export default async function ShoppingPage() {
   const { household } = await getCurrentHousehold();
@@ -59,14 +60,7 @@ export default async function ShoppingPage() {
         </p>
       ) : (
         <>
-          <div className="mt-6 mb-4 flex items-center justify-end">
-            <form action={setAllShoppingItemsChecked}>
-              <input type="hidden" name="checked" value={(!allChecked).toString()} />
-              <button type="submit" className="px-4 py-2 text-xs font-bold text-ink-soft">
-                {allChecked ? "전체 해제" : "전체 선택"}
-              </button>
-            </form>
-          </div>
+          <ShoppingBulkActions doneCount={doneCount} allChecked={allChecked} />
           <div className="flex flex-col">
             {items.map((item) => (
               <ShoppingItemRow key={item.id} item={item} />
