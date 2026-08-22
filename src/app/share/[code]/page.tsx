@@ -24,8 +24,10 @@ export default async function SharePage({ params }: { params: Promise<{ code: st
   const supabase = await createClient();
 
   const shell = (content: React.ReactNode) => (
-    <div className="mx-auto min-h-dvh w-full max-w-[520px] px-5 pt-[max(env(safe-area-inset-top),24px)] pb-[max(env(safe-area-inset-bottom),40px)]">
-      {content}
+    <div className="h-dvh w-full overflow-y-auto overscroll-contain">
+      <div className="mx-auto w-full max-w-[520px] px-5 pt-[max(env(safe-area-inset-top),24px)] pb-[max(env(safe-area-inset-bottom),40px)]">
+        {content}
+      </div>
     </div>
   );
 
@@ -74,7 +76,6 @@ export default async function SharePage({ params }: { params: Promise<{ code: st
 
       <div className="pb-6 text-center">
         <h1 className="text-2xl font-bold">{household.name}</h1>
-        <p className="mt-1.5 text-sm text-ink-soft">{household.name}의 메뉴판이에요</p>
       </div>
 
       {list.length === 0 ? (

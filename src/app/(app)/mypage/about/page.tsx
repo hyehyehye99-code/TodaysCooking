@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { GlassCard } from "@/components/ui";
+import { BackButton, GlassCard } from "@/components/ui";
 
 const FEATURES = [
   {
@@ -37,18 +37,9 @@ const FEATURES = [
 export default function AboutPage() {
   return (
     <div className="pt-2">
-      <div className="mb-5 flex items-center justify-between">
+      <div className="mb-5 flex items-center gap-3">
+        <BackButton href="/mypage" />
         <h1 className="text-[22px] font-bold">소개</h1>
-        <Link
-          href="/mypage"
-          aria-label="닫기"
-          className="flex h-8 w-8 items-center justify-center rounded-full bg-surface text-ink"
-        >
-          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M18 6L6 18" />
-            <path d="M6 6l12 12" />
-          </svg>
-        </Link>
       </div>
 
       <div className="mb-8 flex flex-col items-center text-center">

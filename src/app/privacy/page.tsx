@@ -4,7 +4,7 @@ export default function PrivacyPage() {
   return (
     <div className="mx-auto w-full max-w-[520px] px-6 pb-16 pt-[max(env(safe-area-inset-top),24px)]">
       <div className="mb-5 flex items-center gap-3">
-        <BackButton href="/login" />
+        <BackButton href="/mypage" />
         <h1 className="text-lg font-bold text-ink">개인정보처리방침</h1>
       </div>
 
