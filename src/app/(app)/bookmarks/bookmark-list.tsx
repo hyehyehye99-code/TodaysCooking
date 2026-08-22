@@ -53,14 +53,14 @@ function BookmarkNote({ id, note }: { id: string; note: string | null }) {
     );
   }
 
-  if (note) {
+  if (value) {
     return (
       <button
         type="button"
         onClick={() => setEditing(true)}
         className="block w-full truncate border-t border-border pt-2 text-left text-xs text-ink-soft"
       >
-        {note}
+        {value}
       </button>
     );
   }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useTransition } from "react";
+import { useMemo, useOptimistic, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { GlassCard } from "@/components/ui";
@@ -11,6 +11,7 @@ import { useDragReorder } from "@/lib/useDragReorder";
 import type { RecipeWithIngredients } from "@/lib/types";
 
 function FavoriteButton({ recipe }: { recipe: RecipeWithIngredients }) {
+  const [optimisticFavorite, setOptimisticFavorite] = useOptimistic(recipe.is_favorite);
   const [, startTransition] = useTransition();
   const router = useRouter();
 
@@ -20,8 +21,10 @@ function FavoriteButton({ recipe }: { recipe: RecipeWithIngredients }) {
       onClick={(e) => {
         e.preventDefault();
         e.stopPropagation();
+        const next = !optimisticFavorite;
         startTransition(async () => {
-          await toggleFavoriteRecipe(recipe.id, !recipe.is_favorite);
+          setOptimisticFavorite(next);
+          await toggleFavoriteRecipe(recipe.id, next);
           router.refresh();
         });
       }}
@@ -32,8 +35,8 @@ function FavoriteButton({ recipe }: { recipe: RecipeWithIngredients }) {
         viewBox="0 0 24 24"
         width="19"
         height="19"
-        fill={recipe.is_favorite ? "var(--color-warn)" : "none"}
-        stroke={recipe.is_favorite ? "var(--color-warn)" : "var(--color-ink-faint)"}
+        fill={optimisticFavorite ? "var(--color-warn)" : "none"}
+        stroke={optimisticFavorite ? "var(--color-warn)" : "var(--color-ink-faint)"}
         strokeWidth="1.8"
         strokeLinecap="round"
         strokeLinejoin="round"

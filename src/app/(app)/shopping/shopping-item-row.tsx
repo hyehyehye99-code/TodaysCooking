@@ -20,6 +20,7 @@ export function ShoppingItemRow({ item }: { item: ShoppingItem }) {
     captured: boolean;
   } | null>(null);
   const [optimisticChecked, setOptimisticChecked] = useOptimistic(item.checked);
+  const [hidden, setHidden] = useState(false);
   const [, startToggleTransition] = useTransition();
   const [deletePending, startDeleteTransition] = useTransition();
   const router = useRouter();
@@ -94,6 +95,7 @@ export function ShoppingItemRow({ item }: { item: ShoppingItem }) {
   }
 
   function handleDelete() {
+    setHidden(true);
     startDeleteTransition(async () => {
       const formData = new FormData();
       formData.set("id", item.id);
@@ -101,6 +103,8 @@ export function ShoppingItemRow({ item }: { item: ShoppingItem }) {
       router.refresh();
     });
   }
+
+  if (hidden) return null;
 
   return (
     <div ref={containerRef} className="relative overflow-hidden border-b border-border">
