@@ -1,7 +1,14 @@
 "use client";
 
 import { useEffect, useState, useSyncExternalStore } from "react";
-import { savePushSubscription, removePushSubscription } from "@/lib/actions/push";
+import { Capacitor } from "@capacitor/core";
+import { FirebaseMessaging } from "@capacitor-firebase/messaging";
+import {
+  savePushSubscription,
+  removePushSubscription,
+  saveFcmToken,
+  removeFcmToken,
+} from "@/lib/actions/push";
 
 const VAPID_PUBLIC_KEY = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY ?? "";
 
@@ -16,25 +23,59 @@ function subscribeNever() {
   return () => {};
 }
 
-// PushManager isn't available during SSR, and on iOS Safari it's only
-// present at all once the page has been added to the home screen — so this
-// has to be checked client-side only, with a false server snapshot.
-function getSupportedSnapshot() {
-  return typeof window !== "undefined" && "serviceWorker" in navigator && "PushManager" in window;
+// Both checks need the same false-during-SSR/true-after-hydration dance:
+// Capacitor.isNativePlatform() reads `window.Capacitor`, which doesn't
+// exist during server rendering (that always runs in plain Node, even for
+// requests the native app itself makes) — evaluating it directly in render
+// would mismatch against the real client value once hydrated.
+function getIsNativeSnapshot() {
+  return Capacitor.isNativePlatform();
+}
+function getIsNativeServerSnapshot() {
+  return false;
 }
 
-function getSupportedServerSnapshot() {
+// PushManager isn't available during SSR, and on iOS Safari it's only
+// present at all once the page has been added to the home screen.
+function getWebSupportedSnapshot() {
+  return typeof window !== "undefined" && "serviceWorker" in navigator && "PushManager" in window;
+}
+function getWebSupportedServerSnapshot() {
   return false;
 }
 
 type Status = "checking" | "off" | "denied" | "on" | "working";
 
 export function PushNotificationToggle() {
-  const supported = useSyncExternalStore(subscribeNever, getSupportedSnapshot, getSupportedServerSnapshot);
+  const isNative = useSyncExternalStore(subscribeNever, getIsNativeSnapshot, getIsNativeServerSnapshot);
+  const webSupported = useSyncExternalStore(
+    subscribeNever,
+    getWebSupportedSnapshot,
+    getWebSupportedServerSnapshot
+  );
   const [status, setStatus] = useState<Status>("checking");
+  const [fcmToken, setFcmToken] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!supported) return;
+    if (isNative) {
+      (async () => {
+        const { receive } = await FirebaseMessaging.checkPermissions();
+        if (receive === "denied") {
+          setStatus("denied");
+          return;
+        }
+        if (receive === "granted") {
+          const { token } = await FirebaseMessaging.getToken();
+          setFcmToken(token);
+          setStatus("on");
+        } else {
+          setStatus("off");
+        }
+      })();
+      return;
+    }
+
+    if (!webSupported) return;
     (async () => {
       if (Notification.permission === "denied") {
         setStatus("denied");
@@ -44,11 +85,24 @@ export function PushNotificationToggle() {
       const subscription = await registration?.pushManager.getSubscription();
       setStatus(subscription ? "on" : "off");
     })();
-  }, [supported]);
+  }, [isNative, webSupported]);
 
   async function enable() {
     setStatus("working");
     try {
+      if (isNative) {
+        const { receive } = await FirebaseMessaging.requestPermissions();
+        if (receive !== "granted") {
+          setStatus(receive === "denied" ? "denied" : "off");
+          return;
+        }
+        const { token } = await FirebaseMessaging.getToken();
+        setFcmToken(token);
+        await saveFcmToken(token);
+        setStatus("on");
+        return;
+      }
+
       const permission = await Notification.requestPermission();
       if (permission !== "granted") {
         setStatus(permission === "denied" ? "denied" : "off");
@@ -80,6 +134,13 @@ export function PushNotificationToggle() {
   async function disable() {
     setStatus("working");
     try {
+      if (isNative) {
+        if (fcmToken) await removeFcmToken(fcmToken);
+        await FirebaseMessaging.deleteToken();
+        setFcmToken(null);
+        return;
+      }
+
       const registration = await navigator.serviceWorker.getRegistration();
       const subscription = await registration?.pushManager.getSubscription();
       if (subscription) {
@@ -91,6 +152,7 @@ export function PushNotificationToggle() {
     }
   }
 
+  const supported = isNative || webSupported;
   if (!supported || status === "checking") return null;
 
   return (
@@ -99,7 +161,7 @@ export function PushNotificationToggle() {
         <p className="text-sm font-semibold text-ink">알림</p>
         <p className="mt-0.5 text-xs text-ink-soft">
           {status === "denied"
-            ? "브라우저 설정에서 알림 권한을 허용해주세요."
+            ? "설정에서 알림 권한을 허용해주세요."
             : "다른 가족이 장보기에 항목을 추가하면 알려드려요."}
         </p>
       </div>
