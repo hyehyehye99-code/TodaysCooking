@@ -1,7 +1,7 @@
 "use client";
 
-import { useRef, useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useRef, useState, useTransition } from "react";
+import { usePathname, useRouter } from "next/navigation";
 
 const PULL_THRESHOLD = 64;
 const MAX_PULL = 90;
@@ -20,6 +20,15 @@ export function PullToRefresh({
   const [dragging, setDragging] = useState(false);
   const [pending, startTransition] = useTransition();
   const router = useRouter();
+  const pathname = usePathname();
+
+  // This container is a single persistent DOM node shared across every
+  // route in the (app) group — only `children` swaps on navigation, so
+  // without this its scrollTop otherwise carries over from whatever tab
+  // was scrolled last, instead of each screen starting at the top.
+  useEffect(() => {
+    containerRef.current?.scrollTo(0, 0);
+  }, [pathname]);
 
   function handleTouchStart(e: React.TouchEvent) {
     const el = containerRef.current;
