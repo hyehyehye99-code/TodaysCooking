@@ -144,5 +144,9 @@ export async function deleteMyAccount(): Promise<{ error: string } | never> {
   if (error) return { error: "탈퇴하지 못했어요. 다시 시도해주세요." };
 
   await supabase.auth.signOut();
+  // Same leftover-cookie issue signOut() (lib/actions/auth.ts) guards
+  // against — this path signs out directly instead of going through it.
+  const cookieStore = await cookies();
+  cookieStore.delete(ACTIVE_HOUSEHOLD_COOKIE);
   redirect("/login");
 }
