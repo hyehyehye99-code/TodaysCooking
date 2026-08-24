@@ -19,18 +19,6 @@ const config: CapacitorConfig = {
     // gets treated as "external" and kicked out to Safari.
     allowNavigation: ["ourhomemenu.vercel.app"],
   },
-  plugins: {
-    // launchAutoHide: false + manual .hide() (see SplashScreenBridge) keeps
-    // the splash image up for the whole time the WKWebView is fetching and
-    // rendering the remote page. With auto-hide, the default duration was
-    // shorter than that fetch, so the splash disappeared into a blank white
-    // webview before there was anything to show — reading as "no splash".
-    SplashScreen: {
-      launchAutoHide: false,
-      backgroundColor: "#ffffff",
-      showSpinner: false,
-    },
-  },
 };
 
 export default config;
