@@ -6,6 +6,7 @@ const HIGHLIGHT_FEATURES = [
   {
     title: "AI가 재료·레시피를 대신 정리해요",
     description: "유튜브·인스타·블로그 링크만 넣으면 재료와 만드는 법을 AI가 알아서 정리해요. 손으로 옮겨 적을 필요 없어요.",
+    screenshot: "/screenshots/recipe-add-ai.png",
     icon: (
       <svg width="22" height="22" viewBox="0 0 22 22" fill="none" aria-hidden="true">
         <path
@@ -22,6 +23,7 @@ const HIGHLIGHT_FEATURES = [
   {
     title: "부족한 재료는 장보기로, 장보기는 다시 냉장고로",
     description: "레시피에 부족한 재료를 누르면 장보기 목록에 자동으로 담기고, 장보기를 끝내면 냉장고에도 알아서 반영돼요.",
+    screenshot: "/screenshots/ingredient-check.png",
     icon: (
       <svg width="22" height="22" viewBox="0 0 22 22" fill="none" aria-hidden="true">
         <path
@@ -37,6 +39,7 @@ const HIGHLIGHT_FEATURES = [
   {
     title: "가족과 함께 쓰는 부엌",
     description: "초대 코드 하나로 가족을 부엌에 초대해요. 레시피도, 냉장고도, 장보기 목록도 다 같이 봐요.",
+    screenshot: "/screenshots/shared-kitchen.png",
     icon: (
       <svg width="22" height="22" viewBox="0 0 22 22" fill="none" aria-hidden="true">
         <circle cx="8" cy="7" r="3" stroke="currentColor" strokeWidth="1.75" />
@@ -52,6 +55,7 @@ const MORE_FEATURES = [
   {
     title: "냉장고, 탭 한 번이면 끝",
     description: "지금 냉장고에 뭐가 있는지 탭 한 번으로 체크해요. 뭘 사야 할지 매번 고민할 필요 없어요.",
+    screenshot: "/screenshots/fridge.png",
     icon: (
       <svg width="22" height="22" viewBox="0 0 22 22" fill="none" aria-hidden="true">
         <rect x="5" y="3" width="12" height="16" rx="2" stroke="currentColor" strokeWidth="1.75" />
@@ -63,6 +67,7 @@ const MORE_FEATURES = [
   {
     title: "가족이 장을 봤는지, 알림으로 바로 확인",
     description: "누가 장보기에 뭘 추가했는지, 장보기를 끝냈는지 알림으로 바로 알려드려요.",
+    screenshot: "/screenshots/shopping.png",
     icon: (
       <svg width="22" height="22" viewBox="0 0 22 22" fill="none" aria-hidden="true">
         <path
@@ -78,6 +83,7 @@ const MORE_FEATURES = [
   {
     title: "메뉴판을 자랑해보세요",
     description: "메뉴판을 공개 링크로 공유하고, 방문자의 하트 반응도 받아볼 수 있어요.",
+    screenshot: "/screenshots/recipe-list.png",
     icon: (
       <svg width="22" height="22" viewBox="0 0 22 22" fill="none" aria-hidden="true">
         <path
@@ -145,14 +151,12 @@ export default async function LandingPage() {
         <div className="mx-auto w-full max-w-[300px]">
           <div className="rounded-[32px] border border-border bg-cream p-5 shadow-[0_20px_60px_-24px_rgba(25,31,40,0.25)]">
             <p className="mb-4 text-xs font-bold text-ink-faint">오늘의 냉장고</p>
-            <div className="flex aspect-[3/4] w-full flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-border bg-surface text-ink-faint">
-              <svg width="28" height="28" viewBox="0 0 22 22" fill="none" aria-hidden="true">
-                <rect x="2.5" y="3.5" width="17" height="15" rx="2" stroke="currentColor" strokeWidth="1.5" />
-                <circle cx="7.5" cy="8.5" r="1.5" stroke="currentColor" strokeWidth="1.5" />
-                <path d="M4 15.5l4.5-4.5 3 3 2.5-2.5 4 4" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
-              </svg>
-              <span className="text-xs font-semibold">스크린샷 자리</span>
-            </div>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/screenshots/fridge.png"
+              alt="냉장고 화면 스크린샷"
+              className="aspect-[466/893] w-full rounded-2xl object-cover"
+            />
           </div>
         </div>
       </section>
@@ -199,13 +203,13 @@ export default async function LandingPage() {
                   </p>
                 </div>
                 <div className="w-full md:flex-1">
-                  <div className="mx-auto flex aspect-[3/4] w-full max-w-[280px] flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-border bg-surface text-ink-faint">
-                    <svg width="28" height="28" viewBox="0 0 22 22" fill="none" aria-hidden="true">
-                      <rect x="2.5" y="3.5" width="17" height="15" rx="2" stroke="currentColor" strokeWidth="1.5" />
-                      <circle cx="7.5" cy="8.5" r="1.5" stroke="currentColor" strokeWidth="1.5" />
-                      <path d="M4 15.5l4.5-4.5 3 3 2.5-2.5 4 4" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
-                    </svg>
-                    <span className="text-xs font-semibold">스크린샷 자리</span>
+                  <div className="mx-auto w-full max-w-[280px] rounded-[28px] border border-border bg-cream p-3 shadow-[0_20px_60px_-24px_rgba(25,31,40,0.25)]">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={f.screenshot}
+                      alt={`${f.title} 스크린샷`}
+                      className="aspect-[466/893] w-full rounded-2xl object-cover"
+                    />
                   </div>
                 </div>
               </div>
@@ -214,12 +218,20 @@ export default async function LandingPage() {
 
           <div className="mt-20 grid gap-5 sm:grid-cols-3">
             {MORE_FEATURES.map((f) => (
-              <div key={f.title} className="rounded-2xl border border-border bg-cream p-6">
-                <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-full bg-accent/10 text-accent">
-                  {f.icon}
+              <div key={f.title} className="overflow-hidden rounded-2xl border border-border bg-cream">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={f.screenshot}
+                  alt={`${f.title} 스크린샷`}
+                  className="aspect-[4/3] w-full object-cover object-top"
+                />
+                <div className="p-6">
+                  <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-full bg-accent/10 text-accent">
+                    {f.icon}
+                  </div>
+                  <h3 className="text-base font-bold text-ink">{f.title}</h3>
+                  <p className="mt-2 text-sm leading-relaxed text-ink-soft">{f.description}</p>
                 </div>
-                <h3 className="text-base font-bold text-ink">{f.title}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-ink-soft">{f.description}</p>
               </div>
             ))}
           </div>
