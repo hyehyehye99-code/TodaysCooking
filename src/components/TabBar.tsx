@@ -11,7 +11,7 @@ import { usePathname } from "next/navigation";
 const TABS = [
   {
     href: "/recipes",
-    label: "메뉴판",
+    label: "레시피",
     cx: 12,
     cy: 12,
     scale: 1,

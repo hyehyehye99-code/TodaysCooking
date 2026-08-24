@@ -8,7 +8,7 @@ import { switchHousehold } from "@/lib/actions/household";
 type HouseholdOption = { id: string; name: string };
 
 const TAB_TITLES: Record<string, string> = {
-  "/recipes": "메뉴판",
+  "/recipes": "레시피",
   "/fridge": "냉장고",
   "/bookmarks": "보관함",
   "/shopping": "장보기",

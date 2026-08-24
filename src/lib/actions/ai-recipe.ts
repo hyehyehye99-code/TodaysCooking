@@ -4,10 +4,16 @@ import { GoogleGenAI, Type } from "@google/genai";
 import { createClient } from "@/lib/supabase/server";
 import { fetchLinkPreview } from "@/lib/actions/link-preview";
 import { extractYoutubeVideoId, fetchYoutubeVideoDetails } from "@/lib/actions/youtube";
+import { getCurrentHousehold } from "@/lib/household";
 
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
-const DAILY_LIMIT = 20;
+// Rolling 30-day window, not calendar-month — avoids a reset-day edge case
+// and keeps the same "since" query shape the anti-abuse cap already used.
+const FREE_MONTHLY_LIMIT = 5;
+// Premium isn't literally unlimited — Gemini calls cost money per request
+// even for subscribers, so this stays a (generous) safety cap.
+const PREMIUM_MONTHLY_LIMIT = 200;
 
 // Comma-separated emails (e.g. in .env.local) that skip the daily cap
 // entirely — for the developer's own test account.
@@ -34,22 +40,32 @@ const RECIPE_SCHEMA = {
         properties: {
           name: {
             type: Type.STRING,
-            description: "재료 이름만. 용량·수량은 절대 포함하지 마. 예: '돼지고기', '신김치'.",
+            description:
+              "재료 이름만. 용량·수량은 절대 포함하지 마. 예: '돼지고기', '신김치'. " +
+              "실제로 언급되거나 화면/설명에 나온 재료만 적어 — 비슷한 요리에 흔히 들어간다는 " +
+              "이유로 언급되지 않은 재료를 지어내서 추가하지 마.",
           },
           amount: {
             type: Type.STRING,
-            description: "용량이나 수량만. 예: '200g', '2컵', '1큰술'. 알 수 없으면 빈 문자열.",
+            description:
+              "용량이나 수량만. 예: '200g', '2컵', '1큰술'. 분량이 실제로 언급되지 않았으면 " +
+              "절대 임의로 추측해서 채우지 말고 반드시 빈 문자열로 둬.",
           },
         },
         required: ["name", "amount"],
       },
       description:
-        "재료 목록. 냉장고·장보기 목록의 재료명과 그대로 매칭돼야 하므로, name에는 반드시 이름만 넣고 amount에 용량을 분리해서 넣어. isRecipe가 false면 빈 배열.",
+        "재료 목록. 냉장고·장보기 목록의 재료명과 그대로 매칭돼야 하므로, name에는 반드시 이름만 넣고 " +
+        "amount에 용량을 분리해서 넣어. 실제로 쓰인 재료만 정확히 담고, 없는 재료를 지어내거나 " +
+        "중복으로 넣지 마. isRecipe가 false면 빈 배열.",
     },
     instructions: {
       type: Type.STRING,
       description:
-        "만드는 법. '1. ...' 형태로 번호를 매긴 단계들을 실제 줄바꿈 문자(\\n)로 구분한 한국어 텍스트. 한 줄에 한 단계씩. isRecipe가 false면 빈 문자열.",
+        "만드는 법. 형식보다 정확도가 우선이야 — 원문에 있는 조리 순서와 방법을 빠짐없이, " +
+        "사실과 다르지 않게 옮겨. '1. ...' 처럼 번호를 매긴 단계 형식일 필요는 없고, 원문이 " +
+        "자연스러운 문장이나 문단으로 되어 있으면 그 형태를 그대로 살려도 좋아. 여러 단계나 " +
+        "문단으로 나뉘면 실제 줄바꿈 문자(\\n)로 구분한 한국어 텍스트로 정리해. isRecipe가 false면 빈 문자열.",
     },
     tags: {
       type: Type.ARRAY,
@@ -64,7 +80,7 @@ export async function generateRecipeFromLink(
   url: string
 ): Promise<
   | { ok: true; title: string | null; ingredients: string[]; instructions: string; tags: string[] }
-  | { ok: false; error: string }
+  | { ok: false; error: string; limitReached?: boolean; isPremium?: boolean }
 > {
   if (!process.env.GEMINI_API_KEY) {
     return { ok: false, error: "AI 기능이 아직 설정되지 않았어요." };
@@ -82,16 +98,31 @@ export async function generateRecipeFromLink(
 
   const isUnlimited = !!user.email && UNLIMITED_EMAILS.has(user.email.toLowerCase());
   if (!isUnlimited) {
-    const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+    const { household } = await getCurrentHousehold();
+    const { data: sub } = household
+      ? await supabase
+          .from("household_subscriptions")
+          .select("active, expires_at")
+          .eq("household_id", household.id)
+          .maybeSingle()
+      : { data: null };
+    const isPremium = !!sub?.active && (!sub.expires_at || new Date(sub.expires_at) > new Date());
+    const limit = isPremium ? PREMIUM_MONTHLY_LIMIT : FREE_MONTHLY_LIMIT;
+
+    const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
     const { count } = await supabase
       .from("ai_recipe_generations")
       .select("id", { count: "exact", head: true })
       .eq("user_id", user.id)
       .gte("created_at", since);
-    if ((count ?? 0) >= DAILY_LIMIT) {
+    if ((count ?? 0) >= limit) {
       return {
         ok: false,
-        error: `하루 AI 사용 횟수(${DAILY_LIMIT}회)를 다 썼어요. 내일 다시 시도해주세요.`,
+        error: isPremium
+          ? `이번 달 AI 사용 횟수(${limit}회)를 다 썼어요.`
+          : `무료 AI 사용 횟수(${limit}회)를 다 썼어요. 구독하면 더 많이 쓸 수 있어요.`,
+        limitReached: true,
+        isPremium,
       };
     }
   }
@@ -141,6 +172,10 @@ export async function generateRecipeFromLink(
               "순서가 있으면 그 내용을 최대한 그대로 가져와서 정리해줘 (재료명, 분량, 순서 포함).",
               "절대 지어내지 말고 실제로 적힌 내용을 우선해. 설명/댓글에 일부만 나와 있으면 그",
               "부분은 그대로 쓰고, 빠진 부분만 일반적인 조리법으로 합리적으로 채워.",
+              "",
+              "정확도가 가장 중요해: 언급되지 않은 재료를 추가하지 말고, 분량이 적혀있지 않은",
+              "재료는 amount를 빈 문자열로 남겨둬 — 그럴듯해 보이는 숫자를 지어내지 마. 재료",
+              "이름에 손질법이나 수식어를 과하게 붙이지 말고 실제로 부르는 이름 그대로 적어.",
             ].join("\n")
           : [
               "이 링크에서는 제목 외에 실제 내용을 가져올 수 없었어. 제목에서 짐작할 수 있는",

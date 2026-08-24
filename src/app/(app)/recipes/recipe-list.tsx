@@ -58,6 +58,7 @@ export function RecipeList({
   const [query, setQuery] = useState("");
   const [activeTag, setActiveTag] = useState<string | null>(null);
   const [favoritesOnly, setFavoritesOnly] = useState(false);
+  const [makeableOnly, setMakeableOnly] = useState(false);
   const [editing, setEditing] = useState(false);
   const {
     order,
@@ -82,6 +83,18 @@ export function RecipeList({
     [recipes]
   );
 
+  const makeableIds = useMemo(
+    () =>
+      new Set(
+        recipes
+          .filter((r) =>
+            r.recipe_ingredients.filter((ing) => !ing.skipped).every((ing) => owned.has(ing.name))
+          )
+          .map((r) => r.id)
+      ),
+    [recipes, owned]
+  );
+
   const filtered = recipes.filter((r) => {
     const q = query.toLowerCase();
     const matchesQuery =
@@ -92,7 +105,8 @@ export function RecipeList({
       r.recipe_ingredients.some((ing) => ing.name.toLowerCase().includes(q));
     const matchesTag = !activeTag || r.tags.includes(activeTag);
     const matchesFavorite = !favoritesOnly || r.is_favorite;
-    return matchesQuery && matchesTag && matchesFavorite;
+    const matchesMakeable = !makeableOnly || makeableIds.has(r.id);
+    return matchesQuery && matchesTag && matchesFavorite && matchesMakeable;
   });
 
   function startEditing() {
@@ -221,6 +235,26 @@ export function RecipeList({
             </svg>
             즐겨찾기
           </button>
+          <button
+            onClick={() => setMakeableOnly((prev) => !prev)}
+            className={`inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-semibold ${
+              makeableOnly ? "bg-accent text-white" : "bg-surface text-ink-soft"
+            }`}
+          >
+            <svg
+              viewBox="0 0 14 14"
+              width="11"
+              height="11"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.4"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M2.5 7.5l3 3 6-7" />
+            </svg>
+            바로 만들 수 있는 요리
+          </button>
           {allTags.map((tag) => (
             <button
               key={tag}
@@ -313,9 +347,7 @@ export function RecipeList({
       ) : (
         <div className="flex flex-col gap-3">
           {filtered.map((recipe) => {
-            const makeable = recipe.recipe_ingredients
-              .filter((ing) => !ing.skipped)
-              .every((ing) => owned.has(ing.name));
+            const makeable = makeableIds.has(recipe.id);
             return (
             <Link key={recipe.id} href={`/recipes/${recipe.id}`}>
               <GlassCard className="flex items-center gap-3 bg-white p-3.5">

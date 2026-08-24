@@ -36,6 +36,15 @@ export function ShoppingItemLink({
     return (
       <button
         type="button"
+        // The row this sits in arms a swipe-to-delete drag on pointerdown
+        // anywhere inside it (there's no non-interactive area to start a
+        // swipe from otherwise) and only decides "tap vs. drag" once the
+        // pointer has moved a few px — on a small edge button like this one,
+        // ordinary touch jitter during a tap crosses that threshold often
+        // enough that the resulting pointer capture swallows the click.
+        // data-swipe-ignore tells the row to never arm for a press that
+        // starts here, so this button always gets a clean click.
+        data-swipe-ignore
         onClick={() => {
           toggleChecked();
           router.push(`/redirect/coupang?name=${encodeURIComponent(name)}`);
@@ -59,6 +68,7 @@ export function ShoppingItemLink({
       // do nothing in one context or another. /redirect/coupang itself
       // handles returning to /shopping if the app regains focus stuck on it.
       onClick={toggleChecked}
+      data-swipe-ignore
       className="shrink-0 rounded-lg bg-surface px-2.5 py-1.5 text-[11px] font-bold text-ink-soft"
     >
       구매하기

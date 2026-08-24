@@ -48,6 +48,9 @@ export function ShoppingItemRow({ item }: { item: ShoppingItem }) {
   const DRAG_THRESHOLD = 8;
 
   function handlePointerDown(e: React.PointerEvent) {
+    // Never arm the swipe drag for a press that starts on the 구매하기
+    // button — see the data-swipe-ignore comment in ShoppingItemLink.
+    if ((e.target as HTMLElement).closest("[data-swipe-ignore]")) return;
     dragStateRef.current = {
       pointerId: e.pointerId,
       startX: e.clientX,

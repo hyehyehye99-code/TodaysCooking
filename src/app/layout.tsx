@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import { NativeAuthBridge } from "@/components/NativeAuthBridge";
+import { SplashScreenBridge } from "@/components/SplashScreenBridge";
 import "./globals.css";
 
 const suit = localFont({
@@ -37,6 +38,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     >
       <body className="min-h-full flex flex-col">
         <NativeAuthBridge />
+        <SplashScreenBridge />
         {children}
       </body>
     </html>

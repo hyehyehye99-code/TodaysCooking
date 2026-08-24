@@ -8,9 +8,26 @@ import { uploadRecipePhotos } from "@/lib/actions/storage";
 import { fetchLinkPreview } from "@/lib/actions/link-preview";
 import { MAX_RECIPE_PHOTOS } from "@/lib/constants";
 
-// A few common amount-only words that carry no digit, so the digit check
-// below wouldn't catch them on their own.
-const QUANTITY_ONLY_WORDS = new Set(["약간", "적당량", "조금", "약간씩", "넉넉히", "소량", "한꼬집", "한줌"]);
+// Common amount-only words that carry no digit, so the digit check below
+// wouldn't catch them on their own — e.g. "고추장 듬뿍" should split into
+// name "고추장" + amount "듬뿍", not get stuck as one unsplit blob (which
+// then fails to match "고추장" in the fridge/shopping list by exact name).
+const QUANTITY_ONLY_WORDS = new Set([
+  "약간", "적당량", "적당히", "조금", "조금씩", "약간씩", "약간만",
+  "넉넉히", "넉넉하게", "듬뿍", "듬뿍씩", "많이", "충분히",
+  "소량", "소량씩", "한꼬집", "한꼬집씩", "한줌", "한줌씩",
+  "한스푼", "한큰술", "한작은술", "한컵", "한주먹",
+]);
+
+// Unit suffixes that make a trailing token look like an amount even without
+// a digit or an exact QUANTITY_ONLY_WORDS match (e.g. "두어스푼", "몇큰술").
+// "장" is deliberately excluded — 고추장/된장/쌈장/간장 (whole 장류 category)
+// would falsely look like an amount as the second word of a compound name.
+const AMOUNT_UNIT_SUFFIXES = [
+  "g", "kg", "ml", "l", "cc", "개", "컵", "큰술", "작은술", "스푼", "티스푼",
+  "조각", "쪽", "알", "마리", "모", "봉지", "팩", "단", "줌", "꼬집", "병",
+  "캔", "통", "인분",
+];
 
 // Splits a manually-typed line like "돼지고기 200g" into name + amount, so
 // the name alone can still match fridge/shopping items by exact string (see
@@ -24,7 +41,10 @@ function splitIngredientLine(raw: string): { name: string; amount: string | null
   const match = trimmed.match(/^(.+?)\s+(\S+)$/);
   if (!match) return { name: trimmed, amount: null };
   const [, namePart, lastToken] = match;
-  const looksLikeAmount = /\d/.test(lastToken) || QUANTITY_ONLY_WORDS.has(lastToken);
+  const looksLikeAmount =
+    /\d/.test(lastToken) ||
+    QUANTITY_ONLY_WORDS.has(lastToken) ||
+    AMOUNT_UNIT_SUFFIXES.some((suffix) => lastToken.toLowerCase().endsWith(suffix));
   if (!looksLikeAmount) return { name: trimmed, amount: null };
   return { name: namePart.trim(), amount: lastToken };
 }

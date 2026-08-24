@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { INGREDIENT_CATEGORIES } from "@/lib/ingredients";
 import { completeOnboardingAuthed } from "@/lib/actions/onboarding";
 import { BackButton } from "@/components/ui";
 import { ClearableInput } from "@/components/ClearableInput";
@@ -20,62 +19,53 @@ function StepDots({ step, total }: { step: number; total: number }) {
 }
 
 export function OnboardingWizard({ householdMissingNotice = false }: { householdMissingNotice?: boolean }) {
-  const [step, setStep] = useState<1 | 2 | 3>(1);
+  const [step, setStep] = useState<1 | 2>(1);
 
   const [mode, setMode] = useState<"create" | "join">("create");
   const [name, setName] = useState("");
   const [code, setCode] = useState("");
   const [step1Error, setStep1Error] = useState("");
 
-  const [fridge, setFridge] = useState<Record<string, boolean>>({});
-
   const [nickname, setNickname] = useState("");
-  const [step3Error, setStep3Error] = useState("");
+  const [step2Error, setStep2Error] = useState("");
   const [pending, startTransition] = useTransition();
-
-  function toggleFridgeItem(itemName: string) {
-    setFridge((prev) => ({ ...prev, [itemName]: !prev[itemName] }));
-  }
 
   function goToNextFromStep1() {
     if (mode === "create" && !name.trim()) return setStep1Error("부엌 이름을 입력해주세요.");
     if (mode === "join" && !code.trim()) return setStep1Error("부엌 코드를 입력해주세요.");
     setStep1Error("");
-    setStep(mode === "join" ? 3 : 2);
+    setStep(2);
   }
 
   function payload() {
-    return { mode, name: name.trim(), code: code.trim(), nickname: nickname.trim(), fridge };
+    return { mode, name: name.trim(), code: code.trim(), nickname: nickname.trim() };
   }
 
   function handleSetupError(result: { error?: string; field?: "code" | "name" }) {
     if (result.field === "code" || result.field === "name") {
-      setStep3Error("");
+      setStep2Error("");
       setStep1Error(result.error ?? "");
       setStep(1);
     } else {
-      setStep3Error(result.error ?? "");
+      setStep2Error(result.error ?? "");
     }
   }
 
   function handleFinish() {
-    if (!nickname.trim()) return setStep3Error("닉네임을 입력해주세요.");
+    if (!nickname.trim()) return setStep2Error("닉네임을 입력해주세요.");
     startTransition(async () => {
       const result = await completeOnboardingAuthed(payload());
       if (result && "error" in result) handleSetupError(result);
     });
   }
 
-  const totalSteps = mode === "join" ? 2 : 3;
-  const stepIndex = mode === "join" ? (step === 1 ? 1 : 2) : step;
+  const totalSteps = 2;
 
   let primaryLabel = "다음";
   let primaryHandler = goToNextFromStep1;
   let primaryDisabled = false;
 
   if (step === 2) {
-    primaryHandler = () => setStep(3);
-  } else if (step === 3) {
     primaryLabel = pending ? "시작하는 중..." : "시작하기";
     primaryHandler = handleFinish;
     primaryDisabled = pending;
@@ -84,7 +74,7 @@ export function OnboardingWizard({ householdMissingNotice = false }: { household
   return (
     <div className="mx-auto flex h-dvh w-full max-w-[420px] flex-col">
       <div className="flex flex-1 flex-col overflow-y-auto px-6 pt-[max(env(safe-area-inset-top),24px)]">
-        <StepDots step={stepIndex} total={totalSteps} />
+        <StepDots step={step} total={totalSteps} />
 
         {step === 1 && (
           <div className="flex flex-1 flex-col">
@@ -136,47 +126,8 @@ export function OnboardingWizard({ householdMissingNotice = false }: { household
         )}
 
         {step === 2 && (
-          <>
-            <BackButton onClick={() => setStep(1)} className="mb-3" />
-            <h1 className="mb-1 text-[22px] font-bold">지금 냉장고에 무엇이 들어있나요?</h1>
-            <p className="mb-5 text-sm text-ink-soft">
-              가지고 있는 재료를 탭해서 표시해주세요. 나중에 언제든 바꿀 수 있어요.
-            </p>
-
-            <div className="flex flex-col gap-5">
-              {INGREDIENT_CATEGORIES.map((cat) => (
-                <div key={cat.name}>
-                  <p className="mb-2.5 text-xs font-bold text-ink-soft">{cat.name}</p>
-                  <div className="flex flex-wrap gap-2">
-                    {cat.items.map((itemName) => {
-                      const selected = !!fridge[itemName];
-                      return (
-                        <button
-                          key={itemName}
-                          onClick={() => toggleFridgeItem(itemName)}
-                          className={`inline-flex items-center gap-1.5 rounded-full border px-3.5 py-2 text-[13px] font-semibold ${
-                            selected
-                              ? "border-transparent bg-warn/14 text-warn-ink"
-                              : "border-transparent bg-surface text-ink-soft"
-                          }`}
-                        >
-                          <svg viewBox="0 0 14 14" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={selected ? "opacity-100" : "opacity-0"}>
-                            <path d="M2.5 7.5l3 3 6-7" />
-                          </svg>
-                          {itemName}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </>
-        )}
-
-        {step === 3 && (
           <div className="flex flex-1 flex-col">
-            <BackButton onClick={() => setStep(mode === "join" ? 1 : 2)} className="mb-3" />
+            <BackButton onClick={() => setStep(1)} className="mb-3" />
 
             <div className="flex flex-1 flex-col pt-4">
               <h1 className="mb-1 text-[22px] font-bold">이제 준비 완료!</h1>
@@ -203,7 +154,7 @@ export function OnboardingWizard({ householdMissingNotice = false }: { household
 
       <div className="shrink-0 border-t border-border px-6 pt-3 pb-[max(env(safe-area-inset-bottom),20px)]">
         {step === 1 && step1Error && <p className="mb-2 text-sm text-warn-ink">{step1Error}</p>}
-        {step === 3 && step3Error && <p className="mb-2 text-sm text-warn-ink">{step3Error}</p>}
+        {step === 2 && step2Error && <p className="mb-2 text-sm text-warn-ink">{step2Error}</p>}
         <button
           onClick={primaryHandler}
           disabled={primaryDisabled}

@@ -9,7 +9,6 @@ export type SetupPayload = {
   name: string;
   code: string;
   nickname: string;
-  fridge: Record<string, boolean>;
 };
 
 async function applySetup(payload: SetupPayload) {
@@ -33,19 +32,6 @@ async function applySetup(payload: SetupPayload) {
 
   const { household } = await getCurrentHousehold();
   if (!household) return { error: "부엌 정보를 확인하지 못했어요." };
-
-  const fridgeRows = Object.entries(payload.fridge)
-    .filter(([, inStock]) => inStock)
-    .map(([name]) => ({
-      household_id: household.id,
-      name,
-      in_stock: true,
-      updated_at: new Date().toISOString(),
-    }));
-
-  if (fridgeRows.length) {
-    await supabase.from("fridge_items").upsert(fridgeRows, { onConflict: "household_id,name" });
-  }
 
   return { success: true as const };
 }

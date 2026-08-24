@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import { fetchLinkPreview } from "@/lib/actions/link-preview";
 import { generateRecipeFromLink } from "@/lib/actions/ai-recipe";
 import { ClearableInput } from "@/components/ClearableInput";
@@ -27,6 +28,7 @@ export function ReferenceLinkField({
   const [loading, setLoading] = useState(false);
   const [aiLoading, setAiLoading] = useState(false);
   const [aiError, setAiError] = useState<string | null>(null);
+  const [aiLimitReached, setAiLimitReached] = useState(false);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const requestedUrlRef = useRef<string>(defaultValue);
   const { suggestion, dismiss } = useClipboardLinkSuggestion(defaultValue);
@@ -75,10 +77,12 @@ export function ReferenceLinkField({
     if (!trimmed) return;
     setAiLoading(true);
     setAiError(null);
+    setAiLimitReached(false);
     const result = await generateRecipeFromLink(trimmed);
     setAiLoading(false);
     if (!result.ok) {
       setAiError(result.error);
+      setAiLimitReached(!!result.limitReached);
       return;
     }
     onAiResult?.(result);
@@ -159,7 +163,16 @@ export function ReferenceLinkField({
           >
             {aiLoading ? "AI가 작성하는 중..." : "✨ AI로 재료·레시피 자동 작성"}
           </button>
-          {aiError && <p className="mt-2 text-xs text-warn-ink">{aiError}</p>}
+          {aiError && (
+            <div className="mt-2 flex items-center gap-2">
+              <p className="text-xs text-warn-ink">{aiError}</p>
+              {aiLimitReached && (
+                <Link href="/mypage/subscription" className="shrink-0 text-xs font-bold text-accent-ink underline">
+                  구독하기
+                </Link>
+              )}
+            </div>
+          )}
         </>
       )}
     </div>
