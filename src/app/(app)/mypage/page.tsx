@@ -139,26 +139,15 @@ export default async function MyPage() {
       </div>
 
       <GlassCard className="mb-8 bg-white">
-        <div className="divide-y divide-border">
-          <Link
-            href="/mypage/subscription"
-            className="flex items-center justify-between px-4 py-4 text-sm font-semibold text-ink"
-          >
-            구독
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--color-ink-faint)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M9 6l6 6-6 6" />
-            </svg>
-          </Link>
-          <Link
-            href="/mypage/account"
-            className="flex items-center justify-between px-4 py-4 text-sm font-semibold text-ink"
-          >
-            계정 관리
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--color-ink-faint)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M9 6l6 6-6 6" />
-            </svg>
-          </Link>
-        </div>
+        <Link
+          href="/mypage/account"
+          className="flex items-center justify-between px-4 py-4 text-sm font-semibold text-ink"
+        >
+          계정 관리
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--color-ink-faint)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M9 6l6 6-6 6" />
+          </svg>
+        </Link>
       </GlassCard>
 
       <GlassCard className="bg-white">

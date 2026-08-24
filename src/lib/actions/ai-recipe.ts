@@ -4,16 +4,13 @@ import { GoogleGenAI, Type } from "@google/genai";
 import { createClient } from "@/lib/supabase/server";
 import { fetchLinkPreview } from "@/lib/actions/link-preview";
 import { extractYoutubeVideoId, fetchYoutubeVideoDetails } from "@/lib/actions/youtube";
-import { getCurrentHousehold } from "@/lib/household";
 
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
-// Rolling 30-day window, not calendar-month — avoids a reset-day edge case
-// and keeps the same "since" query shape the anti-abuse cap already used.
-const FREE_MONTHLY_LIMIT = 5;
-// Premium isn't literally unlimited — Gemini calls cost money per request
-// even for subscribers, so this stays a (generous) safety cap.
-const PREMIUM_MONTHLY_LIMIT = 200;
+// Rolling 30-day window, not calendar-month — avoids a reset-day edge case.
+// No paid tier in this version, so this is purely an anti-abuse cap (Gemini
+// calls cost money per request) rather than a free/premium split.
+const MONTHLY_LIMIT = 20;
 
 // Comma-separated emails (e.g. in .env.local) that skip the daily cap
 // entirely — for the developer's own test account.
@@ -80,7 +77,7 @@ export async function generateRecipeFromLink(
   url: string
 ): Promise<
   | { ok: true; title: string | null; ingredients: string[]; instructions: string; tags: string[] }
-  | { ok: false; error: string; limitReached?: boolean; isPremium?: boolean }
+  | { ok: false; error: string; limitReached?: boolean }
 > {
   if (!process.env.GEMINI_API_KEY) {
     return { ok: false, error: "AI 기능이 아직 설정되지 않았어요." };
@@ -98,31 +95,17 @@ export async function generateRecipeFromLink(
 
   const isUnlimited = !!user.email && UNLIMITED_EMAILS.has(user.email.toLowerCase());
   if (!isUnlimited) {
-    const { household } = await getCurrentHousehold();
-    const { data: sub } = household
-      ? await supabase
-          .from("household_subscriptions")
-          .select("active, expires_at")
-          .eq("household_id", household.id)
-          .maybeSingle()
-      : { data: null };
-    const isPremium = !!sub?.active && (!sub.expires_at || new Date(sub.expires_at) > new Date());
-    const limit = isPremium ? PREMIUM_MONTHLY_LIMIT : FREE_MONTHLY_LIMIT;
-
     const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
     const { count } = await supabase
       .from("ai_recipe_generations")
       .select("id", { count: "exact", head: true })
       .eq("user_id", user.id)
       .gte("created_at", since);
-    if ((count ?? 0) >= limit) {
+    if ((count ?? 0) >= MONTHLY_LIMIT) {
       return {
         ok: false,
-        error: isPremium
-          ? `이번 달 AI 사용 횟수(${limit}회)를 다 썼어요.`
-          : `무료 AI 사용 횟수(${limit}회)를 다 썼어요. 구독하면 더 많이 쓸 수 있어요.`,
+        error: `이번 달 AI 사용 횟수(${MONTHLY_LIMIT}회)를 다 썼어요. 다음 달에 다시 시도해주세요.`,
         limitReached: true,
-        isPremium,
       };
     }
   }
