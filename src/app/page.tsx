@@ -51,52 +51,6 @@ const HIGHLIGHT_FEATURES = [
   },
 ];
 
-const MORE_FEATURES = [
-  {
-    title: "냉장고, 탭 한 번이면 끝",
-    description: "지금 냉장고에 뭐가 있는지 탭 한 번으로 체크해요. 뭘 사야 할지 매번 고민할 필요 없어요.",
-    screenshot: "/screenshots/fridge.png",
-    icon: (
-      <svg width="22" height="22" viewBox="0 0 22 22" fill="none" aria-hidden="true">
-        <rect x="5" y="3" width="12" height="16" rx="2" stroke="currentColor" strokeWidth="1.75" />
-        <path d="M5 9h12" stroke="currentColor" strokeWidth="1.75" />
-        <path d="M8 5.5v1.5M8 11.5v1.5" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" />
-      </svg>
-    ),
-  },
-  {
-    title: "가족이 장을 봤는지, 알림으로 바로 확인",
-    description: "누가 장보기에 뭘 추가했는지, 장보기를 끝냈는지 알림으로 바로 알려드려요.",
-    screenshot: "/screenshots/shopping.png",
-    icon: (
-      <svg width="22" height="22" viewBox="0 0 22 22" fill="none" aria-hidden="true">
-        <path
-          d="M11 3.5a4.5 4.5 0 00-4.5 4.5v3l-1.5 3h12l-1.5-3v-3A4.5 4.5 0 0011 3.5z"
-          stroke="currentColor"
-          strokeWidth="1.75"
-          strokeLinejoin="round"
-        />
-        <path d="M9 16.5a2 2 0 004 0" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" />
-      </svg>
-    ),
-  },
-  {
-    title: "메뉴판을 자랑해보세요",
-    description: "메뉴판을 공개 링크로 공유하고, 방문자의 하트 반응도 받아볼 수 있어요.",
-    screenshot: "/screenshots/recipe-list.png",
-    icon: (
-      <svg width="22" height="22" viewBox="0 0 22 22" fill="none" aria-hidden="true">
-        <path
-          d="M11 18.5s-7-4.2-7-9.2a3.8 3.8 0 017-2.1 3.8 3.8 0 017 2.1c0 5-7 9.2-7 9.2z"
-          stroke="currentColor"
-          strokeWidth="1.75"
-          strokeLinejoin="round"
-        />
-      </svg>
-    ),
-  },
-];
-
 const PAIN_POINTS = [
   "유튜브·인스타에 저장만 해두고, 막상 요리할 땐 어디 있는지 못 찾아요",
   "장 보러 가서는 뭘 사야 할지 헷갈려요",
@@ -144,20 +98,16 @@ export default async function LandingPage() {
             >
               무료로 시작하기
             </Link>
-            <p className="mt-3 text-xs text-ink-faint">가입 30초, 완전 무료예요.</p>
           </div>
         </div>
 
-        <div className="mx-auto w-full max-w-[300px]">
-          <div className="rounded-[32px] border border-border bg-cream p-5 shadow-[0_20px_60px_-24px_rgba(25,31,40,0.25)]">
-            <p className="mb-4 text-xs font-bold text-ink-faint">오늘의 냉장고</p>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="/screenshots/fridge.png"
-              alt="냉장고 화면 스크린샷"
-              className="aspect-[466/893] w-full rounded-2xl object-cover"
-            />
-          </div>
+        <div className="mx-auto w-full max-w-[380px]">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/screenshots/recipe-list.png"
+            alt="레시피 목록 화면 스크린샷"
+            className="aspect-[466/893] w-full object-contain"
+          />
         </div>
       </section>
 
@@ -203,34 +153,12 @@ export default async function LandingPage() {
                   </p>
                 </div>
                 <div className="w-full md:flex-1">
-                  <div className="mx-auto w-full max-w-[280px] rounded-[28px] border border-border bg-cream p-3 shadow-[0_20px_60px_-24px_rgba(25,31,40,0.25)]">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={f.screenshot}
-                      alt={`${f.title} 스크린샷`}
-                      className="aspect-[466/893] w-full rounded-2xl object-cover"
-                    />
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <div className="mt-20 grid gap-5 sm:grid-cols-3">
-            {MORE_FEATURES.map((f) => (
-              <div key={f.title} className="overflow-hidden rounded-2xl border border-border bg-cream">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={f.screenshot}
-                  alt={`${f.title} 스크린샷`}
-                  className="aspect-[4/3] w-full object-cover object-top"
-                />
-                <div className="p-6">
-                  <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-full bg-accent/10 text-accent">
-                    {f.icon}
-                  </div>
-                  <h3 className="text-base font-bold text-ink">{f.title}</h3>
-                  <p className="mt-2 text-sm leading-relaxed text-ink-soft">{f.description}</p>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={f.screenshot}
+                    alt={`${f.title} 스크린샷`}
+                    className="mx-auto aspect-[466/893] w-full max-w-[360px] object-contain"
+                  />
                 </div>
               </div>
             ))}
