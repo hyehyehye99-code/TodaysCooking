@@ -29,13 +29,15 @@ export function MissingIngredientsButton({
   missing: { name: string; skipped: boolean }[];
 }) {
   const [open, setOpen] = useState(false);
-  const [choices, setChoices] = useState<Record<string, ChoiceState>>({});
+  const [choices, setChoices] = useState<Record<string, ChoiceState | undefined>>({});
   const [pending, startTransition] = useTransition();
   const router = useRouter();
 
   function openModal() {
     setChoices(
-      Object.fromEntries(missing.map((m) => [m.name, m.skipped ? "skip" : "shopping"]))
+      Object.fromEntries(
+        missing.filter((m) => m.skipped).map((m) => [m.name, "skip" as ChoiceState])
+      )
     );
     setOpen(true);
   }
@@ -65,8 +67,9 @@ export function MissingIngredientsButton({
         <div className="mx-auto flex max-h-[80vh] w-full max-w-[420px] flex-col rounded-t-3xl bg-white p-5 pb-[max(env(safe-area-inset-bottom),20px)]">
             <p className="mb-1 text-[15px] font-bold">부족한 재료 확인</p>
             <p className="mb-3 text-xs text-ink-soft">
-              이미 있는 재료는 냉장고로, 필요 없는 재료는 생략으로 표시하고, 나머지만 장보기에
-              담을게요.
+              보유 중인 재료는 냉장고로, 필요 없는 재료는 생략으로 표시해주세요. 선택하지 않은
+              재료는 이번엔 그대로 두고 다음에 다시 물어볼게요. 장보기 목록에 담고 싶은 재료는
+              구매 필요를 눌러주세요.
             </p>
 
             <div className="mt-1 flex flex-col gap-2 overflow-y-auto">
