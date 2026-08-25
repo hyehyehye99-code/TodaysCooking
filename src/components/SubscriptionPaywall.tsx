@@ -211,7 +211,8 @@ export function SubscriptionPaywall({
         {status === "restoring" ? dict.components.restoring : dict.components.restorePurchases}
       </button>
       <p className="text-center text-[11px] text-ink-faint">
-        {dict.components.subscriptionDisclaimer}{" "}
+        {dict.components.subscriptionDisclaimer}
+        <br />
         <a href="/terms" target="_blank" rel="noopener noreferrer" className="underline">
           {dict.mypage.terms}
         </a>
