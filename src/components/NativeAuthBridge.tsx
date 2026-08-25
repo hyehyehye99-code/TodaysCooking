@@ -23,11 +23,18 @@ export function NativeAuthBridge() {
     if (!Capacitor.isNativePlatform()) return;
 
     const supabase = createClient();
+    // iOS can redeliver the same appUrlOpen event (e.g. the app briefly
+    // backgrounding during the system browser handoff) — an OAuth code is
+    // single-use, so a naive re-run would just fail exchangeCodeForSession
+    // harmlessly, but tracking the last code short-circuits that redundant
+    // network round trip instead of silently swallowing an error each time.
+    let lastCode: string | null = null;
     const listener = App.addListener("appUrlOpen", async ({ url }) => {
       if (!url.includes("auth/callback")) return;
       await Browser.close().catch(() => {});
       const code = new URL(url).searchParams.get("code");
-      if (!code) return;
+      if (!code || code === lastCode) return;
+      lastCode = code;
       const { error } = await supabase.auth.exchangeCodeForSession(code);
       if (!error) router.replace("/recipes");
     });

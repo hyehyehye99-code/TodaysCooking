@@ -12,20 +12,6 @@ export type SetupPayload = {
 };
 
 async function applySetup(payload: SetupPayload) {
-  // Idempotency guard: this action is only ever meant to run once, for a
-  // user with no household yet. If it somehow runs twice for the same
-  // onboarding session (a fast double-tap racing past the client-side
-  // guard, a retried request, etc.), the second call must not create a
-  // second household — just finish nickname setup and treat it as done.
-  const { household: existingHousehold } = await getCurrentHousehold();
-  if (existingHousehold) {
-    if (payload.nickname.trim()) {
-      const supabase = await createClient();
-      await supabase.rpc("upsert_my_nickname", { new_nickname: payload.nickname.trim() });
-    }
-    return { success: true as const };
-  }
-
   const supabase = await createClient();
 
   if (payload.nickname.trim()) {
@@ -33,7 +19,14 @@ async function applySetup(payload: SetupPayload) {
   }
 
   if (payload.mode === "create") {
-    const { error } = await supabase.rpc("create_household", {
+    // complete_onboarding_create() is atomic (a unique-constrained claim
+    // row inside the same transaction as the household insert) — unlike a
+    // client-side "check for a household, then create one" pattern, this
+    // can't lose a race between two calls close together (a duplicate
+    // native auth-callback delivery, a retried request, ...) and end up
+    // creating two households. A losing call just gets back the winner's
+    // household id instead of creating its own.
+    const { error } = await supabase.rpc("complete_onboarding_create", {
       household_name: payload.name,
     });
     if (error) return { error: "우리집을 만들지 못했어요. 다시 시도해주세요.", field: "name" as const };
