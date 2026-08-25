@@ -35,6 +35,18 @@ export default async function MyPage() {
   const myNickname = me?.nickname ?? "";
   const myIconEmoji = me?.icon_emoji ?? null;
 
+  // Only the active household's card shows a subscription button/detail
+  // sheet (see HouseholdList), so this is the only household whose status
+  // is worth a query here.
+  const { data: sub } = current
+    ? await supabase
+        .from("household_subscriptions")
+        .select("active, expires_at")
+        .eq("household_id", current.id)
+        .maybeSingle()
+    : { data: null };
+  const activeIsPremium = !!sub?.active && (!sub.expires_at || new Date(sub.expires_at) > new Date());
+
   return (
     <div>
       <PageHeader
@@ -67,22 +79,38 @@ export default async function MyPage() {
 
       <p className="mb-3 text-[13px] font-bold text-ink-soft">부엌 관리</p>
       <div className="mb-4">
-        <HouseholdList entries={entries} currentId={current?.id ?? ""} myUserId={user?.id ?? ""} />
+        <HouseholdList
+          entries={entries}
+          currentId={current?.id ?? ""}
+          myUserId={user?.id ?? ""}
+          activeIsPremium={activeIsPremium}
+        />
       </div>
       <div className="mb-8">
         <AddHouseholdSection />
       </div>
 
       <GlassCard className="mb-8 bg-white">
-        <Link
-          href="/mypage/account"
-          className="flex items-center justify-between px-4 py-4 text-sm font-semibold text-ink"
-        >
-          계정 관리
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--color-ink-faint)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M9 6l6 6-6 6" />
-          </svg>
-        </Link>
+        <div className="divide-y divide-border">
+          <Link
+            href="/mypage/subscription"
+            className="flex items-center justify-between px-4 py-4 text-sm font-semibold text-ink"
+          >
+            구독 관리
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--color-ink-faint)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M9 6l6 6-6 6" />
+            </svg>
+          </Link>
+          <Link
+            href="/mypage/account"
+            className="flex items-center justify-between px-4 py-4 text-sm font-semibold text-ink"
+          >
+            계정 관리
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--color-ink-faint)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M9 6l6 6-6 6" />
+            </svg>
+          </Link>
+        </div>
       </GlassCard>
 
       <GlassCard className="bg-white">

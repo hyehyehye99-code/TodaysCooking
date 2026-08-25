@@ -15,10 +15,12 @@ export function HouseholdList({
   entries,
   currentId,
   myUserId,
+  activeIsPremium,
 }: {
   entries: HouseholdEntry[];
   currentId: string;
   myUserId: string;
+  activeIsPremium: boolean;
 }) {
   return (
     <div className="flex flex-col gap-2.5">
@@ -63,6 +65,7 @@ export function HouseholdList({
                 members={members}
                 myUserId={myUserId}
                 myRole={role}
+                isPremium={activeIsPremium}
               />
               <span className="shrink-0 rounded-full bg-accent/10 px-2.5 py-1 text-xs font-bold text-accent">
                 사용 중
@@ -74,9 +77,11 @@ export function HouseholdList({
               <div className="flex items-center gap-1.5">
                 <Link
                   href="/mypage/subscription"
-                  className="rounded-lg bg-surface px-3 py-2 text-xs font-bold text-ink-soft"
+                  className={`rounded-lg px-3 py-2 text-xs font-bold ${
+                    activeIsPremium ? "bg-accent/10 text-accent" : "bg-surface text-ink-soft"
+                  }`}
                 >
-                  구독
+                  {activeIsPremium ? "프리미엄 ✓" : "구독"}
                 </Link>
                 <InviteButton householdName={household.name} inviteCode={household.invite_code} />
               </div>

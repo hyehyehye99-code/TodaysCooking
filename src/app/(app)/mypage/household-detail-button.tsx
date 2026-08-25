@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { chefName } from "@/lib/format";
 import { ProfileAvatar } from "@/components/ProfileAvatar";
 import { RenameHouseholdForm } from "./rename-household-form";
@@ -16,12 +17,14 @@ export function HouseholdDetailButton({
   members,
   myUserId,
   myRole,
+  isPremium,
 }: {
   householdId: string;
   householdName: string;
   members: Member[];
   myUserId: string;
   myRole?: string;
+  isPremium: boolean;
 }) {
   const [open, setOpen] = useState(false);
 
@@ -49,7 +52,18 @@ export function HouseholdDetailButton({
               onSuccess={() => setOpen(false)}
             />
 
-            <p className="mb-2.5 mt-6 text-xs font-bold text-ink-soft">참여 인원 ({members.length}명)</p>
+            <p className="mb-2 mt-6 text-xs font-bold text-ink-soft">구독</p>
+            <Link
+              href="/mypage/subscription"
+              className="mb-6 flex items-center justify-between rounded-xl bg-surface px-4 py-3"
+            >
+              <span className="text-sm font-semibold text-ink">
+                {isPremium ? "프리미엄 이용 중" : "무료 플랜"}
+              </span>
+              <span className="text-xs font-bold text-accent-ink">관리하기</span>
+            </Link>
+
+            <p className="mb-2.5 text-xs font-bold text-ink-soft">참여 인원 ({members.length}명)</p>
             <div className="flex flex-col gap-3 overflow-y-auto">
               {members.map((m) => (
                 <div key={m.user_id} className="flex items-center gap-3">
