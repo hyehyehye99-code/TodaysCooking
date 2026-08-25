@@ -45,6 +45,15 @@ body {
   font-family: var(--font-sans), system-ui, sans-serif;
 }
 
+/* Inside the native shell (WKWebView), a long-press on a link or button
+   otherwise triggers WebKit's own "Open/Copy/Share" callout menu — a web
+   browser affordance that has no place in what's supposed to look like a
+   native app. */
+button,
+a {
+  -webkit-touch-callout: none;
+}
+
 /* App-wide tactile feedback: every button/link gets a quick press-down
    without needing per-component classes. Scoped to :not(:disabled) so
    disabled submit buttons don't look interactive. */

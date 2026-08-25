@@ -12,6 +12,9 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Xcode build output — third-party SPM package sources get checked out
+    // here and shouldn't be linted as part of this project.
+    "ios/DerivedData/**",
   ]),
 ]);
 

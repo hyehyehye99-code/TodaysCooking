@@ -5,13 +5,13 @@ import Link from "next/link";
 import { GlassCard } from "@/components/ui";
 
 const SAMPLE_RECIPES = [
-  { name: "비프 부르기뇽", tag: "#프랑스" },
-  { name: "짜글이", tag: "#한식" },
-  { name: "광어 세비체", tag: "#홈파티" },
-  { name: "비프 웰링턴", tag: "#홈파티" },
-  { name: "크림브륄레", tag: "#디저트" },
-  { name: "된장찌개", tag: "#한식" },
-  { name: "김치볶음밥", tag: "#간단요리" },
+  { name: "비프 부르기뇽", tag: "#프랑스", emoji: "🍷" },
+  { name: "짜글이", tag: "#한식", emoji: "🍲" },
+  { name: "광어 세비체", tag: "#홈파티", emoji: "🐟" },
+  { name: "비프 웰링턴", tag: "#홈파티", emoji: "🥩" },
+  { name: "크림브륄레", tag: "#디저트", emoji: "🍮" },
+  { name: "된장찌개", tag: "#한식", emoji: "🥣" },
+  { name: "김치볶음밥", tag: "#간단요리", emoji: "🍚" },
 ];
 
 const AI_INGREDIENTS = ["살치살 400g", "트러플 소금", "백후추", "올리브유", "통마늘", "방울 토마토", "양송이 버섯", "미니 아스파라거스", "와사비"];
@@ -23,10 +23,14 @@ const AI_INSTRUCTIONS = "1. 키친타월로 핏물을 깔끔히 제거합니다.
 // inset-0 against the nearest `relative` ancestor (the target itself)
 // instead of an offset + translate — that way it can't drift off the
 // target the way a corner-positioned icon did on real devices.
+// animate-ping scales the ring past the element's own box, which got
+// clipped by an ancestor's rounded corners/overflow — animate-pulse instead
+// just fades the same fixed-size ring in and out, so it never grows past
+// where it's drawn.
 function TapHint({ rounded = "rounded-xl" }: { rounded?: string }) {
   return (
     <span
-      className={`pointer-events-none absolute inset-0 ${rounded} ring-2 ring-accent animate-ping`}
+      className={`pointer-events-none absolute inset-0 ${rounded} ring-2 ring-accent animate-pulse`}
     />
   );
 }
@@ -46,7 +50,9 @@ function RecipeListDemo({ onNext }: { onNext: () => void }) {
       <div className="flex flex-col divide-y divide-border">
         {SAMPLE_RECIPES.map((r) => (
           <div key={r.name} className="flex items-center gap-2.5 py-2.5 first:pt-0 last:pb-0">
-            <div className="h-9 w-9 shrink-0 rounded-lg bg-surface" />
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-surface text-lg">
+              {r.emoji}
+            </div>
             <div className="min-w-0 flex-1">
               <p className="truncate text-xs font-bold text-ink">{r.name}</p>
               <p className="truncate text-[10px] text-ink-faint">{r.tag}</p>
@@ -73,12 +79,10 @@ function RecipeCollectDemo() {
 
       <p className="mb-1 text-xs font-bold text-ink-soft">참고 링크</p>
       <div className="mb-3 rounded-xl bg-surface p-2.5">
-        <p className="mb-2 truncate text-xs text-ink-soft">youtube.com/shorts/ReaQrFMWh7c</p>
+        <p className="mb-2 truncate text-xs text-ink-soft">youtube.com/shorts</p>
         <div className="flex gap-2 rounded-lg bg-white p-1.5">
           <div className="h-10 w-10 shrink-0 rounded-md bg-ink/10" />
-          <p className="line-clamp-2 text-[11px] leading-snug text-ink-soft">
-            인스타 200만뷰 라면보다 쉬운 스테이크 굽는 법! #shorts #스테이크
-          </p>
+          <p className="line-clamp-2 text-[11px] leading-snug text-ink-soft">안심 스테이크</p>
         </div>
       </div>
 
@@ -195,7 +199,7 @@ function ShoppingSyncDemo() {
           </div>
         ) : (
           <>
-            <p className="mb-1 text-[15px] font-bold text-ink">스테이크 굽는 법</p>
+            <p className="mb-1 text-[15px] font-bold text-ink">안심 스테이크</p>
             <p className="mb-2 text-xs text-ink-soft">2/9 보유 중 · 재료</p>
             <div className="mb-3 flex flex-wrap gap-1.5">
               {AI_INGREDIENTS.map((item) => {
@@ -311,13 +315,13 @@ function FridgeDemo() {
 }
 
 const HOUSEHOLD_MEMBERS = [
-  { name: "혜동세프", role: "대장 (나)" },
-  { name: "콩이세프", role: null },
+  { name: "혜동세프", role: "대장 (나)", emoji: "🧑‍🍳" },
+  { name: "콩이세프", role: null, emoji: "👩‍🍳" },
 ];
 
 function HouseholdShareDemo() {
   return (
-    <GlassCard className="mx-auto w-full bg-white p-4 ring-2 ring-accent">
+    <GlassCard className="mx-auto w-full bg-white p-4">
       <div className="mb-3 flex items-center justify-between">
         <span className="text-sm font-bold text-ink">혜콩이네 🏠</span>
         <span className="rounded-full bg-accent/10 px-2.5 py-1 text-[11px] font-bold text-accent">사용 중</span>
@@ -326,7 +330,9 @@ function HouseholdShareDemo() {
       <div className="flex flex-col gap-2">
         {HOUSEHOLD_MEMBERS.map((m) => (
           <div key={m.name} className="flex items-center gap-2 rounded-xl bg-surface px-3.5 py-2.5">
-            <div className="h-8 w-8 shrink-0 rounded-full bg-white" />
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white text-base">
+              {m.emoji}
+            </div>
             <div>
               <p className="text-xs font-bold text-ink">{m.name}</p>
               {m.role && <p className="text-[10px] text-accent-ink">{m.role}</p>}
