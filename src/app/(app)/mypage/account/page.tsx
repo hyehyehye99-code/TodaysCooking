@@ -9,7 +9,12 @@ export default async function AccountPage() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const isGoogleAccount = user?.app_metadata?.provider === "google";
+  const PROVIDER_LABELS: Record<string, string> = {
+    google: "구글로 가입했어요",
+    apple: "Apple로 가입했어요",
+    kakao: "카카오로 가입했어요",
+  };
+  const providerLabel = PROVIDER_LABELS[user?.app_metadata?.provider ?? ""];
 
   return (
     <div className="pt-2">
@@ -18,11 +23,11 @@ export default async function AccountPage() {
         <h1 className="text-[22px] font-bold">계정 관리</h1>
       </div>
 
-      {isGoogleAccount && (
+      {providerLabel && (
         <>
           <p className="mb-3 text-[13px] font-bold text-ink-soft">연결된 계정</p>
           <GlassCard className="mb-6 bg-white p-4">
-            <p className="text-sm font-semibold">구글로 가입했어요</p>
+            <p className="text-sm font-semibold">{providerLabel}</p>
             {user?.email && <p className="mt-1 text-xs text-ink-soft">{user.email}</p>}
           </GlassCard>
         </>

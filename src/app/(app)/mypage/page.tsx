@@ -116,7 +116,7 @@ export default async function MyPage() {
       <GlassCard className="bg-white">
         <div className="divide-y divide-border">
           <Link
-            href="/mypage/about"
+            href="/"
             className="flex items-center justify-between px-4 py-4 text-sm font-semibold text-ink"
           >
             소개
