@@ -4,12 +4,14 @@ import { useEffect, useOptimistic, useRef, useState, useTransition } from "react
 import { useRouter } from "next/navigation";
 import { toggleShoppingItem, deleteShoppingItem } from "@/lib/actions/shopping";
 import { ShoppingItemLink } from "./shopping-item-link";
+import { useDict } from "@/lib/i18n/client";
 import type { ShoppingItem } from "@/lib/types";
 
 const REVEAL_WIDTH = 72;
 const OVERDRAG = 24;
 
 export function ShoppingItemRow({ item }: { item: ShoppingItem }) {
+  const dict = useDict();
   const [dragX, setDragX] = useState(0);
   const [open, setOpen] = useState(false);
   const [dragging, setDragging] = useState(false);
@@ -115,11 +117,11 @@ export function ShoppingItemRow({ item }: { item: ShoppingItem }) {
         type="button"
         onClick={handleDelete}
         disabled={deletePending}
-        aria-label="삭제"
+        aria-label={dict.common.delete}
         style={{ width: REVEAL_WIDTH }}
         className="absolute inset-y-0 right-0 flex items-center justify-center bg-warn text-xs font-bold text-white disabled:opacity-60"
       >
-        삭제
+        {dict.common.delete}
       </button>
 
       <div

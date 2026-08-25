@@ -4,6 +4,7 @@ import { useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Capacitor } from "@capacitor/core";
 import { toggleShoppingItem } from "@/lib/actions/shopping";
+import { useDict } from "@/lib/i18n/client";
 
 export function ShoppingItemLink({
   id,
@@ -14,6 +15,7 @@ export function ShoppingItemLink({
   name: string;
   checked: boolean;
 }) {
+  const dict = useDict();
   const [, startTransition] = useTransition();
   const router = useRouter();
 
@@ -51,7 +53,7 @@ export function ShoppingItemLink({
         }}
         className="shrink-0 rounded-lg bg-surface px-2.5 py-1.5 text-[11px] font-bold text-ink-soft"
       >
-        구매하기
+        {dict.shopping.buyButton}
       </button>
     );
   }
@@ -71,7 +73,7 @@ export function ShoppingItemLink({
       data-swipe-ignore
       className="shrink-0 rounded-lg bg-surface px-2.5 py-1.5 text-[11px] font-bold text-ink-soft"
     >
-      구매하기
+      {dict.shopping.buyButton}
     </a>
   );
 }

@@ -8,11 +8,13 @@ import { ConfirmModal } from "@/components/ConfirmModal";
 import { deleteBookmark, updateBookmarkNote, reorderBookmarks } from "@/lib/actions/bookmarks";
 import { useDragReorder } from "@/lib/useDragReorder";
 import { ClearableInput } from "@/components/ClearableInput";
+import { useDict } from "@/lib/i18n/client";
 import type { Bookmark } from "@/lib/types";
 
 type BookmarkWithRecipe = Bookmark & { recipes: { title: string } | null };
 
 function BookmarkNote({ id, note }: { id: string; note: string | null }) {
+  const dict = useDict();
   const [editing, setEditing] = useState(false);
   const [value, setValue] = useState(note ?? "");
   const [pending, startTransition] = useTransition();
@@ -40,7 +42,7 @@ function BookmarkNote({ id, note }: { id: string; note: string | null }) {
               }
             }}
             autoFocus
-            placeholder="메모 입력"
+            placeholder={dict.bookmarks.noteInputPlaceholder}
             className="w-full rounded-lg bg-surface px-2 py-1.5 text-xs outline-none"
           />
         </div>
@@ -50,7 +52,7 @@ function BookmarkNote({ id, note }: { id: string; note: string | null }) {
           disabled={pending}
           className="shrink-0 rounded-lg bg-accent px-2 py-1.5 text-xs font-bold text-white disabled:opacity-60"
         >
-          {pending ? "..." : "저장"}
+          {pending ? "..." : dict.common.save}
         </button>
       </div>
     );
@@ -74,7 +76,7 @@ function BookmarkNote({ id, note }: { id: string; note: string | null }) {
       onClick={() => setEditing(true)}
       className="w-fit border-t border-border pt-2 text-xs font-semibold text-ink-soft"
     >
-      + 메모 추가
+      {dict.bookmarks.addNote}
     </button>
   );
 }
@@ -86,6 +88,7 @@ function DeleteBookmarkButton({
   id: string;
   linkedToRecipe: boolean;
 }) {
+  const dict = useDict();
   const [confirming, setConfirming] = useState(false);
   const [pending, startTransition] = useTransition();
 
@@ -103,7 +106,7 @@ function DeleteBookmarkButton({
       <form action={deleteBookmark}>
         <input type="hidden" name="id" value={id} />
         <button type="submit" className="text-[11px] text-ink-faint">
-          삭제
+          {dict.common.delete}
         </button>
       </form>
     );
@@ -116,14 +119,14 @@ function DeleteBookmarkButton({
         onClick={() => setConfirming(true)}
         className="text-[11px] text-ink-faint"
       >
-        삭제
+        {dict.common.delete}
       </button>
 
       <ConfirmModal
         open={confirming}
         onClose={() => setConfirming(false)}
-        title="메뉴에서도 사라져요"
-        description="이 링크는 메뉴의 참고 링크로도 쓰이고 있어요. 삭제하면 메뉴에서도 이 링크가 사라져요."
+        title={dict.bookmarks.alsoInRecipeTitle}
+        description={dict.bookmarks.alsoInRecipeDesc}
         confirmSlot={
           <button
             type="button"
@@ -131,7 +134,7 @@ function DeleteBookmarkButton({
             disabled={pending}
             className="rounded-lg bg-accent px-3.5 py-2 text-xs font-bold text-white disabled:opacity-60"
           >
-            {pending ? "삭제 중..." : "삭제"}
+            {pending ? dict.recipes.deleting : dict.common.delete}
           </button>
         }
       />
@@ -140,6 +143,7 @@ function DeleteBookmarkButton({
 }
 
 export function BookmarkList({ bookmarks }: { bookmarks: BookmarkWithRecipe[] }) {
+  const dict = useDict();
   const [query, setQuery] = useState("");
   const [reordering, setReordering] = useState(false);
   const {
@@ -188,14 +192,14 @@ export function BookmarkList({ bookmarks }: { bookmarks: BookmarkWithRecipe[] })
             disabled={pending}
             className="rounded-lg bg-surface px-3 py-1.5 text-xs font-bold text-ink-soft disabled:opacity-60"
           >
-            취소
+            {dict.common.cancel}
           </button>
           <button
             onClick={saveOrder}
             disabled={pending}
             className="rounded-lg bg-accent px-3 py-1.5 text-xs font-bold text-white disabled:opacity-60"
           >
-            {pending ? "저장 중..." : "완료"}
+            {pending ? dict.recipes.saving : dict.recipes.done}
           </button>
         </div>
       ) : (
@@ -204,14 +208,14 @@ export function BookmarkList({ bookmarks }: { bookmarks: BookmarkWithRecipe[] })
             <ClearableInput
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="보관함 검색"
+              placeholder={dict.bookmarks.searchPlaceholder}
               className="w-full rounded-xl border border-transparent bg-surface px-3.5 py-2.5 text-sm outline-none focus:border-accent"
             />
           </div>
           {bookmarks.length > 1 && (
             <button
               onClick={startReorder}
-              aria-label="순서 변경"
+              aria-label={dict.bookmarks.reorder}
               className="flex h-[42px] w-[42px] shrink-0 items-center justify-center rounded-xl bg-surface text-ink-soft"
             >
               <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
@@ -259,7 +263,7 @@ export function BookmarkList({ bookmarks }: { bookmarks: BookmarkWithRecipe[] })
                     onPointerMove={handlePointerMove}
                     onPointerUp={handlePointerUp}
                     onPointerCancel={handlePointerUp}
-                    aria-label="드래그해서 순서 변경"
+                    aria-label={dict.recipes.dragReorder}
                     className="flex h-8 w-8 shrink-0 touch-none items-center justify-center rounded-full bg-surface text-ink-soft"
                   >
                     <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
@@ -277,11 +281,9 @@ export function BookmarkList({ bookmarks }: { bookmarks: BookmarkWithRecipe[] })
           })}
         </div>
       ) : bookmarks.length === 0 ? (
-        <p className="mt-10 text-center text-sm text-ink-soft">
-          메뉴 링크를 저장해두면 여기 모여요.
-        </p>
+        <p className="mt-10 text-center text-sm text-ink-soft">{dict.bookmarks.emptyList}</p>
       ) : filtered.length === 0 ? (
-        <p className="mt-10 text-center text-sm text-ink-soft">검색 결과가 없어요.</p>
+        <p className="mt-10 text-center text-sm text-ink-soft">{dict.recipes.emptySearch}</p>
       ) : (
         <div className="flex flex-col gap-3">
           {filtered.map((b) => (
@@ -313,7 +315,7 @@ export function BookmarkList({ bookmarks }: { bookmarks: BookmarkWithRecipe[] })
                       href={`/recipes/${b.recipe_id}`}
                       className="inline-flex w-fit items-center rounded-full bg-accent/8 px-2 py-0.5 text-[10px] font-bold text-accent"
                     >
-                      {b.recipes.title} 메뉴
+                      {dict.bookmarks.linkedRecipeTemplate.replace("{title}", b.recipes.title)}
                     </Link>
                   )}
                   <div className="flex items-center justify-between">

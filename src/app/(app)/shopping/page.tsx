@@ -7,10 +7,12 @@ import { FinishShoppingBar } from "./finish-shopping-bar";
 import { ShoppingItemRow } from "./shopping-item-row";
 import { ShoppingBulkActions } from "./shopping-bulk-actions";
 import { ClearableInput } from "@/components/ClearableInput";
+import { getDictionary } from "@/lib/i18n/server";
 
 export default async function ShoppingPage() {
   const { household } = await getCurrentHousehold();
   const supabase = await createClient();
+  const { dict } = await getDictionary();
 
   const { data } = await supabase
     .from("shopping_items")
@@ -33,9 +35,11 @@ export default async function ShoppingPage() {
     <div className="pb-[calc(11.5rem+env(safe-area-inset-bottom))]">
       <GlassCard className="mb-[18px] bg-white p-4">
         <div className="mb-2.5 flex items-center justify-between">
-          <span className="text-[13px] font-bold">이번 장보기</span>
+          <span className="text-[13px] font-bold">{dict.shopping.currentTrip}</span>
           <span className="text-xs font-bold text-accent">
-            {doneCount}/{items.length} 완료
+            {dict.shopping.doneCountTemplate
+              .replace("{done}", String(doneCount))
+              .replace("{total}", String(items.length))}
           </span>
         </div>
         <ProgressBar percent={percent} colorClass="bg-accent" />
@@ -45,7 +49,7 @@ export default async function ShoppingPage() {
         <div className="min-w-0 flex-1">
           <ClearableInput
             name="name"
-            placeholder="+ 항목 추가"
+            placeholder={dict.shopping.addItemPlaceholder}
             className="w-full rounded-xl border border-transparent bg-surface px-3.5 py-2.5 text-sm outline-none focus:border-accent"
           />
         </div>
@@ -53,14 +57,12 @@ export default async function ShoppingPage() {
           type="submit"
           className="rounded-xl bg-accent px-4 py-2.5 text-sm font-bold text-white"
         >
-          추가
+          {dict.shopping.add}
         </button>
       </form>
 
       {items.length === 0 ? (
-        <p className="mt-10 text-center text-sm text-ink-soft">
-          장보기 목록이 비어 있어요.
-        </p>
+        <p className="mt-10 text-center text-sm text-ink-soft">{dict.shopping.emptyList}</p>
       ) : (
         <>
           <ShoppingBulkActions doneCount={doneCount} allChecked={allChecked} />

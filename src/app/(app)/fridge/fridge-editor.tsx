@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import { saveFridge } from "@/lib/actions/fridge";
 import { GlassCard } from "@/components/ui";
 import { ClearableInput } from "@/components/ClearableInput";
+import { useDict } from "@/lib/i18n/client";
 
 type Item = { name: string; selected: boolean; custom: boolean };
 type Category = { name: string; items: Item[] };
@@ -12,6 +13,7 @@ const LONG_PRESS_MS = 350;
 const MOVE_CANCEL_PX = 10;
 
 export function FridgeEditor({ categories }: { categories: Category[] }) {
+  const dict = useDict();
   const [local, setLocal] = useState<Category[]>(categories);
   const [customInputs, setCustomInputs] = useState<Record<string, string>>({});
   const [search, setSearch] = useState("");
@@ -183,20 +185,20 @@ export function FridgeEditor({ categories }: { categories: Category[] }) {
   return (
     <div>
       <p className="mb-5 text-sm text-ink-soft">
-        {ownedCount}개 재료 보유 중 · 탭하면 바로 추가되거나 빠져요, 길게 눌러서 다른 칸으로 옮길 수 있어요
+        {dict.fridge.summaryTemplate.replace("{count}", String(ownedCount))}
       </p>
 
       <ClearableInput
         value={search}
         onChange={(e) => setSearch(e.target.value)}
-        placeholder="재료 검색"
+        placeholder={dict.fridge.searchPlaceholder}
         className="mb-5 w-full rounded-xl border border-transparent bg-surface px-3.5 py-2.5 text-sm outline-none focus:border-accent"
       />
 
       {!q && (
         <div className="-mt-2 mb-2 flex justify-end">
           <button type="button" onClick={toggleAllExpanded} className="px-4 py-2 text-xs font-bold text-accent">
-            {allExpanded ? "전체 닫기" : "전체 열기"}
+            {allExpanded ? dict.fridge.collapseAll : dict.fridge.expandAll}
           </button>
         </div>
       )}
@@ -204,8 +206,7 @@ export function FridgeEditor({ categories }: { categories: Category[] }) {
       {noMatches && (
         <GlassCard className="mb-5 border-transparent bg-surface p-4">
           <p className="mb-3 text-sm text-ink-soft">
-            <span className="font-bold text-ink">&lsquo;{search.trim()}&rsquo;</span>을(를) 찾을 수 없어요.
-            어느 칸에 추가할까요?
+            {dict.fridge.noMatchesTemplate.replace("{term}", search.trim())}
           </p>
           <div className="flex flex-wrap gap-2">
             {local.map((cat) => (
@@ -259,7 +260,7 @@ export function FridgeEditor({ categories }: { categories: Category[] }) {
                     ownedNames.length > 0 ? "text-ink" : "text-ink-faint"
                   }`}
                 >
-                  {ownedNames.length > 0 ? ownedNames.join(", ") : "보유한 재료가 없어요"}
+                  {ownedNames.length > 0 ? ownedNames.join(", ") : dict.fridge.noOwnedItems}
                 </p>
               )}
 
@@ -297,7 +298,7 @@ export function FridgeEditor({ categories }: { categories: Category[] }) {
                         <button
                           type="button"
                           onClick={() => removeCustom(cat.name, item.name)}
-                          aria-label="삭제"
+                          aria-label={dict.common.delete}
                           className="flex h-5 w-5 items-center justify-center pr-2.5 text-xs opacity-70"
                         >
                           ×
@@ -335,7 +336,7 @@ export function FridgeEditor({ categories }: { categories: Category[] }) {
                         addCustom(cat.name);
                       }
                     }}
-                    placeholder="직접 추가"
+                    placeholder={dict.fridge.addCustomPlaceholder}
                     className="w-16 bg-transparent text-[13px] outline-none placeholder:text-ink-faint"
                   />
                   <button

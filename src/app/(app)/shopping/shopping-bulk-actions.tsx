@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { clearAllShoppingItems, clearCheckedItems, setAllShoppingItemsChecked } from "@/lib/actions/shopping";
 import { Modal } from "@/components/Modal";
+import { useDict } from "@/lib/i18n/client";
 
 export function ShoppingBulkActions({
   doneCount,
@@ -12,6 +13,7 @@ export function ShoppingBulkActions({
   doneCount: number;
   allChecked: boolean;
 }) {
+  const dict = useDict();
   const [confirmingAll, setConfirmingAll] = useState(false);
   const [confirmingChecked, setConfirmingChecked] = useState(false);
   const [pending, startTransition] = useTransition();
@@ -42,7 +44,7 @@ export function ShoppingBulkActions({
             onClick={() => setConfirmingAll(true)}
             className="px-4 py-2 text-xs font-bold text-ink-soft"
           >
-            전체 삭제
+            {dict.shopping.deleteAll}
           </button>
           {doneCount > 0 && (
             <button
@@ -50,31 +52,29 @@ export function ShoppingBulkActions({
               onClick={() => setConfirmingChecked(true)}
               className="px-4 py-2 text-xs font-bold text-ink-soft"
             >
-              선택 삭제
+              {dict.shopping.deleteSelected}
             </button>
           )}
         </div>
         <form action={setAllShoppingItemsChecked}>
           <input type="hidden" name="checked" value={(!allChecked).toString()} />
           <button type="submit" className="px-4 py-2 text-xs font-bold text-ink-soft">
-            {allChecked ? "전체 해제" : "전체 선택"}
+            {allChecked ? dict.shopping.deselectAll : dict.shopping.selectAll}
           </button>
         </form>
       </div>
 
       <Modal open={confirmingAll} onClose={() => setConfirmingAll(false)} variant="center">
         <div className="mx-auto w-full max-w-[360px] rounded-2xl bg-white p-5 shadow-xl">
-          <p className="text-sm font-bold text-ink">장보기 목록을 전체 삭제할까요?</p>
-          <p className="mt-2 text-xs text-ink-soft">
-            체크 여부와 상관없이 목록의 모든 항목이 삭제돼요. 되돌릴 수 없어요.
-          </p>
+          <p className="text-sm font-bold text-ink">{dict.shopping.deleteAllTitle}</p>
+          <p className="mt-2 text-xs text-ink-soft">{dict.shopping.deleteAllDesc}</p>
           <div className="mt-4 flex justify-end gap-2">
             <button
               type="button"
               onClick={() => setConfirmingAll(false)}
               className="rounded-lg bg-surface px-3.5 py-2 text-xs font-bold text-ink-soft"
             >
-              취소
+              {dict.common.cancel}
             </button>
             <button
               type="button"
@@ -82,7 +82,7 @@ export function ShoppingBulkActions({
               disabled={pending}
               className="rounded-lg bg-warn px-3.5 py-2 text-xs font-bold text-white disabled:opacity-60"
             >
-              {pending ? "삭제 중..." : "전체 삭제"}
+              {pending ? dict.recipes.deleting : dict.shopping.deleteAll}
             </button>
           </div>
         </div>
@@ -90,15 +90,17 @@ export function ShoppingBulkActions({
 
       <Modal open={confirmingChecked} onClose={() => setConfirmingChecked(false)} variant="center">
         <div className="mx-auto w-full max-w-[360px] rounded-2xl bg-white p-5 shadow-xl">
-          <p className="text-sm font-bold text-ink">체크한 {doneCount}개 항목을 삭제할까요?</p>
-          <p className="mt-2 text-xs text-ink-soft">되돌릴 수 없어요.</p>
+          <p className="text-sm font-bold text-ink">
+            {dict.shopping.deleteCheckedTitleTemplate.replace("{count}", String(doneCount))}
+          </p>
+          <p className="mt-2 text-xs text-ink-soft">{dict.shopping.cannotUndo}</p>
           <div className="mt-4 flex justify-end gap-2">
             <button
               type="button"
               onClick={() => setConfirmingChecked(false)}
               className="rounded-lg bg-surface px-3.5 py-2 text-xs font-bold text-ink-soft"
             >
-              취소
+              {dict.common.cancel}
             </button>
             <button
               type="button"
@@ -106,7 +108,7 @@ export function ShoppingBulkActions({
               disabled={pending}
               className="rounded-lg bg-warn px-3.5 py-2 text-xs font-bold text-white disabled:opacity-60"
             >
-              {pending ? "삭제 중..." : "삭제"}
+              {pending ? dict.recipes.deleting : dict.common.delete}
             </button>
           </div>
         </div>
