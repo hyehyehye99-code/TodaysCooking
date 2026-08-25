@@ -101,10 +101,10 @@ export async function generateRecipeFromLink(
   if (!isUnlimited) {
     const { data: promoGrant } = await supabase
       .from("promo_code_redemptions")
-      .select("user_id")
+      .select("expires_at")
       .eq("user_id", user.id)
       .maybeSingle();
-    isUnlimited = !!promoGrant;
+    isUnlimited = !!promoGrant && (!promoGrant.expires_at || new Date(promoGrant.expires_at) > new Date());
   }
   let isPremium = false;
   if (!isUnlimited) {

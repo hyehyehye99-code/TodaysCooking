@@ -60,9 +60,9 @@ export default async function MyPage() {
   const activeIsPremium = !!sub?.active && (!sub.expires_at || new Date(sub.expires_at) > new Date());
 
   const { data: promoGrant } = user
-    ? await supabase.from("promo_code_redemptions").select("user_id").eq("user_id", user.id).maybeSingle()
+    ? await supabase.from("promo_code_redemptions").select("expires_at").eq("user_id", user.id).maybeSingle()
     : { data: null };
-  const isUnlimited = !!promoGrant;
+  const isUnlimited = !!promoGrant && (!promoGrant.expires_at || new Date(promoGrant.expires_at) > new Date());
 
   const planLimit = activeIsPremium ? PREMIUM_MONTHLY_LIMIT : FREE_WEEKLY_LIMIT;
   const planSince = daysAgoIso(activeIsPremium ? 30 : 7);

@@ -83,7 +83,12 @@ export function SubscriptionPaywall({
         await Purchases.configure({ apiKey: REVENUECAT_IOS_API_KEY, appUserID: householdId });
         const offerings = await Purchases.getOfferings();
         setPackages(offerings.current?.availablePackages ?? []);
-      } catch {
+      } catch (e) {
+        // Surfaced only via Safari Web Inspector (Mac: Safari > Develop >
+        // [device] > this page) — RevenueCat shows zero successful SDK
+        // connections ever, so this log is the fastest way to see what
+        // configure()/getOfferings() actually threw on-device.
+        console.error("[SubscriptionPaywall] offerings fetch failed:", e);
         setError(dict.components.subFetchError);
       } finally {
         setStatus("idle");
@@ -106,6 +111,7 @@ export function SubscriptionPaywall({
       // not yet approved, network failure, ...) used to fail exactly the
       // same way, with nothing on screen to tell the two apart.
       if (!(e as PurchasesError)?.userCancelled) {
+        console.error("[SubscriptionPaywall] purchase failed:", e);
         setError(dict.components.purchaseError);
       }
     } finally {
@@ -119,7 +125,8 @@ export function SubscriptionPaywall({
     try {
       await Purchases.restorePurchases();
       router.refresh();
-    } catch {
+    } catch (e) {
+      console.error("[SubscriptionPaywall] restore failed:", e);
       setError(dict.components.restoreError);
     } finally {
       setStatus("idle");

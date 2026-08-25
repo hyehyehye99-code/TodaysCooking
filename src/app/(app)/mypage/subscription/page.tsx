@@ -12,9 +12,9 @@ export default async function SubscriptionPage() {
   const { household } = await getCurrentHousehold();
 
   const { data: promoGrant } = user
-    ? await supabase.from("promo_code_redemptions").select("user_id").eq("user_id", user.id).maybeSingle()
+    ? await supabase.from("promo_code_redemptions").select("expires_at").eq("user_id", user.id).maybeSingle()
     : { data: null };
-  const isUnlimited = !!promoGrant;
+  const isUnlimited = !!promoGrant && (!promoGrant.expires_at || new Date(promoGrant.expires_at) > new Date());
 
   const { data: sub } = household
     ? await supabase
