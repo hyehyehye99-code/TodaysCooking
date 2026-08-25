@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { redirect } from "next/navigation";
 import { getCurrentHousehold } from "@/lib/household";
 
 const HIGHLIGHT_FEATURES = [
@@ -58,9 +57,14 @@ const PAIN_POINTS = [
 ];
 
 export default async function LandingPage() {
+  // No redirect here — this page doubles as the shareable marketing link
+  // (see the landing/subscription pricing sections below), so it has to
+  // render for a logged-in visitor too, not just bounce them into the app.
+  // /login still redirects an already-authenticated visitor onward on its
+  // own, so the CTA below works correctly either way.
   const { user, household } = await getCurrentHousehold();
-  if (user && household) redirect("/recipes");
-  if (user && !household) redirect("/onboarding");
+  const appHref = !user ? "/login" : household ? "/recipes" : "/onboarding";
+  const webCtaLabel = user ? "앱으로 이동" : "웹으로 시작하기";
 
   return (
     <div className="h-dvh w-full overflow-y-auto overscroll-contain">
@@ -70,8 +74,8 @@ export default async function LandingPage() {
           <img src="/logo-mark.svg" alt="" width={28} height={28} />
           <span className="text-sm font-bold tracking-wide text-ink">우리집 메뉴판</span>
         </div>
-        <Link href="/login" className="text-sm font-bold text-ink-soft">
-          로그인
+        <Link href={appHref} className="text-sm font-bold text-ink-soft">
+          {user ? "앱으로 이동" : "로그인"}
         </Link>
       </header>
 
@@ -93,10 +97,10 @@ export default async function LandingPage() {
           </p>
           <div className="mt-8 flex flex-wrap items-center gap-3">
             <Link
-              href="/login"
+              href={appHref}
               className="inline-block rounded-xl bg-accent px-7 py-4 text-sm font-bold text-white"
             >
-              웹으로 시작하기
+              {webCtaLabel}
             </Link>
             <span
               aria-disabled="true"
@@ -193,7 +197,7 @@ export default async function LandingPage() {
             <div className="rounded-2xl border-2 border-accent p-7">
               <p className="text-sm font-bold text-accent">우리집 메뉴판 프리미엄</p>
               <p className="mt-2 text-3xl font-bold text-ink">
-                ₩2,900<span className="text-sm font-semibold text-ink-faint"> / 월</span>
+                ₩9,900<span className="text-sm font-semibold text-ink-faint"> / 월</span>
               </p>
               <ul className="mt-6 flex flex-col gap-3 text-sm text-ink-soft">
                 <li>· 무료 플랜의 모든 기능</li>
@@ -213,10 +217,10 @@ export default async function LandingPage() {
           </p>
           <div className="mt-7 flex flex-wrap items-center justify-center gap-3">
             <Link
-              href="/login"
+              href={appHref}
               className="inline-block rounded-xl bg-accent px-8 py-4 text-sm font-bold text-white"
             >
-              웹으로 시작하기
+              {webCtaLabel}
             </Link>
             <span
               aria-disabled="true"
