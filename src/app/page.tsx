@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { getCurrentHousehold } from "@/lib/household";
 import { getDictionary } from "@/lib/i18n/server";
+import { BackButton } from "@/components/ui";
 
 const FEATURE_ICONS = [
   <svg key="ai" width="22" height="22" viewBox="0 0 22 22" fill="none" aria-hidden="true">
@@ -56,11 +57,17 @@ export default async function LandingPage() {
 
   return (
     <div className="h-dvh w-full overflow-y-auto overscroll-contain">
-      <header className="mx-auto flex w-full max-w-5xl items-center justify-between px-6 py-6">
-        <div className="flex items-center gap-2">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/logo-mark.svg" alt="" width={28} height={28} />
-          <span className="text-sm font-bold tracking-wide text-ink">우리집 메뉴판</span>
+      <header
+        className="mx-auto flex w-full max-w-5xl items-center justify-between px-6 pb-6"
+        style={{ paddingTop: "max(env(safe-area-inset-top), 24px)" }}
+      >
+        <div className="flex items-center gap-3">
+          {user && <BackButton href="/mypage" />}
+          <div className="flex items-center gap-2">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/logo-mark.svg" alt="" width={28} height={28} />
+            <span className="text-sm font-bold tracking-wide text-ink">우리집 메뉴판</span>
+          </div>
         </div>
         <Link href={appHref} className="text-sm font-bold text-ink-soft">
           {user ? dict.landing.goToApp : dict.landing.login}
