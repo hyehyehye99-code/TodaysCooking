@@ -13,6 +13,21 @@ type AiResult = { title: string | null; ingredients: string[]; instructions: str
 
 const DEBOUNCE_MS = 700;
 
+const YOUTUBE_HOSTS = new Set(["youtube.com", "www.youtube.com", "m.youtube.com", "youtu.be"]);
+
+// AI extraction leans on the video description/comments (see
+// generateRecipeFromLink) — a non-YouTube link only has a plain OG title, so
+// results were unreliable enough that it's better to not offer the button
+// than to burn someone's limited weekly quota on a guess.
+function isYoutubeUrl(value: string): boolean {
+  try {
+    const url = new URL(value.startsWith("http") ? value : `https://${value}`);
+    return YOUTUBE_HOSTS.has(url.hostname);
+  } catch {
+    return false;
+  }
+}
+
 function AiInfoButton() {
   const [open, setOpen] = useState(false);
   return (
@@ -29,9 +44,10 @@ function AiInfoButton() {
         <div className="mx-auto w-full max-w-[340px] rounded-2xl bg-white p-5 shadow-xl">
           <p className="text-sm font-bold text-ink">AI 자동 작성 안내</p>
           <ul className="mt-3 flex flex-col gap-2 text-xs leading-relaxed text-ink-soft">
+            <li>· AI 자동 정리는 유튜브 링크에만 적용돼요.</li>
             <li>· 무료로는 일주일에 5번까지 쓸 수 있어요.</li>
             <li>· 구독하면 한 달에 100번까지 쓸 수 있어요.</li>
-            <li>· 결과가 마음에 안 들면 결과 옆의 &quot;신고하기&quot;로 알려주세요 — 확인 후 사용 횟수를 돌려드릴 수 있어요.</li>
+            <li>· 결과가 마음에 안 들면 &quot;결과가 별로였나요? 보고해주세요&quot;로 알려주세요 — 확인 후 사용 횟수를 돌려드릴 수 있어요.</li>
           </ul>
           <button
             type="button"
@@ -93,7 +109,7 @@ function ReportResultModal({
             disabled={sending}
             className="flex-1 rounded-xl bg-accent py-2.5 text-xs font-bold text-white disabled:opacity-60"
           >
-            {sending ? "보내는 중..." : "신고하기"}
+            {sending ? "보내는 중..." : "보고하기"}
           </button>
         </div>
       </div>
@@ -237,41 +253,50 @@ export function ReferenceLinkField({
       {loading && <p className="mt-2 text-xs text-ink-faint">미리보기를 불러오는 중...</p>}
 
       {!loading && preview && (preview.title || preview.thumbnailUrl) && (
-        <div className="mt-3 flex gap-3">
-          <div className="h-[72px] w-[88px] shrink-0 overflow-hidden rounded-xl bg-black/[0.04]">
-            {preview.thumbnailUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={preview.thumbnailUrl} alt="" className="h-full w-full object-cover" />
-            ) : (
-              <div className="flex h-full w-full items-center justify-center">
-                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="var(--color-ink-faint)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M6 3.5h12a.5.5 0 0 1 .5.5v17l-6.5-4-6.5 4v-17a.5.5 0 0 1 .5-.5z" />
-                </svg>
-              </div>
-            )}
+        <div className="mt-3">
+          <div className="mb-1.5 flex items-center justify-between">
+            <span className="text-xs font-bold text-ink-soft">참고 링크</span>
+            {onAiResult && <AiInfoButton />}
           </div>
-          <div className="flex min-w-0 flex-1 flex-col justify-center gap-1">
-            <p className="line-clamp-2 text-[13px] font-bold leading-snug">
-              {preview.title || "참고 링크"}
-            </p>
-            {preview.domain && <span className="text-[11px] text-ink-faint">{preview.domain}</span>}
+          <div className="flex gap-3">
+            <div className="h-[72px] w-[88px] shrink-0 overflow-hidden rounded-xl bg-black/[0.04]">
+              {preview.thumbnailUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={preview.thumbnailUrl} alt="" className="h-full w-full object-cover" />
+              ) : (
+                <div className="flex h-full w-full items-center justify-center">
+                  <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="var(--color-ink-faint)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M6 3.5h12a.5.5 0 0 1 .5.5v17l-6.5-4-6.5 4v-17a.5.5 0 0 1 .5-.5z" />
+                  </svg>
+                </div>
+              )}
+            </div>
+            <div className="flex min-w-0 flex-1 flex-col justify-center gap-1">
+              <p className="line-clamp-2 text-[13px] font-bold leading-snug">
+                {preview.title || "참고 링크"}
+              </p>
+              {preview.domain && <span className="text-[11px] text-ink-faint">{preview.domain}</span>}
+            </div>
           </div>
         </div>
       )}
 
       {!loading && preview && onAiResult && (
         <>
-          <div className="mt-3 flex items-center gap-1.5">
+          {isYoutubeUrl(url) ? (
             <button
               type="button"
               onClick={handleAiFill}
               disabled={aiLoading}
-              className="flex-1 rounded-xl border border-accent bg-white py-2.5 text-xs font-bold text-accent-ink disabled:opacity-60"
+              className="mt-3 w-full rounded-xl border border-accent bg-white py-2.5 text-xs font-bold text-accent-ink disabled:opacity-60"
             >
               {aiLoading ? "AI가 작성하는 중..." : "✨ AI로 재료·레시피 자동 작성"}
             </button>
-            <AiInfoButton />
-          </div>
+          ) : (
+            <p className="mt-3 text-center text-[11px] text-ink-faint">
+              AI 자동 작성은 유튜브 링크에서만 쓸 수 있어요
+            </p>
+          )}
           {aiError && (
             <div className="mt-2 flex items-center gap-2">
               <p className="text-xs text-warn-ink">{aiError}</p>
@@ -283,15 +308,17 @@ export function ReferenceLinkField({
             </div>
           )}
           {lastGeneration && !reportSent && (
-            <button
-              type="button"
-              onClick={() => setReportOpen(true)}
-              className="mt-2 text-[11px] text-ink-faint underline"
-            >
-              결과가 별로였나요? 신고하기
-            </button>
+            <div className="mt-2 flex justify-end">
+              <button
+                type="button"
+                onClick={() => setReportOpen(true)}
+                className="text-[11px] text-ink-faint underline"
+              >
+                결과가 별로였나요? 보고해주세요
+              </button>
+            </div>
           )}
-          {reportSent && <p className="mt-2 text-[11px] text-ink-faint">신고가 접수됐어요. 확인해볼게요.</p>}
+          {reportSent && <p className="mt-2 text-right text-[11px] text-ink-faint">보고가 접수됐어요. 확인해볼게요.</p>}
           <ReportResultModal open={reportOpen} onClose={() => setReportOpen(false)} onSubmit={handleReportSubmit} />
         </>
       )}

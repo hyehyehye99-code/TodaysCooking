@@ -10,6 +10,7 @@ import { DeleteRecipeButton } from "./delete-recipe-button";
 import { MissingIngredientsButton } from "./missing-ingredients-button";
 import { RecipePhotoGallery } from "./recipe-photo-gallery";
 import { ReactionLog } from "./reaction-log";
+import { ShareRecipeButton } from "./share-recipe-button";
 
 export default async function RecipeDetailPage({
   params,
@@ -74,16 +75,23 @@ export default async function RecipeDetailPage({
             {r.subtitle && <p className="mt-0.5 text-sm text-ink-soft">{r.subtitle}</p>}
           </div>
         </div>
-        <Link
-          href="/recipes"
-          aria-label="닫기"
-          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-surface text-ink"
-        >
-          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M18 6L6 18" />
-            <path d="M6 6l12 12" />
-          </svg>
-        </Link>
+        <div className="flex shrink-0 items-center gap-2">
+          <ShareRecipeButton
+            title={r.title}
+            ingredients={ingredients.map((i) => (i.amount ? `${i.name} ${i.amount}` : i.name))}
+            instructions={r.notes}
+          />
+          <Link
+            href="/recipes"
+            aria-label="닫기"
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-surface text-ink"
+          >
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M18 6L6 18" />
+              <path d="M6 6l12 12" />
+            </svg>
+          </Link>
+        </div>
       </div>
 
       <RecipePhotoGallery photos={r.cover_photo_urls} />

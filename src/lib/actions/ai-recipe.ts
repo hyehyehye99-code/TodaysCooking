@@ -97,7 +97,15 @@ export async function generateRecipeFromLink(
   } = await supabase.auth.getUser();
   if (!user) return { ok: false, error: "로그인이 필요해요." };
 
-  const isUnlimited = !!user.email && UNLIMITED_EMAILS.has(user.email.toLowerCase());
+  let isUnlimited = !!user.email && UNLIMITED_EMAILS.has(user.email.toLowerCase());
+  if (!isUnlimited) {
+    const { data: promoGrant } = await supabase
+      .from("promo_code_redemptions")
+      .select("user_id")
+      .eq("user_id", user.id)
+      .maybeSingle();
+    isUnlimited = !!promoGrant;
+  }
   let isPremium = false;
   if (!isUnlimited) {
     const { household } = await getCurrentHousehold();

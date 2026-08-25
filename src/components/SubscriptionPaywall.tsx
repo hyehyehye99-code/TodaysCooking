@@ -3,7 +3,7 @@
 import { useEffect, useState, useSyncExternalStore } from "react";
 import { useRouter } from "next/navigation";
 import { Capacitor } from "@capacitor/core";
-import { Purchases, type PurchasesPackage } from "@revenuecat/purchases-capacitor";
+import { Purchases, type PurchasesPackage, type PurchasesError } from "@revenuecat/purchases-capacitor";
 import { GlassCard } from "@/components/ui";
 
 const REVENUECAT_IOS_API_KEY = process.env.NEXT_PUBLIC_REVENUECAT_IOS_API_KEY ?? "";
@@ -79,9 +79,14 @@ export function SubscriptionPaywall({
       // so the server component re-checks it a moment later. If it hasn't
       // landed yet, opening this page again shortly after will show it.
       router.refresh();
-    } catch {
-      // Includes user-cancelled purchases — RevenueCat throws for those too,
-      // and there's nothing useful to show the user in that case.
+    } catch (e) {
+      // RevenueCat throws for a cancelled purchase too — that's silent and
+      // expected. Anything else (no sandbox account signed in, the product
+      // not yet approved, network failure, ...) used to fail exactly the
+      // same way, with nothing on screen to tell the two apart.
+      if (!(e as PurchasesError)?.userCancelled) {
+        setError("결제를 진행하지 못했어요. 잠시 후 다시 시도해주세요.");
+      }
     } finally {
       setStatus("idle");
     }

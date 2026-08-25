@@ -1,8 +1,8 @@
+import Link from "next/link";
 import { switchHousehold } from "@/lib/actions/household";
 import { GlassCard } from "@/components/ui";
 import { InviteButton } from "./invite-button";
 import { HouseholdDetailButton } from "./household-detail-button";
-import { ShareMenuButton } from "./share-menu-button";
 
 type Member = { user_id: string; nickname: string; icon_emoji: string | null; role: string; joined_at: string };
 type HouseholdEntry = {
@@ -11,38 +11,14 @@ type HouseholdEntry = {
   members: Member[];
 };
 
-type ShareChangeLog = {
-  nickname: string;
-  action: "enabled" | "disabled" | "tags_changed";
-  at: string;
-} | null;
-
-type SharedPreviewRecipe = {
-  id: string;
-  title: string;
-  cover_photo_urls: string[];
-  icon_emoji: string | null;
-  likeCount: number;
-};
-
 export function HouseholdList({
   entries,
   currentId,
   myUserId,
-  shareCode,
-  shareTags,
-  shareableTags,
-  shareChangeLog,
-  sharedPreview,
 }: {
   entries: HouseholdEntry[];
   currentId: string;
   myUserId: string;
-  shareCode: string | null;
-  shareTags: string[];
-  shareableTags: string[];
-  shareChangeLog: ShareChangeLog;
-  sharedPreview: SharedPreviewRecipe[];
 }) {
   return (
     <div className="flex flex-col gap-2.5">
@@ -96,15 +72,12 @@ export function HouseholdList({
             <div className="mt-3 flex items-center justify-between">
               <span className="text-xs text-ink-soft">참여 인원 {members.length}명</span>
               <div className="flex items-center gap-1.5">
-                <ShareMenuButton
-                  householdId={household.id}
-                  householdName={household.name}
-                  initialShareCode={shareCode}
-                  initialShareTags={shareTags}
-                  shareableTags={shareableTags}
-                  changeLog={shareChangeLog}
-                  sharedPreview={sharedPreview}
-                />
+                <Link
+                  href="/mypage/subscription"
+                  className="rounded-lg bg-surface px-3 py-2 text-xs font-bold text-ink-soft"
+                >
+                  구독
+                </Link>
                 <InviteButton householdName={household.name} inviteCode={household.invite_code} />
               </div>
             </div>

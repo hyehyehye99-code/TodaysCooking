@@ -2,6 +2,7 @@ import { BackButton, GlassCard, ProgressBar } from "@/components/ui";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentHousehold } from "@/lib/household";
 import { SubscriptionPaywall } from "@/components/SubscriptionPaywall";
+import { PromoCodeButton } from "./promo-code-button";
 
 // Kept in sync with FREE_WEEKLY_LIMIT / PREMIUM_MONTHLY_LIMIT in
 // src/lib/actions/ai-recipe.ts — this page only displays the count, the
@@ -20,6 +21,11 @@ export default async function SubscriptionPage() {
     data: { user },
   } = await supabase.auth.getUser();
   const { household } = await getCurrentHousehold();
+
+  const { data: promoGrant } = user
+    ? await supabase.from("promo_code_redemptions").select("user_id").eq("user_id", user.id).maybeSingle()
+    : { data: null };
+  const isUnlimited = !!promoGrant;
 
   const { data: sub } = household
     ? await supabase
@@ -48,24 +54,37 @@ export default async function SubscriptionPage() {
         <h1 className="text-[22px] font-bold">구독</h1>
       </div>
 
-      <GlassCard className="mb-6 bg-white p-4">
-        <p className="text-sm font-semibold text-ink">
-          {isPremium ? "프리미엄 이용 중" : "무료 플랜"}
-        </p>
-        <p className="mt-1 text-xs text-ink-soft">
-          {isPremium ? `이번 달 AI 자동 정리 ${used}/${limit}회 사용` : `이번 주 AI 자동 정리 ${used}/${limit}회 사용`}
-        </p>
-        <div className="mt-3">
-          <ProgressBar percent={(used / limit) * 100} colorClass={isPremium ? "bg-accent" : "bg-positive"} />
-        </div>
-        {household && sub?.expires_at && isPremium && (
-          <p className="mt-3 text-xs text-ink-faint">
-            다음 결제일: {new Date(sub.expires_at).toLocaleDateString("ko-KR")}
-          </p>
-        )}
-      </GlassCard>
+      {isUnlimited ? (
+        <GlassCard className="mb-6 bg-white p-4">
+          <p className="text-sm font-semibold text-ink">무제한 이용 중</p>
+          <p className="mt-1 text-xs text-ink-soft">프로모션 코드로 AI 자동 정리를 무제한으로 쓸 수 있어요.</p>
+        </GlassCard>
+      ) : (
+        <>
+          <GlassCard className="mb-6 bg-white p-4">
+            <p className="text-sm font-semibold text-ink">
+              {isPremium ? "프리미엄 이용 중" : "무료 플랜"}
+            </p>
+            <p className="mt-1 text-xs text-ink-soft">
+              {isPremium ? `이번 달 AI 자동 정리 ${used}/${limit}회 사용` : `이번 주 AI 자동 정리 ${used}/${limit}회 사용`}
+            </p>
+            <div className="mt-3">
+              <ProgressBar percent={(used / limit) * 100} colorClass={isPremium ? "bg-accent" : "bg-positive"} />
+            </div>
+            {household && sub?.expires_at && isPremium && (
+              <p className="mt-3 text-xs text-ink-faint">
+                다음 결제일: {new Date(sub.expires_at).toLocaleDateString("ko-KR")}
+              </p>
+            )}
+          </GlassCard>
 
-      <SubscriptionPaywall isPremium={isPremium} householdId={household?.id ?? null} />
+          <SubscriptionPaywall isPremium={isPremium} householdId={household?.id ?? null} />
+
+          <div className="mt-6 flex justify-center">
+            <PromoCodeButton />
+          </div>
+        </>
+      )}
     </div>
   );
 }

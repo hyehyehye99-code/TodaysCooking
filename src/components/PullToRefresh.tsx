@@ -70,8 +70,12 @@ export function PullToRefresh({
   return (
     <div className="relative flex-1 overflow-hidden">
       <div
-        className="pointer-events-none absolute inset-x-0 top-0 flex justify-center overflow-hidden"
-        style={{ height: shown }}
+        className="pointer-events-none absolute inset-x-0 flex justify-center overflow-hidden"
+        // Positioned below the safe-area inset (notch/status bar/Dynamic
+        // Island) — at top-0 it started right at the physical screen edge,
+        // so its top few pixels rendered underneath the system UI and the
+        // icon looked cut off.
+        style={{ top: "env(safe-area-inset-top)", height: shown }}
       >
         <div className="flex items-end pb-2">
           <svg
