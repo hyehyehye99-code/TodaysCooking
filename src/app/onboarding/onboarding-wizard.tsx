@@ -2,6 +2,7 @@
 
 import { useRef, useState, useTransition } from "react";
 import { completeOnboardingAuthed } from "@/lib/actions/onboarding";
+import { signOut } from "@/lib/actions/auth";
 import { BackButton } from "@/components/ui";
 import { ClearableInput } from "@/components/ClearableInput";
 import { useDict } from "@/lib/i18n/client";
@@ -90,7 +91,21 @@ export function OnboardingWizard({ householdMissingNotice = false }: { household
   return (
     <div className="mx-auto flex h-dvh w-full max-w-[420px] flex-col">
       <div className="flex flex-1 flex-col overflow-y-auto px-6 pt-[max(env(safe-area-inset-top),24px)]">
-        <StepDots step={step} total={totalSteps} />
+        <div className="mb-2 flex items-center justify-between gap-3">
+          <div className="flex-1">
+            <StepDots step={step} total={totalSteps} />
+          </div>
+          {/* Every page under (app) redirects here when the user has no
+              household, and /login bounces straight back here while
+              authenticated — so without this, a user stuck by a setup
+              error (or who just wants to try a different account) has no
+              way out except force-quitting the app. */}
+          <form action={signOut}>
+            <button type="submit" className="shrink-0 text-xs font-semibold text-ink-faint underline">
+              {dict.mypage.signOut}
+            </button>
+          </form>
+        </div>
 
         {step === 1 && (
           <div className="flex flex-1 flex-col">
