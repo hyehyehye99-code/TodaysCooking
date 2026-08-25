@@ -26,7 +26,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           >
             <input type="hidden" name="householdId" value={household.id} />
             <p className="text-xs font-semibold leading-snug text-accent-ink">
-              이전에 있던 부엌을 더 이상 이용할 수 없어서 &lsquo;{household.name}&rsquo;(으)로 이동했어요.
+              이전에 있던 우리집을 더 이상 이용할 수 없어서 &lsquo;{household.name}&rsquo;(으)로 이동했어요.
             </p>
             <button
               type="submit"

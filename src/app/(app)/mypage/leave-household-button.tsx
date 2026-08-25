@@ -33,7 +33,7 @@ export function LeaveHouseholdButton({
   if (isOwner && hasOtherMembers) {
     message = "대장 자리는 가장 먼저 들어온 다른 참여자에게 자동으로 넘어가요.";
   } else if (isOwner) {
-    message = "함께 쓰는 사람이 없어서, 나가면 이 부엌이 완전히 삭제돼요.";
+    message = "함께 쓰는 사람이 없어서, 나가면 이 우리집이 완전히 삭제돼요.";
   } else {
     message = "언제든 초대 코드나 링크로 다시 참여할 수 있어요.";
   }
@@ -51,7 +51,7 @@ export function LeaveHouseholdButton({
       <ConfirmModal
         open={confirming}
         onClose={close}
-        title="정말 이 부엌에서 나가시겠어요?"
+        title="정말 이 우리집에서 나가시겠어요?"
         description={message}
         confirmSlot={
           <form action={leaveHousehold}>
@@ -71,7 +71,7 @@ export function LeaveHouseholdButton({
         {destructive && (
           <>
             <p className="mt-3 text-xs text-ink-soft">
-              확인을 위해 부엌 이름 <span className="font-bold text-ink">{householdName}</span>
+              확인을 위해 우리집 이름 <span className="font-bold text-ink">{householdName}</span>
               을(를) 입력해주세요.
             </p>
             <ClearableInput

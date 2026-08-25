@@ -43,9 +43,9 @@ export function HouseholdDetailButton({
 
       <Modal open={open} onClose={() => setOpen(false)} variant="sheet">
         <div className="mx-auto flex max-h-[85vh] w-full max-w-[420px] flex-col rounded-t-3xl bg-white p-5 pb-[max(env(safe-area-inset-bottom),20px)]">
-            <p className="mb-4 text-[15px] font-bold">부엌 정보</p>
+            <p className="mb-4 text-[15px] font-bold">우리집 정보</p>
 
-            <p className="mb-2 text-xs font-bold text-ink-soft">부엌 이름</p>
+            <p className="mb-2 text-xs font-bold text-ink-soft">우리집 이름</p>
             <RenameHouseholdForm
               householdId={householdId}
               currentName={householdName}

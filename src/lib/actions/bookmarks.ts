@@ -11,7 +11,7 @@ export async function addBookmark(_prevState: unknown, formData: FormData) {
   if (!rawUrl) return { error: "링크를 입력해주세요." };
 
   const { user, household } = await getCurrentHousehold();
-  if (!user || !household) return { error: "부엌을 먼저 만들어주세요." };
+  if (!user || !household) return { error: "우리집을 먼저 만들어주세요." };
 
   const preview = await fetchLinkPreview(rawUrl);
   if (!preview.ok) return { error: preview.error };

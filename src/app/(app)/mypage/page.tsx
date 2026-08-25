@@ -77,7 +77,7 @@ export default async function MyPage() {
         <PushNotificationToggle />
       </GlassCard>
 
-      <p className="mb-3 text-[13px] font-bold text-ink-soft">부엌 관리</p>
+      <p className="mb-3 text-[13px] font-bold text-ink-soft">우리집 관리</p>
       <div className="mb-4">
         <HouseholdList
           entries={entries}

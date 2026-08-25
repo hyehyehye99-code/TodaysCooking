@@ -21,7 +21,7 @@ export default function PrivacyPage() {
         <section>
           <h2 className="mb-1.5 text-sm font-bold text-ink">2. 개인정보의 수집 및 이용 목적</h2>
           <p>
-            회원 식별 및 로그인, 레시피·냉장고·장보기 기능 제공, 가족 구성원 간 부엌 공유, AI를
+            회원 식별 및 로그인, 레시피·냉장고·장보기 기능 제공, 가족 구성원 간 우리집 공유, AI를
             이용한 재료·조리법 자동 정리, 푸시 알림 발송 목적으로 이용합니다.
           </p>
         </section>

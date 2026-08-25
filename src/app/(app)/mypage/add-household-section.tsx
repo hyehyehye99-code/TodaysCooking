@@ -16,13 +16,13 @@ export function AddHouseholdSection() {
         onClick={() => setOpen(true)}
         className="flex w-full items-center justify-center gap-1.5 rounded-xl border border-dashed border-border py-3 text-sm font-bold text-accent"
       >
-        + 부엌 추가
+        + 우리집 추가
       </button>
 
       <Modal open={open} onClose={() => setOpen(false)} variant="sheet">
         <div className="mx-auto flex max-h-[85vh] w-full max-w-[420px] flex-col gap-3 overflow-y-auto rounded-t-3xl bg-white p-5 pb-[max(env(safe-area-inset-bottom),20px)]">
           <div className="flex items-center justify-between">
-            <p className="text-[15px] font-bold">부엌 추가</p>
+            <p className="text-[15px] font-bold">우리집 추가</p>
             <button
               type="button"
               onClick={() => setOpen(false)}
@@ -33,7 +33,7 @@ export function AddHouseholdSection() {
           </div>
 
           <GlassCard className="bg-white p-4">
-            <p className="mb-3 text-[13px] font-bold">새 부엌 만들기</p>
+            <p className="mb-3 text-[13px] font-bold">새 우리집 만들기</p>
             <CreateHouseholdForm action={createHousehold} />
           </GlassCard>
 

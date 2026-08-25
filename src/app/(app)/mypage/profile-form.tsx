@@ -45,7 +45,7 @@ export function ProfileForm({
       </div>
 
       <p className="text-[11px] text-ink-faint">
-        부엌 안에서 &ldquo;{nickname.trim() || "닉네임"}셰프&rdquo;로 불려요
+        우리집 안에서 &ldquo;{nickname.trim() || "닉네임"}셰프&rdquo;로 불려요
       </p>
 
       {state?.error && <p className="text-xs text-warn-ink">{state.error}</p>}

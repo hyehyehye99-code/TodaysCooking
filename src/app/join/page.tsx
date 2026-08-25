@@ -67,7 +67,7 @@ export default async function JoinPage({
         {household.name}에 초대되었어요
       </p>
       <p className="mt-2 text-sm text-ink-soft">
-        참여하면 이 부엌의 메뉴판·냉장고·장보기 목록을 함께 써요.
+        참여하면 이 우리집의 메뉴판·냉장고·장보기 목록을 함께 써요.
       </p>
 
       <div className="mt-8 w-full">

@@ -15,7 +15,7 @@ export function CreateHouseholdForm({
       <ClearableInput
         name="name"
         required
-        placeholder="예) 혜동이의 부엌"
+        placeholder="예) 혜동이네 집"
         className="w-full rounded-xl border border-transparent bg-surface px-3.5 py-3 text-sm outline-none focus:border-accent"
       />
       {state?.error && <p className="text-xs text-warn-ink">{state.error}</p>}

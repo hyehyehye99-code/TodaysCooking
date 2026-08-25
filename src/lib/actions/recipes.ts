@@ -157,7 +157,7 @@ export async function createRecipe(_prevState: unknown, formData: FormData) {
   if (!title) return { error: "요리 이름을 입력해주세요." };
 
   const { user, household } = await getCurrentHousehold();
-  if (!user || !household) return { error: "부엌을 먼저 만들어주세요." };
+  if (!user || !household) return { error: "우리집을 먼저 만들어주세요." };
 
   const supabase = await createClient();
 
@@ -224,7 +224,7 @@ export async function updateRecipe(_prevState: unknown, formData: FormData) {
   if (!title) return { error: "요리 이름을 입력해주세요." };
 
   const { user, household } = await getCurrentHousehold();
-  if (!user || !household) return { error: "부엌을 먼저 만들어주세요." };
+  if (!user || !household) return { error: "우리집을 먼저 만들어주세요." };
 
   const supabase = await createClient();
 

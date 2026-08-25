@@ -367,7 +367,7 @@ const SLIDES = [
   },
   {
     headline: "가족과 함께 관리해요",
-    subtext: "부엌은 여럿이 같이 쓰고, 초대 링크로 간편하게 초대할 수 있어요",
+    subtext: "우리집은 여럿이 같이 쓰고, 초대 링크로 간편하게 초대할 수 있어요",
     render: () => <HouseholdShareDemo />,
   },
 ];

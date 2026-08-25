@@ -36,8 +36,8 @@ const HIGHLIGHT_FEATURES = [
     ),
   },
   {
-    title: "가족과 함께 쓰는 부엌",
-    description: "초대 코드 하나로 가족을 부엌에 초대해요. 레시피도, 냉장고도, 장보기 목록도 다 같이 봐요.",
+    title: "가족과 함께 쓰는 우리집",
+    description: "초대 코드 하나로 가족을 우리집에 초대해요. 레시피도, 냉장고도, 장보기 목록도 다 같이 봐요.",
     screenshot: "/screenshots/shared-kitchen.png",
     icon: (
       <svg width="22" height="22" viewBox="0 0 22 22" fill="none" aria-hidden="true">
@@ -189,7 +189,7 @@ export default async function LandingPage() {
               <p className="mt-2 text-3xl font-bold text-ink">₩0</p>
               <ul className="mt-6 flex flex-col gap-3 text-sm text-ink-soft">
                 <li>· 레시피·냉장고·장보기 전 기능 무료</li>
-                <li>· 가족과 함께 쓰는 부엌 무제한</li>
+                <li>· 가족과 함께 쓰는 우리집 무제한</li>
                 <li>· AI 자동 작성 주 5회</li>
               </ul>
             </div>
@@ -202,7 +202,7 @@ export default async function LandingPage() {
               <ul className="mt-6 flex flex-col gap-3 text-sm text-ink-soft">
                 <li>· 무료 플랜의 모든 기능</li>
                 <li>· AI 자동 작성 월 100회</li>
-                <li>· 한 번 구독으로 부엌 멤버 모두 함께 사용</li>
+                <li>· 한 번 구독으로 우리집 멤버 모두 함께 사용</li>
               </ul>
             </div>
           </div>

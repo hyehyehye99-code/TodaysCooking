@@ -31,8 +31,8 @@ export function OnboardingWizard({ householdMissingNotice = false }: { household
   const [pending, startTransition] = useTransition();
 
   function goToNextFromStep1() {
-    if (mode === "create" && !name.trim()) return setStep1Error("부엌 이름을 입력해주세요.");
-    if (mode === "join" && !code.trim()) return setStep1Error("부엌 코드를 입력해주세요.");
+    if (mode === "create" && !name.trim()) return setStep1Error("우리집 이름을 입력해주세요.");
+    if (mode === "join" && !code.trim()) return setStep1Error("우리집 코드를 입력해주세요.");
     setStep1Error("");
     setStep(2);
   }
@@ -83,11 +83,11 @@ export function OnboardingWizard({ householdMissingNotice = false }: { household
             <div className="flex flex-1 flex-col pt-4">
               {householdMissingNotice && (
                 <p className="mb-4 rounded-xl border border-accent/20 bg-accent/8 px-3.5 py-2.5 text-xs font-semibold leading-snug text-accent-ink">
-                  참여 중이던 부엌을 더 이상 이용할 수 없어서 새로 시작해요.
+                  참여 중이던 우리집을 더 이상 이용할 수 없어서 새로 시작해요.
                 </p>
               )}
-              <h1 className="mb-1 text-[22px] font-bold">부엌을 준비해볼까요?</h1>
-              <p className="mb-10 text-sm text-ink-soft">새로 만들거나, 코드로 기존 부엌에 들어갈 수 있어요.</p>
+              <h1 className="mb-1 text-[22px] font-bold">우리집을 준비해볼까요?</h1>
+              <p className="mb-10 text-sm text-ink-soft">새로 만들거나, 코드로 기존 우리집에 들어갈 수 있어요.</p>
 
               <div className="mb-5 flex rounded-xl border border-transparent bg-surface p-1">
                 <button
@@ -95,14 +95,14 @@ export function OnboardingWizard({ householdMissingNotice = false }: { household
                   onClick={() => setMode("create")}
                   className={`flex-1 rounded-lg py-2 text-sm font-bold ${mode === "create" ? "bg-accent text-white" : "text-ink-soft"}`}
                 >
-                  부엌 새로 만들기
+                  우리집 새로 만들기
                 </button>
                 <button
                   type="button"
                   onClick={() => setMode("join")}
                   className={`flex-1 rounded-lg py-2 text-sm font-bold ${mode === "join" ? "bg-accent text-white" : "text-ink-soft"}`}
                 >
-                  기존 부엌 열어보기
+                  기존 우리집 열어보기
                 </button>
               </div>
 
@@ -110,14 +110,14 @@ export function OnboardingWizard({ householdMissingNotice = false }: { household
                 <ClearableInput
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder="예) 혜동이의 부엌"
+                  placeholder="예) 혜동이네 집"
                   className="w-full rounded-xl border border-transparent bg-surface px-4 py-3.5 text-sm outline-none focus:border-accent"
                 />
               ) : (
                 <ClearableInput
                   value={code}
                   onChange={(e) => setCode(e.target.value)}
-                  placeholder="부엌 코드 입력"
+                  placeholder="우리집 코드 입력"
                   className="w-full rounded-xl border border-transparent bg-surface px-4 py-3.5 text-sm uppercase tracking-widest outline-none focus:border-accent"
                 />
               )}
@@ -143,7 +143,7 @@ export function OnboardingWizard({ householdMissingNotice = false }: { household
                     className="w-full rounded-xl border border-transparent bg-surface px-4 py-3.5 text-sm outline-none focus:border-accent"
                   />
                   <span className="text-[11px] text-ink-faint">
-                    부엌 안에서 &ldquo;{nickname.trim() || "닉네임"}셰프&rdquo;로 불려요
+                    우리집 안에서 &ldquo;{nickname.trim() || "닉네임"}셰프&rdquo;로 불려요
                   </span>
                 </label>
               </div>

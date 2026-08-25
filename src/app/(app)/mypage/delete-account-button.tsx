@@ -43,7 +43,7 @@ export function DeleteAccountButton() {
         open={confirming}
         onClose={close}
         title="탈퇴하면 계정이 완전히 삭제돼요"
-        description="내가 대장인 부엌은 가장 먼저 들어온 다른 참여자에게 넘어가고, 나 혼자 있는 부엌은 함께 삭제돼요. 되돌릴 수 없어요."
+        description="내가 대장인 우리집은 가장 먼저 들어온 다른 참여자에게 넘어가고, 나 혼자 있는 우리집은 함께 삭제돼요. 되돌릴 수 없어요."
         confirmSlot={
           <button
             type="button"
