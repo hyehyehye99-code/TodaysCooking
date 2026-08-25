@@ -91,13 +91,19 @@ export default async function LandingPage() {
             레시피 링크만 넣으면 AI가 재료를 정리하고, 부족한 재료는 장보기로, 장보기가 끝나면
             냉장고로 — 저절로 이어져요. 가족과 함께 쓰는 우리집 메뉴판.
           </p>
-          <div className="mt-8">
+          <div className="mt-8 flex flex-wrap items-center gap-3">
             <Link
               href="/login"
               className="inline-block rounded-xl bg-accent px-7 py-4 text-sm font-bold text-white"
             >
-              무료로 시작하기
+              웹으로 시작하기
             </Link>
+            <span
+              aria-disabled="true"
+              className="inline-flex cursor-not-allowed items-center gap-2 rounded-xl border border-border px-7 py-4 text-sm font-bold text-ink-faint"
+            >
+              iOS 앱 (출시 예정)
+            </span>
           </div>
         </div>
 
@@ -166,18 +172,59 @@ export default async function LandingPage() {
         </div>
       </section>
 
+      <section className="border-t border-border py-20">
+        <div className="mx-auto w-full max-w-4xl px-6">
+          <h2 className="text-center text-2xl font-bold text-ink md:text-3xl">요금제</h2>
+          <p className="mx-auto mt-3 max-w-md text-center text-sm leading-relaxed text-ink-soft">
+            핵심 기능은 언제나 무료예요. AI 자동 작성만 더 넉넉하게 쓰고 싶을 때 구독하시면 돼요.
+          </p>
+
+          <div className="mt-10 grid gap-5 md:grid-cols-2">
+            <div className="rounded-2xl border border-border p-7">
+              <p className="text-sm font-bold text-ink-faint">무료 플랜</p>
+              <p className="mt-2 text-3xl font-bold text-ink">₩0</p>
+              <ul className="mt-6 flex flex-col gap-3 text-sm text-ink-soft">
+                <li>· 레시피·냉장고·장보기 전 기능 무료</li>
+                <li>· 가족과 함께 쓰는 부엌 무제한</li>
+                <li>· AI 자동 작성 주 5회</li>
+              </ul>
+            </div>
+
+            <div className="rounded-2xl border-2 border-accent p-7">
+              <p className="text-sm font-bold text-accent">우리집 메뉴판 프리미엄</p>
+              <p className="mt-2 text-3xl font-bold text-ink">
+                ₩2,900<span className="text-sm font-semibold text-ink-faint"> / 월</span>
+              </p>
+              <ul className="mt-6 flex flex-col gap-3 text-sm text-ink-soft">
+                <li>· 무료 플랜의 모든 기능</li>
+                <li>· AI 자동 작성 월 100회</li>
+                <li>· 한 번 구독으로 부엌 멤버 모두 함께 사용</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <section className="border-t border-border bg-surface py-20">
         <div className="mx-auto w-full max-w-5xl px-6 text-center">
           <h2 className="text-2xl font-bold text-ink md:text-3xl">지금, 무료로 시작해보세요</h2>
           <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed text-ink-soft">
             혼자여도, 가족과 함께여도 좋아요. 로그인 한 번이면 바로 시작할 수 있어요.
           </p>
-          <Link
-            href="/login"
-            className="mt-7 inline-block rounded-xl bg-accent px-8 py-4 text-sm font-bold text-white"
-          >
-            무료로 시작하기
-          </Link>
+          <div className="mt-7 flex flex-wrap items-center justify-center gap-3">
+            <Link
+              href="/login"
+              className="inline-block rounded-xl bg-accent px-8 py-4 text-sm font-bold text-white"
+            >
+              웹으로 시작하기
+            </Link>
+            <span
+              aria-disabled="true"
+              className="inline-flex cursor-not-allowed items-center gap-2 rounded-xl border border-border px-8 py-4 text-sm font-bold text-ink-faint"
+            >
+              iOS 앱 (출시 예정)
+            </span>
+          </div>
         </div>
       </section>
 
