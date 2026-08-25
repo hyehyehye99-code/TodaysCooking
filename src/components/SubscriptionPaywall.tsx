@@ -166,6 +166,22 @@ export function SubscriptionPaywall({
 
   return (
     <div className="flex flex-col gap-3">
+      {/* Static price/plan info — doesn't depend on Purchases.getOfferings(),
+          so it's still visible (App Store guideline 3.1.2: price + duration
+          shown up front) even when the live RevenueCat fetch fails, e.g. a
+          subscription still pending its own App Store Connect review. */}
+      <GlassCard className="bg-white p-4">
+        <p className="text-sm font-bold text-accent">{dict.landing.premiumPlan}</p>
+        <p className="mt-1 text-2xl font-bold text-ink">
+          ₩3,300<span className="text-xs font-semibold text-ink-faint">{dict.landing.premiumPerMonth}</span>
+        </p>
+        <ul className="mt-3 flex flex-col gap-1.5 text-xs text-ink-soft">
+          <li>· {dict.landing.premiumFeature1}</li>
+          <li>· {dict.landing.premiumFeature2}</li>
+          <li>· {dict.landing.premiumFeature3}</li>
+        </ul>
+      </GlassCard>
+
       {packages.map((pkg) => {
         const period = formatSubscriptionPeriod(pkg.product.subscriptionPeriod, dict);
         return (
