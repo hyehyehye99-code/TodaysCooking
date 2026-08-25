@@ -71,7 +71,7 @@ export default async function SharePage({ params }: { params: Promise<{ code: st
       <div className="flex items-center justify-center gap-1.5 pb-4 pt-1">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src="/logo-mark.svg" alt="" width={16} height={16} />
-        <span className="text-xs font-bold text-ink-faint">우리집 메뉴판</span>
+        <span className="text-xs font-bold text-ink-faint">우리집 레시피</span>
       </div>
 
       <div className="pb-6 text-center">

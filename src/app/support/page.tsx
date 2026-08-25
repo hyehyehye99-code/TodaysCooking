@@ -12,7 +12,7 @@ export default function SupportPage() {
         <section>
           <h2 className="mb-1.5 text-sm font-bold text-ink">문의하기</h2>
           <p>
-            우리집 메뉴판 이용 중 궁금한 점이나 불편한 점이 있으시면 아래 이메일로 연락해주세요.
+            우리집 레시피 이용 중 궁금한 점이나 불편한 점이 있으시면 아래 이메일로 연락해주세요.
             빠르게 확인하고 답변드릴게요.
             <br />
             이메일:{" "}

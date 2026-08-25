@@ -13,13 +13,13 @@ const suit = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "우리집 메뉴판",
+  title: "우리집 레시피",
   description: "흩어진 레시피를 한 곳에, 필요한 재료를 한 눈에!",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "우리집 메뉴판",
+    title: "우리집 레시피",
   },
 };
 

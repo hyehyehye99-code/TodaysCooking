@@ -2,7 +2,7 @@ import type { CapacitorConfig } from "@capacitor/cli";
 
 const config: CapacitorConfig = {
   appId: "com.hyeji.ourmenu",
-  appName: "우리집 메뉴판",
+  appName: "우리집 레시피",
   webDir: "native/www",
   server: {
     // The app is server-rendered (cookies, Server Actions, revalidatePath)

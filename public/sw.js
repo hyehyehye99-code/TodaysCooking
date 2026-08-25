@@ -6,7 +6,7 @@ self.addEventListener("push", (event) => {
     data = {};
   }
 
-  const title = data.title || "우리집 메뉴판";
+  const title = data.title || "우리집 레시피";
   const options = {
     body: data.body || "",
     icon: "/icon-192.png",

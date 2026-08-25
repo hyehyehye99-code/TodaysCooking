@@ -20,7 +20,7 @@ export default async function LandingPage() {
       <div className="flex-[1]" />
 
       <div>
-        <p className="mb-5 text-xs font-bold tracking-wide text-ink-faint">우리집 메뉴판</p>
+        <p className="mb-5 text-xs font-bold tracking-wide text-ink-faint">우리집 레시피</p>
         <h1 className="text-[32px] font-bold leading-tight">
           {dict.landing.headline1}
           <br />

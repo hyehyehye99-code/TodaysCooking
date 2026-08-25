@@ -12,7 +12,7 @@ export default function TermsPage() {
         <section>
           <h2 className="mb-1.5 text-sm font-bold text-ink">제1조 (목적)</h2>
           <p>
-            이 약관은 우리집 메뉴판(이하 &quot;서비스&quot;)이 제공하는 레시피·냉장고·장보기 관리
+            이 약관은 우리집 레시피(이하 &quot;서비스&quot;)가 제공하는 레시피·냉장고·장보기 관리
             기능의 이용과 관련하여 서비스와 이용자의 권리, 의무 및 책임사항을 정하는 것을
             목적으로 합니다.
           </p>

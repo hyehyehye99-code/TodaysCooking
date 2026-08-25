@@ -66,7 +66,7 @@ export default async function LandingPage() {
           <div className="flex items-center gap-2">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/logo-mark.svg" alt="" width={28} height={28} />
-            <span className="text-sm font-bold tracking-wide text-ink">우리집 메뉴판</span>
+            <span className="text-sm font-bold tracking-wide text-ink">우리집 레시피</span>
           </div>
         </div>
         <Link href={appHref} className="text-sm font-bold text-ink-soft">
@@ -76,7 +76,7 @@ export default async function LandingPage() {
 
       <section className="mx-auto grid w-full max-w-5xl gap-12 px-6 pb-20 pt-8 md:grid-cols-2 md:items-center md:pb-32 md:pt-16">
         <div>
-          <p className="mb-5 text-xs font-bold tracking-wide text-ink-faint">우리집 메뉴판</p>
+          <p className="mb-5 text-xs font-bold tracking-wide text-ink-faint">우리집 레시피</p>
           <h1 className="text-[36px] font-bold leading-tight text-ink md:text-[48px]">
             {dict.landing.headline1}
             <br />
