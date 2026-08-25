@@ -5,6 +5,7 @@ import { getCurrentHousehold } from "@/lib/household";
 import { GlassCard } from "@/components/ui";
 import { ProfileAvatar } from "@/components/ProfileAvatar";
 import { chefName } from "@/lib/format";
+import { getDictionary } from "@/lib/i18n/server";
 import type { RecipeWithIngredients } from "@/lib/types";
 import { DeleteRecipeButton } from "./delete-recipe-button";
 import { MissingIngredientsButton } from "./missing-ingredients-button";
@@ -20,6 +21,7 @@ export default async function RecipeDetailPage({
   const { id } = await params;
   const { household } = await getCurrentHousehold();
   const supabase = await createClient();
+  const { dict } = await getDictionary();
 
   // None of these four need each other's result, so they all go out in one
   // round trip instead of fetching the recipe first and waiting on it before
@@ -83,7 +85,7 @@ export default async function RecipeDetailPage({
           />
           <Link
             href="/recipes"
-            aria-label="닫기"
+            aria-label={dict.common.close}
             className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-surface text-ink"
           >
             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -98,7 +100,7 @@ export default async function RecipeDetailPage({
 
       <p className="flex items-center gap-1.5 text-xs font-semibold text-accent">
         <ProfileAvatar iconEmoji={creatorProfile?.icon_emoji} nickname={creatorProfile?.nickname ?? ""} size={16} />
-        {chefName(creatorProfile?.nickname)} 등록
+        {dict.recipes.registeredByTemplate.replace("{name}", chefName(creatorProfile?.nickname, dict))}
       </p>
       {r.tags.length > 0 && (
         <div className="mt-2 flex flex-wrap gap-1.5">
@@ -133,7 +135,7 @@ export default async function RecipeDetailPage({
             </div>
             <div className="flex min-w-0 flex-1 flex-col justify-center gap-1">
               <p className="line-clamp-2 text-[13px] font-bold leading-snug">
-                {referenceBookmark.title || "참고 링크"}
+                {referenceBookmark.title || dict.welcome.referenceLink}
               </p>
               <span className="text-[11px] text-ink-faint">{referenceBookmark.domain}</span>
             </div>
@@ -143,9 +145,11 @@ export default async function RecipeDetailPage({
 
       <div className="mt-5">
         <p className="mb-2 flex items-center gap-1.5">
-          <span className="text-[15px] font-bold">재료</span>
+          <span className="text-[15px] font-bold">{dict.welcome.ingredients}</span>
           <span className="text-xs text-ink-faint">
-            {activeIngredients.length - missing.length}/{activeIngredients.length} 보유 중
+            {dict.recipes.ownedCountTemplate
+              .replace("{owned}", String(activeIngredients.length - missing.length))
+              .replace("{total}", String(activeIngredients.length))}
           </span>
         </p>
         <div className="flex flex-wrap gap-2">
@@ -164,7 +168,7 @@ export default async function RecipeDetailPage({
               >
                 {ing.name}
                 {ing.amount && <span className="ml-1 font-normal opacity-70">{ing.amount}</span>}
-                {ing.skipped && <span className="ml-1 text-[10px] font-normal">(생략됨)</span>}
+                {ing.skipped && <span className="ml-1 text-[10px] font-normal">{dict.recipes.skippedSuffix}</span>}
               </span>
             );
           })}
@@ -177,11 +181,11 @@ export default async function RecipeDetailPage({
             <svg viewBox="0 0 14 14" width="14" height="14" fill="none" stroke="var(--color-positive-ink)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M2.5 7.5l3 3 6-7" />
             </svg>
-            <span className="text-[13px] font-bold text-positive-ink">바로 만들 수 있어요</span>
+            <span className="text-[13px] font-bold text-positive-ink">{dict.recipes.makeableBadge}</span>
           </div>
         ) : allAdded ? (
           <div className="flex items-center justify-center gap-1.5 rounded-xl border border-transparent bg-surface py-2.5">
-            <span className="text-[13px] font-bold text-ink-faint">장보기에 담겨 있어요</span>
+            <span className="text-[13px] font-bold text-ink-faint">{dict.welcome.addedToShoppingList}</span>
           </div>
         ) : (
           <MissingIngredientsButton
@@ -193,7 +197,7 @@ export default async function RecipeDetailPage({
 
       {r.notes && (
         <div className="mt-6">
-          <p className="mb-2 text-[15px] font-bold">만드는법</p>
+          <p className="mb-2 text-[15px] font-bold">{dict.welcome.instructions}</p>
           <GlassCard className="bg-surface p-4">
             <p className="whitespace-pre-line text-sm text-ink">{r.notes}</p>
           </GlassCard>
@@ -206,7 +210,7 @@ export default async function RecipeDetailPage({
           href={`/recipes/${r.id}/edit`}
           className="flex-1 rounded-xl border border-accent bg-white py-3 text-center text-sm font-bold text-accent-ink"
         >
-          수정하기
+          {dict.recipes.editButton}
         </Link>
       </div>
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useDict } from "@/lib/i18n/client";
 
 export function ShareRecipeButton({
   title,
@@ -11,15 +12,16 @@ export function ShareRecipeButton({
   ingredients: string[];
   instructions: string | null;
 }) {
+  const dict = useDict();
   const [copied, setCopied] = useState(false);
 
   async function share() {
     const text = [
       title,
       "",
-      "[재료]",
+      dict.recipes.shareIngredientsHeading,
       ...ingredients,
-      ...(instructions ? ["", "[만드는법]", instructions] : []),
+      ...(instructions ? ["", dict.recipes.shareInstructionsHeading, instructions] : []),
     ].join("\n");
 
     // navigator.share opens the native share sheet inside the WKWebView
@@ -43,7 +45,7 @@ export function ShareRecipeButton({
     <button
       type="button"
       onClick={share}
-      aria-label="공유"
+      aria-label={dict.recipes.share}
       className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-surface text-ink"
     >
       {copied ? (

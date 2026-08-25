@@ -4,6 +4,7 @@ import { useState } from "react";
 import { ProfileAvatar } from "@/components/ProfileAvatar";
 import { Modal } from "@/components/Modal";
 import { chefName } from "@/lib/format";
+import { useDict } from "@/lib/i18n/client";
 import { ProfileForm } from "./profile-form";
 
 export function ProfileEditButton({
@@ -13,6 +14,7 @@ export function ProfileEditButton({
   nickname: string;
   iconEmoji: string | null;
 }) {
+  const dict = useDict();
   const [open, setOpen] = useState(false);
 
   return (
@@ -20,7 +22,7 @@ export function ProfileEditButton({
       <button type="button" onClick={() => setOpen(true)} className="flex w-full items-center gap-3 text-left">
         <ProfileAvatar iconEmoji={iconEmoji} nickname={nickname} size={48} />
         <div className="min-w-0 flex-1">
-          <p className="truncate text-lg font-bold">{chefName(nickname)}</p>
+          <p className="truncate text-lg font-bold">{chefName(nickname, dict)}</p>
         </div>
         <svg
           viewBox="0 0 24 24"

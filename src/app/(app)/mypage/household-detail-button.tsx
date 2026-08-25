@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { chefName } from "@/lib/format";
+import { useDict } from "@/lib/i18n/client";
 import { ProfileAvatar } from "@/components/ProfileAvatar";
 import { RenameHouseholdForm } from "./rename-household-form";
 import { RemoveMemberButton } from "./remove-member-button";
@@ -26,6 +27,7 @@ export function HouseholdDetailButton({
   myRole?: string;
   isPremium: boolean;
 }) {
+  const dict = useDict();
   const [open, setOpen] = useState(false);
 
   return (
@@ -70,7 +72,7 @@ export function HouseholdDetailButton({
                   <ProfileAvatar iconEmoji={m.icon_emoji} nickname={m.nickname} size={40} />
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-semibold">
-                      {chefName(m.nickname)}
+                      {chefName(m.nickname, dict)}
                       {m.user_id === myUserId && (
                         <span className="ml-1 text-xs font-normal text-ink-faint">(나)</span>
                       )}
@@ -81,7 +83,7 @@ export function HouseholdDetailButton({
                     <RemoveMemberButton
                       householdId={householdId}
                       userId={m.user_id}
-                      nickname={chefName(m.nickname)}
+                      nickname={chefName(m.nickname, dict)}
                     />
                   )}
                 </div>

@@ -9,9 +9,11 @@ import { RecipeThumb } from "@/components/RecipeThumb";
 import { ClearableInput } from "@/components/ClearableInput";
 import { reorderRecipes, toggleFavoriteRecipe, deleteRecipes } from "@/lib/actions/recipes";
 import { useDragReorder } from "@/lib/useDragReorder";
+import { useDict } from "@/lib/i18n/client";
 import type { RecipeWithIngredients } from "@/lib/types";
 
 function FavoriteButton({ recipe }: { recipe: RecipeWithIngredients }) {
+  const dict = useDict();
   const [optimisticFavorite, setOptimisticFavorite] = useOptimistic(recipe.is_favorite);
   const [, startTransition] = useTransition();
   const router = useRouter();
@@ -29,7 +31,7 @@ function FavoriteButton({ recipe }: { recipe: RecipeWithIngredients }) {
           router.refresh();
         });
       }}
-      aria-label="즐겨찾기"
+      aria-label={dict.recipes.favorite}
       className="flex h-8 w-8 shrink-0 items-center justify-center"
     >
       <svg
@@ -55,6 +57,7 @@ export function RecipeList({
   recipes: RecipeWithIngredients[];
   ownedIngredients: string[];
 }) {
+  const dict = useDict();
   const [query, setQuery] = useState("");
   const [activeTag, setActiveTag] = useState<string | null>(null);
   const [favoritesOnly, setFavoritesOnly] = useState(false);
@@ -152,7 +155,9 @@ export function RecipeList({
       {editing ? (
         <div className="mb-4 flex items-center justify-between gap-2">
           <span className="min-w-0 truncate text-xs font-bold text-ink-soft">
-            {selectedIds.size > 0 ? `${selectedIds.size}개 선택됨` : "눌러서 선택, 오른쪽 핸들로 순서 변경"}
+            {selectedIds.size > 0
+              ? dict.recipes.selectedCountTemplate.replace("{count}", String(selectedIds.size))
+              : dict.recipes.selectHint}
           </span>
           <div className="flex shrink-0 gap-2">
             <button
@@ -160,7 +165,7 @@ export function RecipeList({
               disabled={pending || deletePending}
               className="rounded-lg bg-surface px-3 py-1.5 text-xs font-bold text-ink-soft disabled:opacity-60"
             >
-              취소
+              {dict.common.cancel}
             </button>
             {selectedIds.size > 0 && (
               <button
@@ -168,7 +173,7 @@ export function RecipeList({
                 disabled={pending || deletePending}
                 className="rounded-lg bg-warn px-3 py-1.5 text-xs font-bold text-white disabled:opacity-60"
               >
-                삭제
+                {dict.common.delete}
               </button>
             )}
             <button
@@ -176,7 +181,7 @@ export function RecipeList({
               disabled={pending || deletePending}
               className="rounded-lg bg-accent px-3 py-1.5 text-xs font-bold text-white disabled:opacity-60"
             >
-              {pending ? "저장 중..." : "완료"}
+              {pending ? dict.recipes.saving : dict.recipes.done}
             </button>
           </div>
         </div>
@@ -186,14 +191,14 @@ export function RecipeList({
             <ClearableInput
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="메뉴, 재료 검색"
+              placeholder={dict.recipes.searchPlaceholder}
               className="w-full rounded-xl border border-transparent bg-surface px-3.5 py-2.5 text-sm outline-none focus:border-accent"
             />
           </div>
           {recipes.length > 1 && (
             <button
               onClick={startEditing}
-              aria-label="메뉴 편집"
+              aria-label={dict.recipes.editMenu}
               className="flex h-[42px] w-[42px] shrink-0 items-center justify-center rounded-xl bg-surface text-ink-soft"
             >
               <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
@@ -213,7 +218,7 @@ export function RecipeList({
               activeTag === null ? "bg-accent text-white" : "bg-surface text-ink-soft"
             }`}
           >
-            전체
+            {dict.recipes.all}
           </button>
           <button
             onClick={() => setFavoritesOnly((prev) => !prev)}
@@ -233,7 +238,7 @@ export function RecipeList({
             >
               <path d="M12 3.5l2.7 5.6 6.1.9-4.4 4.3 1 6.1-5.4-2.9-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z" />
             </svg>
-            즐겨찾기
+            {dict.recipes.favorite}
           </button>
           <button
             onClick={() => setMakeableOnly((prev) => !prev)}
@@ -253,7 +258,7 @@ export function RecipeList({
             >
               <path d="M2.5 7.5l3 3 6-7" />
             </svg>
-            바로 만들 수 있는 요리
+            {dict.recipes.makeableFilter}
           </button>
           {allTags.map((tag) => (
             <button
@@ -271,9 +276,7 @@ export function RecipeList({
 
       {!editing && filtered.length === 0 && (
         <p className="mt-10 text-center text-sm text-ink-soft">
-          {recipes.length === 0
-            ? "아직 등록된 메뉴가 없어요. 첫 메뉴를 등록해보세요."
-            : "검색 결과가 없어요."}
+          {recipes.length === 0 ? dict.recipes.emptyNoRecipes : dict.recipes.emptySearch}
         </p>
       )}
 
@@ -327,7 +330,7 @@ export function RecipeList({
                     onPointerMove={handlePointerMove}
                     onPointerUp={handlePointerUp}
                     onPointerCancel={handlePointerUp}
-                    aria-label="드래그해서 순서 변경"
+                    aria-label={dict.recipes.dragReorder}
                     className="flex h-8 w-8 shrink-0 touch-none items-center justify-center rounded-full bg-surface text-ink-soft"
                   >
                     <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
@@ -368,7 +371,7 @@ export function RecipeList({
                           <svg viewBox="0 0 14 14" width="9" height="9" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
                             <path d="M2.5 7.5l3 3 6-7" />
                           </svg>
-                          바로 만들 수 있어요
+                          {dict.recipes.makeableBadge}
                         </span>
                       )}
                       {recipe.tags.map((tag) => (
@@ -390,8 +393,8 @@ export function RecipeList({
       <ConfirmModal
         open={confirmingDelete}
         onClose={() => setConfirmingDelete(false)}
-        title={`선택한 메뉴 ${selectedIds.size}개를 삭제할까요?`}
-        description="삭제하면 되돌릴 수 없어요. 재료와 메모도 함께 사라져요."
+        title={dict.recipes.deleteSelectedTitleTemplate.replace("{count}", String(selectedIds.size))}
+        description={dict.recipes.deleteRecipeDescription}
         confirmSlot={
           <button
             type="button"
@@ -399,7 +402,7 @@ export function RecipeList({
             disabled={deletePending}
             className="rounded-lg bg-warn px-3.5 py-2 text-xs font-bold text-white disabled:opacity-60"
           >
-            {deletePending ? "삭제 중..." : "삭제"}
+            {deletePending ? dict.recipes.deleting : dict.common.delete}
           </button>
         }
       />

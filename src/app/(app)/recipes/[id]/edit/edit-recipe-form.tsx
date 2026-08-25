@@ -12,6 +12,7 @@ import { FieldLabel } from "@/components/FieldLabel";
 import { StickyFormBar } from "@/components/StickyFormBar";
 import { Modal } from "@/components/Modal";
 import { ClearableInput } from "@/components/ClearableInput";
+import { useDict } from "@/lib/i18n/client";
 import type { RecipeWithIngredients } from "@/lib/types";
 
 export function EditRecipeForm({
@@ -25,6 +26,7 @@ export function EditRecipeForm({
   referencePreview: { title: string | null; thumbnailUrl: string | null; domain: string | null } | null;
   existingTags: string[];
 }) {
+  const dict = useDict();
   const [state, formAction, pending] = useActionState(updateRecipe, undefined);
   const [confirmingClose, setConfirmingClose] = useState(false);
   const [photoCount, setPhotoCount] = useState(recipe.cover_photo_urls.length);
@@ -38,11 +40,11 @@ export function EditRecipeForm({
   return (
     <div>
       <div className="mb-5 flex items-center justify-between">
-        <h1 className="text-[22px] font-bold">메뉴 수정</h1>
+        <h1 className="text-[22px] font-bold">{dict.recipes.editRecipeHeading}</h1>
         <button
           type="button"
           onClick={() => setConfirmingClose(true)}
-          aria-label="닫기"
+          aria-label={dict.common.close}
           className="flex h-8 w-8 items-center justify-center rounded-full bg-surface text-ink"
         >
           <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -54,22 +56,22 @@ export function EditRecipeForm({
 
       <Modal open={confirmingClose} onClose={() => setConfirmingClose(false)} variant="center">
         <div className="mx-auto w-full max-w-[360px] rounded-2xl bg-white p-5 shadow-xl">
-          <p className="text-sm font-bold text-ink">수정 중인 내용이 저장되지 않아요</p>
-          <p className="mt-2 text-xs text-ink-soft">지금 나가면 수정한 내용이 모두 사라져요. 계속하시겠어요?</p>
+          <p className="text-sm font-bold text-ink">{dict.recipes.unsavedEditTitle}</p>
+          <p className="mt-2 text-xs text-ink-soft">{dict.recipes.unsavedEditDesc}</p>
           <div className="mt-4 flex justify-end gap-2">
             <button
               type="button"
               onClick={() => setConfirmingClose(false)}
               className="rounded-lg bg-surface px-3.5 py-2 text-xs font-bold text-ink-soft"
             >
-              계속 작성
+              {dict.recipes.keepEditing}
             </button>
             <button
               type="button"
               onClick={() => router.push(`/recipes/${recipe.id}`)}
               className="rounded-lg bg-accent px-3.5 py-2 text-xs font-bold text-white"
             >
-              나가기
+              {dict.recipes.leave}
             </button>
           </div>
         </div>
@@ -83,25 +85,25 @@ export function EditRecipeForm({
         <input type="hidden" name="id" value={recipe.id} />
 
         <div>
-          <FieldLabel required>요리 이름</FieldLabel>
+          <FieldLabel required>{dict.welcome.dishName}</FieldLabel>
           <ClearableInput
             name="title"
             required
             defaultValue={recipe.title}
-            placeholder="요리 이름을 입력해주세요"
+            placeholder={dict.recipes.dishNamePlaceholder}
             className="w-full rounded-xl border border-transparent bg-surface px-3.5 py-3 text-base font-bold outline-none focus:border-accent"
           />
         </div>
 
         <GlassCard className="bg-white p-4">
-          <p className="mb-1 text-[13px] font-bold">참고 링크</p>
-          <p className="mb-3 text-xs text-ink-soft">여기 넣은 링크는 보관함 탭에도 함께 저장돼요</p>
+          <p className="mb-1 text-[13px] font-bold">{dict.welcome.referenceLink}</p>
+          <p className="mb-3 text-xs text-ink-soft">{dict.recipes.referenceLinkHint}</p>
           <ReferenceLinkField name="referenceUrl" defaultValue={referenceUrl} initialPreview={referencePreview} />
         </GlassCard>
 
         <GlassCard className="bg-white p-4">
-          <FieldLabel>재료</FieldLabel>
-          <p className="mb-3 text-xs text-ink-soft">한 줄에 하나씩 입력해주세요</p>
+          <FieldLabel>{dict.welcome.ingredients}</FieldLabel>
+          <p className="mb-3 text-xs text-ink-soft">{dict.welcome.ingredientsPlaceholder}</p>
           <textarea
             name="ingredients"
             rows={12}
@@ -111,21 +113,21 @@ export function EditRecipeForm({
         </GlassCard>
 
         <GlassCard className="bg-white p-4">
-          <FieldLabel>만드는법</FieldLabel>
+          <FieldLabel>{dict.welcome.instructions}</FieldLabel>
           <textarea
             name="notes"
             rows={8}
             defaultValue={recipe.notes ?? ""}
-            placeholder="예) 다음엔 국물을 더 자작하게, 마늘은 좀 줄이기"
+            placeholder={dict.recipes.notesPlaceholder}
             className="w-full rounded-xl border border-transparent bg-surface px-3.5 py-3 text-sm outline-none focus:border-accent"
           />
         </GlassCard>
 
         <GlassCard className="bg-white p-4">
-          <FieldLabel>사진 또는 이모지</FieldLabel>
+          <FieldLabel>{dict.recipes.photoOrEmojiLabel}</FieldLabel>
           <div className="flex flex-col gap-3">
             <div className="flex flex-col gap-1.5">
-              <span className="text-xs text-ink-soft">사진 (최대 5장)</span>
+              <span className="text-xs text-ink-soft">{dict.recipes.photoLabel}</span>
               <PhotoPicker
                 name="photos"
                 existingUrls={recipe.cover_photo_urls}
@@ -134,7 +136,7 @@ export function EditRecipeForm({
             </div>
             {photoCount === 0 && (
               <label className="flex flex-col gap-1.5">
-                <span className="text-xs text-ink-soft">아이콘 이모지 (사진이 없을 때 표시돼요)</span>
+                <span className="text-xs text-ink-soft">{dict.recipes.iconEmojiLabel}</span>
                 <EmojiPicker name="iconEmoji" defaultValue={recipe.icon_emoji} />
               </label>
             )}
@@ -142,19 +144,19 @@ export function EditRecipeForm({
         </GlassCard>
 
         <GlassCard className="bg-white p-4">
-          <p className="mb-3 text-[13px] font-bold">추가 정보</p>
+          <p className="mb-3 text-[13px] font-bold">{dict.recipes.additionalInfo}</p>
           <div className="flex flex-col gap-4">
             <div>
-              <FieldLabel>설명</FieldLabel>
+              <FieldLabel>{dict.recipes.descriptionLabel}</FieldLabel>
               <ClearableInput
                 name="subtitle"
                 defaultValue={recipe.subtitle ?? ""}
-                placeholder="한 줄 설명"
+                placeholder={dict.recipes.subtitlePlaceholder}
                 className="w-full rounded-xl border border-transparent bg-surface px-3.5 py-3 text-sm outline-none focus:border-accent"
               />
             </div>
             <div>
-              <FieldLabel>태그</FieldLabel>
+              <FieldLabel>{dict.recipes.tagsLabel}</FieldLabel>
               <TagPicker name="tags" existingTags={existingTags} defaultSelected={recipe.tags} />
             </div>
           </div>
@@ -163,7 +165,12 @@ export function EditRecipeForm({
         {state?.error && <p className="text-sm text-warn-ink">{state.error}</p>}
       </form>
 
-      <StickyFormBar formId="edit-recipe-form" pending={pending} label="저장하기" pendingLabel="저장 중..." />
+      <StickyFormBar
+        formId="edit-recipe-form"
+        pending={pending}
+        label={dict.recipes.saveButton}
+        pendingLabel={dict.recipes.saving}
+      />
     </div>
   );
 }

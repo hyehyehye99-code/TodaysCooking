@@ -4,16 +4,18 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { resolveMissingIngredients } from "@/lib/actions/recipes";
 import { Modal } from "@/components/Modal";
+import { useDict } from "@/lib/i18n/client";
+import type { Dictionary } from "@/lib/i18n/dictionaries/ko";
 
 type ChoiceState = "shopping" | "fridge" | "skip";
 
 const STATES: ChoiceState[] = ["shopping", "fridge", "skip"];
 
-const STATE_LABELS: Record<ChoiceState, string> = {
-  shopping: "구매 필요",
-  fridge: "보유 중",
-  skip: "생략",
-};
+function stateLabel(state: ChoiceState, dict: Dictionary): string {
+  if (state === "shopping") return dict.welcome.stateShopping;
+  if (state === "fridge") return dict.welcome.stateFridge;
+  return dict.welcome.stateSkip;
+}
 
 const STATE_STYLES: Record<ChoiceState, string> = {
   shopping: "bg-accent text-white",
@@ -28,6 +30,7 @@ export function MissingIngredientsButton({
   recipeId: string;
   missing: { name: string; skipped: boolean }[];
 }) {
+  const dict = useDict();
   const [open, setOpen] = useState(false);
   const [choices, setChoices] = useState<Record<string, ChoiceState | undefined>>({});
   const [pending, startTransition] = useTransition();
@@ -60,17 +63,13 @@ export function MissingIngredientsButton({
         onClick={openModal}
         className="w-full rounded-xl bg-accent py-2.5 text-[13px] font-bold text-white"
       >
-        부족한 재료 장보기 담기
+        {dict.welcome.addToShoppingList}
       </button>
 
       <Modal open={open} onClose={() => setOpen(false)} variant="sheet">
         <div className="mx-auto flex max-h-[80vh] w-full max-w-[420px] flex-col rounded-t-3xl bg-white p-5 pb-[max(env(safe-area-inset-bottom),20px)]">
-            <p className="mb-1 text-[15px] font-bold">부족한 재료 확인</p>
-            <p className="mb-3 text-xs text-ink-soft">
-              보유 중인 재료는 냉장고로, 필요 없는 재료는 생략으로 표시해주세요. 선택하지 않은
-              재료는 이번엔 그대로 두고 다음에 다시 물어볼게요. 장보기 목록에 담고 싶은 재료는
-              구매 필요를 눌러주세요.
-            </p>
+            <p className="mb-1 text-[15px] font-bold">{dict.welcome.missingIngredientsTitle}</p>
+            <p className="mb-3 text-xs text-ink-soft">{dict.recipes.missingIngredientsDescDetailed}</p>
 
             <div className="mt-1 flex flex-col gap-2 overflow-y-auto">
               {missing.map((m) => (
@@ -87,7 +86,7 @@ export function MissingIngredientsButton({
                             choices[m.name] === state ? STATE_STYLES[state] : "text-ink-soft"
                           }`}
                         >
-                          {STATE_LABELS[state]}
+                          {stateLabel(state, dict)}
                         </button>
                       ))}
                     </div>
@@ -102,7 +101,7 @@ export function MissingIngredientsButton({
                 onClick={() => setOpen(false)}
                 className="flex-1 rounded-xl bg-surface py-3 text-sm font-bold text-ink-soft"
               >
-                취소
+                {dict.common.cancel}
               </button>
               <button
                 type="button"
@@ -110,7 +109,7 @@ export function MissingIngredientsButton({
                 disabled={pending}
                 className="flex-1 rounded-xl bg-accent py-3 text-sm font-bold text-white disabled:opacity-60"
               >
-                {pending ? "담는 중..." : "담기"}
+                {pending ? dict.recipes.addingEllipsis : dict.welcome.modalConfirm}
               </button>
             </div>
         </div>
