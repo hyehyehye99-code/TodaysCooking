@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import { completeOnboardingAuthed } from "@/lib/actions/onboarding";
 import { BackButton } from "@/components/ui";
 import { ClearableInput } from "@/components/ClearableInput";
+import { useDict } from "@/lib/i18n/client";
 
 function StepDots({ step, total }: { step: number; total: number }) {
   return (
@@ -19,6 +20,7 @@ function StepDots({ step, total }: { step: number; total: number }) {
 }
 
 export function OnboardingWizard({ householdMissingNotice = false }: { householdMissingNotice?: boolean }) {
+  const dict = useDict();
   const [step, setStep] = useState<1 | 2>(1);
 
   const [mode, setMode] = useState<"create" | "join">("create");
@@ -31,8 +33,8 @@ export function OnboardingWizard({ householdMissingNotice = false }: { household
   const [pending, startTransition] = useTransition();
 
   function goToNextFromStep1() {
-    if (mode === "create" && !name.trim()) return setStep1Error("우리집 이름을 입력해주세요.");
-    if (mode === "join" && !code.trim()) return setStep1Error("우리집 코드를 입력해주세요.");
+    if (mode === "create" && !name.trim()) return setStep1Error(dict.onboarding.nameRequired);
+    if (mode === "join" && !code.trim()) return setStep1Error(dict.onboarding.codeRequired);
     setStep1Error("");
     setStep(2);
   }
@@ -52,7 +54,7 @@ export function OnboardingWizard({ householdMissingNotice = false }: { household
   }
 
   function handleFinish() {
-    if (!nickname.trim()) return setStep2Error("닉네임을 입력해주세요.");
+    if (!nickname.trim()) return setStep2Error(dict.onboarding.nicknameRequired);
     startTransition(async () => {
       const result = await completeOnboardingAuthed(payload());
       if (result && "error" in result) handleSetupError(result);
@@ -61,12 +63,12 @@ export function OnboardingWizard({ householdMissingNotice = false }: { household
 
   const totalSteps = 2;
 
-  let primaryLabel = "다음";
+  let primaryLabel = dict.onboarding.next;
   let primaryHandler = goToNextFromStep1;
   let primaryDisabled = false;
 
   if (step === 2) {
-    primaryLabel = pending ? "시작하는 중..." : "시작하기";
+    primaryLabel = pending ? dict.onboarding.starting : dict.onboarding.start;
     primaryHandler = handleFinish;
     primaryDisabled = pending;
   }
@@ -83,11 +85,11 @@ export function OnboardingWizard({ householdMissingNotice = false }: { household
             <div className="flex flex-1 flex-col pt-4">
               {householdMissingNotice && (
                 <p className="mb-4 rounded-xl border border-accent/20 bg-accent/8 px-3.5 py-2.5 text-xs font-semibold leading-snug text-accent-ink">
-                  참여 중이던 우리집을 더 이상 이용할 수 없어서 새로 시작해요.
+                  {dict.onboarding.previousHouseholdGone}
                 </p>
               )}
-              <h1 className="mb-1 text-[22px] font-bold">우리집을 준비해볼까요?</h1>
-              <p className="mb-10 text-sm text-ink-soft">새로 만들거나, 코드로 기존 우리집에 들어갈 수 있어요.</p>
+              <h1 className="mb-1 text-[22px] font-bold">{dict.onboarding.heading}</h1>
+              <p className="mb-10 text-sm text-ink-soft">{dict.onboarding.subheading}</p>
 
               <div className="mb-5 flex rounded-xl border border-transparent bg-surface p-1">
                 <button
@@ -95,14 +97,14 @@ export function OnboardingWizard({ householdMissingNotice = false }: { household
                   onClick={() => setMode("create")}
                   className={`flex-1 rounded-lg py-2 text-sm font-bold ${mode === "create" ? "bg-accent text-white" : "text-ink-soft"}`}
                 >
-                  우리집 새로 만들기
+                  {dict.onboarding.createNew}
                 </button>
                 <button
                   type="button"
                   onClick={() => setMode("join")}
                   className={`flex-1 rounded-lg py-2 text-sm font-bold ${mode === "join" ? "bg-accent text-white" : "text-ink-soft"}`}
                 >
-                  기존 우리집 열어보기
+                  {dict.onboarding.joinExisting}
                 </button>
               </div>
 
@@ -110,14 +112,14 @@ export function OnboardingWizard({ householdMissingNotice = false }: { household
                 <ClearableInput
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder="예) 혜동이네 집"
+                  placeholder={dict.onboarding.namePlaceholder}
                   className="w-full rounded-xl border border-transparent bg-surface px-4 py-3.5 text-sm outline-none focus:border-accent"
                 />
               ) : (
                 <ClearableInput
                   value={code}
                   onChange={(e) => setCode(e.target.value)}
-                  placeholder="우리집 코드 입력"
+                  placeholder={dict.onboarding.codePlaceholder}
                   className="w-full rounded-xl border border-transparent bg-surface px-4 py-3.5 text-sm uppercase tracking-widest outline-none focus:border-accent"
                 />
               )}
@@ -130,20 +132,20 @@ export function OnboardingWizard({ householdMissingNotice = false }: { household
             <BackButton onClick={() => setStep(1)} className="mb-3" />
 
             <div className="flex flex-1 flex-col pt-4">
-              <h1 className="mb-1 text-[22px] font-bold">이제 준비 완료!</h1>
-              <p className="mb-6 text-sm text-ink-soft">아래 버튼을 누르면 바로 시작할 수 있어요.</p>
+              <h1 className="mb-1 text-[22px] font-bold">{dict.onboarding.readyHeading}</h1>
+              <p className="mb-6 text-sm text-ink-soft">{dict.onboarding.readySubheading}</p>
 
               <div className="flex flex-col gap-5">
                 <label className="flex flex-col gap-1.5">
-                  <span className="text-xs font-bold text-ink-soft">닉네임</span>
+                  <span className="text-xs font-bold text-ink-soft">{dict.onboarding.nicknameLabel}</span>
                   <ClearableInput
                     value={nickname}
                     onChange={(e) => setNickname(e.target.value)}
-                    placeholder="예) 혜지"
+                    placeholder={dict.onboarding.nicknamePlaceholder}
                     className="w-full rounded-xl border border-transparent bg-surface px-4 py-3.5 text-sm outline-none focus:border-accent"
                   />
                   <span className="text-[11px] text-ink-faint">
-                    우리집 안에서 &ldquo;{nickname.trim() || "닉네임"}셰프&rdquo;로 불려요
+                    {dict.onboarding.nicknamePreview(nickname.trim() || dict.onboarding.nicknameLabel)}
                   </span>
                 </label>
               </div>

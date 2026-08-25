@@ -1,6 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import { NativeAuthBridge } from "@/components/NativeAuthBridge";
+import { getDictionary } from "@/lib/i18n/server";
+import { LocaleProvider } from "@/lib/i18n/client";
 import "./globals.css";
 
 const suit = localFont({
@@ -29,15 +31,19 @@ export const viewport: Viewport = {
   viewportFit: "cover",
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default async function RootLayout({ children }: LayoutProps<"/">) {
+  const { locale, dict } = await getDictionary();
+
   return (
     <html
-      lang="ko"
+      lang={locale}
       className={`${suit.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
         <NativeAuthBridge />
-        {children}
+        <LocaleProvider locale={locale} dict={dict}>
+          {children}
+        </LocaleProvider>
       </body>
     </html>
   );

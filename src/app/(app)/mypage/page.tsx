@@ -7,16 +7,19 @@ import { AddHouseholdSection } from "./add-household-section";
 import { HouseholdList } from "./household-list";
 import { PushNotificationToggle } from "@/components/PushNotificationToggle";
 import { getUnreadNotificationCount } from "@/lib/actions/notifications";
+import { getDictionary } from "@/lib/i18n/server";
+import { LanguageSelect } from "./language-select";
 
 const CONTACT_URL = "mailto:hyehyehye1919@gmail.com?subject=%EC%9A%B0%EB%A6%AC%EC%A7%91%20%EB%A9%94%EB%89%B4%ED%8C%90%20%EB%AC%B8%EC%9D%98";
 
 type Member = { user_id: string; nickname: string; icon_emoji: string | null; role: string; joined_at: string };
 
 export default async function MyPage() {
-  const [{ user, household: current }, households, unreadCount] = await Promise.all([
+  const [{ user, household: current }, households, unreadCount, { dict }] = await Promise.all([
     getCurrentHousehold(),
     getMyHouseholds(),
     getUnreadNotificationCount(),
+    getDictionary(),
   ]);
   const supabase = await createClient();
 
@@ -50,7 +53,7 @@ export default async function MyPage() {
   return (
     <div>
       <PageHeader
-        title="마이페이지"
+        title={dict.mypage.title}
         right={
           <Link
             href="/mypage/notifications"
@@ -72,12 +75,15 @@ export default async function MyPage() {
         <ProfileEditButton nickname={myNickname} iconEmoji={myIconEmoji} />
       </GlassCard>
 
-      <p className="mb-3 text-[13px] font-bold text-ink-soft">설정</p>
+      <p className="mb-3 text-[13px] font-bold text-ink-soft">{dict.mypage.settings}</p>
       <GlassCard className="mb-8 bg-white">
         <PushNotificationToggle />
+        <div className="border-t border-border">
+          <LanguageSelect />
+        </div>
       </GlassCard>
 
-      <p className="mb-3 text-[13px] font-bold text-ink-soft">우리집 관리</p>
+      <p className="mb-3 text-[13px] font-bold text-ink-soft">{dict.mypage.householdManagement}</p>
       <div className="mb-4">
         <HouseholdList
           entries={entries}
@@ -96,7 +102,7 @@ export default async function MyPage() {
             href="/mypage/subscription"
             className="flex items-center justify-between px-4 py-4 text-sm font-semibold text-ink"
           >
-            구독 관리
+            {dict.mypage.subscriptionManagement}
             <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--color-ink-faint)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M9 6l6 6-6 6" />
             </svg>
@@ -105,7 +111,7 @@ export default async function MyPage() {
             href="/mypage/account"
             className="flex items-center justify-between px-4 py-4 text-sm font-semibold text-ink"
           >
-            계정 관리
+            {dict.mypage.accountManagement}
             <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--color-ink-faint)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M9 6l6 6-6 6" />
             </svg>
@@ -119,7 +125,7 @@ export default async function MyPage() {
             href="/"
             className="flex items-center justify-between px-4 py-4 text-sm font-semibold text-ink"
           >
-            소개
+            {dict.mypage.about}
             <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--color-ink-faint)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M9 6l6 6-6 6" />
             </svg>
@@ -130,7 +136,7 @@ export default async function MyPage() {
             rel="noopener noreferrer"
             className="flex items-center justify-between px-4 py-4 text-sm font-semibold text-ink"
           >
-            문의하기
+            {dict.mypage.contact}
             <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--color-ink-faint)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M9 6l6 6-6 6" />
             </svg>
@@ -139,7 +145,7 @@ export default async function MyPage() {
             href="/terms"
             className="flex items-center justify-between px-4 py-4 text-sm font-semibold text-ink"
           >
-            이용약관
+            {dict.mypage.terms}
             <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--color-ink-faint)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M9 6l6 6-6 6" />
             </svg>
@@ -148,7 +154,7 @@ export default async function MyPage() {
             href="/privacy"
             className="flex items-center justify-between px-4 py-4 text-sm font-semibold text-ink"
           >
-            개인정보처리방침
+            {dict.mypage.privacy}
             <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--color-ink-faint)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M9 6l6 6-6 6" />
             </svg>

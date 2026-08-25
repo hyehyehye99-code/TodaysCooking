@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { GlassCard } from "@/components/ui";
+import { useDict } from "@/lib/i18n/client";
 
 const SAMPLE_RECIPES = [
   { name: "비프 부르기뇽", tag: "#프랑스", emoji: "🍷" },
@@ -36,13 +37,14 @@ function TapHint({ rounded = "rounded-xl" }: { rounded?: string }) {
 }
 
 function RecipeListDemo({ onNext }: { onNext: () => void }) {
+  const dict = useDict();
   return (
     <GlassCard className="mx-auto w-full bg-white p-4">
       <div className="mb-3 flex items-center justify-between">
-        <p className="text-[15px] font-bold text-ink">메뉴판</p>
+        <p className="text-[15px] font-bold text-ink">{dict.welcome.menuBoard}</p>
         <span className="relative inline-block">
           <button type="button" onClick={onNext} className="text-xs font-bold text-accent">
-            + 새 메뉴
+            {dict.welcome.newMenu}
           </button>
           <TapHint />
         </span>
@@ -65,6 +67,7 @@ function RecipeListDemo({ onNext }: { onNext: () => void }) {
 }
 
 function RecipeCollectDemo() {
+  const dict = useDict();
   const [phase, setPhase] = useState<"form" | "loading" | "result">("form");
 
   function runAi() {
@@ -74,15 +77,15 @@ function RecipeCollectDemo() {
 
   return (
     <GlassCard className="mx-auto w-full bg-white p-4">
-      <p className="mb-1 text-xs font-bold text-ink-soft">요리 이름</p>
-      <div className="mb-3 rounded-xl bg-surface px-3.5 py-2.5 text-sm font-bold text-ink">스테이크 굽는 법</div>
+      <p className="mb-1 text-xs font-bold text-ink-soft">{dict.welcome.dishName}</p>
+      <div className="mb-3 rounded-xl bg-surface px-3.5 py-2.5 text-sm font-bold text-ink">{dict.welcome.demoDish}</div>
 
-      <p className="mb-1 text-xs font-bold text-ink-soft">참고 링크</p>
+      <p className="mb-1 text-xs font-bold text-ink-soft">{dict.welcome.referenceLink}</p>
       <div className="mb-3 rounded-xl bg-surface p-2.5">
         <p className="mb-2 truncate text-xs text-ink-soft">youtube.com/shorts</p>
         <div className="flex gap-2 rounded-lg bg-white p-1.5">
           <div className="h-10 w-10 shrink-0 rounded-md bg-ink/10" />
-          <p className="line-clamp-2 text-[11px] leading-snug text-ink-soft">안심 스테이크</p>
+          <p className="line-clamp-2 text-[11px] leading-snug text-ink-soft">{dict.welcome.demoDish}</p>
         </div>
       </div>
 
@@ -93,14 +96,14 @@ function RecipeCollectDemo() {
           disabled={phase !== "form"}
           className="w-full rounded-xl border border-accent py-2.5 text-xs font-bold text-accent-ink disabled:opacity-60"
         >
-          {phase === "form" && "✨ AI로 재료·레시피 자동 작성"}
-          {phase === "loading" && "AI가 작성하는 중..."}
-          {phase === "result" && "✓ AI가 작성했어요"}
+          {phase === "form" && dict.welcome.aiFillButton}
+          {phase === "loading" && dict.welcome.aiFillLoading}
+          {phase === "result" && dict.welcome.aiFillDone}
         </button>
         {phase === "form" && <TapHint />}
       </div>
 
-      <p className="mb-1 text-xs font-bold text-ink-soft">재료</p>
+      <p className="mb-1 text-xs font-bold text-ink-soft">{dict.welcome.ingredients}</p>
       <div className="min-h-[88px] rounded-xl bg-surface p-2.5 text-xs leading-relaxed text-ink">
         {phase === "result" ? (
           <div className="animate-fade-in-up flex flex-wrap gap-1.5">
@@ -111,13 +114,13 @@ function RecipeCollectDemo() {
             ))}
           </div>
         ) : (
-          <span className="text-ink-faint">한 줄에 하나씩 입력해주세요</span>
+          <span className="text-ink-faint">{dict.welcome.ingredientsPlaceholder}</span>
         )}
       </div>
 
       {phase === "result" && (
         <div className="animate-fade-in-up mt-3">
-          <p className="mb-1 text-xs font-bold text-ink-soft">만드는법</p>
+          <p className="mb-1 text-xs font-bold text-ink-soft">{dict.welcome.instructions}</p>
           <p className="whitespace-pre-line rounded-xl bg-surface p-2.5 text-xs leading-relaxed text-ink">
             {AI_INSTRUCTIONS}
           </p>
@@ -133,7 +136,6 @@ const OWNED_INGREDIENTS = new Set(["방울 토마토", "와사비"]);
 
 const CONFIRM_STATES = ["shopping", "fridge", "skip"] as const;
 type ConfirmState = (typeof CONFIRM_STATES)[number];
-const CONFIRM_LABELS: Record<ConfirmState, string> = { shopping: "구매 필요", fridge: "보유 중", skip: "생략" };
 const CONFIRM_STYLES: Record<ConfirmState, string> = {
   shopping: "bg-accent text-white",
   fridge: "bg-positive text-white",
@@ -141,6 +143,12 @@ const CONFIRM_STYLES: Record<ConfirmState, string> = {
 };
 
 function ShoppingSyncDemo() {
+  const dict = useDict();
+  const confirmLabels: Record<ConfirmState, string> = {
+    shopping: dict.welcome.stateShopping,
+    fridge: dict.welcome.stateFridge,
+    skip: dict.welcome.stateSkip,
+  };
   const [phase, setPhase] = useState<"detail" | "confirm" | "done">("detail");
   const [choices, setChoices] = useState<Record<string, ConfirmState>>(
     () => Object.fromEntries(SHOPPING_ITEMS.map((item) => [item, "shopping"])) as Record<string, ConfirmState>
@@ -152,11 +160,8 @@ function ShoppingSyncDemo() {
       <GlassCard className="mx-auto w-full bg-white p-4">
         {phase === "confirm" ? (
           <div className="animate-fade-in-up">
-            <p className="mb-1 text-[15px] font-bold">부족한 재료 확인</p>
-            <p className="mb-3 text-xs text-ink-soft">
-              이미 있는 재료는 냉장고로, 필요 없는 재료는 생략으로 표시하고, 나머지만 장보기에
-              담을게요.
-            </p>
+            <p className="mb-1 text-[15px] font-bold">{dict.welcome.missingIngredientsTitle}</p>
+            <p className="mb-3 text-xs text-ink-soft">{dict.welcome.missingIngredientsDesc}</p>
             <div className="mb-4 flex max-h-[220px] flex-col gap-2 overflow-y-auto">
               {SHOPPING_ITEMS.map((item) => (
                 <div key={item} className="rounded-xl bg-surface px-3 py-2.5">
@@ -172,7 +177,7 @@ function ShoppingSyncDemo() {
                             choices[item] === state ? CONFIRM_STYLES[state] : "text-ink-soft"
                           }`}
                         >
-                          {CONFIRM_LABELS[state]}
+                          {confirmLabels[state]}
                         </button>
                       ))}
                     </div>
@@ -186,21 +191,21 @@ function ShoppingSyncDemo() {
                 onClick={() => setPhase("detail")}
                 className="flex-1 rounded-xl bg-surface py-3 text-sm font-bold text-ink-soft"
               >
-                취소
+                {dict.welcome.modalCancel}
               </button>
               <button
                 type="button"
                 onClick={() => setPhase("done")}
                 className="flex-1 rounded-xl bg-accent py-3 text-sm font-bold text-white"
               >
-                담기
+                {dict.welcome.modalConfirm}
               </button>
             </div>
           </div>
         ) : (
           <>
-            <p className="mb-1 text-[15px] font-bold text-ink">안심 스테이크</p>
-            <p className="mb-2 text-xs text-ink-soft">2/9 보유 중 · 재료</p>
+            <p className="mb-1 text-[15px] font-bold text-ink">{dict.welcome.demoDish}</p>
+            <p className="mb-2 text-xs text-ink-soft">2/9 {dict.welcome.stateFridge} · {dict.welcome.ingredients}</p>
             <div className="mb-3 flex flex-wrap gap-1.5">
               {AI_INGREDIENTS.map((item) => {
                 const isOwned = OWNED_INGREDIENTS.has(item);
@@ -224,7 +229,7 @@ function ShoppingSyncDemo() {
 
             {phase === "done" ? (
               <div className="rounded-xl bg-surface py-2.5 text-center text-xs font-bold text-ink-faint">
-                장보기에 담겨 있어요
+                {dict.welcome.addedToShoppingList}
               </div>
             ) : (
               <div className="relative">
@@ -233,7 +238,7 @@ function ShoppingSyncDemo() {
                   onClick={() => setPhase("confirm")}
                   className="w-full rounded-xl bg-accent py-2.5 text-xs font-bold text-white"
                 >
-                  부족한 재료 장보기 담기
+                  {dict.welcome.addToShoppingList}
                 </button>
                 <TapHint />
               </div>
@@ -244,7 +249,7 @@ function ShoppingSyncDemo() {
 
       {phase === "done" && (
         <div className="animate-fade-in-up mx-auto mt-3 w-full">
-          <p className="mb-1.5 text-xs font-bold text-ink-soft">장보기</p>
+          <p className="mb-1.5 text-xs font-bold text-ink-soft">{dict.welcome.shoppingList}</p>
           <GlassCard className="bg-white p-3">
             <div className="flex flex-col divide-y divide-border">
               {shoppingList.map((item) => (
@@ -267,6 +272,7 @@ const FRIDGE_CATEGORIES = [
 ];
 
 function FridgeDemo() {
+  const dict = useDict();
   const [owned, setOwned] = useState<Set<string>>(
     () => new Set(FRIDGE_CATEGORIES.flatMap((c) => c.owned))
   );
@@ -282,7 +288,7 @@ function FridgeDemo() {
 
   return (
     <GlassCard className="mx-auto w-full bg-white p-4">
-      <p className="mb-4 text-xs text-ink-faint">탭하면 바로 추가되거나 빠져요</p>
+      <p className="mb-4 text-xs text-ink-faint">{dict.welcome.tapToToggle}</p>
       <div className="flex flex-col gap-4">
         {FRIDGE_CATEGORIES.map((cat) => (
           <div key={cat.name}>
@@ -315,18 +321,19 @@ function FridgeDemo() {
 }
 
 const HOUSEHOLD_MEMBERS = [
-  { name: "혜동세프", role: "대장 (나)", emoji: "🧑‍🍳" },
-  { name: "콩이세프", role: null, emoji: "👩‍🍳" },
+  { name: "혜동세프", emoji: "🧑‍🍳", isOwner: true },
+  { name: "콩이세프", emoji: "👩‍🍳", isOwner: false },
 ];
 
 function HouseholdShareDemo() {
+  const dict = useDict();
   return (
     <GlassCard className="mx-auto w-full bg-white p-4">
       <div className="mb-3 flex items-center justify-between">
-        <span className="text-sm font-bold text-ink">혜콩이네 🏠</span>
-        <span className="rounded-full bg-accent/10 px-2.5 py-1 text-[11px] font-bold text-accent">사용 중</span>
+        <span className="text-sm font-bold text-ink">{dict.welcome.householdName}</span>
+        <span className="rounded-full bg-accent/10 px-2.5 py-1 text-[11px] font-bold text-accent">{dict.welcome.inUse}</span>
       </div>
-      <p className="mb-2 text-xs font-bold text-ink-soft">참여 인원 (2명)</p>
+      <p className="mb-2 text-xs font-bold text-ink-soft">{dict.welcome.members}</p>
       <div className="flex flex-col gap-2">
         {HOUSEHOLD_MEMBERS.map((m) => (
           <div key={m.name} className="flex items-center gap-2 rounded-xl bg-surface px-3.5 py-2.5">
@@ -335,7 +342,7 @@ function HouseholdShareDemo() {
             </div>
             <div>
               <p className="text-xs font-bold text-ink">{m.name}</p>
-              {m.role && <p className="text-[10px] text-accent-ink">{m.role}</p>}
+              {m.isOwner && <p className="text-[10px] text-accent-ink">{dict.welcome.ownerLabel}</p>}
             </div>
           </div>
         ))}
@@ -344,38 +351,40 @@ function HouseholdShareDemo() {
   );
 }
 
-const SLIDES = [
-  {
-    headline: "여기저기 흩어진 레시피, 한곳에 모아보세요",
-    subtext: "새 메뉴를 눌러 등록을 시작해보세요",
-    render: (onNext: () => void) => <RecipeListDemo onNext={onNext} />,
-  },
-  {
-    headline: "링크 하나만 넣으면 AI가 알아서 정리해줘요",
-    subtext: "AI로 재료·레시피 자동 작성 버튼을 눌러보세요",
-    render: () => <RecipeCollectDemo />,
-  },
-  {
-    headline: "부족한 재료는 장보기에 자동으로",
-    subtext: "장보기를 끝내면 냉장고에도 알아서 채워져요. 버튼을 눌러보세요",
-    render: () => <ShoppingSyncDemo />,
-  },
-  {
-    headline: "냉장고에 있는 재료, 탭 한 번으로 체크",
-    subtext: "직접 눌러보세요",
-    render: () => <FridgeDemo />,
-  },
-  {
-    headline: "가족과 함께 관리해요",
-    subtext: "우리집은 여럿이 같이 쓰고, 초대 링크로 간편하게 초대할 수 있어요",
-    render: () => <HouseholdShareDemo />,
-  },
-];
-
 export function WelcomeContent() {
+  const dict = useDict();
   const [slideIndex, setSlideIndex] = useState(0);
-  const slide = SLIDES[slideIndex];
-  const isLast = slideIndex === SLIDES.length - 1;
+
+  const slides = [
+    {
+      headline: dict.welcome.slide1Headline,
+      subtext: dict.welcome.slide1Subtext,
+      render: (onNext: () => void) => <RecipeListDemo onNext={onNext} />,
+    },
+    {
+      headline: dict.welcome.slide2Headline,
+      subtext: dict.welcome.slide2Subtext,
+      render: () => <RecipeCollectDemo />,
+    },
+    {
+      headline: dict.welcome.slide3Headline,
+      subtext: dict.welcome.slide3Subtext,
+      render: () => <ShoppingSyncDemo />,
+    },
+    {
+      headline: dict.welcome.slide4Headline,
+      subtext: dict.welcome.slide4Subtext,
+      render: () => <FridgeDemo />,
+    },
+    {
+      headline: dict.welcome.slide5Headline,
+      subtext: dict.welcome.slide5Subtext,
+      render: () => <HouseholdShareDemo />,
+    },
+  ];
+
+  const slide = slides[slideIndex];
+  const isLast = slideIndex === slides.length - 1;
   const isFirst = slideIndex === 0;
 
   return (
@@ -384,7 +393,7 @@ export function WelcomeContent() {
         <button
           type="button"
           onClick={() => setSlideIndex((i) => Math.max(0, i - 1))}
-          aria-label="이전"
+          aria-label={dict.welcome.prev}
           className={`flex h-8 w-8 items-center justify-center rounded-full bg-surface text-ink-soft ${
             isFirst ? "invisible" : ""
           }`}
@@ -395,7 +404,7 @@ export function WelcomeContent() {
         </button>
 
         <div className="flex gap-1.5">
-          {SLIDES.map((_, i) => (
+          {slides.map((_, i) => (
             <span
               key={i}
               className={`h-1.5 w-6 rounded-full ${i === slideIndex ? "bg-accent" : "bg-border"}`}
@@ -404,7 +413,7 @@ export function WelcomeContent() {
         </div>
 
         <Link href="/login" className="text-xs font-bold text-ink-faint">
-          건너뛰기
+          {dict.welcome.skip}
         </Link>
       </div>
 
@@ -421,7 +430,7 @@ export function WelcomeContent() {
             href="/login"
             className="block w-full rounded-xl bg-accent py-4 text-center text-sm font-bold text-white"
           >
-            지금 시작해볼까요?
+            {dict.welcome.start}
           </Link>
         ) : (
           <button
@@ -429,7 +438,7 @@ export function WelcomeContent() {
             onClick={() => setSlideIndex((i) => i + 1)}
             className="w-full rounded-xl bg-accent py-4 text-sm font-bold text-white"
           >
-            다음
+            {dict.welcome.next}
           </button>
         )}
       </div>

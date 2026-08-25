@@ -2,16 +2,25 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useDict } from "@/lib/i18n/client";
+import type { Dictionary } from "@/lib/i18n/dictionaries/ko";
 
 // Each icon is hand-drawn to a different bounding box within the shared
 // 24x24 viewBox, so at a fixed container size they render at visibly
 // different scales. scale/cx/cy normalize every icon to the same ~16-unit
 // footprint centered at (12, 12); strokeWidth is scaled inversely so the
 // rendered line weight stays uniform after the group transform.
-const TABS = [
+const TABS: {
+  href: string;
+  labelKey: keyof Dictionary["tabBar"];
+  cx: number;
+  cy: number;
+  scale: number;
+  icon: React.ReactNode;
+}[] = [
   {
     href: "/recipes",
-    label: "레시피",
+    labelKey: "recipes",
     cx: 12,
     cy: 12,
     scale: 1,
@@ -24,7 +33,7 @@ const TABS = [
   },
   {
     href: "/fridge",
-    label: "냉장고",
+    labelKey: "fridge",
     cx: 12,
     cy: 12,
     scale: 0.8,
@@ -39,7 +48,7 @@ const TABS = [
   },
   {
     href: "/shopping",
-    label: "장보기",
+    labelKey: "shopping",
     cx: 12.25,
     cy: 12.15,
     scale: 0.82,
@@ -53,7 +62,7 @@ const TABS = [
   },
   {
     href: "/bookmarks",
-    label: "보관함",
+    labelKey: "bookmarks",
     cx: 12,
     cy: 12.25,
     scale: 0.91,
@@ -61,7 +70,7 @@ const TABS = [
   },
   {
     href: "/mypage",
-    label: "마이페이지",
+    labelKey: "mypage",
     cx: 12,
     cy: 12.25,
     scale: 1.03,
@@ -76,6 +85,7 @@ const TABS = [
 
 export function TabBar() {
   const pathname = usePathname();
+  const dict = useDict();
 
   const isSubpage = pathname.startsWith("/recipes/") || pathname.startsWith("/mypage/");
 
@@ -110,7 +120,7 @@ export function TabBar() {
               </g>
             </svg>
             <span className={`text-[10.5px] ${active ? "font-bold" : "font-medium"}`}>
-              {tab.label}
+              {dict.tabBar[tab.labelKey]}
             </span>
           </Link>
         );

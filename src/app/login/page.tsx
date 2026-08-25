@@ -1,12 +1,13 @@
 import { redirect } from "next/navigation";
 import { getCurrentHousehold } from "@/lib/household";
 import { BackButton } from "@/components/ui";
+import { getDictionary } from "@/lib/i18n/server";
 import { GoogleSignInButton } from "./google-signin-button";
 import { AppleSignInButton } from "./apple-signin-button";
 import { KakaoSignInButton } from "./kakao-signin-button";
 
 export default async function LandingPage() {
-  const { user, household } = await getCurrentHousehold();
+  const [{ user, household }, { dict }] = await Promise.all([getCurrentHousehold(), getDictionary()]);
   if (user && household) redirect("/recipes");
   if (user && !household) redirect("/onboarding");
 
@@ -21,13 +22,13 @@ export default async function LandingPage() {
       <div>
         <p className="mb-5 text-xs font-bold tracking-wide text-ink-faint">우리집 메뉴판</p>
         <h1 className="text-[32px] font-bold leading-tight">
-          흩어진 레시피를
+          {dict.landing.headline1}
           <br />
-          <span className="text-accent">한곳에,</span>
+          <span className="text-accent">{dict.landing.headline2}</span>
           <br />
-          필요한 재료를
+          {dict.landing.headline3}
           <br />
-          <span className="text-accent">한 눈에!</span>
+          <span className="text-accent">{dict.landing.headline4}</span>
         </h1>
 
         <div className="mt-10 flex flex-col gap-2.5">

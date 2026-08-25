@@ -2,8 +2,10 @@
 
 import { useState } from "react";
 import { signInWithProvider } from "@/lib/oauth-signin";
+import { useDict } from "@/lib/i18n/client";
 
 export function GoogleSignInButton() {
+  const dict = useDict();
   const [pending, setPending] = useState(false);
 
   async function handleClick() {
@@ -36,7 +38,7 @@ export function GoogleSignInButton() {
           fill="#EA4335"
         />
       </svg>
-      {pending ? "이동하는 중..." : "구글로 시작하기"}
+      {pending ? dict.login.redirecting : dict.login.google}
     </button>
   );
 }
