@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useRef, useState, useTransition } from "react";
 import { completeOnboardingAuthed } from "@/lib/actions/onboarding";
 import { BackButton } from "@/components/ui";
 import { ClearableInput } from "@/components/ClearableInput";
@@ -31,6 +31,13 @@ export function OnboardingWizard({ householdMissingNotice = false }: { household
   const [nickname, setNickname] = useState("");
   const [step2Error, setStep2Error] = useState("");
   const [pending, startTransition] = useTransition();
+  // `pending` only flips true once React commits the transition's start,
+  // which isn't synchronous with the click that triggers it — a fast
+  // double-tap (real webview behavior, not just a theoretical race) can
+  // fire handleFinish twice before that commit happens, submitting the
+  // household-creation RPC twice. This ref closes that window: it's set
+  // synchronously, in the same tick as the first call.
+  const submittingRef = useRef(false);
 
   function goToNextFromStep1() {
     if (mode === "create" && !name.trim()) return setStep1Error(dict.onboarding.nameRequired);
@@ -55,9 +62,16 @@ export function OnboardingWizard({ householdMissingNotice = false }: { household
 
   function handleFinish() {
     if (!nickname.trim()) return setStep2Error(dict.onboarding.nicknameRequired);
+    if (submittingRef.current) return;
+    submittingRef.current = true;
     startTransition(async () => {
       const result = await completeOnboardingAuthed(payload());
-      if (result && "error" in result) handleSetupError(result);
+      if (result && "error" in result) {
+        submittingRef.current = false;
+        handleSetupError(result);
+      }
+      // On success this navigates away (redirect()), so there's no need to
+      // reset the ref — the component unmounts.
     });
   }
 

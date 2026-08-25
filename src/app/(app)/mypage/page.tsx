@@ -1,15 +1,25 @@
 import Link from "next/link";
 import { getCurrentHousehold, getMyHouseholds } from "@/lib/household";
-import { GlassCard, PageHeader } from "@/components/ui";
+import { GlassCard, PageHeader, ProgressBar } from "@/components/ui";
 import { createClient } from "@/lib/supabase/server";
 import { ProfileEditButton } from "./profile-edit-button";
 import { AddHouseholdSection } from "./add-household-section";
 import { HouseholdList } from "./household-list";
-import { PushNotificationToggle } from "@/components/PushNotificationToggle";
 import { getUnreadNotificationCount } from "@/lib/actions/notifications";
 import { getDictionary } from "@/lib/i18n/server";
 
 const CONTACT_URL = "mailto:hyehyehye1919@gmail.com?subject=%EC%9A%B0%EB%A6%AC%EC%A7%91%20%EB%A9%94%EB%89%B4%ED%8C%90%20%EB%AC%B8%EC%9D%98";
+
+// Kept in sync with FREE_WEEKLY_LIMIT / PREMIUM_MONTHLY_LIMIT in
+// src/lib/actions/ai-recipe.ts — this page only displays the count, the
+// actual enforcement lives server-side in that action. Free and premium use
+// different rolling windows (7 days vs 30), not just different caps.
+const FREE_WEEKLY_LIMIT = 5;
+const PREMIUM_MONTHLY_LIMIT = 100;
+
+function daysAgoIso(days: number) {
+  return new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
+}
 
 type Member = { user_id: string; nickname: string; icon_emoji: string | null; role: string; joined_at: string };
 
@@ -49,6 +59,22 @@ export default async function MyPage() {
     : { data: null };
   const activeIsPremium = !!sub?.active && (!sub.expires_at || new Date(sub.expires_at) > new Date());
 
+  const { data: promoGrant } = user
+    ? await supabase.from("promo_code_redemptions").select("user_id").eq("user_id", user.id).maybeSingle()
+    : { data: null };
+  const isUnlimited = !!promoGrant;
+
+  const planLimit = activeIsPremium ? PREMIUM_MONTHLY_LIMIT : FREE_WEEKLY_LIMIT;
+  const planSince = daysAgoIso(activeIsPremium ? 30 : 7);
+  const { count: planUsageCount } = user
+    ? await supabase
+        .from("ai_recipe_generations")
+        .select("id", { count: "exact", head: true })
+        .eq("user_id", user.id)
+        .gte("created_at", planSince)
+    : { count: 0 };
+  const planUsed = Math.min(planUsageCount ?? 0, planLimit);
+
   return (
     <div>
       <PageHeader
@@ -70,13 +96,42 @@ export default async function MyPage() {
         }
       />
 
-      <GlassCard className="mb-4 bg-white p-4">
+      <GlassCard className="mb-8 bg-white p-4">
         <ProfileEditButton nickname={myNickname} iconEmoji={myIconEmoji} />
-      </GlassCard>
 
-      <p className="mb-3 text-[13px] font-bold text-ink-soft">{dict.mypage.settings}</p>
-      <GlassCard className="mb-8 bg-white">
-        <PushNotificationToggle />
+        <div className="mt-4 border-t border-border pt-4">
+          {isUnlimited ? (
+            <>
+              <p className="text-sm font-semibold text-ink">{dict.mypage.unlimitedActive}</p>
+              <p className="mt-1 text-xs text-ink-soft">{dict.mypage.unlimitedDesc}</p>
+            </>
+          ) : (
+            <>
+              <p className="text-sm font-semibold text-ink">
+                {activeIsPremium ? dict.mypage.premiumActive : dict.mypage.freePlanActive}
+              </p>
+              <p className="mt-1 text-xs text-ink-soft">
+                {(activeIsPremium ? dict.mypage.usageMonthlyTemplate : dict.mypage.usageWeeklyTemplate)
+                  .replace("{used}", String(planUsed))
+                  .replace("{limit}", String(planLimit))}
+              </p>
+              <div className="mt-3">
+                <ProgressBar
+                  percent={(planUsed / planLimit) * 100}
+                  colorClass={activeIsPremium ? "bg-accent" : "bg-positive"}
+                />
+              </div>
+              {current && sub?.expires_at && activeIsPremium && (
+                <p className="mt-3 text-xs text-ink-faint">
+                  {dict.mypage.nextBillingTemplate.replace(
+                    "{date}",
+                    new Date(sub.expires_at).toLocaleDateString("ko-KR")
+                  )}
+                </p>
+              )}
+            </>
+          )}
+        </div>
       </GlassCard>
 
       <p className="mb-3 text-[13px] font-bold text-ink-soft">{dict.mypage.householdManagement}</p>

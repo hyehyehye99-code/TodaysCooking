@@ -12,6 +12,20 @@ export type SetupPayload = {
 };
 
 async function applySetup(payload: SetupPayload) {
+  // Idempotency guard: this action is only ever meant to run once, for a
+  // user with no household yet. If it somehow runs twice for the same
+  // onboarding session (a fast double-tap racing past the client-side
+  // guard, a retried request, etc.), the second call must not create a
+  // second household — just finish nickname setup and treat it as done.
+  const { household: existingHousehold } = await getCurrentHousehold();
+  if (existingHousehold) {
+    if (payload.nickname.trim()) {
+      const supabase = await createClient();
+      await supabase.rpc("upsert_my_nickname", { new_nickname: payload.nickname.trim() });
+    }
+    return { success: true as const };
+  }
+
   const supabase = await createClient();
 
   if (payload.nickname.trim()) {

@@ -1,17 +1,58 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useOptimistic, useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { GlassCard } from "@/components/ui";
 import { ConfirmModal } from "@/components/ConfirmModal";
-import { deleteBookmark, updateBookmarkNote, reorderBookmarks } from "@/lib/actions/bookmarks";
+import {
+  deleteBookmark,
+  updateBookmarkNote,
+  reorderBookmarks,
+  toggleFavoriteBookmark,
+} from "@/lib/actions/bookmarks";
 import { useDragReorder } from "@/lib/useDragReorder";
 import { ClearableInput } from "@/components/ClearableInput";
 import { useDict } from "@/lib/i18n/client";
 import type { Bookmark } from "@/lib/types";
 
 type BookmarkWithRecipe = Bookmark & { recipes: { title: string } | null };
+
+function FavoriteButton({ bookmark }: { bookmark: BookmarkWithRecipe }) {
+  const dict = useDict();
+  const [optimisticFavorite, setOptimisticFavorite] = useOptimistic(bookmark.is_favorite);
+  const [, startTransition] = useTransition();
+  const router = useRouter();
+
+  return (
+    <button
+      type="button"
+      onClick={() => {
+        const next = !optimisticFavorite;
+        startTransition(async () => {
+          setOptimisticFavorite(next);
+          await toggleFavoriteBookmark(bookmark.id, next);
+          router.refresh();
+        });
+      }}
+      aria-label={dict.recipes.favorite}
+      className="flex h-7 w-7 shrink-0 items-center justify-center"
+    >
+      <svg
+        viewBox="0 0 24 24"
+        width="17"
+        height="17"
+        fill={optimisticFavorite ? "var(--color-warn)" : "none"}
+        stroke={optimisticFavorite ? "var(--color-warn)" : "var(--color-ink-faint)"}
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <path d="M12 3.5l2.7 5.6 6.1.9-4.4 4.3 1 6.1-5.4-2.9-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z" />
+      </svg>
+    </button>
+  );
+}
 
 function BookmarkNote({ id, note }: { id: string; note: string | null }) {
   const dict = useDict();
@@ -145,6 +186,7 @@ function DeleteBookmarkButton({
 export function BookmarkList({ bookmarks }: { bookmarks: BookmarkWithRecipe[] }) {
   const dict = useDict();
   const [query, setQuery] = useState("");
+  const [favoritesOnly, setFavoritesOnly] = useState(false);
   const [reordering, setReordering] = useState(false);
   const {
     order,
@@ -160,6 +202,7 @@ export function BookmarkList({ bookmarks }: { bookmarks: BookmarkWithRecipe[] })
   const router = useRouter();
 
   const filtered = bookmarks.filter((b) => {
+    if (favoritesOnly && !b.is_favorite) return false;
     if (!query) return true;
     const q = query.toLowerCase();
     return (
@@ -226,6 +269,39 @@ export function BookmarkList({ bookmarks }: { bookmarks: BookmarkWithRecipe[] })
               </svg>
             </button>
           )}
+        </div>
+      )}
+
+      {!reordering && bookmarks.length > 0 && (
+        <div className="mb-4 flex flex-wrap gap-1.5">
+          <button
+            onClick={() => setFavoritesOnly(false)}
+            className={`rounded-full px-3 py-1.5 text-xs font-semibold ${
+              !favoritesOnly ? "bg-accent text-white" : "bg-surface text-ink-soft"
+            }`}
+          >
+            {dict.recipes.all}
+          </button>
+          <button
+            onClick={() => setFavoritesOnly((prev) => !prev)}
+            className={`inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-semibold ${
+              favoritesOnly ? "bg-accent text-white" : "bg-surface text-ink-soft"
+            }`}
+          >
+            <svg
+              viewBox="0 0 24 24"
+              width="11"
+              height="11"
+              fill={favoritesOnly ? "currentColor" : "none"}
+              stroke="currentColor"
+              strokeWidth="1.8"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M12 3.5l2.7 5.6 6.1.9-4.4 4.3 1 6.1-5.4-2.9-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z" />
+            </svg>
+            {dict.recipes.favorite}
+          </button>
         </div>
       )}
 
@@ -323,6 +399,7 @@ export function BookmarkList({ bookmarks }: { bookmarks: BookmarkWithRecipe[] })
                     <DeleteBookmarkButton id={b.id} linkedToRecipe={!!(b.recipe_id && b.recipes)} />
                   </div>
                 </div>
+                <FavoriteButton bookmark={b} />
               </div>
               <BookmarkNote id={b.id} note={b.note} />
             </GlassCard>

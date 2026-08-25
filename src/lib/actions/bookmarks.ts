@@ -53,6 +53,13 @@ export async function updateBookmarkNote(id: string, note: string) {
   revalidatePath("/bookmarks");
 }
 
+export async function toggleFavoriteBookmark(id: string, favorite: boolean) {
+  const supabase = await createClient();
+  await supabase.from("bookmarks").update({ is_favorite: favorite }).eq("id", id);
+
+  revalidatePath("/bookmarks");
+}
+
 export async function reorderBookmarks(order: string[]) {
   const { household } = await getCurrentHousehold();
   if (!household) return;
