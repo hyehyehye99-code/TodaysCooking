@@ -1,6 +1,7 @@
 "use client";
 
 import { forwardRef, useRef, useState, type InputHTMLAttributes } from "react";
+import { useDict } from "@/lib/i18n/client";
 
 // A plain <input class="..."> plus a native-iOS-style round "X" that clears
 // it. Works for both controlled (value+onChange) and uncontrolled
@@ -10,6 +11,7 @@ import { forwardRef, useRef, useState, type InputHTMLAttributes } from "react";
 // uncontrolled form still sees the field as empty at submit time either way.
 export const ClearableInput = forwardRef<HTMLInputElement, InputHTMLAttributes<HTMLInputElement>>(
   function ClearableInput({ className = "", onChange, value, ...props }, forwardedRef) {
+    const dict = useDict();
     const innerRef = useRef<HTMLInputElement>(null);
     const isControlled = value !== undefined;
     const [uncontrolledHasValue, setUncontrolledHasValue] = useState(
@@ -51,7 +53,7 @@ export const ClearableInput = forwardRef<HTMLInputElement, InputHTMLAttributes<H
             type="button"
             onClick={clear}
             tabIndex={-1}
-            aria-label="지우기"
+            aria-label={dict.components.clear}
             className="absolute right-2.5 top-1/2 flex h-[18px] w-[18px] -translate-y-1/2 items-center justify-center rounded-full bg-ink-faint text-white"
           >
             <svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useDict } from "@/lib/i18n/client";
 
 export function TagPicker({
   name,
@@ -11,6 +12,7 @@ export function TagPicker({
   existingTags: string[];
   defaultSelected?: string[];
 }) {
+  const dict = useDict();
   const [options, setOptions] = useState<string[]>(() => [
     ...new Set([...existingTags, ...defaultSelected]),
   ]);
@@ -61,7 +63,7 @@ export function TagPicker({
                 addCustom();
               }
             }}
-            placeholder="태그 추가"
+            placeholder={dict.components.tagAddPlaceholder}
             className="w-16 bg-transparent text-[13px] outline-none placeholder:text-ink-faint"
           />
           <button

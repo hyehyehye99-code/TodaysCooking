@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { Capacitor } from "@capacitor/core";
 import { Purchases, type PurchasesPackage, type PurchasesError } from "@revenuecat/purchases-capacitor";
 import { GlassCard } from "@/components/ui";
+import { useDict } from "@/lib/i18n/client";
+import type { Dictionary } from "@/lib/i18n/dictionaries/ko";
 
 const REVENUECAT_IOS_API_KEY = process.env.NEXT_PUBLIC_REVENUECAT_IOS_API_KEY ?? "";
 
@@ -15,14 +17,14 @@ function subscribeNever() {
 // App Store guideline 3.1.2 requires the subscription screen to show each
 // plan's length alongside its title/price — RevenueCat exposes it as an
 // ISO 8601 duration ("P1M", "P1Y", ...) rather than display text.
-function formatSubscriptionPeriod(period: string | null): string | null {
+function formatSubscriptionPeriod(period: string | null, dict: Dictionary): string | null {
   const match = period?.match(/^P(?:(\d+)Y)?(?:(\d+)M)?(?:(\d+)W)?(?:(\d+)D)?$/);
   if (!match) return null;
   const [, years, months, weeks, days] = match;
-  if (years) return `${years}년`;
-  if (months) return `${months}개월`;
-  if (weeks) return `${weeks}주`;
-  if (days) return `${days}일`;
+  if (years) return dict.components.periodYearTemplate.replace("{n}", years);
+  if (months) return dict.components.periodMonthTemplate.replace("{n}", months);
+  if (weeks) return dict.components.periodWeekTemplate.replace("{n}", weeks);
+  if (days) return dict.components.periodDayTemplate.replace("{n}", days);
   return null;
 }
 
@@ -60,6 +62,7 @@ export function SubscriptionPaywall({
   isPremium: boolean;
   householdId: string | null;
 }) {
+  const dict = useDict();
   const isNative = useSyncExternalStore(subscribeNever, getIsNativeSnapshot, getIsNativeServerSnapshot);
   const region = useSyncExternalStore(subscribeNever, getRegionSnapshot, getRegionServerSnapshot);
   const isKorea = region === "KR";
@@ -81,12 +84,12 @@ export function SubscriptionPaywall({
         const offerings = await Purchases.getOfferings();
         setPackages(offerings.current?.availablePackages ?? []);
       } catch {
-        setError("구독 상품을 불러오지 못했어요.");
+        setError(dict.components.subFetchError);
       } finally {
         setStatus("idle");
       }
     })();
-  }, [isNative, householdId, isPremium, isKorea]);
+  }, [isNative, householdId, isPremium, isKorea, dict.components.subFetchError]);
 
   async function purchase(pkg: PurchasesPackage) {
     setStatus("purchasing");
@@ -103,7 +106,7 @@ export function SubscriptionPaywall({
       // not yet approved, network failure, ...) used to fail exactly the
       // same way, with nothing on screen to tell the two apart.
       if (!(e as PurchasesError)?.userCancelled) {
-        setError("결제를 진행하지 못했어요. 잠시 후 다시 시도해주세요.");
+        setError(dict.components.purchaseError);
       }
     } finally {
       setStatus("idle");
@@ -117,7 +120,7 @@ export function SubscriptionPaywall({
       await Purchases.restorePurchases();
       router.refresh();
     } catch {
-      setError("복원할 구매 내역을 찾지 못했어요.");
+      setError(dict.components.restoreError);
     } finally {
       setStatus("idle");
     }
@@ -126,7 +129,7 @@ export function SubscriptionPaywall({
   if (!isNative) {
     return (
       <GlassCard className="bg-white p-4">
-        <p className="text-sm text-ink-soft">iOS 앱에서 구독할 수 있어요.</p>
+        <p className="text-sm text-ink-soft">{dict.components.iosOnly}</p>
       </GlassCard>
     );
   }
@@ -140,7 +143,7 @@ export function SubscriptionPaywall({
           rel="noopener noreferrer"
           className="text-sm font-semibold text-accent-ink"
         >
-          Apple에서 구독 관리하기
+          {dict.components.manageOnApple}
         </a>
       </GlassCard>
     );
@@ -149,7 +152,7 @@ export function SubscriptionPaywall({
   if (!isKorea) {
     return (
       <GlassCard className="bg-white p-4">
-        <p className="text-sm text-ink-soft">현재 한국에서만 구독을 제공하고 있어요.</p>
+        <p className="text-sm text-ink-soft">{dict.components.koreaOnly}</p>
       </GlassCard>
     );
   }
@@ -157,7 +160,7 @@ export function SubscriptionPaywall({
   return (
     <div className="flex flex-col gap-3">
       {packages.map((pkg) => {
-        const period = formatSubscriptionPeriod(pkg.product.subscriptionPeriod);
+        const period = formatSubscriptionPeriod(pkg.product.subscriptionPeriod, dict);
         return (
           <button
             key={pkg.identifier}
@@ -174,7 +177,7 @@ export function SubscriptionPaywall({
           </button>
         );
       })}
-      {status === "loading" && <p className="text-xs text-ink-faint">불러오는 중...</p>}
+      {status === "loading" && <p className="text-xs text-ink-faint">{dict.common.loading}</p>}
       {error && <p className="text-xs text-warn-ink">{error}</p>}
       <button
         type="button"
@@ -182,16 +185,16 @@ export function SubscriptionPaywall({
         disabled={status !== "idle"}
         className="text-xs text-ink-faint underline disabled:opacity-60"
       >
-        {status === "restoring" ? "복원하는 중..." : "구매 복원하기"}
+        {status === "restoring" ? dict.components.restoring : dict.components.restorePurchases}
       </button>
       <p className="text-center text-[11px] text-ink-faint">
-        구독은 자동으로 갱신되며, 언제든 App Store에서 해지할 수 있어요.{" "}
+        {dict.components.subscriptionDisclaimer}{" "}
         <a href="/terms" target="_blank" rel="noopener noreferrer" className="underline">
-          이용약관
+          {dict.mypage.terms}
         </a>
         {" · "}
         <a href="/privacy" target="_blank" rel="noopener noreferrer" className="underline">
-          개인정보처리방침
+          {dict.mypage.privacy}
         </a>
       </p>
     </div>

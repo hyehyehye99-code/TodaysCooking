@@ -3,6 +3,7 @@
 import { useEffect, useId, useRef, useState } from "react";
 import { MAX_RECIPE_PHOTOS } from "@/lib/constants";
 import { useDragReorder } from "@/lib/useDragReorder";
+import { useDict } from "@/lib/i18n/client";
 
 const MAX_DIMENSION = 1080;
 const JPEG_QUALITY = 0.85;
@@ -89,6 +90,7 @@ export function PhotoPicker({
   max?: number;
   onCountChange?: (count: number) => void;
 }) {
+  const dict = useDict();
   const inputId = useId();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const {
@@ -122,7 +124,7 @@ export function PhotoPicker({
 
     const remaining = max - items.length;
     const accepted = picked.slice(0, remaining);
-    setError(picked.length > remaining ? `최대 ${max}장까지 등록할 수 있어요.` : null);
+    setError(picked.length > remaining ? dict.components.photoMaxTemplate.replace("{max}", String(max)) : null);
     if (accepted.length === 0) return;
 
     setProcessing(true);
@@ -135,7 +137,7 @@ export function PhotoPicker({
       setItems(next);
       onCountChange?.(next.length);
     } catch {
-      setError("사진을 처리하지 못했어요. 다른 사진으로 시도해주세요.");
+      setError(dict.components.photoProcessError);
     } finally {
       setProcessing(false);
       e.target.value = "";
@@ -172,7 +174,7 @@ export function PhotoPicker({
                 type="button"
                 onPointerDown={(e) => e.stopPropagation()}
                 onClick={() => removeItem(item.id)}
-                aria-label="사진 삭제"
+                aria-label={dict.components.deletePhoto}
                 className="absolute right-1 top-1 flex h-5 w-5 items-center justify-center rounded-full bg-black/55 text-white"
               >
                 <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round">
@@ -195,7 +197,7 @@ export function PhotoPicker({
             </svg>
             {processing && (
               <div className="absolute inset-0 flex items-center justify-center bg-black/40 text-[10px] font-bold text-white">
-                처리 중...
+                {dict.components.processing}
               </div>
             )}
           </label>
@@ -215,7 +217,9 @@ export function PhotoPicker({
       <input type="hidden" name="photoOrder" value={JSON.stringify(orderTokens)} readOnly />
 
       <p className="mt-1.5 text-[11px] text-ink-faint">
-        {items.length}/{max}장 · 눌러서 끌면 순서를 바꿀 수 있어요
+        {dict.components.photoCountHintTemplate
+          .replace("{count}", String(items.length))
+          .replace("{max}", String(max))}
       </p>
       {error && <p className="mt-1 text-xs text-warn-ink">{error}</p>}
     </div>

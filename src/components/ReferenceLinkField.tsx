@@ -7,6 +7,8 @@ import { generateRecipeFromLink, reportAiRecipeResult } from "@/lib/actions/ai-r
 import { ClearableInput } from "@/components/ClearableInput";
 import { useClipboardLinkSuggestion } from "@/lib/useClipboardLinkSuggestion";
 import { Modal } from "@/components/Modal";
+import { useDict } from "@/lib/i18n/client";
+import type { Dictionary } from "@/lib/i18n/dictionaries/ko";
 
 type Preview = { title: string | null; thumbnailUrl: string | null; domain: string | null };
 type AiResult = { title: string | null; ingredients: string[]; instructions: string; tags: string[] };
@@ -28,33 +30,33 @@ function isYoutubeUrl(value: string): boolean {
   }
 }
 
-function AiInfoButton() {
+function AiInfoButton({ dict }: { dict: Dictionary }) {
   const [open, setOpen] = useState(false);
   return (
     <>
       <button
         type="button"
         onClick={() => setOpen(true)}
-        aria-label="AI 자동 작성 안내"
+        aria-label={dict.components.aiInfoTitle}
         className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full border border-ink-faint text-[10px] font-bold text-ink-faint"
       >
         i
       </button>
       <Modal open={open} onClose={() => setOpen(false)} variant="center">
         <div className="mx-auto w-full max-w-[340px] rounded-2xl bg-white p-5 shadow-xl">
-          <p className="text-sm font-bold text-ink">AI 자동 작성 안내</p>
+          <p className="text-sm font-bold text-ink">{dict.components.aiInfoTitle}</p>
           <ul className="mt-3 flex flex-col gap-2 text-xs leading-relaxed text-ink-soft">
-            <li>· AI 자동 정리는 유튜브 링크에만 적용돼요.</li>
-            <li>· 무료로는 일주일에 5번까지 쓸 수 있어요.</li>
-            <li>· 구독하면 한 달에 100번까지 쓸 수 있어요.</li>
-            <li>· 결과가 마음에 안 들면 &quot;결과가 별로였나요? 보고해주세요&quot;로 알려주세요 — 확인 후 사용 횟수를 돌려드릴 수 있어요.</li>
+            <li>{dict.components.aiInfoItem1}</li>
+            <li>{dict.components.aiInfoItem2}</li>
+            <li>{dict.components.aiInfoItem3}</li>
+            <li>{dict.components.aiInfoItem4}</li>
           </ul>
           <button
             type="button"
             onClick={() => setOpen(false)}
             className="mt-4 w-full rounded-xl bg-surface py-2.5 text-xs font-bold text-ink-soft"
           >
-            확인
+            {dict.common.confirm}
           </button>
         </div>
       </Modal>
@@ -66,10 +68,12 @@ function ReportResultModal({
   open,
   onClose,
   onSubmit,
+  dict,
 }: {
   open: boolean;
   onClose: () => void;
   onSubmit: (note: string) => Promise<void>;
+  dict: Dictionary;
 }) {
   const [note, setNote] = useState("");
   const [sending, setSending] = useState(false);
@@ -84,15 +88,13 @@ function ReportResultModal({
   return (
     <Modal open={open} onClose={onClose} variant="sheet">
       <div className="w-full rounded-t-3xl bg-white p-5 pb-8">
-        <p className="text-sm font-bold text-ink">결과가 별로였나요?</p>
-        <p className="mt-1 text-xs text-ink-soft">
-          어떤 점이 아쉬웠는지 알려주시면 확인 후 사용 횟수를 돌려드릴게요.
-        </p>
+        <p className="text-sm font-bold text-ink">{dict.components.reportTitle}</p>
+        <p className="mt-1 text-xs text-ink-soft">{dict.components.reportDescription}</p>
         <textarea
           value={note}
           onChange={(e) => setNote(e.target.value)}
           rows={3}
-          placeholder="예: 재료가 실제와 달라요 (선택)"
+          placeholder={dict.components.reportPlaceholder}
           className="mt-3 w-full rounded-xl border border-transparent bg-surface px-3.5 py-3 text-sm outline-none focus:border-accent"
         />
         <div className="mt-4 flex gap-2">
@@ -101,7 +103,7 @@ function ReportResultModal({
             onClick={onClose}
             className="flex-1 rounded-xl bg-surface py-2.5 text-xs font-bold text-ink-soft"
           >
-            취소
+            {dict.common.cancel}
           </button>
           <button
             type="button"
@@ -109,7 +111,7 @@ function ReportResultModal({
             disabled={sending}
             className="flex-1 rounded-xl bg-accent py-2.5 text-xs font-bold text-white disabled:opacity-60"
           >
-            {sending ? "보내는 중..." : "보고하기"}
+            {sending ? dict.components.reportSending : dict.components.reportSubmit}
           </button>
         </div>
       </div>
@@ -128,6 +130,7 @@ export function ReferenceLinkField({
   initialPreview?: Preview | null;
   onAiResult?: (result: AiResult) => void;
 }) {
+  const dict = useDict();
   const [url, setUrl] = useState(defaultValue);
   const [preview, setPreview] = useState<Preview | null>(initialPreview);
   const [loading, setLoading] = useState(false);
@@ -221,19 +224,20 @@ export function ReferenceLinkField({
       {suggestion && (
         <div className="mb-2 flex items-center gap-2 rounded-xl bg-accent/8 px-3 py-2">
           <span className="min-w-0 flex-1 truncate text-xs text-ink-soft">
-            복사한 링크가 있어요: <span className="font-semibold text-ink">{suggestion}</span>
+            {dict.components.clipboardSuggestionPrefix}
+            <span className="font-semibold text-ink">{suggestion}</span>
           </span>
           <button
             type="button"
             onClick={useSuggestion}
             className="shrink-0 rounded-lg bg-accent px-2.5 py-1 text-xs font-bold text-white"
           >
-            사용
+            {dict.components.useSuggestion}
           </button>
           <button
             type="button"
             onClick={dismiss}
-            aria-label="닫기"
+            aria-label={dict.common.close}
             className="shrink-0 text-xs text-ink-faint"
           >
             ×
@@ -250,13 +254,13 @@ export function ReferenceLinkField({
         className="w-full rounded-xl border border-transparent bg-surface px-3.5 py-3 text-sm outline-none focus:border-accent"
       />
 
-      {loading && <p className="mt-2 text-xs text-ink-faint">미리보기를 불러오는 중...</p>}
+      {loading && <p className="mt-2 text-xs text-ink-faint">{dict.components.previewLoading}</p>}
 
       {!loading && preview && (preview.title || preview.thumbnailUrl) && (
         <div className="mt-3">
           <div className="mb-1.5 flex items-center justify-between">
-            <span className="text-xs font-bold text-ink-soft">참고 링크</span>
-            {onAiResult && <AiInfoButton />}
+            <span className="text-xs font-bold text-ink-soft">{dict.welcome.referenceLink}</span>
+            {onAiResult && <AiInfoButton dict={dict} />}
           </div>
           <div className="flex gap-3">
             <div className="h-[72px] w-[88px] shrink-0 overflow-hidden rounded-xl bg-black/[0.04]">
@@ -273,7 +277,7 @@ export function ReferenceLinkField({
             </div>
             <div className="flex min-w-0 flex-1 flex-col justify-center gap-1">
               <p className="line-clamp-2 text-[13px] font-bold leading-snug">
-                {preview.title || "참고 링크"}
+                {preview.title || dict.welcome.referenceLink}
               </p>
               {preview.domain && <span className="text-[11px] text-ink-faint">{preview.domain}</span>}
             </div>
@@ -290,19 +294,17 @@ export function ReferenceLinkField({
               disabled={aiLoading}
               className="mt-3 w-full rounded-xl border border-accent bg-white py-2.5 text-xs font-bold text-accent-ink disabled:opacity-60"
             >
-              {aiLoading ? "AI가 작성하는 중..." : "✨ AI로 재료·레시피 자동 작성"}
+              {aiLoading ? dict.welcome.aiFillLoading : dict.welcome.aiFillButton}
             </button>
           ) : (
-            <p className="mt-3 text-center text-[11px] text-ink-faint">
-              AI 자동 작성은 유튜브 링크에서만 쓸 수 있어요
-            </p>
+            <p className="mt-3 text-center text-[11px] text-ink-faint">{dict.components.aiYoutubeOnly}</p>
           )}
           {aiError && (
             <div className="mt-2 flex items-center gap-2">
               <p className="text-xs text-warn-ink">{aiError}</p>
               {aiLimitReached && (
                 <Link href="/mypage/subscription" className="shrink-0 text-xs font-bold text-accent-ink underline">
-                  구독하기
+                  {dict.components.subscribeCta}
                 </Link>
               )}
             </div>
@@ -314,12 +316,17 @@ export function ReferenceLinkField({
                 onClick={() => setReportOpen(true)}
                 className="text-[11px] text-ink-faint underline"
               >
-                결과가 별로였나요? 보고해주세요
+                {dict.components.reportPrompt}
               </button>
             </div>
           )}
-          {reportSent && <p className="mt-2 text-right text-[11px] text-ink-faint">보고가 접수됐어요. 확인해볼게요.</p>}
-          <ReportResultModal open={reportOpen} onClose={() => setReportOpen(false)} onSubmit={handleReportSubmit} />
+          {reportSent && <p className="mt-2 text-right text-[11px] text-ink-faint">{dict.components.reportReceived}</p>}
+          <ReportResultModal
+            open={reportOpen}
+            onClose={() => setReportOpen(false)}
+            onSubmit={handleReportSubmit}
+            dict={dict}
+          />
         </>
       )}
     </div>

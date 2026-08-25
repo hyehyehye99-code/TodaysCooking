@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useDict } from "@/lib/i18n/client";
 
 const EMOJI_OPTIONS = [
   "🍳", "🍜", "🍲", "🥘", "🍱", "🍛", "🥗", "🍝",
@@ -16,6 +17,7 @@ export function EmojiPicker({
   defaultValue?: string | null;
   onChange?: (value: string) => void;
 }) {
+  const dict = useDict();
   const [options, setOptions] = useState<string[]>(() =>
     defaultValue && !EMOJI_OPTIONS.includes(defaultValue)
       ? [...EMOJI_OPTIONS, defaultValue]
@@ -68,7 +70,7 @@ export function EmojiPicker({
                 }
               }}
               autoFocus
-              placeholder="이모지 입력"
+              placeholder={dict.components.emojiInputPlaceholder}
               className="w-20 bg-transparent text-[13px] outline-none placeholder:text-ink-faint"
             />
             <button
@@ -83,7 +85,7 @@ export function EmojiPicker({
           <button
             type="button"
             onClick={() => setShowCustom(true)}
-            aria-label="더보기"
+            aria-label={dict.components.more}
             className="flex h-9 w-9 items-center justify-center rounded-full bg-surface text-lg font-bold text-ink-soft"
           >
             +

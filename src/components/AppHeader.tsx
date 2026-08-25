@@ -4,14 +4,16 @@ import Link from "next/link";
 import { useState } from "react";
 import { usePathname } from "next/navigation";
 import { switchHousehold } from "@/lib/actions/household";
+import { useDict } from "@/lib/i18n/client";
+import type { Dictionary } from "@/lib/i18n/dictionaries/ko";
 
 type HouseholdOption = { id: string; name: string };
 
-const TAB_TITLES: Record<string, string> = {
-  "/recipes": "레시피",
-  "/fridge": "냉장고",
-  "/bookmarks": "보관함",
-  "/shopping": "장보기",
+const TAB_TITLE_KEYS: Record<string, keyof Dictionary["tabBar"]> = {
+  "/recipes": "recipes",
+  "/fridge": "fridge",
+  "/bookmarks": "bookmarks",
+  "/shopping": "shopping",
 };
 
 export function AppHeader({
@@ -23,12 +25,14 @@ export function AppHeader({
   currentName: string;
   households: HouseholdOption[];
 }) {
+  const dict = useDict();
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
 
   if (pathname.startsWith("/mypage") || pathname.startsWith("/recipes/")) return null;
 
-  const tabTitle = TAB_TITLES[pathname] ?? "";
+  const tabTitleKey = TAB_TITLE_KEYS[pathname];
+  const tabTitle = tabTitleKey ? dict.tabBar[tabTitleKey] : "";
   const showNewRecipeButton = pathname === "/recipes";
   const showAddBookmarkButton = pathname === "/bookmarks";
 
@@ -78,7 +82,7 @@ export function AppHeader({
                       className="flex w-full items-center justify-between whitespace-nowrap rounded-xl bg-accent/8 px-3 py-2.5 text-left text-sm font-bold text-accent-ink"
                     >
                       {h.name}
-                      <span className="ml-1.5 text-xs font-normal text-accent">사용 중</span>
+                      <span className="ml-1.5 text-xs font-normal text-accent">{dict.components.inUse}</span>
                     </div>
                   );
                 }
@@ -104,12 +108,12 @@ export function AppHeader({
         <h1 className="text-[26px] font-bold tracking-tight">{tabTitle}</h1>
         {showNewRecipeButton && (
           <Link href="/recipes/new" className="shrink-0 text-sm font-bold text-accent">
-            + 새 메뉴
+            {dict.components.newRecipeLink}
           </Link>
         )}
         {showAddBookmarkButton && (
           <Link href="/bookmarks?add=1" className="shrink-0 text-sm font-bold text-accent">
-            + 링크 추가하기
+            {dict.components.addBookmarkLink}
           </Link>
         )}
       </div>
