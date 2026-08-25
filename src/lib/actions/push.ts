@@ -20,16 +20,26 @@ if (VAPID_PUBLIC_KEY && VAPID_PRIVATE_KEY) {
 const FIREBASE_PROJECT_ID = process.env.FIREBASE_PROJECT_ID;
 const FIREBASE_CLIENT_EMAIL = process.env.FIREBASE_CLIENT_EMAIL;
 const FIREBASE_PRIVATE_KEY = process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, "\n");
-const firebaseConfigured = !!(FIREBASE_PROJECT_ID && FIREBASE_CLIENT_EMAIL && FIREBASE_PRIVATE_KEY);
 
-if (firebaseConfigured && getApps().length === 0) {
-  initializeApp({
-    credential: cert({
-      projectId: FIREBASE_PROJECT_ID,
-      clientEmail: FIREBASE_CLIENT_EMAIL,
-      privateKey: FIREBASE_PRIVATE_KEY,
-    }),
-  });
+// A malformed credential must never throw at module load: this file is
+// imported from server pages, and an uncaught throw here fails the whole
+// production build, not just push notifications.
+let firebaseConfigured = false;
+if (FIREBASE_PROJECT_ID && FIREBASE_CLIENT_EMAIL && FIREBASE_PRIVATE_KEY) {
+  try {
+    if (getApps().length === 0) {
+      initializeApp({
+        credential: cert({
+          projectId: FIREBASE_PROJECT_ID,
+          clientEmail: FIREBASE_CLIENT_EMAIL,
+          privateKey: FIREBASE_PRIVATE_KEY,
+        }),
+      });
+    }
+    firebaseConfigured = true;
+  } catch (err) {
+    console.error("Firebase Admin init failed — FCM push disabled:", err);
+  }
 }
 
 export async function saveFcmToken(token: string) {
