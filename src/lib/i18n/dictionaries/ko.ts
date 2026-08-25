@@ -1,7 +1,3 @@
-function nicknamePreview(nickname: string) {
-  return `우리집 안에서 “${nickname}셰프”로 불려요`;
-}
-
 const ko = {
   common: {
     save: "저장",
@@ -119,7 +115,10 @@ const ko = {
     joinExisting: "기존 우리집 열어보기",
     namePlaceholder: "예) 혜동이네 집",
     codePlaceholder: "우리집 코드 입력",
-    nicknamePreview,
+    // "{name}" is replaced client-side (see onboarding-wizard.tsx) — kept as
+    // a plain string, not a function, since the dictionary crosses the
+    // server→client boundary as a prop and functions can't serialize there.
+    nicknamePreviewTemplate: "우리집 안에서 “{name}셰프”로 불려요",
     nicknameRequired: "닉네임을 입력해주세요.",
     readyHeading: "이제 준비 완료!",
     readySubheading: "아래 버튼을 누르면 바로 시작할 수 있어요.",
@@ -148,11 +147,10 @@ export default ko;
 
 // `as const` above keeps this file's own keys/shape checked precisely, but
 // en.ts/ja.ts need to assign different string VALUES for the same keys —
-// widening every leaf string (and keeping functions/keys intact) is what
-// makes that legal while still catching a missing or misspelled key.
-type Widen<T> = T extends string
-  ? string
-  : T extends (...args: infer A) => infer R
-    ? (...args: A) => R
-    : { [K in keyof T]: Widen<T[K]> };
+// widening every leaf string (keeping the keys/shape intact) is what makes
+// that legal while still catching a missing or misspelled key. Deliberately
+// string-only, no function branch: this dictionary crosses the
+// server→client boundary as a prop (see LocaleProvider), and a function
+// value there breaks serialization.
+type Widen<T> = T extends string ? string : { [K in keyof T]: Widen<T[K]> };
 export type Dictionary = Widen<typeof ko>;

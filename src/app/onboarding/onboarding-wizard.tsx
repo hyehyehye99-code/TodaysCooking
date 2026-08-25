@@ -145,7 +145,10 @@ export function OnboardingWizard({ householdMissingNotice = false }: { household
                     className="w-full rounded-xl border border-transparent bg-surface px-4 py-3.5 text-sm outline-none focus:border-accent"
                   />
                   <span className="text-[11px] text-ink-faint">
-                    {dict.onboarding.nicknamePreview(nickname.trim() || dict.onboarding.nicknameLabel)}
+                    {dict.onboarding.nicknamePreviewTemplate.replace(
+                      "{name}",
+                      nickname.trim() || dict.onboarding.nicknameLabel
+                    )}
                   </span>
                 </label>
               </div>

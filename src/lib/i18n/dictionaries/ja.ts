@@ -1,9 +1,5 @@
 import type { Dictionary } from "./ko";
 
-function nicknamePreview(nickname: string) {
-  return `家の中では「${nickname}シェフ」と呼ばれます`;
-}
-
 const ja: Dictionary = {
   common: {
     save: "保存",
@@ -119,7 +115,7 @@ const ja: Dictionary = {
     joinExisting: "既存の家に入る",
     namePlaceholder: "例）たろうの家",
     codePlaceholder: "家のコードを入力",
-    nicknamePreview,
+    nicknamePreviewTemplate: "家の中では「{name}シェフ」と呼ばれます",
     nicknameRequired: "ニックネームを入力してください。",
     readyHeading: "準備完了！",
     readySubheading: "下のボタンを押すとすぐに始められます。",
