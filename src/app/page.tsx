@@ -197,7 +197,7 @@ export default async function LandingPage() {
             <div className="rounded-2xl border-2 border-accent p-7">
               <p className="text-sm font-bold text-accent">우리집 메뉴판 프리미엄</p>
               <p className="mt-2 text-3xl font-bold text-ink">
-                ₩9,900<span className="text-sm font-semibold text-ink-faint"> / 월</span>
+                ₩3,300<span className="text-sm font-semibold text-ink-faint"> / 월</span>
               </p>
               <ul className="mt-6 flex flex-col gap-3 text-sm text-ink-soft">
                 <li>· 무료 플랜의 모든 기능</li>

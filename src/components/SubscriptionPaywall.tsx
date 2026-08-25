@@ -35,6 +35,22 @@ function getIsNativeServerSnapshot() {
   return false;
 }
 
+// The purchase button is only offered where App Store pricing is actually
+// set up (Korea) — everywhere else the storefront would show a converted
+// price nobody has reviewed. Read from the device's language/region setting
+// rather than the App Store storefront itself, since that reads before
+// RevenueCat/StoreKit is configured and needs no extra native call.
+function getRegionSnapshot() {
+  try {
+    return new Intl.Locale(Intl.DateTimeFormat().resolvedOptions().locale).region ?? null;
+  } catch {
+    return null;
+  }
+}
+function getRegionServerSnapshot() {
+  return null;
+}
+
 type Status = "idle" | "loading" | "purchasing" | "restoring";
 
 export function SubscriptionPaywall({
@@ -45,13 +61,15 @@ export function SubscriptionPaywall({
   householdId: string | null;
 }) {
   const isNative = useSyncExternalStore(subscribeNever, getIsNativeSnapshot, getIsNativeServerSnapshot);
+  const region = useSyncExternalStore(subscribeNever, getRegionSnapshot, getRegionServerSnapshot);
+  const isKorea = region === "KR";
   const router = useRouter();
   const [status, setStatus] = useState<Status>("idle");
   const [packages, setPackages] = useState<PurchasesPackage[]>([]);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!isNative || !householdId || isPremium) return;
+    if (!isNative || !householdId || isPremium || !isKorea) return;
     (async () => {
       setStatus("loading");
       try {
@@ -68,7 +86,7 @@ export function SubscriptionPaywall({
         setStatus("idle");
       }
     })();
-  }, [isNative, householdId, isPremium]);
+  }, [isNative, householdId, isPremium, isKorea]);
 
   async function purchase(pkg: PurchasesPackage) {
     setStatus("purchasing");
@@ -124,6 +142,14 @@ export function SubscriptionPaywall({
         >
           Apple에서 구독 관리하기
         </a>
+      </GlassCard>
+    );
+  }
+
+  if (!isKorea) {
+    return (
+      <GlassCard className="bg-white p-4">
+        <p className="text-sm text-ink-soft">현재 한국에서만 구독을 제공하고 있어요.</p>
       </GlassCard>
     );
   }
