@@ -8,7 +8,6 @@ import { HouseholdList } from "./household-list";
 import { PushNotificationToggle } from "@/components/PushNotificationToggle";
 import { getUnreadNotificationCount } from "@/lib/actions/notifications";
 import { getDictionary } from "@/lib/i18n/server";
-import { LanguageSelect } from "./language-select";
 
 const CONTACT_URL = "mailto:hyehyehye1919@gmail.com?subject=%EC%9A%B0%EB%A6%AC%EC%A7%91%20%EB%A9%94%EB%89%B4%ED%8C%90%20%EB%AC%B8%EC%9D%98";
 
@@ -78,9 +77,6 @@ export default async function MyPage() {
       <p className="mb-3 text-[13px] font-bold text-ink-soft">{dict.mypage.settings}</p>
       <GlassCard className="mb-8 bg-white">
         <PushNotificationToggle />
-        <div className="border-t border-border">
-          <LanguageSelect />
-        </div>
       </GlassCard>
 
       <p className="mb-3 text-[13px] font-bold text-ink-soft">{dict.mypage.householdManagement}</p>

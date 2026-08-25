@@ -3,6 +3,12 @@ export type Locale = (typeof LOCALES)[number];
 export const DEFAULT_LOCALE: Locale = "ko";
 export const LOCALE_COOKIE = "locale";
 
+// The en/ja translation rollout only covers part of the app so far — showing
+// it now would mix translated and still-Korean-only screens for anyone whose
+// device isn't Korean. Force Korean everywhere until the full app is
+// translated and this is deliberately flipped back on.
+export const LOCALE_ROLLOUT_ENABLED = false;
+
 export const LOCALE_LABELS: Record<Locale, string> = {
   ko: "한국어",
   en: "English",
