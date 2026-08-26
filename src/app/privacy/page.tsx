@@ -2,7 +2,7 @@ import { BackButton } from "@/components/ui";
 
 export default function PrivacyPage() {
   return (
-    <div className="mx-auto w-full max-w-[520px] px-6 pb-16 pt-[max(env(safe-area-inset-top),24px)]">
+    <div className="mx-auto w-full max-w-[560px] px-6 pb-16 pt-[max(env(safe-area-inset-top),24px)]">
       <div className="mb-5 flex items-center gap-3">
         <BackButton href="/mypage" />
         <h1 className="text-lg font-bold text-ink">개인정보처리방침</h1>
@@ -32,12 +32,26 @@ export default function PrivacyPage() {
         </section>
 
         <section>
-          <h2 className="mb-1.5 text-sm font-bold text-ink">2. 개인정보의 수집 및 이용 목적</h2>
-          <p>
-            회원 식별 및 로그인, 레시피·냉장고·장보기 기능 제공, 가족 구성원 간 우리집 공유, AI를
-            이용한 재료·조리법 자동 정리, 유료 구독 이용 여부 확인 및 결제 상태 관리, 앱·웹 푸시
-            알림 발송, 부정 이용 방지 및 서비스 개선 목적으로 이용합니다.
+          <h2 className="mb-1.5 text-sm font-bold text-ink">2. 개인정보의 처리 목적</h2>
+          <p className="mb-2">
+            서비스는 다음의 목적을 위하여 개인정보를 처리합니다. 처리하는 개인정보는 다음의
+            목적 외의 용도로는 이용되지 않으며, 이용 목적이 변경되는 경우 「개인정보 보호법」
+            제18조에 따라 별도의 동의를 받는 등 필요한 조치를 이행합니다.
           </p>
+          <ol className="ml-4 list-decimal space-y-1.5">
+            <li>
+              <b className="text-ink">회원 가입 및 관리</b> — 회원 식별·인증, 회원자격 유지·관리,
+              가족 구성원 간 우리집 공유, 서비스 부정 이용 방지
+            </li>
+            <li>
+              <b className="text-ink">서비스 제공</b> — 레시피·냉장고·장보기 기능 제공, AI를
+              이용한 재료·조리법 자동 정리, 유료 구독 이용 여부 확인 및 결제 상태 관리, 앱·웹
+              푸시 알림 발송
+            </li>
+            <li>
+              <b className="text-ink">서비스 개선</b> — 오류 개선, AI 자동 정리 결과 품질 향상
+            </li>
+          </ol>
         </section>
 
         <section>
@@ -51,21 +65,24 @@ export default function PrivacyPage() {
         </section>
 
         <section>
-          <h2 className="mb-1.5 text-sm font-bold text-ink">4. 개인정보 처리의 위탁</h2>
+          <h2 className="mb-1.5 text-sm font-bold text-ink">4. 개인정보 처리업무의 위탁</h2>
           <p className="mb-2">
             서비스 운영을 위해 다음과 같이 개인정보 처리 업무를 위탁하고 있습니다. 위탁받은
             업체에는 서비스 제공에 필요한 최소한의 정보만 전달되며, 위탁 계약을 통해 개인정보가
-            안전하게 관리되도록 하고 있습니다.
+            안전하게 관리되도록 하고 있습니다. 아래 수탁자는 모두 국외에 소재하며, 이전되는
+            항목·국가 등 상세 내용은 &ldquo;6. 개인정보의 국외 이전&rdquo;에서 함께 안내합니다.
           </p>
           <ul className="ml-4 list-disc space-y-1">
             <li>Supabase Inc. — 데이터베이스, 회원 인증, 사진 등 파일 저장</li>
-            <li>Vercel Inc. — 웹·서버 호스팅</li>
             <li>Google LLC (Firebase) — 앱 푸시 알림 발송</li>
             <li>Google LLC (Gemini API) — 레시피 링크의 재료·조리법 AI 자동 추출</li>
             <li>Google LLC (YouTube Data API) — 참고 영상의 제목·설명·댓글 조회</li>
             <li>RevenueCat, Inc. — 구독 결제 상태 확인 및 관리</li>
-            <li>Apple Inc. — App Store를 통한 구독 결제 처리</li>
           </ul>
+          <p className="mt-2 text-xs text-ink-faint">
+            Vercel Inc.(웹·서버 호스팅)은 서울(icn1) 리전에서 서비스를 운영하므로 국내 위탁이며,
+            개인정보가 국외로 이전되지 않습니다.
+          </p>
         </section>
 
         <section>
@@ -73,44 +90,127 @@ export default function PrivacyPage() {
           <p>
             서비스는 이용자의 개인정보를 원칙적으로 외부에 제공하지 않습니다. 다만 법령에 특별한
             규정이 있거나 수사기관이 적법한 절차에 따라 요청하는 경우, 이용자가 별도로 동의한
-            경우에 한해 예외적으로 제공할 수 있습니다. 장보기 목록의 제휴 쇼핑 링크(쿠팡파트너스
-            등)를 이용하는 경우 검색어만 해당 쇼핑몰에 전달되며, 이용자를 식별할 수 있는 정보는
+            경우에 한해 예외적으로 제공할 수 있습니다. 구독 결제 시 결제 처리를 위해
+            Apple Inc.에 결제 인증 정보가 제공되며, 장보기 목록의 제휴 쇼핑 링크(쿠팡파트너스
+            등)를 이용하는 경우 검색어만 해당 쇼핑몰에 전달되고 이용자를 식별할 수 있는 정보는
             전달되지 않습니다.
           </p>
         </section>
 
         <section>
           <h2 className="mb-1.5 text-sm font-bold text-ink">6. 개인정보의 국외 이전</h2>
-          <p className="mb-2">
-            서비스는 해외에 서버를 둔 사업자를 이용하고 있어 아래와 같이 개인정보가 국외로
-            이전됩니다. 웹·앱 서버(Vercel)는 국내(대한민국) 리전에서 운영되지만, 데이터베이스와
-            일부 연동 서비스는 해외에 위치합니다.
+          <p className="mb-3">
+            서비스는 서비스 제공을 위해 반드시 필요한 아래 업체와의 계약 이행을 위해(「개인정보
+            보호법」 제28조의8제1항제3호), 회원가입 시 별도 동의 절차 없이 다음과 같이 개인정보를
+            국외로 이전하고 있습니다. 웹·앱 서버(Vercel)만 국내(서울)에서 운영되며, 나머지는
+            모두 국외에서 처리됩니다.
           </p>
-          <ul className="ml-4 list-disc space-y-1">
-            <li>Supabase Inc. — 일본(도쿄) — 이전 항목: 1항의 전체 개인정보 — 이전 시점: 서비스 이용 시 실시간</li>
-            <li>Google LLC — 미국 — 이전 항목: 이메일(로그인 인증), 레시피 링크 내용, 알림 토큰 — 이전 시점: 관련 기능 이용 시 실시간</li>
-            <li>Apple Inc. — 미국 — 이전 항목: 로그인 인증 정보, 구독 결제 정보 — 이전 시점: 로그인·결제 시 실시간</li>
-            <li>RevenueCat, Inc. — 미국 — 이전 항목: 구독 상태 식별을 위한 우리집 식별자, 상품·결제 정보 — 이전 시점: 결제·구독 갱신 시 실시간</li>
-          </ul>
+
+          <div className="-mx-6 overflow-x-auto px-6">
+            <table className="w-full min-w-[560px] border-collapse text-xs">
+              <thead>
+                <tr className="border-b border-border text-left text-ink-faint">
+                  <th className="py-1.5 pr-3 font-semibold">이전받는 자</th>
+                  <th className="py-1.5 pr-3 font-semibold">국가</th>
+                  <th className="py-1.5 pr-3 font-semibold">이전 항목</th>
+                  <th className="py-1.5 pr-3 font-semibold">목적 · 보유기간</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr className="border-b border-border align-top">
+                  <td className="py-1.5 pr-3">
+                    Supabase Inc.
+                    <br />
+                    <span className="text-ink-faint">supabase.com/privacy</span>
+                  </td>
+                  <td className="py-1.5 pr-3">일본</td>
+                  <td className="py-1.5 pr-3">1항의 전체 개인정보</td>
+                  <td className="py-1.5 pr-3">DB·인증·파일 저장 / 회원 탈퇴 시까지</td>
+                </tr>
+                <tr className="border-b border-border align-top">
+                  <td className="py-1.5 pr-3">
+                    Google LLC
+                    <br />
+                    <span className="text-ink-faint">policies.google.com/privacy</span>
+                  </td>
+                  <td className="py-1.5 pr-3">미국</td>
+                  <td className="py-1.5 pr-3">이메일(로그인), 레시피 링크 내용, 알림 토큰</td>
+                  <td className="py-1.5 pr-3">로그인·AI 추출·알림 발송 / 회원 탈퇴 또는 알림 해제 시까지</td>
+                </tr>
+                <tr className="border-b border-border align-top">
+                  <td className="py-1.5 pr-3">
+                    Apple Inc.
+                    <br />
+                    <span className="text-ink-faint">apple.com/legal/privacy</span>
+                  </td>
+                  <td className="py-1.5 pr-3">미국</td>
+                  <td className="py-1.5 pr-3">로그인 인증 정보, 구독 결제 정보</td>
+                  <td className="py-1.5 pr-3">로그인·결제 처리 / 회원 탈퇴 또는 구독 해지 시까지</td>
+                </tr>
+                <tr className="align-top">
+                  <td className="py-1.5 pr-3">
+                    RevenueCat, Inc.
+                    <br />
+                    <span className="text-ink-faint">revenuecat.com/privacy</span>
+                  </td>
+                  <td className="py-1.5 pr-3">미국</td>
+                  <td className="py-1.5 pr-3">우리집 식별자, 구독 상품·결제 상태</td>
+                  <td className="py-1.5 pr-3">구독 상태 관리 / 회원 탈퇴 시까지</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <p className="mt-3">
+            <b className="text-ink">이전 시기 및 방법</b> — 회원가입, 로그인, 레시피 등록, 알림
+            발송, 구독 결제 등 관련 기능을 이용하는 시점마다 TLS(HTTPS)로 암호화된 API 통신을
+            통해 실시간으로 전송됩니다.
+          </p>
           <p className="mt-2">
-            위 업체들은 모두 해당 국가의 개인정보 보호 법령 및 자체 보안 정책에 따라 정보를
-            안전하게 관리하고 있습니다. 국외 이전에 동의하지 않으실 경우 소셜 로그인 기반 서비스
-            특성상 서비스 이용이 제한될 수 있습니다.
+            <b className="text-ink">이전 거부 방법·절차 및 거부의 효과</b> — 위 업체들은 로그인,
+            데이터 저장, 결제 처리 등 서비스 제공에 필수적인 기반이므로 개별 항목 단위로는 국외
+            이전을 거부할 수 없습니다. 국외 이전 자체를 원하지 않으실 경우 마이페이지 &gt; 계정
+            관리 &gt; 계정 삭제를 통해 회원 탈퇴하실 수 있으며, 탈퇴 시 서비스 이용이 종료되고
+            보유 중인 개인정보는 제3항의 기간에 따라 파기됩니다.
           </p>
         </section>
 
         <section>
-          <h2 className="mb-1.5 text-sm font-bold text-ink">7. 이용자의 권리와 행사방법</h2>
+          <h2 className="mb-1.5 text-sm font-bold text-ink">7. 개인정보의 안전성 확보조치</h2>
+          <p className="mb-2">서비스는 개인정보의 안전성 확보를 위해 다음과 같은 조치를 취하고 있습니다.</p>
+          <ol className="ml-4 list-decimal space-y-1">
+            <li>
+              <b className="text-ink">관리적 조치</b> — 개인정보 접근 권한을 개인정보 보호책임자
+              1인으로 최소화하여 운영
+            </li>
+            <li>
+              <b className="text-ink">기술적 조치</b> — 이용자와 서버 간 모든 통신 구간 TLS(HTTPS)
+              암호화, Supabase의 행 단위 접근 제어(Row Level Security)를 통해 이용자가 자신이
+              속한 우리집의 데이터에만 접근하도록 통제, 비밀번호를 발급·저장하지 않는 소셜
+              로그인 전용 인증(비밀번호 유출 위험 자체가 없음), 결제수단 정보 비보유(Apple이
+              직접 처리)
+            </li>
+            <li>
+              <b className="text-ink">물리적 조치</b> — 자체 서버를 두지 않고 Vercel·Supabase 등
+              보안 인증을 받은 클라우드 인프라만 이용하여 데이터센터 물리 보안을 각 사업자에게
+              위탁
+            </li>
+          </ol>
+        </section>
+
+        <section>
+          <h2 className="mb-1.5 text-sm font-bold text-ink">8. 이용자의 권리와 행사방법</h2>
           <p>
             이용자는 마이페이지에서 언제든지 본인의 프로필 정보를 열람·수정할 수 있으며, 계정
             삭제를 통해 자신의 개인정보 처리 정지 및 파기를 요청할 수 있습니다. 만 14세 미만
-            아동의 개인정보 처리와 관련한 문의, 그 밖의 열람·정정·삭제 요청은 아래 문의처를 통해
+            아동의 회원가입은 지원하지 않으며, 만 14세 미만 아동의 개인정보가 수집된 사실을
+            확인한 경우 지체 없이 파기합니다. 그 밖의 열람·정정·삭제 요청은 아래 문의처를 통해
             접수하며, 접수 즉시 지체 없이 처리합니다.
           </p>
         </section>
 
         <section>
-          <h2 className="mb-1.5 text-sm font-bold text-ink">8. 개인정보의 파기절차 및 방법</h2>
+          <h2 className="mb-1.5 text-sm font-bold text-ink">9. 개인정보의 파기절차 및 방법</h2>
           <p>
             보유 기간이 경과하거나 처리 목적이 달성된 개인정보는 지체 없이 파기합니다. 전자적
             파일 형태의 정보는 복구할 수 없는 방법으로 영구 삭제하며, 종이 문서에 기록된 정보는
@@ -119,7 +219,7 @@ export default function PrivacyPage() {
         </section>
 
         <section>
-          <h2 className="mb-1.5 text-sm font-bold text-ink">9. 쿠키 등 자동 수집 장치의 운영</h2>
+          <h2 className="mb-1.5 text-sm font-bold text-ink">10. 쿠키 등 자동 수집 장치의 운영</h2>
           <p>
             서비스는 로그인 상태 유지를 위해 브라우저 쿠키를 사용하며, 별도의 광고·분석용
             추적(트래킹) 도구는 사용하지 않습니다. 푸시 알림을 켠 경우 알림 발송을 위한 기기
@@ -128,7 +228,7 @@ export default function PrivacyPage() {
         </section>
 
         <section>
-          <h2 className="mb-1.5 text-sm font-bold text-ink">10. 개인정보 보호책임자</h2>
+          <h2 className="mb-1.5 text-sm font-bold text-ink">11. 개인정보 보호책임자</h2>
           <p>
             서비스는 개인정보 처리에 관한 업무를 총괄해서 책임지고 이용자의 불만 처리 및 피해
             구제 등을 위하여 아래와 같이 개인정보 보호책임자를 지정하고 있습니다.
@@ -138,7 +238,20 @@ export default function PrivacyPage() {
         </section>
 
         <section>
-          <h2 className="mb-1.5 text-sm font-bold text-ink">11. 문의처</h2>
+          <h2 className="mb-1.5 text-sm font-bold text-ink">12. 권익침해 구제방법</h2>
+          <p className="mb-2">
+            이용자는 개인정보 침해로 인한 분쟁 해결, 상담 등 피해 구제를 받고자 하는 경우 아래
+            기관에 신고·상담을 신청할 수 있습니다.
+          </p>
+          <ul className="ml-4 list-disc space-y-1">
+            <li>개인정보 분쟁조정위원회 — (국번없이) 1833-6972 · www.kopico.go.kr</li>
+            <li>개인정보침해 신고센터 — (국번없이) 118 · privacy.kisa.or.kr</li>
+            <li>경찰청 — (국번없이) 182 · ecrm.police.go.kr</li>
+          </ul>
+        </section>
+
+        <section>
+          <h2 className="mb-1.5 text-sm font-bold text-ink">13. 문의처</h2>
           <p>
             개인정보 처리와 관련한 문의는 아래 이메일로 연락해주세요.
             <br />
@@ -147,7 +260,7 @@ export default function PrivacyPage() {
         </section>
 
         <section>
-          <h2 className="mb-1.5 text-sm font-bold text-ink">12. 고지의 의무</h2>
+          <h2 className="mb-1.5 text-sm font-bold text-ink">14. 고지의 의무</h2>
           <p>
             이 개인정보처리방침이 변경되는 경우, 변경 사항은 적용일자 최소 7일 전(수집하는
             개인정보 항목의 추가, 이용 목적 변경 등 중대한 변경의 경우 30일 전)부터 서비스 내
