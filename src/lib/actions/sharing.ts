@@ -33,6 +33,17 @@ export async function setHouseholdShareTags(
   return { ok: true };
 }
 
+export async function ensureRecipeShareCode(
+  recipeId: string
+): Promise<{ ok: true; shareCode: string } | { ok: false; error: string }> {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("ensure_recipe_share_code", {
+    target_recipe_id: recipeId,
+  });
+  if (error || !data) return { ok: false, error: "공유 링크를 만들지 못했어요." };
+  return { ok: true, shareCode: data as string };
+}
+
 export async function reactToRecipe(recipeId: string) {
   const supabase = await createClient();
   const {

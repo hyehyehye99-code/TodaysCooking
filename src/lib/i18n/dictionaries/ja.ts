@@ -356,8 +356,6 @@ const ja: Dictionary = {
     cookLogRatingLabel: "評価（任意）",
     cookLogPhotoError: "写真を処理できませんでした。",
     cookLogTextEntry: "{date}に作りました",
-    shareIngredientsHeading: "【材料】",
-    shareInstructionsHeading: "【作り方】",
     share: "共有",
     newRecipeHeading: "新しいメニュー",
     unsavedNewTitle: "作成中の内容が保存されていません",

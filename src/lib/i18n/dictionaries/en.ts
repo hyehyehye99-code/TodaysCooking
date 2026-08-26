@@ -359,8 +359,6 @@ const en: Dictionary = {
     cookLogRatingLabel: "Rating (optional)",
     cookLogPhotoError: "Couldn't process the photo.",
     cookLogTextEntry: "Cooked on {date}",
-    shareIngredientsHeading: "[Ingredients]",
-    shareInstructionsHeading: "[Instructions]",
     share: "Share",
     newRecipeHeading: "New menu",
     unsavedNewTitle: "What you've written hasn't been saved",

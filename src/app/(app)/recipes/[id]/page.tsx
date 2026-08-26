@@ -90,11 +90,7 @@ export default async function RecipeDetailPage({
           </div>
         </div>
         <div className="flex shrink-0 items-center gap-2">
-          <ShareRecipeButton
-            title={r.title}
-            ingredients={ingredients.map((i) => (i.amount ? `${i.name} ${i.amount}` : i.name))}
-            instructions={r.notes}
-          />
+          <ShareRecipeButton recipeId={r.id} title={r.title} />
           <Link
             href="/recipes"
             aria-label={dict.common.close}

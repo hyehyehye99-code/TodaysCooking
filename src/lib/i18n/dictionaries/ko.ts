@@ -359,8 +359,6 @@ const ko = {
     cookLogRatingLabel: "별점 (선택)",
     cookLogPhotoError: "사진을 처리하지 못했어요.",
     cookLogTextEntry: "{date}에 요리했어요",
-    shareIngredientsHeading: "[재료]",
-    shareInstructionsHeading: "[만드는법]",
     share: "공유",
     newRecipeHeading: "새 메뉴",
     unsavedNewTitle: "작성 중인 내용이 저장되지 않아요",

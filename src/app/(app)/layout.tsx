@@ -4,6 +4,7 @@ import { acknowledgeHouseholdChange } from "@/lib/actions/household";
 import { TabBar } from "@/components/TabBar";
 import { AppHeader } from "@/components/AppHeader";
 import { PullToRefresh } from "@/components/PullToRefresh";
+import { NotificationToaster } from "@/components/NotificationToaster";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const [{ user, household, previousHouseholdMissing }, households] = await Promise.all([
@@ -18,6 +19,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
   return (
     <div className="mx-auto flex h-dvh w-full max-w-[680px] flex-col">
+      <NotificationToaster userId={user.id} />
       <PullToRefresh className="px-5 pt-[calc(max(env(safe-area-inset-top),24px)+16px)] pb-[max(env(safe-area-inset-bottom),40px)]">
         {previousHouseholdMissing && (
           <form
