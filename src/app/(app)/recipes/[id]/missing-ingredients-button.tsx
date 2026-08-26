@@ -102,7 +102,9 @@ export function MissingIngredientsButton({
                         <button
                           key={state}
                           type="button"
-                          onClick={() => setChoices((c) => ({ ...c, [m.name]: state }))}
+                          onClick={() =>
+                            setChoices((c) => ({ ...c, [m.name]: c[m.name] === state ? undefined : state }))
+                          }
                           className={`whitespace-nowrap rounded-md px-2 py-1.5 text-[11px] font-bold ${
                             choices[m.name] === state ? STATE_STYLES[state] : "text-ink-soft"
                           }`}
