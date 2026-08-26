@@ -5,14 +5,42 @@ export default function PrivacyPage() {
     <div className="mx-auto w-full max-w-[560px] px-6 pb-16 pt-[max(env(safe-area-inset-top),24px)]">
       <div className="mb-5 flex items-center gap-3">
         <BackButton href="/mypage" />
-        <h1 className="text-lg font-bold text-ink">개인정보처리방침</h1>
+        <h1 className="text-lg font-bold text-ink">우리집 레시피 개인정보 처리방침</h1>
       </div>
 
-      <p className="mb-6 text-xs text-ink-faint">시행일자: 2026년 8월 26일</p>
+      <p className="mb-5 text-xs text-ink-faint">시행일자: 2026년 8월 26일</p>
+
+      <p className="mb-6 text-sm leading-relaxed text-ink-soft">
+        우리집 레시피는 정보주체의 자유와 권리 보호를 위해 「개인정보 보호법」 및 관계 법령이
+        정한 바를 준수하여, 적법하게 개인정보를 처리하고 안전하게 관리하고 있습니다. 이에
+        「개인정보 보호법」 제30조에 따라 정보주체에게 개인정보의 처리와 보호에 관한 절차 및
+        기준을 안내하고, 이와 관련한 고충을 신속하고 원활하게 처리할 수 있도록 하기 위하여
+        다음과 같이 개인정보 처리방침을 수립·공개합니다.
+      </p>
+
+      <nav className="mb-8 rounded-xl bg-surface p-4 text-[13px] leading-relaxed">
+        <p className="mb-1.5 font-bold text-ink">목차</p>
+        <ol className="ml-4 list-decimal columns-1 gap-x-4 text-ink-soft sm:columns-2">
+          <li><a href="#sec-1" className="hover:text-ink">수집하는 개인정보 항목</a></li>
+          <li><a href="#sec-2" className="hover:text-ink">개인정보의 처리 목적</a></li>
+          <li><a href="#sec-3" className="hover:text-ink">개인정보의 보유 및 이용 기간</a></li>
+          <li><a href="#sec-4" className="hover:text-ink">개인정보 처리업무의 위탁</a></li>
+          <li><a href="#sec-5" className="hover:text-ink">개인정보의 제3자 제공</a></li>
+          <li><a href="#sec-6" className="hover:text-ink">개인정보의 국외 이전</a></li>
+          <li><a href="#sec-7" className="hover:text-ink">개인정보의 안전성 확보조치</a></li>
+          <li><a href="#sec-8" className="hover:text-ink">이용자의 권리와 행사방법</a></li>
+          <li><a href="#sec-9" className="hover:text-ink">개인정보의 파기절차 및 방법</a></li>
+          <li><a href="#sec-10" className="hover:text-ink">쿠키 등 자동 수집 장치의 운영</a></li>
+          <li><a href="#sec-11" className="hover:text-ink">개인정보 보호책임자</a></li>
+          <li><a href="#sec-12" className="hover:text-ink">권익침해 구제방법</a></li>
+          <li><a href="#sec-13" className="hover:text-ink">문의처</a></li>
+          <li><a href="#sec-14" className="hover:text-ink">고지의 의무</a></li>
+        </ol>
+      </nav>
 
       <div className="flex flex-col gap-6 text-sm leading-relaxed text-ink-soft">
-        <section>
-          <h2 className="mb-1.5 text-sm font-bold text-ink">1. 수집하는 개인정보 항목</h2>
+        <section id="sec-1">
+          <h2 className="mb-1.5 scroll-mt-4 text-sm font-bold text-ink">1. 수집하는 개인정보 항목</h2>
           <p className="mb-2">
             Google·Apple·카카오 소셜 로그인 시 이메일 주소를 필수로 제공받으며, 로그인 제공자가
             함께 전달하는 프로필 이름·프로필 사진 URL이 있는 경우 계정 정보에 함께 저장될 수
@@ -31,8 +59,8 @@ export default function PrivacyPage() {
           </p>
         </section>
 
-        <section>
-          <h2 className="mb-1.5 text-sm font-bold text-ink">2. 개인정보의 처리 목적</h2>
+        <section id="sec-2">
+          <h2 className="mb-1.5 scroll-mt-4 text-sm font-bold text-ink">2. 개인정보의 처리 목적</h2>
           <p className="mb-2">
             서비스는 다음의 목적을 위하여 개인정보를 처리합니다. 처리하는 개인정보는 다음의
             목적 외의 용도로는 이용되지 않으며, 이용 목적이 변경되는 경우 「개인정보 보호법」
@@ -54,8 +82,8 @@ export default function PrivacyPage() {
           </ol>
         </section>
 
-        <section>
-          <h2 className="mb-1.5 text-sm font-bold text-ink">3. 개인정보의 보유 및 이용 기간</h2>
+        <section id="sec-3">
+          <h2 className="mb-1.5 scroll-mt-4 text-sm font-bold text-ink">3. 개인정보의 보유 및 이용 기간</h2>
           <p>
             회원 탈퇴(마이페이지 &gt; 계정 관리 &gt; 계정 삭제) 시 지체 없이 파기합니다. 다만
             결제·구독 관련 기록은 「전자상거래 등에서의 소비자보호에 관한 법률」에 따라 5년간,
@@ -64,8 +92,8 @@ export default function PrivacyPage() {
           </p>
         </section>
 
-        <section>
-          <h2 className="mb-1.5 text-sm font-bold text-ink">4. 개인정보 처리업무의 위탁</h2>
+        <section id="sec-4">
+          <h2 className="mb-1.5 scroll-mt-4 text-sm font-bold text-ink">4. 개인정보 처리업무의 위탁</h2>
           <p className="mb-2">
             서비스 운영을 위해 다음과 같이 개인정보 처리 업무를 위탁하고 있습니다. 위탁받은
             업체에는 서비스 제공에 필요한 최소한의 정보만 전달되며, 위탁 계약을 통해 개인정보가
@@ -85,8 +113,8 @@ export default function PrivacyPage() {
           </p>
         </section>
 
-        <section>
-          <h2 className="mb-1.5 text-sm font-bold text-ink">5. 개인정보의 제3자 제공</h2>
+        <section id="sec-5">
+          <h2 className="mb-1.5 scroll-mt-4 text-sm font-bold text-ink">5. 개인정보의 제3자 제공</h2>
           <p>
             서비스는 이용자의 개인정보를 원칙적으로 외부에 제공하지 않습니다. 다만 법령에 특별한
             규정이 있거나 수사기관이 적법한 절차에 따라 요청하는 경우, 이용자가 별도로 동의한
@@ -97,8 +125,8 @@ export default function PrivacyPage() {
           </p>
         </section>
 
-        <section>
-          <h2 className="mb-1.5 text-sm font-bold text-ink">6. 개인정보의 국외 이전</h2>
+        <section id="sec-6">
+          <h2 className="mb-1.5 scroll-mt-4 text-sm font-bold text-ink">6. 개인정보의 국외 이전</h2>
           <p className="mb-3">
             서비스는 서비스 제공을 위해 반드시 필요한 아래 업체와의 계약 이행을 위해(「개인정보
             보호법」 제28조의8제1항제3호), 회원가입 시 별도 동의 절차 없이 다음과 같이 개인정보를
@@ -175,8 +203,8 @@ export default function PrivacyPage() {
           </p>
         </section>
 
-        <section>
-          <h2 className="mb-1.5 text-sm font-bold text-ink">7. 개인정보의 안전성 확보조치</h2>
+        <section id="sec-7">
+          <h2 className="mb-1.5 scroll-mt-4 text-sm font-bold text-ink">7. 개인정보의 안전성 확보조치</h2>
           <p className="mb-2">서비스는 개인정보의 안전성 확보를 위해 다음과 같은 조치를 취하고 있습니다.</p>
           <ol className="ml-4 list-decimal space-y-1">
             <li>
@@ -198,8 +226,8 @@ export default function PrivacyPage() {
           </ol>
         </section>
 
-        <section>
-          <h2 className="mb-1.5 text-sm font-bold text-ink">8. 이용자의 권리와 행사방법</h2>
+        <section id="sec-8">
+          <h2 className="mb-1.5 scroll-mt-4 text-sm font-bold text-ink">8. 이용자의 권리와 행사방법</h2>
           <p>
             이용자는 마이페이지에서 언제든지 본인의 프로필 정보를 열람·수정할 수 있으며, 계정
             삭제를 통해 자신의 개인정보 처리 정지 및 파기를 요청할 수 있습니다. 만 14세 미만
@@ -209,8 +237,8 @@ export default function PrivacyPage() {
           </p>
         </section>
 
-        <section>
-          <h2 className="mb-1.5 text-sm font-bold text-ink">9. 개인정보의 파기절차 및 방법</h2>
+        <section id="sec-9">
+          <h2 className="mb-1.5 scroll-mt-4 text-sm font-bold text-ink">9. 개인정보의 파기절차 및 방법</h2>
           <p>
             보유 기간이 경과하거나 처리 목적이 달성된 개인정보는 지체 없이 파기합니다. 전자적
             파일 형태의 정보는 복구할 수 없는 방법으로 영구 삭제하며, 종이 문서에 기록된 정보는
@@ -218,8 +246,8 @@ export default function PrivacyPage() {
           </p>
         </section>
 
-        <section>
-          <h2 className="mb-1.5 text-sm font-bold text-ink">10. 쿠키 등 자동 수집 장치의 운영</h2>
+        <section id="sec-10">
+          <h2 className="mb-1.5 scroll-mt-4 text-sm font-bold text-ink">10. 쿠키 등 자동 수집 장치의 운영</h2>
           <p>
             서비스는 로그인 상태 유지를 위해 브라우저 쿠키를 사용하며, 별도의 광고·분석용
             추적(트래킹) 도구는 사용하지 않습니다. 푸시 알림을 켠 경우 알림 발송을 위한 기기
@@ -227,8 +255,8 @@ export default function PrivacyPage() {
           </p>
         </section>
 
-        <section>
-          <h2 className="mb-1.5 text-sm font-bold text-ink">11. 개인정보 보호책임자</h2>
+        <section id="sec-11">
+          <h2 className="mb-1.5 scroll-mt-4 text-sm font-bold text-ink">11. 개인정보 보호책임자</h2>
           <p>
             서비스는 개인정보 처리에 관한 업무를 총괄해서 책임지고 이용자의 불만 처리 및 피해
             구제 등을 위하여 아래와 같이 개인정보 보호책임자를 지정하고 있습니다.
@@ -237,8 +265,8 @@ export default function PrivacyPage() {
           </p>
         </section>
 
-        <section>
-          <h2 className="mb-1.5 text-sm font-bold text-ink">12. 권익침해 구제방법</h2>
+        <section id="sec-12">
+          <h2 className="mb-1.5 scroll-mt-4 text-sm font-bold text-ink">12. 권익침해 구제방법</h2>
           <p className="mb-2">
             이용자는 개인정보 침해로 인한 분쟁 해결, 상담 등 피해 구제를 받고자 하는 경우 아래
             기관에 신고·상담을 신청할 수 있습니다.
@@ -250,8 +278,8 @@ export default function PrivacyPage() {
           </ul>
         </section>
 
-        <section>
-          <h2 className="mb-1.5 text-sm font-bold text-ink">13. 문의처</h2>
+        <section id="sec-13">
+          <h2 className="mb-1.5 scroll-mt-4 text-sm font-bold text-ink">13. 문의처</h2>
           <p>
             개인정보 처리와 관련한 문의는 아래 이메일로 연락해주세요.
             <br />
@@ -259,8 +287,8 @@ export default function PrivacyPage() {
           </p>
         </section>
 
-        <section>
-          <h2 className="mb-1.5 text-sm font-bold text-ink">14. 고지의 의무</h2>
+        <section id="sec-14">
+          <h2 className="mb-1.5 scroll-mt-4 text-sm font-bold text-ink">14. 고지의 의무</h2>
           <p>
             이 개인정보처리방침이 변경되는 경우, 변경 사항은 적용일자 최소 7일 전(수집하는
             개인정보 항목의 추가, 이용 목적 변경 등 중대한 변경의 경우 30일 전)부터 서비스 내
