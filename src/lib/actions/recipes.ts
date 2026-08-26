@@ -438,24 +438,30 @@ export async function renameHouseholdTag(oldName: string, newName: string) {
 }
 
 // "요리했어요!" log — recipe_cook_logs (0002) existed since the very first
-// photo-upload migration but never had an action or UI built for it.
+// photo-upload migration but never had an action or UI built for it. A
+// photo is optional — logging that you cooked something shouldn't require
+// stopping to take a picture first.
 export async function addCookLog(payload: {
   recipeId: string;
   recipeTitle: string;
   rating: number | null;
-  photo: File;
+  photo: File | null;
 }): Promise<{ error: string } | { success: true }> {
   const { user, household } = await getCurrentHousehold();
   if (!user || !household) return { error: "우리집을 먼저 만들어주세요." };
 
   const supabase = await createClient();
-  const uploaded = await uploadRecipePhotos(supabase, household.id, [payload.photo]);
-  if ("error" in uploaded) return { error: uploaded.error };
+  let photoUrl: string | null = null;
+  if (payload.photo) {
+    const uploaded = await uploadRecipePhotos(supabase, household.id, [payload.photo]);
+    if ("error" in uploaded) return { error: uploaded.error };
+    photoUrl = uploaded.urls[0];
+  }
 
   const { error } = await supabase.from("recipe_cook_logs").insert({
     household_id: household.id,
     recipe_id: payload.recipeId,
-    photo_url: uploaded.urls[0],
+    photo_url: photoUrl,
     rating: payload.rating,
   });
   if (error) return { error: "기록을 저장하지 못했어요." };

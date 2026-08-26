@@ -355,7 +355,7 @@ const en: Dictionary = {
     resetReactions: "Reset",
     cookLogHeading: "Cooking log",
     cookedItButton: "I cooked this!",
-    cookLogAddPhoto: "Add photo",
+    cookLogAddPhoto: "Add photo (optional)",
     cookLogRatingLabel: "Rating (optional)",
     cookLogPhotoError: "Couldn't process the photo.",
     shareIngredientsHeading: "[Ingredients]",

@@ -32,7 +32,7 @@ export type RecipeCookLog = {
   id: string;
   household_id: string;
   recipe_id: string;
-  photo_url: string;
+  photo_url: string | null;
   cooked_at: string;
   rating: number | null;
   created_at: string;

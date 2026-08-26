@@ -355,7 +355,7 @@ const ko = {
     resetReactions: "초기화",
     cookLogHeading: "요리 기록",
     cookedItButton: "요리했어요!",
-    cookLogAddPhoto: "사진 추가",
+    cookLogAddPhoto: "사진 추가 (선택)",
     cookLogRatingLabel: "별점 (선택)",
     cookLogPhotoError: "사진을 처리하지 못했어요.",
     shareIngredientsHeading: "[재료]",

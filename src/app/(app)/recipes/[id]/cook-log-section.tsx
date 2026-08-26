@@ -122,7 +122,6 @@ export function CookLogSection({
   }
 
   function submit() {
-    if (!file) return;
     startTransition(async () => {
       const result = await addCookLog({ recipeId, recipeTitle, rating: rating || null, photo: file });
       if (result && "error" in result) {
@@ -165,12 +164,23 @@ export function CookLogSection({
         <div className="flex gap-2.5 overflow-x-auto pb-1">
           {logs.map((log) => (
             <div key={log.id} className="relative shrink-0">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={log.photo_url}
-                alt=""
-                className="h-24 w-24 rounded-xl object-cover"
-              />
+              {log.photo_url ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={log.photo_url}
+                  alt=""
+                  className="h-24 w-24 rounded-xl object-cover"
+                />
+              ) : (
+                <div className="flex h-24 w-24 flex-col items-center justify-center gap-1 rounded-xl bg-surface text-ink-faint">
+                  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M12 3.5v6M8.5 3.5v3a1.75 1.75 0 0 0 3.5 0v-3M15.5 3.5c-1.1 0-2 1.34-2 3s.9 3 2 3v11" />
+                  </svg>
+                  <span className="text-[10px] font-semibold">
+                    {new Date(log.cooked_at).toLocaleDateString("ko-KR", { month: "short", day: "numeric" })}
+                  </span>
+                </div>
+              )}
               <button
                 type="button"
                 onClick={() => handleDelete(log.id)}
@@ -245,7 +255,7 @@ export function CookLogSection({
             <button
               type="button"
               onClick={submit}
-              disabled={!file || pending}
+              disabled={pending}
               className="flex-1 rounded-xl bg-accent py-3 text-sm font-bold text-white disabled:opacity-60"
             >
               {pending ? dict.recipes.saving : dict.common.save}

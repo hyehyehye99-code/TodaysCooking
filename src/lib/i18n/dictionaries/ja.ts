@@ -352,7 +352,7 @@ const ja: Dictionary = {
     resetReactions: "リセット",
     cookLogHeading: "料理記録",
     cookedItButton: "作りました！",
-    cookLogAddPhoto: "写真を追加",
+    cookLogAddPhoto: "写真を追加（任意）",
     cookLogRatingLabel: "評価（任意）",
     cookLogPhotoError: "写真を処理できませんでした。",
     shareIngredientsHeading: "【材料】",
