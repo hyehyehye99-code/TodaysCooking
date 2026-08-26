@@ -7,16 +7,18 @@ import { Modal } from "@/components/Modal";
 import { useDict } from "@/lib/i18n/client";
 import type { Dictionary } from "@/lib/i18n/dictionaries/ko";
 
-type ChoiceState = "fridge" | "skip";
+type ChoiceState = "shopping" | "fridge" | "skip";
 
-const STATES: ChoiceState[] = ["fridge", "skip"];
+const STATES: ChoiceState[] = ["shopping", "fridge", "skip"];
 
 function stateLabel(state: ChoiceState, dict: Dictionary): string {
+  if (state === "shopping") return dict.welcome.stateShopping;
   if (state === "fridge") return dict.welcome.stateFridge;
   return dict.welcome.stateSkip;
 }
 
 const STATE_STYLES: Record<ChoiceState, string> = {
+  shopping: "bg-accent text-white",
   fridge: "bg-positive text-white",
   skip: "bg-ink-soft text-white",
 };
@@ -44,10 +46,11 @@ export function MissingIngredientsButton({
   }
 
   function handleConfirm() {
+    const shopping = missing.filter((m) => choices[m.name] === "shopping").map((m) => m.name);
     const fridge = missing.filter((m) => choices[m.name] === "fridge").map((m) => m.name);
     const skip = missing.filter((m) => choices[m.name] === "skip").map((m) => m.name);
     startTransition(async () => {
-      await resolveMissingIngredients({ recipeId, fridge, skip });
+      await resolveMissingIngredients({ recipeId, shopping, fridge, skip });
       setOpen(false);
       router.refresh();
     });
@@ -73,7 +76,7 @@ export function MissingIngredientsButton({
                 <div key={m.name} className="rounded-xl bg-surface px-3.5 py-2.5">
                   <div className="flex items-center justify-between gap-2">
                     <span className="text-sm font-semibold">{m.name}</span>
-                    <div className="grid shrink-0 grid-cols-2 gap-0.5 rounded-lg bg-white p-0.5">
+                    <div className="grid shrink-0 grid-cols-3 gap-0.5 rounded-lg bg-white p-0.5">
                       {STATES.map((state) => (
                         <button
                           key={state}
