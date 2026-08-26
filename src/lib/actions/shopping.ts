@@ -112,7 +112,7 @@ export async function finishShoppingTrip() {
   const fridgeRows = checked.map((item) => ({
     household_id: household.id,
     name: item.name,
-    category: CATEGORY_BY_NAME.get(item.name) ?? "기타",
+    category: CATEGORY_BY_NAME.get(item.name) ?? "미분류",
     in_stock: true,
     updated_at: new Date().toISOString(),
   }));
