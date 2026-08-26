@@ -40,6 +40,15 @@ if (FIREBASE_PROJECT_ID && FIREBASE_CLIENT_EMAIL && FIREBASE_PRIVATE_KEY) {
   } catch (err) {
     console.error("Firebase Admin init failed — FCM push disabled:", err);
   }
+} else {
+  console.error(
+    "Firebase Admin env vars missing — FCM push disabled:",
+    JSON.stringify({
+      hasProjectId: !!FIREBASE_PROJECT_ID,
+      hasClientEmail: !!FIREBASE_CLIENT_EMAIL,
+      hasPrivateKey: !!FIREBASE_PRIVATE_KEY,
+    })
+  );
 }
 
 export async function saveFcmToken(token: string) {
@@ -124,6 +133,12 @@ export async function sendPushToHousehold(
           const statusCode = (err as { statusCode?: number }).statusCode;
           if (statusCode === 404 || statusCode === 410) {
             await supabase.from("push_subscriptions").delete().eq("endpoint", s.endpoint);
+          } else {
+            // Anything else (bad VAPID keys, malformed payload, ...) was
+            // silently swallowed here before — no log meant a broken push
+            // pipeline looked identical to "nothing to notify" from the
+            // outside, with no way to tell the two apart in production.
+            console.error("[push] web push send failed:", statusCode, err);
           }
         }
       })
@@ -154,6 +169,11 @@ export async function sendPushToHousehold(
           const code = (err as { errorInfo?: { code?: string } }).errorInfo?.code;
           if (code === "messaging/registration-token-not-registered") {
             await supabase.from("fcm_tokens").delete().eq("token", token);
+          } else {
+            // See the matching web-push branch above — an auth/credential
+            // error here (expired service account key, wrong project, ...)
+            // used to vanish with no trace.
+            console.error("[push] FCM send failed:", code, err);
           }
         }
       })
