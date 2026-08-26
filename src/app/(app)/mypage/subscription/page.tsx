@@ -18,7 +18,7 @@ export default async function SubscriptionPage() {
     : { data: null };
   const isUnlimited = !!promoGrant && (!promoGrant.expires_at || new Date(promoGrant.expires_at) > new Date());
   const promoDaysLeft = promoGrant?.expires_at
-    ? Math.ceil((new Date(promoGrant.expires_at).getTime() - Date.now()) / (1000 * 60 * 60 * 24))
+    ? Math.ceil((new Date(promoGrant.expires_at).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))
     : null;
 
   const { data: sub } = household
