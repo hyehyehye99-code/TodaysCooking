@@ -129,6 +129,14 @@ export default async function MyPage() {
                   )}
                 </p>
               )}
+              {!activeIsPremium && (
+                <Link
+                  href="/mypage/subscription"
+                  className="mt-3 flex items-center justify-center rounded-xl bg-accent py-2.5 text-[13px] font-bold text-white"
+                >
+                  {dict.components.subscribeCta}
+                </Link>
+              )}
             </>
           )}
         </div>
