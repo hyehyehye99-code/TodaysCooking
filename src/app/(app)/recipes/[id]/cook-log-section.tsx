@@ -100,6 +100,8 @@ export function CookLogSection({
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
+  const logsWithPhoto = logs.filter((log) => log.photo_url);
+  const logsWithoutPhoto = logs.filter((log) => !log.photo_url);
 
   function close() {
     setOpen(false);
@@ -160,27 +162,16 @@ export function CookLogSection({
         </button>
       </div>
 
-      {logs.length > 0 && (
+      {logsWithPhoto.length > 0 && (
         <div className="flex gap-2.5 overflow-x-auto pb-1">
-          {logs.map((log) => (
+          {logsWithPhoto.map((log) => (
             <div key={log.id} className="relative shrink-0">
-              {log.photo_url ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={log.photo_url}
-                  alt=""
-                  className="h-24 w-24 rounded-xl object-cover"
-                />
-              ) : (
-                <div className="flex h-24 w-24 flex-col items-center justify-center gap-1 rounded-xl bg-surface text-ink-faint">
-                  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M12 3.5v6M8.5 3.5v3a1.75 1.75 0 0 0 3.5 0v-3M15.5 3.5c-1.1 0-2 1.34-2 3s.9 3 2 3v11" />
-                  </svg>
-                  <span className="text-[10px] font-semibold">
-                    {new Date(log.cooked_at).toLocaleDateString("ko-KR", { month: "short", day: "numeric" })}
-                  </span>
-                </div>
-              )}
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={log.photo_url!}
+                alt=""
+                className="h-24 w-24 rounded-xl object-cover"
+              />
               <button
                 type="button"
                 onClick={() => handleDelete(log.id)}
@@ -204,6 +195,37 @@ export function CookLogSection({
             </div>
           ))}
         </div>
+      )}
+
+      {logsWithoutPhoto.length > 0 && (
+        <ul className={logsWithPhoto.length > 0 ? "mt-2.5 space-y-1.5" : "space-y-1.5"}>
+          {logsWithoutPhoto.map((log) => (
+            <li
+              key={log.id}
+              className="flex items-center justify-between gap-2 rounded-xl bg-surface px-3.5 py-2.5 text-sm"
+            >
+              <span className="text-ink-soft">
+                {dict.recipes.cookLogTextEntry.replace(
+                  "{date}",
+                  new Date(log.cooked_at).toLocaleDateString("ko-KR", { month: "short", day: "numeric" })
+                )}
+                {log.rating ? ` · ★${log.rating}` : ""}
+              </span>
+              <button
+                type="button"
+                onClick={() => handleDelete(log.id)}
+                disabled={deletingId === log.id}
+                aria-label={dict.common.delete}
+                className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-ink-faint disabled:opacity-60"
+              >
+                <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M18 6L6 18" />
+                  <path d="M6 6l12 12" />
+                </svg>
+              </button>
+            </li>
+          ))}
+        </ul>
       )}
 
       <Modal open={open} onClose={close} variant="sheet">
