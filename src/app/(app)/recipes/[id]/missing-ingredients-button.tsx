@@ -36,6 +36,10 @@ export function MissingIngredientsButton({
   const [pending, startTransition] = useTransition();
   const router = useRouter();
 
+  function setAllTo(state: ChoiceState) {
+    setChoices(Object.fromEntries(missing.map((m) => [m.name, state])));
+  }
+
   function openModal() {
     setChoices(
       Object.fromEntries(
@@ -70,6 +74,23 @@ export function MissingIngredientsButton({
         <div className="mx-auto flex max-h-[80vh] w-full max-w-[420px] flex-col rounded-t-3xl bg-white p-5 pb-[max(env(safe-area-inset-bottom),20px)]">
             <p className="mb-1 text-[15px] font-bold">{dict.welcome.missingIngredientsTitle}</p>
             <p className="mb-3 text-xs text-ink-soft">{dict.recipes.missingIngredientsDescDetailed}</p>
+
+            {/* Bulk-set every ingredient at once, then fine-tune individual
+                items below — without this, each of them needs its own tap
+                even when the same choice applies to all (or almost all). */}
+            <div className="mb-3 flex gap-1.5">
+              {STATES.map((state) => (
+                <button
+                  key={state}
+                  type="button"
+                  onClick={() => setAllTo(state)}
+                  className="flex-1 rounded-lg border border-border bg-white py-2 text-[11px] font-bold text-ink-soft active:opacity-70"
+                >
+                  {dict.recipes.applyAllPrefix}
+                  {stateLabel(state, dict)}
+                </button>
+              ))}
+            </div>
 
             <div className="mt-1 flex flex-col gap-2 overflow-y-auto">
               {missing.map((m) => (

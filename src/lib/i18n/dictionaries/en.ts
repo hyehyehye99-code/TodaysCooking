@@ -338,9 +338,10 @@ const en: Dictionary = {
     tagsLabel: "Tags",
     saveButton: "Save",
     missingIngredientsDescDetailed:
-      "Mark what you already have as In fridge, and what you don't need as Skip. Anything left unmarked stays as is and we'll ask again next time.",
+      "Mark what you already have as In fridge, what you want on your shopping list as Add to list, and what you don't need as Skip. Anything left unmarked stays as is and we'll ask again next time.",
     addingEllipsis: "Saving...",
     editOwnedIngredients: "Edit ingredients you have",
+    applyAllPrefix: "All: ",
     reactionCountTemplate: "{count} people want to make this~!",
     resetReactions: "Reset",
     shareIngredientsHeading: "[Ingredients]",

@@ -335,9 +335,10 @@ const ja: Dictionary = {
     tagsLabel: "タグ",
     saveButton: "保存する",
     missingIngredientsDescDetailed:
-      "すでにある材料は「在庫あり」に、不要な材料は「省略」にしてください。選択しなかった材料はそのままにして、次回また確認します。",
+      "すでにある材料は「在庫あり」に、買い物リストに入れたい材料は「買い物に追加」に、不要な材料は「省略」にしてください。選択しなかった材料はそのままにして、次回また確認します。",
     addingEllipsis: "保存中...",
     editOwnedIngredients: "持っている材料を編集する",
+    applyAllPrefix: "全て：",
     reactionCountTemplate: "{count}人が食べたいと言っています〜！",
     resetReactions: "リセット",
     shareIngredientsHeading: "【材料】",

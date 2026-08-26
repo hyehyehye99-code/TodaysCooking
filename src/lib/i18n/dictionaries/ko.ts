@@ -338,9 +338,10 @@ const ko = {
     tagsLabel: "태그",
     saveButton: "저장하기",
     missingIngredientsDescDetailed:
-      "가지고 있는 재료는 보유 중으로, 필요 없는 재료는 생략으로 표시해주세요. 선택하지 않은 재료는 이번엔 그대로 두고 다음에 다시 물어볼게요.",
+      "가지고 있는 재료는 보유 중으로, 장보기 목록에 담고 싶은 재료는 장보기 담기로, 필요 없는 재료는 생략으로 표시해주세요. 선택하지 않은 재료는 이번엔 그대로 두고 다음에 다시 물어볼게요.",
     addingEllipsis: "저장하는 중...",
     editOwnedIngredients: "보유하고 있는 재료 수정하기",
+    applyAllPrefix: "전체 ",
     reactionCountTemplate: "{count}명이 먹고 싶다고 표현했어요~!",
     resetReactions: "초기화",
     shareIngredientsHeading: "[재료]",
