@@ -175,6 +175,15 @@ export default async function MyPage() {
               <path d="M9 6l6 6-6 6" />
             </svg>
           </Link>
+          <Link
+            href="/mypage/tags"
+            className="flex items-center justify-between px-4 py-4 text-sm font-semibold text-ink"
+          >
+            {dict.mypage.tagManagement}
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--color-ink-faint)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M9 6l6 6-6 6" />
+            </svg>
+          </Link>
         </div>
       </GlassCard>
 

@@ -62,6 +62,7 @@ export function RecipeList({
   const [activeTag, setActiveTag] = useState<string | null>(null);
   const [favoritesOnly, setFavoritesOnly] = useState(false);
   const [makeableOnly, setMakeableOnly] = useState(false);
+  const [sortBy, setSortBy] = useState<"custom" | "newest" | "oldest" | "name">("custom");
   const [editing, setEditing] = useState(false);
   const {
     order,
@@ -111,6 +112,18 @@ export function RecipeList({
     const matchesMakeable = !makeableOnly || makeableIds.has(r.id);
     return matchesQuery && matchesTag && matchesFavorite && matchesMakeable;
   });
+
+  // "custom" keeps the server-provided order (position, i.e. whatever the
+  // household last drag-reordered to) — everything else re-sorts on top of
+  // the filtered set without touching that saved order.
+  const sorted =
+    sortBy === "newest"
+      ? [...filtered].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+      : sortBy === "oldest"
+        ? [...filtered].sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
+        : sortBy === "name"
+          ? [...filtered].sort((a, b) => a.title.localeCompare(b.title, "ko"))
+          : filtered;
 
   function startEditing() {
     setOrder(recipes);
@@ -195,6 +208,17 @@ export function RecipeList({
               className="w-full rounded-xl border border-transparent bg-surface px-3.5 py-2.5 text-sm outline-none focus:border-accent"
             />
           </div>
+          <select
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
+            aria-label={dict.recipes.sortCustom}
+            className="h-[42px] shrink-0 rounded-xl bg-surface px-2.5 text-xs font-semibold text-ink-soft outline-none"
+          >
+            <option value="custom">{dict.recipes.sortCustom}</option>
+            <option value="newest">{dict.recipes.sortNewest}</option>
+            <option value="oldest">{dict.recipes.sortOldest}</option>
+            <option value="name">{dict.recipes.sortByName}</option>
+          </select>
           {recipes.length > 1 && (
             <button
               onClick={startEditing}
@@ -274,7 +298,7 @@ export function RecipeList({
         </div>
       )}
 
-      {!editing && filtered.length === 0 && (
+      {!editing && sorted.length === 0 && (
         <p className="mt-10 text-center text-sm text-ink-soft">
           {recipes.length === 0 ? dict.recipes.emptyNoRecipes : dict.recipes.emptySearch}
         </p>
@@ -349,7 +373,7 @@ export function RecipeList({
         </div>
       ) : (
         <div className="flex flex-col gap-3">
-          {filtered.map((recipe) => {
+          {sorted.map((recipe) => {
             const makeable = makeableIds.has(recipe.id);
             return (
             <Link key={recipe.id} href={`/recipes/${recipe.id}`}>

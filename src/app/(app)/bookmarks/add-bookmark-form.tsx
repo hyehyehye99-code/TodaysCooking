@@ -5,10 +5,12 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { addBookmark } from "@/lib/actions/bookmarks";
 import { Modal } from "@/components/Modal";
 import { ClearableInput } from "@/components/ClearableInput";
+import { TagPicker } from "@/components/TagPicker";
+import { FieldLabel } from "@/components/FieldLabel";
 import { useClipboardLinkSuggestion } from "@/lib/useClipboardLinkSuggestion";
 import { useDict } from "@/lib/i18n/client";
 
-export function AddBookmarkForm() {
+export function AddBookmarkForm({ existingTags }: { existingTags: string[] }) {
   const dict = useDict();
   const [state, formAction, pending] = useActionState(addBookmark, undefined);
   const formRef = useRef<HTMLFormElement>(null);
@@ -92,6 +94,10 @@ export function AddBookmarkForm() {
             placeholder={dict.bookmarks.notePlaceholderOptional}
             className="w-full rounded-xl border border-transparent bg-surface px-3.5 py-3 text-sm outline-none focus:border-accent"
           />
+          <div>
+            <FieldLabel>{dict.recipes.tagsLabel}</FieldLabel>
+            <TagPicker name="tags" existingTags={existingTags} />
+          </div>
           {state?.error && <p className="text-xs text-warn-ink">{state.error}</p>}
           <button
             type="submit"

@@ -1,6 +1,6 @@
 "use client";
 
-import { useOptimistic, useState, useTransition } from "react";
+import { useMemo, useOptimistic, useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { GlassCard } from "@/components/ui";
@@ -8,11 +8,13 @@ import { ConfirmModal } from "@/components/ConfirmModal";
 import {
   deleteBookmark,
   updateBookmarkNote,
+  updateBookmarkTags,
   reorderBookmarks,
   toggleFavoriteBookmark,
 } from "@/lib/actions/bookmarks";
 import { useDragReorder } from "@/lib/useDragReorder";
 import { ClearableInput } from "@/components/ClearableInput";
+import { TagPicker } from "@/components/TagPicker";
 import { useDict } from "@/lib/i18n/client";
 import type { Bookmark } from "@/lib/types";
 
@@ -122,6 +124,77 @@ function BookmarkNote({ id, note }: { id: string; note: string | null }) {
   );
 }
 
+function BookmarkTags({
+  id,
+  tags,
+  existingTags,
+}: {
+  id: string;
+  tags: string[];
+  existingTags: string[];
+}) {
+  const dict = useDict();
+  const [editing, setEditing] = useState(false);
+  const [selected, setSelected] = useState(tags);
+  const [pending, startTransition] = useTransition();
+  const router = useRouter();
+
+  function save() {
+    startTransition(async () => {
+      await updateBookmarkTags(id, selected);
+      setEditing(false);
+      router.refresh();
+    });
+  }
+
+  if (editing) {
+    return (
+      <div className="flex flex-col gap-2 border-t border-border pt-2">
+        <TagPicker
+          name="tags"
+          existingTags={existingTags}
+          defaultSelected={tags}
+          onChange={setSelected}
+        />
+        <button
+          type="button"
+          onClick={save}
+          disabled={pending}
+          className="self-end rounded-lg bg-accent px-3 py-1.5 text-xs font-bold text-white disabled:opacity-60"
+        >
+          {pending ? "..." : dict.common.save}
+        </button>
+      </div>
+    );
+  }
+
+  if (tags.length > 0) {
+    return (
+      <button
+        type="button"
+        onClick={() => setEditing(true)}
+        className="flex flex-wrap items-center gap-1.5 border-t border-border pt-2 text-left"
+      >
+        {tags.map((tag) => (
+          <span key={tag} className="text-[10px] font-semibold text-positive-ink">
+            #{tag}
+          </span>
+        ))}
+      </button>
+    );
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={() => setEditing(true)}
+      className="w-fit border-t border-border pt-2 text-xs font-semibold text-ink-soft"
+    >
+      {dict.recipes.tagsLabel}
+    </button>
+  );
+}
+
 function DeleteBookmarkButton({
   id,
   linkedToRecipe,
@@ -187,6 +260,7 @@ export function BookmarkList({ bookmarks }: { bookmarks: BookmarkWithRecipe[] })
   const dict = useDict();
   const [query, setQuery] = useState("");
   const [favoritesOnly, setFavoritesOnly] = useState(false);
+  const [activeTag, setActiveTag] = useState<string | null>(null);
   const [reordering, setReordering] = useState(false);
   const {
     order,
@@ -201,8 +275,11 @@ export function BookmarkList({ bookmarks }: { bookmarks: BookmarkWithRecipe[] })
   const [pending, startTransition] = useTransition();
   const router = useRouter();
 
+  const allTags = useMemo(() => [...new Set(bookmarks.flatMap((b) => b.tags))], [bookmarks]);
+
   const filtered = bookmarks.filter((b) => {
     if (favoritesOnly && !b.is_favorite) return false;
+    if (activeTag && !b.tags.includes(activeTag)) return false;
     if (!query) return true;
     const q = query.toLowerCase();
     return (
@@ -275,9 +352,12 @@ export function BookmarkList({ bookmarks }: { bookmarks: BookmarkWithRecipe[] })
       {!reordering && bookmarks.length > 0 && (
         <div className="mb-4 flex flex-wrap gap-1.5">
           <button
-            onClick={() => setFavoritesOnly(false)}
+            onClick={() => {
+              setFavoritesOnly(false);
+              setActiveTag(null);
+            }}
             className={`rounded-full px-3 py-1.5 text-xs font-semibold ${
-              !favoritesOnly ? "bg-accent text-white" : "bg-surface text-ink-soft"
+              !favoritesOnly && !activeTag ? "bg-accent text-white" : "bg-surface text-ink-soft"
             }`}
           >
             {dict.recipes.all}
@@ -302,6 +382,17 @@ export function BookmarkList({ bookmarks }: { bookmarks: BookmarkWithRecipe[] })
             </svg>
             {dict.recipes.favorite}
           </button>
+          {allTags.map((tag) => (
+            <button
+              key={tag}
+              onClick={() => setActiveTag((prev) => (prev === tag ? null : tag))}
+              className={`rounded-full px-3 py-1.5 text-xs font-semibold ${
+                activeTag === tag ? "bg-accent text-white" : "bg-surface text-ink-soft"
+              }`}
+            >
+              {tag}
+            </button>
+          ))}
         </div>
       )}
 
@@ -402,6 +493,7 @@ export function BookmarkList({ bookmarks }: { bookmarks: BookmarkWithRecipe[] })
                 <FavoriteButton bookmark={b} />
               </div>
               <BookmarkNote id={b.id} note={b.note} />
+              <BookmarkTags id={b.id} tags={b.tags} existingTags={allTags} />
             </GlassCard>
           ))}
         </div>

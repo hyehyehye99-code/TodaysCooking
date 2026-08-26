@@ -16,10 +16,11 @@ export default async function BookmarksPage() {
     .order("created_at", { ascending: false });
 
   const bookmarks = (data as (Bookmark & { recipes: { title: string } | null })[] | null) ?? [];
+  const existingTags = [...new Set(bookmarks.flatMap((b) => b.tags))];
 
   return (
     <div>
-      <AddBookmarkForm />
+      <AddBookmarkForm existingTags={existingTags} />
       <div className="mt-5">
         <BookmarkList bookmarks={bookmarks} />
       </div>

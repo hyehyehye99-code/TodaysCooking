@@ -7,10 +7,17 @@ export function TagPicker({
   name,
   existingTags,
   defaultSelected = [],
+  onChange,
 }: {
   name: string;
   existingTags: string[];
   defaultSelected?: string[];
+  // Form-submission callers (recipe create/edit) just read the hidden
+  // input on submit and don't need this. Callers that save via a direct
+  // action call instead of a form (e.g. bookmark tag editing) need to know
+  // the selection as it changes, since there's no submit event to read it
+  // from.
+  onChange?: (selected: string[]) => void;
 }) {
   const dict = useDict();
   const [options, setOptions] = useState<string[]>(() => [
@@ -20,16 +27,23 @@ export function TagPicker({
   const [customInput, setCustomInput] = useState("");
 
   function toggle(tag: string) {
-    setSelected((prev) =>
-      prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]
-    );
+    setSelected((prev) => {
+      const next = prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag];
+      onChange?.(next);
+      return next;
+    });
   }
 
   function addCustom() {
     const value = customInput.trim();
     if (!value) return;
     setOptions((prev) => (prev.includes(value) ? prev : [...prev, value]));
-    setSelected((prev) => (prev.includes(value) ? prev : [...prev, value]));
+    setSelected((prev) => {
+      if (prev.includes(value)) return prev;
+      const next = [...prev, value];
+      onChange?.(next);
+      return next;
+    });
     setCustomInput("");
   }
 

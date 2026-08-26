@@ -403,3 +403,23 @@ export async function toggleFavoriteRecipe(id: string, next: boolean) {
   await supabase.from("recipes").update({ is_favorite: next }).eq("id", id);
   revalidatePath("/recipes");
 }
+
+// Renames a tag across every recipe in the household at once (see
+// rename_recipe_tag, 0045) rather than editing recipes one at a time.
+export async function renameHouseholdTag(oldName: string, newName: string) {
+  const trimmed = newName.trim();
+  if (!trimmed || trimmed === oldName) return;
+
+  const { household } = await getCurrentHousehold();
+  if (!household) return;
+
+  const supabase = await createClient();
+  await supabase.rpc("rename_recipe_tag", {
+    target_household_id: household.id,
+    old_name: oldName,
+    new_name: trimmed,
+  });
+
+  revalidatePath("/recipes");
+  revalidatePath("/mypage/tags");
+}

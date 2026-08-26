@@ -8,6 +8,10 @@ import { fetchLinkPreview } from "@/lib/actions/link-preview";
 export async function addBookmark(_prevState: unknown, formData: FormData) {
   const rawUrl = String(formData.get("url") ?? "").trim();
   const note = String(formData.get("note") ?? "").trim();
+  const tags = String(formData.get("tags") ?? "")
+    .split(",")
+    .map((t) => t.trim())
+    .filter(Boolean);
   if (!rawUrl) return { error: "링크를 입력해주세요." };
 
   const { user, household } = await getCurrentHousehold();
@@ -24,6 +28,7 @@ export async function addBookmark(_prevState: unknown, formData: FormData) {
     domain: preview.domain,
     thumbnail_url: preview.thumbnailUrl,
     note: note || null,
+    tags,
     created_by: user.id,
   });
 
@@ -49,6 +54,13 @@ export async function updateBookmarkNote(id: string, note: string) {
     .from("bookmarks")
     .update({ note: note.trim() || null })
     .eq("id", id);
+
+  revalidatePath("/bookmarks");
+}
+
+export async function updateBookmarkTags(id: string, tags: string[]) {
+  const supabase = await createClient();
+  await supabase.from("bookmarks").update({ tags }).eq("id", id);
 
   revalidatePath("/bookmarks");
 }
