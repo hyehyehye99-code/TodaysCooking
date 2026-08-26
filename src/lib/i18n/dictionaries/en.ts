@@ -127,6 +127,7 @@ const en: Dictionary = {
     next: "Next",
     start: "Get started",
     starting: "Getting started...",
+    unexpectedError: "Something went wrong. Please try again.",
   },
   mypage: {
     title: "My Page",

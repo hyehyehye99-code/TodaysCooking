@@ -127,6 +127,7 @@ const ko = {
     next: "다음",
     start: "시작하기",
     starting: "시작하는 중...",
+    unexpectedError: "네트워크 오류로 완료하지 못했어요. 다시 시도해주세요.",
   },
   mypage: {
     title: "마이페이지",

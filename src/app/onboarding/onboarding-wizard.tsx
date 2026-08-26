@@ -66,13 +66,23 @@ export function OnboardingWizard({ householdMissingNotice = false }: { household
     if (submittingRef.current) return;
     submittingRef.current = true;
     startTransition(async () => {
-      const result = await completeOnboardingAuthed(payload());
-      if (result && "error" in result) {
+      try {
+        const result = await completeOnboardingAuthed(payload());
+        if (result && "error" in result) {
+          submittingRef.current = false;
+          handleSetupError(result);
+        }
+        // On success this navigates away (redirect()), so there's no need to
+        // reset the ref — the component unmounts.
+      } catch {
+        // A transient network failure right after the native OAuth handoff
+        // (the Server Action POST failing before it even reaches the
+        // server) used to leave this stuck: no error, no re-enabled button,
+        // nothing to do but back out and log in again from scratch. Surface
+        // it and let them retry in place instead.
         submittingRef.current = false;
-        handleSetupError(result);
+        setStep2Error(dict.onboarding.unexpectedError);
       }
-      // On success this navigates away (redirect()), so there's no need to
-      // reset the ref — the component unmounts.
     });
   }
 

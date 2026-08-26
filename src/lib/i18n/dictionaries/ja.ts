@@ -124,6 +124,7 @@ const ja: Dictionary = {
     next: "次へ",
     start: "始める",
     starting: "開始中...",
+    unexpectedError: "エラーが発生しました。もう一度お試しください。",
   },
   mypage: {
     title: "マイページ",
