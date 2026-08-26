@@ -1,6 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentHousehold } from "@/lib/household";
 
@@ -46,5 +47,15 @@ async function applySetup(payload: SetupPayload) {
 export async function completeOnboardingAuthed(payload: SetupPayload) {
   const result = await applySetup(payload);
   if ("error" in result) return result;
+  // Every other action that changes which household a user belongs to
+  // (join, leave, ...) calls revalidatePath — this one didn't. Without it,
+  // next.config.ts's 15s dynamic staleTime can serve back the client's
+  // cached "/recipes redirects to /onboarding" result from *before* the
+  // household existed (the very first post-login navigation, when
+  // (app)/layout.tsx still had nothing to show), bouncing the user straight
+  // back to onboarding even though the household now exists server-side.
+  // That read as "the onboarding screen repeats twice" — it only actually
+  // completes once this client cache entry expires or gets invalidated.
+  revalidatePath("/", "layout");
   redirect("/recipes");
 }
