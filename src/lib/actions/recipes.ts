@@ -6,7 +6,13 @@ import { createClient } from "@/lib/supabase/server";
 import { getCurrentHousehold } from "@/lib/household";
 import { uploadRecipePhotos } from "@/lib/actions/storage";
 import { fetchLinkPreview } from "@/lib/actions/link-preview";
+import { notifyHousehold } from "@/lib/actions/notifications";
 import { MAX_RECIPE_PHOTOS } from "@/lib/constants";
+
+async function getNickname(supabase: Awaited<ReturnType<typeof createClient>>, userId: string) {
+  const { data } = await supabase.from("profiles").select("nickname").eq("id", userId).maybeSingle();
+  return data?.nickname ?? "누군가";
+}
 
 // Common amount-only words that carry no digit, so the digit check below
 // wouldn't catch them on their own — e.g. "고추장 듬뿍" should split into
@@ -204,6 +210,13 @@ export async function createRecipe(_prevState: unknown, formData: FormData) {
   }
 
   await saveReferenceLink(supabase, household.id, user.id, recipe.id, referenceUrl);
+
+  const nickname = await getNickname(supabase, user.id);
+  notifyHousehold(household.id, user.id, {
+    title: "새 레시피 추가",
+    body: `${nickname}님이 "${title}" 레시피를 추가했어요`,
+    url: `/recipes/${recipe.id}`,
+  }).catch(() => {});
 
   revalidatePath("/recipes");
   revalidatePath("/bookmarks");
@@ -422,4 +435,44 @@ export async function renameHouseholdTag(oldName: string, newName: string) {
 
   revalidatePath("/recipes");
   revalidatePath("/mypage/tags");
+}
+
+// "요리했어요!" log — recipe_cook_logs (0002) existed since the very first
+// photo-upload migration but never had an action or UI built for it.
+export async function addCookLog(payload: {
+  recipeId: string;
+  recipeTitle: string;
+  rating: number | null;
+  photo: File;
+}): Promise<{ error: string } | { success: true }> {
+  const { user, household } = await getCurrentHousehold();
+  if (!user || !household) return { error: "우리집을 먼저 만들어주세요." };
+
+  const supabase = await createClient();
+  const uploaded = await uploadRecipePhotos(supabase, household.id, [payload.photo]);
+  if ("error" in uploaded) return { error: uploaded.error };
+
+  const { error } = await supabase.from("recipe_cook_logs").insert({
+    household_id: household.id,
+    recipe_id: payload.recipeId,
+    photo_url: uploaded.urls[0],
+    rating: payload.rating,
+  });
+  if (error) return { error: "기록을 저장하지 못했어요." };
+
+  const nickname = await getNickname(supabase, user.id);
+  notifyHousehold(household.id, user.id, {
+    title: "요리했어요!",
+    body: `${nickname}님이 "${payload.recipeTitle}"을(를) 요리했어요!`,
+    url: `/recipes/${payload.recipeId}`,
+  }).catch(() => {});
+
+  revalidatePath(`/recipes/${payload.recipeId}`);
+  return { success: true as const };
+}
+
+export async function deleteCookLog(id: string, recipeId: string) {
+  const supabase = await createClient();
+  await supabase.from("recipe_cook_logs").delete().eq("id", id);
+  revalidatePath(`/recipes/${recipeId}`);
 }

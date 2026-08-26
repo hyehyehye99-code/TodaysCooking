@@ -6,11 +6,12 @@ import { GlassCard } from "@/components/ui";
 import { ProfileAvatar } from "@/components/ProfileAvatar";
 import { chefName } from "@/lib/format";
 import { getDictionary } from "@/lib/i18n/server";
-import type { RecipeWithIngredients } from "@/lib/types";
+import type { RecipeCookLog, RecipeWithIngredients } from "@/lib/types";
 import { DeleteRecipeButton } from "./delete-recipe-button";
 import { MissingIngredientsButton } from "./missing-ingredients-button";
 import { RecipePhotoGallery } from "./recipe-photo-gallery";
 import { ReactionLog } from "./reaction-log";
+import { CookLogSection } from "./cook-log-section";
 import { ShareRecipeButton } from "./share-recipe-button";
 
 export default async function RecipeDetailPage({
@@ -27,18 +28,29 @@ export default async function RecipeDetailPage({
   // round trip instead of fetching the recipe first and waiting on it before
   // starting the rest. Only creatorProfile (below) genuinely depends on the
   // recipe row, since it needs r.created_by.
-  const [{ data: recipe }, { data: fridgeItems }, { data: shoppingItems }, { data: referenceBookmark }, { data: reactions }] =
-    await Promise.all([
-      supabase.from("recipes").select("*, recipe_ingredients(*)").eq("id", id).single(),
-      supabase.from("fridge_items").select("name, in_stock").eq("household_id", household!.id),
-      supabase.from("shopping_items").select("name").eq("household_id", household!.id),
-      supabase
-        .from("bookmarks")
-        .select("url, domain, title, thumbnail_url")
-        .eq("recipe_id", id)
-        .maybeSingle(),
-      supabase.rpc("get_recipe_reactions", { target_recipe_id: id }),
-    ]);
+  const [
+    { data: recipe },
+    { data: fridgeItems },
+    { data: shoppingItems },
+    { data: referenceBookmark },
+    { data: reactions },
+    { data: cookLogs },
+  ] = await Promise.all([
+    supabase.from("recipes").select("*, recipe_ingredients(*)").eq("id", id).single(),
+    supabase.from("fridge_items").select("name, in_stock").eq("household_id", household!.id),
+    supabase.from("shopping_items").select("name").eq("household_id", household!.id),
+    supabase
+      .from("bookmarks")
+      .select("url, domain, title, thumbnail_url")
+      .eq("recipe_id", id)
+      .maybeSingle(),
+    supabase.rpc("get_recipe_reactions", { target_recipe_id: id }),
+    supabase
+      .from("recipe_cook_logs")
+      .select("*")
+      .eq("recipe_id", id)
+      .order("created_at", { ascending: false }),
+  ]);
 
   if (!recipe) notFound();
 
@@ -213,6 +225,8 @@ export default async function RecipeDetailPage({
           {dict.recipes.editButton}
         </Link>
       </div>
+
+      <CookLogSection recipeId={r.id} recipeTitle={r.title} logs={(cookLogs as RecipeCookLog[] | null) ?? []} />
 
       <ReactionLog recipeId={r.id} reactions={reactions ?? []} />
     </div>
