@@ -6,9 +6,12 @@ import { adminLogout } from "@/lib/actions/admin";
 
 // Add new sections here as more admin tools get built — every page under
 // (dashboard) shares this nav via the group layout.
-const NAV_ITEMS = [{ label: "크리에이터 관리", href: "/admin/creators" }];
+const NAV_ITEMS = [
+  { label: "크리에이터 관리", href: "/admin/creators" },
+  { label: "크리에이터 지원", href: "/admin/applications" },
+];
 
-export function AdminNav() {
+export function AdminNav({ pendingApplicationCount = 0 }: { pendingApplicationCount?: number }) {
   const pathname = usePathname();
 
   return (
@@ -20,11 +23,20 @@ export function AdminNav() {
             <Link
               key={item.href}
               href={item.href}
-              className={`rounded-lg px-3 py-1.5 text-sm font-bold ${
+              className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-bold ${
                 active ? "bg-accent text-white" : "text-ink-soft hover:bg-surface"
               }`}
             >
               {item.label}
+              {item.href === "/admin/applications" && pendingApplicationCount > 0 && (
+                <span
+                  className={`flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[10px] font-bold ${
+                    active ? "bg-white text-accent-ink" : "bg-accent text-white"
+                  }`}
+                >
+                  {pendingApplicationCount}
+                </span>
+              )}
             </Link>
           );
         })}

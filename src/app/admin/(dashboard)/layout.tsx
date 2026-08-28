@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { isAdminAuthenticated } from "@/lib/admin-auth";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { AdminNav } from "./admin-nav";
 
 // Auth is checked once here for every page under this group instead of
@@ -9,9 +10,15 @@ import { AdminNav } from "./admin-nav";
 export default async function AdminDashboardLayout({ children }: { children: React.ReactNode }) {
   if (!(await isAdminAuthenticated())) redirect("/admin/login");
 
+  const supabase = createAdminClient();
+  const { count } = await supabase
+    .from("creator_applications")
+    .select("id", { count: "exact", head: true })
+    .eq("status", "pending");
+
   return (
     <div>
-      <AdminNav />
+      <AdminNav pendingApplicationCount={count ?? 0} />
       <div className="mt-6">{children}</div>
     </div>
   );

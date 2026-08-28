@@ -361,3 +361,68 @@ export async function importCreatorRecipesFromExcel(formData: FormData): Promise
   revalidatePath("/admin/creators");
   return { ok: true, creatorsCreated, recipesCreated, errors };
 }
+
+export async function approveCreatorApplication(
+  applicationId: string
+): Promise<{ error: string } | { ok: true; creatorId: string }> {
+  await requireAdmin();
+  const supabase = createAdminClient();
+
+  const { data: application, error: fetchError } = await supabase
+    .from("creator_applications")
+    .select("id, creator_name, channel_type, channel_name, channel_link, tags, status")
+    .eq("id", applicationId)
+    .maybeSingle();
+  if (fetchError || !application) return { error: "지원서를 찾지 못했어요." };
+  if (application.status !== "pending") return { error: "이미 처리된 지원서예요." };
+
+  // Same dedup-by-name as the Excel import: if a creator with this exact
+  // name was already registered (e.g. by hand before the application was
+  // reviewed), reuse it instead of creating a duplicate.
+  const { data: existing } = await supabase
+    .from("creators")
+    .select("id")
+    .eq("name", application.creator_name)
+    .maybeSingle();
+
+  let creatorId = existing?.id as string | undefined;
+  if (!creatorId) {
+    const { data: newCreator, error: createError } = await supabase
+      .from("creators")
+      .insert({
+        name: application.creator_name,
+        channel_type: application.channel_type,
+        channel_name: application.channel_name,
+        channel_link: application.channel_link,
+        tags: application.tags,
+      })
+      .select("id")
+      .single();
+    if (createError || !newCreator) return { error: "크리에이터 등록에 실패했어요." };
+    creatorId = newCreator.id as string;
+  }
+
+  const { error: updateError } = await supabase
+    .from("creator_applications")
+    .update({ status: "approved" })
+    .eq("id", applicationId);
+  if (updateError) return { error: "지원서 상태 변경에 실패했어요." };
+
+  revalidatePath("/admin/applications");
+  revalidatePath("/admin/creators");
+  return { ok: true, creatorId };
+}
+
+export async function rejectCreatorApplication(applicationId: string): Promise<{ error: string } | { ok: true }> {
+  await requireAdmin();
+  const supabase = createAdminClient();
+  const { error } = await supabase
+    .from("creator_applications")
+    .update({ status: "rejected" })
+    .eq("id", applicationId)
+    .eq("status", "pending");
+  if (error) return { error: "처리에 실패했어요." };
+
+  revalidatePath("/admin/applications");
+  return { ok: true };
+}

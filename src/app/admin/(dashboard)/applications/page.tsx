@@ -1,0 +1,141 @@
+import { createAdminClient } from "@/lib/supabase/admin";
+import { ApplicationActions } from "./application-actions";
+
+type Application = {
+  id: string;
+  applicant_user_id: string;
+  creator_name: string;
+  channel_type: string | null;
+  channel_name: string | null;
+  channel_link: string | null;
+  tags: string[];
+  representative_links: string[];
+  status: string;
+  created_at: string;
+};
+
+const STATUS_LABEL: Record<string, string> = {
+  pending: "대기중",
+  approved: "승인됨",
+  rejected: "거절됨",
+};
+
+function ApplicationCard({
+  application,
+  nickname,
+}: {
+  application: Application;
+  nickname: string | null;
+}) {
+  return (
+    <div className="rounded-xl border border-border bg-white p-4">
+      <div className="mb-2 flex items-start justify-between gap-3">
+        <div>
+          <p className="text-sm font-bold">{application.creator_name}</p>
+          <p className="text-xs text-ink-soft">
+            {nickname ?? "알 수 없는 사용자"} · {new Date(application.created_at).toLocaleDateString("ko-KR")}
+          </p>
+        </div>
+        <span
+          className={`shrink-0 rounded-full px-2.5 py-1 text-[11px] font-bold ${
+            application.status === "pending"
+              ? "bg-accent/10 text-accent-ink"
+              : application.status === "approved"
+                ? "bg-positive/10 text-positive-ink"
+                : "bg-surface text-ink-faint"
+          }`}
+        >
+          {STATUS_LABEL[application.status] ?? application.status}
+        </span>
+      </div>
+
+      <p className="text-xs text-ink-soft">
+        {application.channel_type ?? "채널 종류 없음"}
+        {application.channel_name ? ` · ${application.channel_name}` : ""}
+      </p>
+      {application.channel_link && (
+        <a
+          href={application.channel_link}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mt-1 inline-block text-xs font-bold text-accent-ink underline"
+        >
+          채널 보기
+        </a>
+      )}
+
+      {application.tags.length > 0 && (
+        <p className="mt-2 text-[11px] font-semibold text-positive-ink">
+          {application.tags.map((t) => `#${t}`).join(" ")}
+        </p>
+      )}
+
+      {application.representative_links.length > 0 && (
+        <div className="mt-2 flex flex-col gap-1">
+          <p className="text-xs font-bold text-ink-soft">대표 레시피 링크</p>
+          {application.representative_links.map((link) => (
+            <a
+              key={link}
+              href={link}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="truncate text-xs text-accent-ink underline"
+            >
+              {link}
+            </a>
+          ))}
+        </div>
+      )}
+
+      {application.status === "pending" && (
+        <div className="mt-3">
+          <ApplicationActions applicationId={application.id} />
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default async function AdminApplicationsPage() {
+  const supabase = createAdminClient();
+  const [{ data: applications }, { data: profiles }] = await Promise.all([
+    supabase.from("creator_applications").select("*").order("created_at", { ascending: false }),
+    supabase.from("profiles").select("id, nickname"),
+  ]);
+
+  const list = (applications as Application[] | null) ?? [];
+  const nicknameById = new Map(
+    ((profiles as { id: string; nickname: string }[] | null) ?? []).map((p) => [p.id, p.nickname])
+  );
+
+  const pending = list.filter((a) => a.status === "pending");
+  const others = list.filter((a) => a.status !== "pending");
+
+  return (
+    <div>
+      <h1 className="mb-6 text-xl font-bold">크리에이터 지원 관리</h1>
+
+      <p className="mb-2 text-sm font-bold">대기중 ({pending.length})</p>
+      {pending.length === 0 ? (
+        <p className="mb-8 text-sm text-ink-soft">대기중인 지원서가 없어요.</p>
+      ) : (
+        <div className="mb-8 flex flex-col gap-3">
+          {pending.map((a) => (
+            <ApplicationCard key={a.id} application={a} nickname={nicknameById.get(a.applicant_user_id) ?? null} />
+          ))}
+        </div>
+      )}
+
+      {others.length > 0 && (
+        <>
+          <p className="mb-2 text-sm font-bold">처리됨 ({others.length})</p>
+          <div className="flex flex-col gap-3">
+            {others.map((a) => (
+              <ApplicationCard key={a.id} application={a} nickname={nicknameById.get(a.applicant_user_id) ?? null} />
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
