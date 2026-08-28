@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { fetchLinkPreview } from "@/lib/actions/link-preview";
 import { extractYoutubeVideoId, fetchYoutubeVideoDetails } from "@/lib/actions/youtube";
 import { getCurrentHousehold } from "@/lib/household";
+import { isAdminAuthenticated } from "@/lib/admin-auth";
 
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
@@ -73,6 +74,12 @@ const RECIPE_SCHEMA = {
       items: { type: Type.STRING },
       description: "요리를 분류할 짧은 한국어 태그 1~4개 (예: 한식, 국물요리, 간단요리). isRecipe가 false면 빈 배열.",
     },
+    subtitle: {
+      type: Type.STRING,
+      description:
+        "짧고 매력적인 한 줄 소개 문구를 새로 지어줘 (예: '기본 중의 기본'). 원문에 이미 비슷한 " +
+        "문구가 있으면 참고해도 좋아. isRecipe가 false면 생략.",
+    },
   },
   required: ["isRecipe", "ingredients", "instructions"],
 };
@@ -138,6 +145,57 @@ export async function generateRecipeFromLink(
     }
   }
 
+  const content = await generateRecipeContent(url);
+  if (!content.ok) return { ok: false, error: content.error };
+
+  // Each line goes into the same "재료" box a manual entry would use, in
+  // the same "이름 용량" shape (e.g. "문어 400g") — saving the recipe runs
+  // this through the very same name/amount split as manual entries, so the
+  // ingredients box is naturally its own section, separate from
+  // instructions, with the amount preserved and shown on the recipe's
+  // ingredient chips instead of being folded into the instructions text.
+  const ingredients = content.ingredients.map((i) => (i.amount ? `${i.name} ${i.amount}` : i.name));
+
+  // Quota is only ever charged here, on an actual successful generation —
+  // link/parse/API failures above return before this point, so a broken
+  // attempt never eats into someone's limited weekly free count. The
+  // inserted row's id lets the client later reference this exact
+  // generation if the user reports the result as unsatisfactory.
+  const { data: usageRow } = await supabase
+    .from("ai_recipe_generations")
+    .insert({ user_id: user.id })
+    .select("id")
+    .single();
+
+  return {
+    ok: true,
+    generationId: usageRow?.id ?? "",
+    title: content.title,
+    ingredients,
+    instructions: content.instructions,
+    tags: content.tags,
+  };
+}
+
+type RecipeContentResult =
+  | {
+      ok: true;
+      title: string | null;
+      subtitle: string | null;
+      thumbnailUrl: string | null;
+      ingredients: { name: string; amount: string }[];
+      instructions: string;
+      tags: string[];
+    }
+  | { ok: false; error: string };
+
+// The actual link-scrape + Gemini extraction, shared by both the
+// household-facing generateRecipeFromLink (auth + weekly/monthly quota,
+// above) and adminGenerateRecipeFromLink (admin-cookie gated, below) — kept
+// unexported so it's never reachable without going through one of those two
+// gates. Deliberately not itself charging any per-user quota: that's the
+// caller's job.
+async function generateRecipeContent(url: string): Promise<RecipeContentResult> {
   const preview = await fetchLinkPreview(url);
   if (!preview.ok) return { ok: false, error: preview.error };
   if (!preview.title) {
@@ -223,13 +281,6 @@ export async function generateRecipeFromLink(
       return { ok: false, error: "AI가 재료를 만들어내지 못했어요." };
     }
 
-    // Each line goes into the same "재료" box a manual entry would use, in
-    // the same "이름 용량" shape (e.g. "문어 400g") — saving the recipe runs
-    // this through the very same name/amount split as manual entries, so the
-    // ingredients box is naturally its own section, separate from
-    // instructions, with the amount preserved and shown on the recipe's
-    // ingredient chips instead of being folded into the instructions text.
-    const ingredients = rawIngredients.map((i) => (i.amount ? `${i.name} ${i.amount}` : i.name));
     // The model occasionally emits a literal backslash-n instead of an
     // actual line break (an inconsistent JSON-escaping quirk, not specific
     // to any one input) — normalize both to real newlines so the textarea
@@ -237,28 +288,42 @@ export async function generateRecipeFromLink(
     const instructions =
       typeof data.instructions === "string" ? data.instructions.replace(/\\n/g, "\n") : "";
 
-    // Quota is only ever charged here, on an actual successful generation —
-    // link/parse/API failures above return before this point, so a broken
-    // attempt never eats into someone's limited weekly free count. The
-    // inserted row's id lets the client later reference this exact
-    // generation if the user reports the result as unsatisfactory.
-    const { data: usageRow } = await supabase
-      .from("ai_recipe_generations")
-      .insert({ user_id: user.id })
-      .select("id")
-      .single();
-
     return {
       ok: true,
-      generationId: usageRow?.id ?? "",
       title: typeof data.title === "string" ? data.title : null,
-      ingredients,
+      subtitle: typeof data.subtitle === "string" && data.subtitle.trim() ? data.subtitle.trim() : null,
+      thumbnailUrl: preview.thumbnailUrl,
+      ingredients: rawIngredients,
       instructions,
       tags: Array.isArray(data.tags) ? data.tags.filter((t: unknown): t is string => typeof t === "string") : [],
     };
   } catch {
     return { ok: false, error: "AI 요청에 실패했어요. 잠시 후 다시 시도해주세요." };
   }
+}
+
+// The admin dashboard's equivalent of generateRecipeFromLink — gated by the
+// /admin cookie session instead of a household login, with no weekly/monthly
+// quota (there's only ever one admin, and it's the app owner's own tool).
+export async function adminGenerateRecipeFromLink(url: string): Promise<
+  | {
+      ok: true;
+      title: string | null;
+      subtitle: string | null;
+      thumbnailUrl: string | null;
+      ingredients: { name: string; amount: string }[];
+      instructions: string;
+      tags: string[];
+    }
+  | { ok: false; error: string }
+> {
+  if (!process.env.GEMINI_API_KEY) {
+    return { ok: false, error: "AI 기능이 아직 설정되지 않았어요." };
+  }
+  if (!(await isAdminAuthenticated())) {
+    return { ok: false, error: "관리자 로그인이 필요해요." };
+  }
+  return generateRecipeContent(url);
 }
 
 // Lets a user flag a specific AI result as unsatisfactory, snapshotting what

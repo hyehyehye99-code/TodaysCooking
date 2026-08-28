@@ -1,0 +1,36 @@
+"use client";
+
+import { useActionState } from "react";
+import { adminLoginAction } from "@/lib/actions/admin";
+
+export default function AdminLoginPage() {
+  const [state, formAction, pending] = useActionState(adminLoginAction, null);
+
+  return (
+    <div className="flex min-h-[70dvh] items-center justify-center">
+      <form action={formAction} className="w-full max-w-[320px] rounded-2xl border border-border bg-white p-6">
+        <h1 className="mb-4 text-lg font-bold">관리자 로그인</h1>
+        <input
+          name="username"
+          placeholder="아이디"
+          autoComplete="off"
+          className="mb-2 w-full rounded-xl border border-transparent bg-surface px-3.5 py-2.5 text-sm outline-none focus:border-accent"
+        />
+        <input
+          name="password"
+          type="password"
+          placeholder="비밀번호"
+          className="mb-4 w-full rounded-xl border border-transparent bg-surface px-3.5 py-2.5 text-sm outline-none focus:border-accent"
+        />
+        {state?.error && <p className="mb-3 text-xs text-warn-ink">{state.error}</p>}
+        <button
+          type="submit"
+          disabled={pending}
+          className="w-full rounded-xl bg-accent py-2.5 text-sm font-bold text-white disabled:opacity-60"
+        >
+          {pending ? "로그인 중..." : "로그인"}
+        </button>
+      </form>
+    </div>
+  );
+}
