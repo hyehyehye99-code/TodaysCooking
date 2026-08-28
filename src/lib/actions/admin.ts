@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import * as XLSX from "xlsx";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { checkAdminCredentials, setAdminSession, clearAdminSession, isAdminAuthenticated } from "@/lib/admin-auth";
+import { adminGenerateRecipeFromLink } from "@/lib/actions/ai-recipe";
 
 async function requireAdmin() {
   if (!(await isAdminAuthenticated())) redirect("/admin/login");
@@ -197,6 +198,7 @@ const IMPORT_HEADERS = {
   channelLink: "채널링크",
   creatorTags: "크리에이터태그",
   title: "레시피제목",
+  link: "링크",
   subtitle: "한줄소개",
   ingredients: "재료",
   notes: "만드는법",
@@ -239,13 +241,67 @@ export async function importCreatorRecipesFromExcel(formData: FormData): Promise
     const get = (key: keyof typeof IMPORT_HEADERS) => String(raw[IMPORT_HEADERS[key]] ?? "").trim();
 
     const creatorName = get("creatorName");
-    const title = get("title");
     if (!creatorName) {
       errors.push(`${rowNum}행: 크리에이터이름이 비어있어요.`);
       continue;
     }
+
+    let title = get("title");
+    const link = get("link");
+
+    // No title and no link: nothing to make a recipe out of. If it's also
+    // the only thing in the row, treat it as "just register this creator"
+    // rather than an error — that's the whole point of a creator-only row.
+    if (!title && !link) {
+      if (!creatorIdByName.has(creatorName)) {
+        const { data: newCreator, error } = await supabase
+          .from("creators")
+          .insert({
+            name: creatorName,
+            channel_type: get("channelType") || null,
+            channel_name: get("channelName") || null,
+            channel_link: get("channelLink") || null,
+            tags: splitTags(get("creatorTags")),
+          })
+          .select("id")
+          .single();
+        if (error || !newCreator) {
+          errors.push(`${rowNum}행: 크리에이터 "${creatorName}" 생성에 실패했어요.`);
+          continue;
+        }
+        creatorIdByName.set(creatorName, newCreator.id as string);
+        creatorsCreated++;
+      }
+      continue;
+    }
+
+    let subtitle = get("subtitle");
+    let notes = get("notes");
+    let tags = splitTags(get("tags"));
+    let coverPhotoUrl = get("coverPhotoUrl");
+    let ingredients = parseIngredientsCell(get("ingredients"));
+
+    // A link plus any of title/ingredients/notes still blank means AI
+    // should fill the gaps — explicit cells always win over the AI result.
+    if (link && (!title || ingredients.length === 0 || !notes)) {
+      const ai = await adminGenerateRecipeFromLink(link);
+      if (ai.ok) {
+        title = title || ai.title || "";
+        subtitle = subtitle || ai.subtitle || "";
+        notes = notes || ai.instructions;
+        if (ingredients.length === 0) ingredients = ai.ingredients;
+        if (tags.length === 0) tags = ai.tags;
+        if (!coverPhotoUrl && ai.thumbnailUrl) coverPhotoUrl = ai.thumbnailUrl;
+      } else if (!title) {
+        errors.push(`${rowNum}행: 링크에서 자동으로 채우지 못했어요 (${ai.error}).`);
+        continue;
+      } else {
+        errors.push(`${rowNum}행 (${title}): 링크 자동 채우기는 실패해서 입력된 내용만으로 등록했어요.`);
+      }
+    }
+
     if (!title) {
-      errors.push(`${rowNum}행: 레시피제목이 비어있어요.`);
+      errors.push(`${rowNum}행: 레시피제목이나 링크 중 하나는 필요해요.`);
       continue;
     }
 
@@ -271,17 +327,16 @@ export async function importCreatorRecipesFromExcel(formData: FormData): Promise
       creatorsCreated++;
     }
 
-    const coverPhotoUrl = get("coverPhotoUrl");
     const { data: recipe, error: recipeError } = await supabase
       .from("creator_recipes")
       .insert({
         creator_id: creatorId,
         title,
-        subtitle: get("subtitle") || null,
+        subtitle: subtitle || null,
         icon_emoji: get("iconEmoji") || null,
         cover_photo_urls: coverPhotoUrl ? [coverPhotoUrl] : [],
-        tags: splitTags(get("tags")),
-        notes: get("notes") || null,
+        tags,
+        notes: notes || null,
       })
       .select("id")
       .single();
@@ -290,7 +345,6 @@ export async function importCreatorRecipesFromExcel(formData: FormData): Promise
       continue;
     }
 
-    const ingredients = parseIngredientsCell(get("ingredients"));
     if (ingredients.length > 0) {
       await supabase.from("creator_recipe_ingredients").insert(
         ingredients.map((ing, idx) => ({

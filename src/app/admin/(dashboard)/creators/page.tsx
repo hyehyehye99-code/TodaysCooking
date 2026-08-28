@@ -1,8 +1,5 @@
 import Link from "next/link";
-import { redirect } from "next/navigation";
-import { isAdminAuthenticated } from "@/lib/admin-auth";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { adminLogout } from "@/lib/actions/admin";
 import { NewCreatorForm } from "./new-creator-form";
 
 type Creator = {
@@ -14,8 +11,6 @@ type Creator = {
 };
 
 export default async function AdminCreatorsPage() {
-  if (!(await isAdminAuthenticated())) redirect("/admin/login");
-
   const supabase = createAdminClient();
   const { data } = await supabase.rpc("list_creators");
   const creators = (data as Creator[] | null) ?? [];
@@ -24,16 +19,9 @@ export default async function AdminCreatorsPage() {
     <div>
       <div className="mb-6 flex items-center justify-between">
         <h1 className="text-xl font-bold">크리에이터 관리</h1>
-        <div className="flex items-center gap-4">
-          <Link href="/admin/import" className="text-xs font-bold text-accent-ink">
-            엑셀로 대량 등록
-          </Link>
-          <form action={adminLogout}>
-            <button type="submit" className="text-xs font-semibold text-ink-faint underline">
-              로그아웃
-            </button>
-          </form>
-        </div>
+        <Link href="/admin/import" className="text-xs font-bold text-accent-ink">
+          엑셀로 가져오기
+        </Link>
       </div>
 
       <div className="mb-8 rounded-2xl border border-border bg-white p-4">

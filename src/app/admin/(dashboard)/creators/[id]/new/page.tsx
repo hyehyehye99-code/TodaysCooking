@@ -1,11 +1,9 @@
 import Link from "next/link";
-import { notFound, redirect } from "next/navigation";
-import { isAdminAuthenticated } from "@/lib/admin-auth";
+import { notFound } from "next/navigation";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { CreatorRecipeForm } from "./creator-recipe-form";
 
 export default async function AdminNewCreatorRecipePage({ params }: { params: Promise<{ id: string }> }) {
-  if (!(await isAdminAuthenticated())) redirect("/admin/login");
   const { id } = await params;
 
   const supabase = createAdminClient();

@@ -1,6 +1,5 @@
 import Link from "next/link";
-import { notFound, redirect } from "next/navigation";
-import { isAdminAuthenticated } from "@/lib/admin-auth";
+import { notFound } from "next/navigation";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { DeleteRecipeButton } from "./delete-recipe-button";
 
@@ -8,7 +7,6 @@ type Creator = { id: string; name: string; icon_emoji: string | null; channel_ty
 type CreatorRecipe = { id: string; title: string; subtitle: string | null; icon_emoji: string | null; tags: string[] };
 
 export default async function AdminCreatorDetailPage({ params }: { params: Promise<{ id: string }> }) {
-  if (!(await isAdminAuthenticated())) redirect("/admin/login");
   const { id } = await params;
 
   const supabase = createAdminClient();
@@ -53,7 +51,7 @@ export default async function AdminCreatorDetailPage({ params }: { params: Promi
           href="/admin/import"
           className="flex-1 rounded-xl border border-accent bg-white py-3 text-center text-sm font-bold text-accent-ink"
         >
-          엑셀로 대량 등록
+          엑셀로 가져오기
         </Link>
       </div>
 
