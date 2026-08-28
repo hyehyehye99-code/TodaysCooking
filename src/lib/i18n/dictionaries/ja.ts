@@ -391,6 +391,7 @@ const ja: Dictionary = {
     addedToMyRecipes: "追加しました",
     viewInMyRecipes: "レシピを見る",
     addedCountTemplate: "{count}回追加されました",
+    sourceLink: "元の動画を見る",
   },
 };
 

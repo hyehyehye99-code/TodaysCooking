@@ -394,6 +394,7 @@ const en: Dictionary = {
     addedToMyRecipes: "Added!",
     viewInMyRecipes: "View recipe",
     addedCountTemplate: "Added {count} times",
+    sourceLink: "View original video",
   },
 };
 

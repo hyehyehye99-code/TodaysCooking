@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { isAdminAuthenticated } from "@/lib/admin-auth";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { AdminSidebar } from "./admin-sidebar";
+import { AdminShell } from "./admin-shell";
 
 // Auth is checked once here for every page under this group instead of
 // each page repeating the same redirect — the Server Actions in
@@ -18,17 +18,14 @@ export default async function AdminDashboardLayout({ children }: { children: Rea
   ]);
 
   return (
-    <div className="flex min-h-dvh">
-      <AdminSidebar
-        badges={{
-          applications: pendingApplications ?? 0,
-          inquiries: openInquiries ?? 0,
-          aiReports: aiReports ?? 0,
-        }}
-      />
-      <main className="flex-1 px-8 py-8">
-        <div className="mx-auto w-full max-w-[1040px]">{children}</div>
-      </main>
-    </div>
+    <AdminShell
+      badges={{
+        applications: pendingApplications ?? 0,
+        inquiries: openInquiries ?? 0,
+        aiReports: aiReports ?? 0,
+      }}
+    >
+      {children}
+    </AdminShell>
   );
 }

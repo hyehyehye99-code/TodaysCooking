@@ -394,6 +394,7 @@ const ko = {
     addedToMyRecipes: "추가했어요",
     viewInMyRecipes: "레시피 보기",
     addedCountTemplate: "{count}번 담아갔어요",
+    sourceLink: "원본 영상 보기",
   },
 } as const;
 

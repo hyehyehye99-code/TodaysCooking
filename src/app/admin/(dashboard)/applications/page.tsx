@@ -1,4 +1,5 @@
 import { createAdminClient } from "@/lib/supabase/admin";
+import { fetchLinkPreview } from "@/lib/actions/link-preview";
 import { ApplicationActions } from "./application-actions";
 
 type Application = {
@@ -20,12 +21,16 @@ const STATUS_LABEL: Record<string, string> = {
   rejected: "거절됨",
 };
 
+type ChannelPreview = { title: string | null; thumbnailUrl: string | null; domain: string } | null;
+
 function ApplicationCard({
   application,
   nickname,
+  channelPreview,
 }: {
   application: Application;
   nickname: string | null;
+  channelPreview: ChannelPreview;
 }) {
   return (
     <div className="rounded-xl border border-border bg-white p-4">
@@ -53,16 +58,35 @@ function ApplicationCard({
         {application.channel_type ?? "채널 종류 없음"}
         {application.channel_name ? ` · ${application.channel_name}` : ""}
       </p>
-      {application.channel_link && (
-        <a
-          href={application.channel_link}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="mt-1 inline-block text-xs font-bold text-accent-ink underline"
-        >
-          채널 보기
-        </a>
-      )}
+      {application.channel_link &&
+        (channelPreview?.title || channelPreview?.thumbnailUrl ? (
+          <a
+            href={application.channel_link}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-2 flex items-center gap-2.5 rounded-xl bg-surface p-2"
+          >
+            {channelPreview.thumbnailUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={channelPreview.thumbnailUrl} alt="" className="h-12 w-12 shrink-0 rounded-lg object-cover" />
+            ) : (
+              <div className="h-12 w-12 shrink-0 rounded-lg bg-border" />
+            )}
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-xs font-bold text-ink">{channelPreview.title ?? application.channel_link}</p>
+              <p className="truncate text-[11px] text-ink-faint">{channelPreview.domain}</p>
+            </div>
+          </a>
+        ) : (
+          <a
+            href={application.channel_link}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-1 inline-block text-xs font-bold text-accent-ink underline"
+          >
+            채널 보기
+          </a>
+        ))}
 
       {application.tags.length > 0 && (
         <p className="mt-2 text-[11px] font-semibold text-positive-ink">
@@ -108,6 +132,17 @@ export default async function AdminApplicationsPage() {
     ((profiles as { id: string; nickname: string }[] | null) ?? []).map((p) => [p.id, p.nickname])
   );
 
+  // Best-effort — a failed/slow fetch for one applicant's link just falls
+  // back to the plain "채널 보기" text link in the card, never blocks the page.
+  const previewEntries = await Promise.all(
+    list.map(async (a): Promise<[string, ChannelPreview]> => {
+      if (!a.channel_link) return [a.id, null];
+      const preview = await fetchLinkPreview(a.channel_link);
+      return [a.id, preview.ok ? { title: preview.title, thumbnailUrl: preview.thumbnailUrl, domain: preview.domain } : null];
+    })
+  );
+  const previewById = new Map(previewEntries);
+
   const pending = list.filter((a) => a.status === "pending");
   const others = list.filter((a) => a.status !== "pending");
 
@@ -129,7 +164,7 @@ export default async function AdminApplicationsPage() {
       ) : (
         <div className="mb-8 flex flex-col gap-3">
           {pending.map((a) => (
-            <ApplicationCard key={a.id} application={a} nickname={nicknameById.get(a.applicant_user_id) ?? null} />
+            <ApplicationCard key={a.id} application={a} nickname={nicknameById.get(a.applicant_user_id) ?? null} channelPreview={previewById.get(a.id) ?? null} />
           ))}
         </div>
       )}
@@ -139,7 +174,7 @@ export default async function AdminApplicationsPage() {
           <p className="mb-2 text-sm font-bold">처리됨 ({others.length})</p>
           <div className="flex flex-col gap-3">
             {others.map((a) => (
-              <ApplicationCard key={a.id} application={a} nickname={nicknameById.get(a.applicant_user_id) ?? null} />
+              <ApplicationCard key={a.id} application={a} nickname={nicknameById.get(a.applicant_user_id) ?? null} channelPreview={previewById.get(a.id) ?? null} />
             ))}
           </div>
         </>

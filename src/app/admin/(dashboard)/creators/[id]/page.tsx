@@ -15,7 +15,14 @@ type Creator = {
   channel_link: string | null;
   tags: string[];
 };
-type CreatorRecipe = { id: string; title: string; subtitle: string | null; icon_emoji: string | null; tags: string[] };
+type CreatorRecipe = {
+  id: string;
+  title: string;
+  subtitle: string | null;
+  icon_emoji: string | null;
+  tags: string[];
+  source_url: string | null;
+};
 
 export default async function AdminCreatorDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -29,7 +36,7 @@ export default async function AdminCreatorDetailPage({ params }: { params: Promi
       .maybeSingle(),
     supabase
       .from("creator_recipes")
-      .select("id, title, subtitle, icon_emoji, tags")
+      .select("id, title, subtitle, icon_emoji, tags, source_url")
       .eq("creator_id", id)
       .order("created_at", { ascending: false }),
   ]);
@@ -63,6 +70,7 @@ export default async function AdminCreatorDetailPage({ params }: { params: Promi
                 <th className="px-3 py-2 font-semibold">제목</th>
                 <th className="px-3 py-2 font-semibold">한 줄 소개</th>
                 <th className="px-3 py-2 font-semibold">태그</th>
+                <th className="w-10 px-3 py-2" />
                 <th className="w-20 px-3 py-2" />
               </tr>
             </thead>
@@ -81,6 +89,23 @@ export default async function AdminCreatorDetailPage({ params }: { params: Promi
                   <td className="max-w-[220px] truncate px-3 py-2 text-ink-soft">{r.subtitle}</td>
                   <td className="max-w-[200px] truncate px-3 py-2 text-[12px] font-semibold text-positive-ink">
                     {r.tags.map((t) => `#${t}`).join(" ")}
+                  </td>
+                  <td className="px-3 py-2">
+                    {r.source_url && (
+                      <a
+                        href={r.source_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label="원본 링크 열기"
+                        className="flex h-6 w-6 items-center justify-center rounded-lg text-ink-faint hover:bg-surface hover:text-accent-ink"
+                      >
+                        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M14 4h6v6" />
+                          <path d="M20 4 10 14" />
+                          <path d="M18 13v5a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h5" />
+                        </svg>
+                      </a>
+                    )}
                   </td>
                   <td className="px-3 py-2 text-right">
                     <DeleteRecipeButton creatorId={id} recipeId={r.id} />

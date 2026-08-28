@@ -121,7 +121,7 @@ const NAV_GROUPS: NavGroup[] = [
 
 type Badges = Partial<Record<BadgeKey, number>>;
 
-export function AdminSidebar({ badges = {} }: { badges?: Badges }) {
+export function AdminSidebar({ badges = {}, onNavigate }: { badges?: Badges; onNavigate?: () => void }) {
   const pathname = usePathname();
 
   return (
@@ -145,6 +145,7 @@ export function AdminSidebar({ badges = {} }: { badges?: Badges }) {
                   <Link
                     key={item.href}
                     href={item.href}
+                    onClick={onNavigate}
                     className={`flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-bold transition-colors ${
                       active ? "bg-accent text-white" : "text-ink-soft hover:bg-surface"
                     }`}

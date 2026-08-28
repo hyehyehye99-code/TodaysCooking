@@ -21,6 +21,7 @@ type ExploreRecipeDetail = {
   creator_name: string;
   creator_icon_emoji: string | null;
   add_count: number;
+  source_url: string | null;
 };
 
 export default async function ExploreRecipeDetailPage({
@@ -82,6 +83,22 @@ export default async function ExploreRecipeDetailPage({
           {dict.explore.addedCountTemplate.replace("{count}", String(recipe.add_count))}
         </div>
       </div>
+
+      {recipe.source_url && (
+        <a
+          href={recipe.source_url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mt-2 inline-flex items-center gap-1.5 text-xs font-bold text-accent-ink underline underline-offset-2"
+        >
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M14 4h6v6" />
+            <path d="M20 4 10 14" />
+            <path d="M18 13v5a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h5" />
+          </svg>
+          {dict.explore.sourceLink}
+        </a>
+      )}
 
       {recipe.tags.length > 0 && (
         <div className="mt-2 flex flex-wrap gap-1.5">

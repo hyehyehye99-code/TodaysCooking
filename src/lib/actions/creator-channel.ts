@@ -85,7 +85,9 @@ export async function adminAddRecipeFromChannelVideo(
     subtitle: content.subtitle ?? "",
     iconEmoji: "",
     coverPhotoUrl: content.thumbnailUrl ?? "",
-    tags: content.tags,
+    // Tags are picked by the admin, not the AI — left empty for the same
+    // reason as the manual "AI 자동 작성" flow.
+    tags: [],
     notes: content.instructions,
     ingredients: content.ingredients,
     sourceUrl: video.url,

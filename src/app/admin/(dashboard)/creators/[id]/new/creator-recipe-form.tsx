@@ -85,10 +85,8 @@ export function CreatorRecipeForm({
       if (result.thumbnailUrl && !coverPhotoUrl) setCoverPhotoUrl(result.thumbnailUrl);
       if (result.instructions) setNotes(result.instructions);
       if (result.ingredients.length > 0) setIngredients(result.ingredients);
-      if (result.tags.length > 0) {
-        setTags(result.tags);
-        setTagPickerKey((k) => k + 1);
-      }
+      // Tags are picked by the admin, not the AI — its guesses were noisy
+      // enough that leaving them out and picking manually was preferred.
     });
   }
 
