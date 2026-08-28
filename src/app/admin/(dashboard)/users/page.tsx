@@ -16,7 +16,15 @@ export default async function AdminUsersPage() {
 
   return (
     <div>
-      <h1 className="mb-6 text-xl font-bold">전체 유저 ({users.length}명)</h1>
+      <div className="mb-6 flex items-center justify-between">
+        <h1 className="text-xl font-bold">사용자 리스트 ({users.length}명)</h1>
+        <a
+          href="/admin/users/export"
+          className="rounded-xl border border-accent bg-white px-3.5 py-2.5 text-xs font-bold text-accent-ink"
+        >
+          ⬇ 엑셀로 내보내기
+        </a>
+      </div>
 
       <div className="overflow-x-auto rounded-xl border border-border bg-white">
         <table className="w-full min-w-[560px] border-collapse text-sm">

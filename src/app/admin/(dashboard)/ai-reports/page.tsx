@@ -28,7 +28,15 @@ export default async function AdminAiReportsPage() {
 
   return (
     <div>
-      <h1 className="mb-1 text-xl font-bold">AI 결과 신고</h1>
+      <div className="mb-1 flex items-center justify-between">
+        <h1 className="text-xl font-bold">AI 기능 오류 사항 문의 관리</h1>
+        <a
+          href="/admin/ai-reports/export"
+          className="rounded-xl border border-accent bg-white px-3.5 py-2.5 text-xs font-bold text-accent-ink"
+        >
+          ⬇ 엑셀로 내보내기
+        </a>
+      </div>
       <p className="mb-6 text-sm text-ink-soft">
         AI 자동 작성 결과가 별로였다고 신고된 항목이에요. 실제로 잘못됐으면 &ldquo;횟수 환불하고 삭제&rdquo;로
         신고자의 이번 주기 사용 횟수를 되돌려줄 수 있어요.

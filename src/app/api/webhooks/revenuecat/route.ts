@@ -26,9 +26,9 @@ export async function POST(request: NextRequest) {
   const householdId: string = event.app_user_id;
   const productId: string | null = event.product_id ?? null;
   const expiresAt = event.expiration_at_ms ? new Date(event.expiration_at_ms).toISOString() : null;
+  const supabase = createAdminClient();
 
   if (ACTIVATING_EVENTS.has(event.type)) {
-    const supabase = createAdminClient();
     await supabase.from("household_subscriptions").upsert({
       household_id: householdId,
       active: true,
@@ -37,13 +37,28 @@ export async function POST(request: NextRequest) {
       updated_at: new Date().toISOString(),
     });
   } else if (DEACTIVATING_EVENTS.has(event.type)) {
-    const supabase = createAdminClient();
     await supabase.from("household_subscriptions").upsert({
       household_id: householdId,
       active: false,
       product_id: productId,
       expires_at: expiresAt,
       updated_at: new Date().toISOString(),
+    });
+  }
+
+  // 수익 관리 reads this — recorded for every event type (not just the
+  // entitlement-affecting ones above), since a RENEWAL is exactly the
+  // moment real revenue happens even though it doesn't change `active`.
+  // price/currency are only present on purchase/renewal-type events;
+  // RevenueCat omits them on things like EXPIRATION.
+  if (typeof event.price === "number") {
+    await supabase.from("subscription_events").insert({
+      household_id: householdId,
+      event_type: event.type,
+      product_id: productId,
+      price: event.price,
+      currency: typeof event.currency === "string" ? event.currency : null,
+      occurred_at: event.event_timestamp_ms ? new Date(event.event_timestamp_ms).toISOString() : new Date().toISOString(),
     });
   }
 

@@ -52,7 +52,15 @@ export default async function AdminInquiriesPage() {
 
   return (
     <div>
-      <h1 className="mb-6 text-xl font-bold">문의 관리</h1>
+      <div className="mb-6 flex items-center justify-between">
+        <h1 className="text-xl font-bold">문의 관리</h1>
+        <a
+          href="/admin/inquiries/export"
+          className="rounded-xl border border-accent bg-white px-3.5 py-2.5 text-xs font-bold text-accent-ink"
+        >
+          ⬇ 엑셀로 내보내기
+        </a>
+      </div>
 
       <p className="mb-2 text-sm font-bold">확인중 ({open.length})</p>
       {open.length === 0 ? (

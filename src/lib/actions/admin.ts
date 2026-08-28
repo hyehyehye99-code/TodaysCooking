@@ -5,7 +5,6 @@ import { redirect } from "next/navigation";
 import * as XLSX from "xlsx";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { checkAdminCredentials, setAdminSession, clearAdminSession, isAdminAuthenticated } from "@/lib/admin-auth";
-import { adminGenerateRecipeFromLink } from "@/lib/actions/ai-recipe";
 
 async function requireAdmin() {
   if (!(await isAdminAuthenticated())) redirect("/admin/login");
@@ -207,25 +206,74 @@ const IMPORT_HEADERS = {
   iconEmoji: "아이콘이모지",
 } as const;
 
-export async function importCreatorRecipesFromExcel(formData: FormData): Promise<
-  | { error: string }
-  | { ok: true; creatorsCreated: number; recipesCreated: number; errors: string[] }
-> {
+export type ImportPreviewRow = {
+  creatorName: string;
+  channelType: string;
+  channelName: string;
+  channelLink: string;
+  creatorTags: string;
+  title: string;
+  link: string;
+  subtitle: string;
+  ingredients: string;
+  notes: string;
+  tags: string;
+  coverPhotoUrl: string;
+  iconEmoji: string;
+};
+
+// Step 1 of the import flow: just read the file into a reviewable table —
+// no DB writes, no AI calls yet. The admin reviews it, optionally runs
+// "AI 생성" (client-side, row by row, via adminGenerateRecipeFromLink) to
+// fill in rows that only have a link, then calls commitImportRows below
+// once they're happy with what's about to be created.
+export async function parseExcelForPreview(
+  formData: FormData
+): Promise<{ error: string } | { ok: true; rows: ImportPreviewRow[] }> {
   await requireAdmin();
 
   const file = formData.get("file");
   if (!(file instanceof File)) return { error: "파일을 선택해주세요." };
 
-  let rows: Record<string, unknown>[];
+  let raw: Record<string, unknown>[];
   try {
     const buf = await file.arrayBuffer();
     const workbook = XLSX.read(buf, { type: "array" });
     const sheet = workbook.Sheets[workbook.SheetNames[0]];
-    rows = XLSX.utils.sheet_to_json(sheet, { defval: "" });
+    raw = XLSX.utils.sheet_to_json(sheet, { defval: "" });
   } catch {
     return { error: "엑셀 파일을 읽지 못했어요. 템플릿 형식을 확인해주세요." };
   }
-  if (rows.length === 0) return { error: "입력된 행이 없어요." };
+  if (raw.length === 0) return { error: "입력된 행이 없어요." };
+
+  const rows: ImportPreviewRow[] = raw.map((r) => {
+    const get = (key: keyof typeof IMPORT_HEADERS) => String(r[IMPORT_HEADERS[key]] ?? "").trim();
+    return {
+      creatorName: get("creatorName"),
+      channelType: get("channelType"),
+      channelName: get("channelName"),
+      channelLink: get("channelLink"),
+      creatorTags: get("creatorTags"),
+      title: get("title"),
+      link: get("link"),
+      subtitle: get("subtitle"),
+      ingredients: get("ingredients"),
+      notes: get("notes"),
+      tags: get("tags"),
+      coverPhotoUrl: get("coverPhotoUrl"),
+      iconEmoji: get("iconEmoji"),
+    };
+  });
+  return { ok: true, rows };
+}
+
+// Step 2: the reviewed (and possibly AI-filled) rows actually get written.
+export async function commitImportRows(rows: ImportPreviewRow[]): Promise<
+  | { error: string }
+  | { ok: true; creatorsCreated: number; recipesCreated: number; errors: string[] }
+> {
+  await requireAdmin();
+  if (rows.length === 0) return { error: "등록할 행이 없어요." };
 
   const supabase = createAdminClient();
   const { data: existing } = await supabase.from("creators").select("id, name");
@@ -235,116 +283,78 @@ export async function importCreatorRecipesFromExcel(formData: FormData): Promise
   let recipesCreated = 0;
   const errors: string[] = [];
 
-  for (let i = 0; i < rows.length; i++) {
-    const raw = rows[i];
-    const rowNum = i + 2; // row 1 is the header
-    const get = (key: keyof typeof IMPORT_HEADERS) => String(raw[IMPORT_HEADERS[key]] ?? "").trim();
+  async function ensureCreator(row: ImportPreviewRow, creatorName: string): Promise<string | null> {
+    const cached = creatorIdByName.get(creatorName);
+    if (cached) return cached;
+    const { data: newCreator, error } = await supabase
+      .from("creators")
+      .insert({
+        name: creatorName,
+        channel_type: row.channelType.trim() || null,
+        channel_name: row.channelName.trim() || null,
+        channel_link: row.channelLink.trim() || null,
+        tags: splitTags(row.creatorTags),
+      })
+      .select("id")
+      .single();
+    if (error || !newCreator) return null;
+    creatorIdByName.set(creatorName, newCreator.id as string);
+    creatorsCreated++;
+    return newCreator.id as string;
+  }
 
-    const creatorName = get("creatorName");
+  for (let i = 0; i < rows.length; i++) {
+    const row = rows[i];
+    const rowNum = i + 1;
+    const creatorName = row.creatorName.trim();
     if (!creatorName) {
-      errors.push(`${rowNum}행: 크리에이터이름이 비어있어요.`);
+      errors.push(`${rowNum}번째 행: 크리에이터이름이 비어있어요.`);
       continue;
     }
 
-    let title = get("title");
-    const link = get("link");
+    const title = row.title.trim();
 
     // No title and no link: nothing to make a recipe out of. If it's also
     // the only thing in the row, treat it as "just register this creator"
     // rather than an error — that's the whole point of a creator-only row.
-    if (!title && !link) {
-      if (!creatorIdByName.has(creatorName)) {
-        const { data: newCreator, error } = await supabase
-          .from("creators")
-          .insert({
-            name: creatorName,
-            channel_type: get("channelType") || null,
-            channel_name: get("channelName") || null,
-            channel_link: get("channelLink") || null,
-            tags: splitTags(get("creatorTags")),
-          })
-          .select("id")
-          .single();
-        if (error || !newCreator) {
-          errors.push(`${rowNum}행: 크리에이터 "${creatorName}" 생성에 실패했어요.`);
-          continue;
-        }
-        creatorIdByName.set(creatorName, newCreator.id as string);
-        creatorsCreated++;
+    if (!title && !row.link.trim()) {
+      if (!(await ensureCreator(row, creatorName))) {
+        errors.push(`${rowNum}번째 행: 크리에이터 "${creatorName}" 생성에 실패했어요.`);
       }
       continue;
-    }
-
-    let subtitle = get("subtitle");
-    let notes = get("notes");
-    let tags = splitTags(get("tags"));
-    let coverPhotoUrl = get("coverPhotoUrl");
-    let ingredients = parseIngredientsCell(get("ingredients"));
-
-    // A link plus any of title/ingredients/notes still blank means AI
-    // should fill the gaps — explicit cells always win over the AI result.
-    if (link && (!title || ingredients.length === 0 || !notes)) {
-      const ai = await adminGenerateRecipeFromLink(link);
-      if (ai.ok) {
-        title = title || ai.title || "";
-        subtitle = subtitle || ai.subtitle || "";
-        notes = notes || ai.instructions;
-        if (ingredients.length === 0) ingredients = ai.ingredients;
-        if (tags.length === 0) tags = ai.tags;
-        if (!coverPhotoUrl && ai.thumbnailUrl) coverPhotoUrl = ai.thumbnailUrl;
-      } else if (!title) {
-        errors.push(`${rowNum}행: 링크에서 자동으로 채우지 못했어요 (${ai.error}).`);
-        continue;
-      } else {
-        errors.push(`${rowNum}행 (${title}): 링크 자동 채우기는 실패해서 입력된 내용만으로 등록했어요.`);
-      }
     }
 
     if (!title) {
-      errors.push(`${rowNum}행: 레시피제목이나 링크 중 하나는 필요해요.`);
+      errors.push(`${rowNum}번째 행: 레시피제목이 비어있어요. AI 생성을 먼저 실행해주세요.`);
       continue;
     }
 
-    let creatorId = creatorIdByName.get(creatorName);
+    const creatorId = await ensureCreator(row, creatorName);
     if (!creatorId) {
-      const { data: newCreator, error } = await supabase
-        .from("creators")
-        .insert({
-          name: creatorName,
-          channel_type: get("channelType") || null,
-          channel_name: get("channelName") || null,
-          channel_link: get("channelLink") || null,
-          tags: splitTags(get("creatorTags")),
-        })
-        .select("id")
-        .single();
-      if (error || !newCreator) {
-        errors.push(`${rowNum}행: 크리에이터 "${creatorName}" 생성에 실패했어요.`);
-        continue;
-      }
-      creatorId = newCreator.id as string;
-      creatorIdByName.set(creatorName, creatorId);
-      creatorsCreated++;
+      errors.push(`${rowNum}번째 행: 크리에이터 "${creatorName}" 생성에 실패했어요.`);
+      continue;
     }
 
+    const coverPhotoUrl = row.coverPhotoUrl.trim();
     const { data: recipe, error: recipeError } = await supabase
       .from("creator_recipes")
       .insert({
         creator_id: creatorId,
         title,
-        subtitle: subtitle || null,
-        icon_emoji: get("iconEmoji") || null,
+        subtitle: row.subtitle.trim() || null,
+        icon_emoji: row.iconEmoji.trim() || null,
         cover_photo_urls: coverPhotoUrl ? [coverPhotoUrl] : [],
-        tags,
-        notes: notes || null,
+        tags: splitTags(row.tags),
+        notes: row.notes.trim() || null,
       })
       .select("id")
       .single();
     if (recipeError || !recipe) {
-      errors.push(`${rowNum}행 (${title}): 레시피 추가에 실패했어요.`);
+      errors.push(`${rowNum}번째 행 (${title}): 레시피 추가에 실패했어요.`);
       continue;
     }
 
+    const ingredients = parseIngredientsCell(row.ingredients);
     if (ingredients.length > 0) {
       await supabase.from("creator_recipe_ingredients").insert(
         ingredients.map((ing, idx) => ({
@@ -359,6 +369,7 @@ export async function importCreatorRecipesFromExcel(formData: FormData): Promise
   }
 
   revalidatePath("/admin/creators");
+  revalidatePath("/admin/creator-recipes");
   return { ok: true, creatorsCreated, recipesCreated, errors };
 }
 
@@ -478,4 +489,40 @@ export async function resolveAiReport(
 
   revalidatePath("/admin/ai-reports");
   return { ok: true };
+}
+
+export async function createExpense(
+  _prevState: { error: string } | null,
+  formData: FormData
+): Promise<{ error: string } | null> {
+  await requireAdmin();
+
+  const category = String(formData.get("category") ?? "").trim();
+  const amountRaw = String(formData.get("amount") ?? "").trim();
+  const amount = Number(amountRaw);
+  const spentAt = String(formData.get("spentAt") ?? "").trim();
+  const memo = String(formData.get("memo") ?? "").trim();
+
+  if (!category) return { error: "카테고리를 입력해주세요." };
+  if (!amountRaw || Number.isNaN(amount) || amount <= 0) return { error: "금액을 올바르게 입력해주세요." };
+  if (!spentAt) return { error: "날짜를 선택해주세요." };
+
+  const supabase = createAdminClient();
+  const { error } = await supabase.from("expenses").insert({
+    category,
+    amount,
+    spent_at: spentAt,
+    memo: memo || null,
+  });
+  if (error) return { error: "지출 등록에 실패했어요." };
+
+  revalidatePath("/admin/expenses");
+  return null;
+}
+
+export async function deleteExpense(expenseId: string) {
+  await requireAdmin();
+  const supabase = createAdminClient();
+  await supabase.from("expenses").delete().eq("id", expenseId);
+  revalidatePath("/admin/expenses");
 }

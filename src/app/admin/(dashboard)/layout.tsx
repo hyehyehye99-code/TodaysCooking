@@ -27,7 +27,7 @@ export default async function AdminDashboardLayout({ children }: { children: Rea
         }}
       />
       <main className="flex-1 px-8 py-8">
-        <div className="mx-auto w-full max-w-[880px]">{children}</div>
+        <div className="mx-auto w-full max-w-[1040px]">{children}</div>
       </main>
     </div>
   );

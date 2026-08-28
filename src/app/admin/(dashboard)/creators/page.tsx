@@ -18,10 +18,15 @@ export default async function AdminCreatorsPage() {
   return (
     <div>
       <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-xl font-bold">크리에이터 관리</h1>
-        <Link href="/admin/import" className="text-xs font-bold text-accent-ink">
-          엑셀로 가져오기
-        </Link>
+        <h1 className="text-xl font-bold">크리에이터 관리 리스트</h1>
+        <div className="flex items-center gap-4">
+          <Link href="/admin/import" className="text-xs font-bold text-accent-ink">
+            엑셀로 가져오기
+          </Link>
+          <Link href="/admin/creators/export" className="text-xs font-bold text-accent-ink">
+            ⬇ 엑셀로 내보내기
+          </Link>
+        </div>
       </div>
 
       <div className="mb-8 rounded-2xl border border-border bg-white p-4">
