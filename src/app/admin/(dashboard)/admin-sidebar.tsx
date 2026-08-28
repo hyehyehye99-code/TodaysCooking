@@ -87,7 +87,7 @@ const REVENUE_ICON = (
 // is optional and looks itself up in the `badges` prop passed from the
 // layout.
 const NAV_GROUPS: NavGroup[] = [
-  { items: [{ label: "홈", href: "/admin", icon: HOME_ICON }] },
+  { items: [{ label: "대시보드", href: "/admin", icon: HOME_ICON }] },
   {
     items: [
       { label: "문의 관리", href: "/admin/inquiries", icon: INQUIRY_ICON, badgeKey: "inquiries" },

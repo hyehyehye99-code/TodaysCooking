@@ -2,8 +2,17 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { DeleteRecipeButton } from "./delete-recipe-button";
+import { CreatorHeader } from "./creator-header";
 
-type Creator = { id: string; name: string; icon_emoji: string | null; channel_type: string | null };
+type Creator = {
+  id: string;
+  name: string;
+  icon_emoji: string | null;
+  channel_type: string | null;
+  channel_name: string | null;
+  channel_link: string | null;
+  tags: string[];
+};
 type CreatorRecipe = { id: string; title: string; subtitle: string | null; icon_emoji: string | null; tags: string[] };
 
 export default async function AdminCreatorDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -11,7 +20,11 @@ export default async function AdminCreatorDetailPage({ params }: { params: Promi
 
   const supabase = createAdminClient();
   const [{ data: creator }, { data: recipes }] = await Promise.all([
-    supabase.from("creators").select("id, name, icon_emoji, channel_type").eq("id", id).maybeSingle(),
+    supabase
+      .from("creators")
+      .select("id, name, icon_emoji, channel_type, channel_name, channel_link, tags")
+      .eq("id", id)
+      .maybeSingle(),
     supabase
       .from("creator_recipes")
       .select("id, title, subtitle, icon_emoji, tags")
@@ -30,15 +43,7 @@ export default async function AdminCreatorDetailPage({ params }: { params: Promi
         </Link>
       </div>
 
-      <div className="mb-6 flex items-center gap-3">
-        <span className="text-2xl">{(creator as Creator).icon_emoji ?? "👤"}</span>
-        <div>
-          <h1 className="text-xl font-bold">{(creator as Creator).name}</h1>
-          {(creator as Creator).channel_type && (
-            <p className="text-xs text-ink-soft">{(creator as Creator).channel_type}</p>
-          )}
-        </div>
-      </div>
+      <CreatorHeader creator={creator as Creator} recipeCount={list.length} />
 
       <div className="mb-6 flex gap-2">
         <Link

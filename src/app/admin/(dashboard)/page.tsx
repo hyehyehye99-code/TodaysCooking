@@ -26,7 +26,7 @@ export default async function AdminHomePage() {
 
   return (
     <div>
-      <h1 className="mb-1 text-xl font-bold">홈</h1>
+      <h1 className="mb-1 text-xl font-bold">대시보드</h1>
       <p className="mb-6 text-sm text-ink-soft">우리집 레시피 관리자 대시보드예요.</p>
 
       <div className="mb-3 grid grid-cols-3 gap-3">
@@ -45,13 +45,10 @@ export default async function AdminHomePage() {
       </div>
 
       <div className="mb-8 grid grid-cols-3 gap-3">
-        <Link
-          href="/admin/applications"
-          className="rounded-2xl bg-gradient-to-br from-accent to-accent-ink p-5 text-white"
-        >
-          <p className="text-xs font-semibold text-white/80">대기중인 지원서</p>
+        <Link href="/admin/applications" className="rounded-2xl border border-border bg-white p-5">
+          <p className="text-xs font-semibold text-ink-soft">대기중인 지원서</p>
           <p className="mt-2 text-2xl font-bold">{pendingApplications ?? 0}건</p>
-          <p className="mt-1 text-[11px] font-semibold text-white/80">확인하러 가기 →</p>
+          <p className="mt-1 text-[11px] font-semibold text-accent-ink">확인하러 가기 →</p>
         </Link>
         <Link href="/admin/inquiries" className="rounded-2xl border border-border bg-white p-5">
           <p className="text-xs font-semibold text-ink-soft">확인중인 문의</p>

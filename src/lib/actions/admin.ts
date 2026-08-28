@@ -64,6 +64,51 @@ export async function createCreator(
   redirect(`/admin/creators/${data.id}`);
 }
 
+export async function updateCreator(
+  creatorId: string,
+  _prevState: { error: string } | null,
+  formData: FormData
+): Promise<{ error: string } | null> {
+  await requireAdmin();
+
+  const name = String(formData.get("name") ?? "").trim();
+  if (!name) return { error: "크리에이터 이름을 입력해주세요." };
+  const channelType = String(formData.get("channelType") ?? "").trim() || null;
+  const channelName = String(formData.get("channelName") ?? "").trim() || null;
+  const channelLink = String(formData.get("channelLink") ?? "").trim() || null;
+  const iconEmoji = String(formData.get("iconEmoji") ?? "").trim() || null;
+  const tags = String(formData.get("tags") ?? "")
+    .split(",")
+    .map((t) => t.trim())
+    .filter(Boolean);
+
+  const supabase = createAdminClient();
+  const { error } = await supabase
+    .from("creators")
+    .update({
+      name,
+      channel_type: channelType,
+      channel_name: channelName,
+      channel_link: channelLink,
+      icon_emoji: iconEmoji,
+      tags,
+    })
+    .eq("id", creatorId);
+  if (error) return { error: "크리에이터 수정에 실패했어요." };
+
+  revalidatePath(`/admin/creators/${creatorId}`);
+  revalidatePath("/admin/creators");
+  redirect(`/admin/creators/${creatorId}`);
+}
+
+export async function deleteCreator(creatorId: string) {
+  await requireAdmin();
+  const supabase = createAdminClient();
+  await supabase.from("creators").delete().eq("id", creatorId);
+  revalidatePath("/admin/creators");
+  redirect("/admin/creators");
+}
+
 export type CreatorRecipeInput = {
   creatorId: string;
   title: string;
