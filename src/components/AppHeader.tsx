@@ -29,9 +29,11 @@ export function AppHeader({
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
 
-  if (pathname.startsWith("/mypage") || pathname.startsWith("/recipes/")) return null;
+  if (pathname.startsWith("/mypage") || pathname.startsWith("/recipes/") || pathname.startsWith("/explore/"))
+    return null;
 
   const isRecipesTab = pathname === "/recipes";
+  const isExploreTab = pathname === "/explore";
   const tabTitleKey = TAB_TITLE_KEYS[pathname];
   const tabTitle = tabTitleKey ? dict.tabBar[tabTitleKey] : "";
 
@@ -115,7 +117,7 @@ export function AppHeader({
 
   return (
     <div className="mb-3">
-      <div className="mb-1">{householdSwitcher}</div>
+      {!isExploreTab && <div className="mb-1">{householdSwitcher}</div>}
 
       <div className="flex items-baseline justify-between gap-3">
         <h1 className="text-[26px] font-bold tracking-tight">{tabTitle}</h1>

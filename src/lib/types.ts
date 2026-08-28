@@ -14,6 +14,7 @@ export type Recipe = {
   position: number | null;
   is_favorite: boolean;
   hide_ingredients: boolean;
+  is_public: boolean;
   created_by: string;
   created_at: string;
 };

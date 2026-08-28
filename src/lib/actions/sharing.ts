@@ -3,36 +3,6 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 
-export async function setHouseholdSharing(
-  householdId: string,
-  enabled: boolean
-): Promise<{ ok: true; shareCode: string | null } | { ok: false; error: string }> {
-  const supabase = await createClient();
-  const { data, error } = await supabase.rpc("set_household_share_enabled", {
-    target_household_id: householdId,
-    enabled,
-  });
-  if (error) return { ok: false, error: "공유 설정을 변경하지 못했어요." };
-
-  revalidatePath("/mypage");
-  return { ok: true, shareCode: (data as string | null) ?? null };
-}
-
-export async function setHouseholdShareTags(
-  householdId: string,
-  tags: string[]
-): Promise<{ ok: true } | { ok: false; error: string }> {
-  const supabase = await createClient();
-  const { error } = await supabase.rpc("set_household_share_tags", {
-    target_household_id: householdId,
-    new_tags: tags,
-  });
-  if (error) return { ok: false, error: "공유 범위를 저장하지 못했어요." };
-
-  revalidatePath("/mypage");
-  return { ok: true };
-}
-
 export async function ensureRecipeShareCode(
   recipeId: string
 ): Promise<{ ok: true; shareCode: string } | { ok: false; error: string }> {

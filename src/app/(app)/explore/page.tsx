@@ -1,16 +1,37 @@
-import { getDictionary } from "@/lib/i18n/server";
+import { createClient } from "@/lib/supabase/server";
+import { ExploreView } from "./explore-view";
+
+export type ExploreCreator = {
+  id: string;
+  name: string;
+  icon_emoji: string | null;
+  avatar_url: string | null;
+  recipe_count: number;
+};
+
+export type ExplorePublicRecipe = {
+  id: string;
+  title: string | null;
+  subtitle: string | null;
+  cover_photo_urls: string[];
+  icon_emoji: string | null;
+  tags: string[];
+  creator_name: string;
+  creator_icon_emoji: string | null;
+};
 
 export default async function ExplorePage() {
-  const { dict } = await getDictionary();
+  const supabase = await createClient();
+
+  const [{ data: creators }, { data: publicRecipes }] = await Promise.all([
+    supabase.rpc("list_creators"),
+    supabase.rpc("list_public_recipes"),
+  ]);
 
   return (
-    <div className="flex h-[60dvh] flex-col items-center justify-center text-center">
-      <svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="var(--color-ink-faint)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-        <circle cx="10.5" cy="10.5" r="6.5" />
-        <path d="M20.5 20.5l-5-5" />
-      </svg>
-      <p className="mt-4 text-lg font-bold">{dict.explore.comingSoonTitle}</p>
-      <p className="mt-2 text-sm text-ink-soft">{dict.explore.comingSoonDesc}</p>
-    </div>
+    <ExploreView
+      creators={(creators as ExploreCreator[] | null) ?? []}
+      publicRecipes={(publicRecipes as ExplorePublicRecipe[] | null) ?? []}
+    />
   );
 }

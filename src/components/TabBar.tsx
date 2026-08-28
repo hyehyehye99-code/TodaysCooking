@@ -92,7 +92,8 @@ export function TabBar() {
   const pathname = usePathname();
   const dict = useDict();
 
-  const isSubpage = pathname.startsWith("/recipes/") || pathname.startsWith("/mypage/");
+  const isSubpage =
+    pathname.startsWith("/recipes/") || pathname.startsWith("/mypage/") || pathname.startsWith("/explore/");
 
   if (isSubpage) return null;
 
