@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { isAdminAuthenticated } from "@/lib/admin-auth";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { AdminNav } from "./admin-nav";
+import { AdminSidebar } from "./admin-sidebar";
 
 // Auth is checked once here for every page under this group instead of
 // each page repeating the same redirect — the Server Actions in
@@ -17,9 +17,11 @@ export default async function AdminDashboardLayout({ children }: { children: Rea
     .eq("status", "pending");
 
   return (
-    <div>
-      <AdminNav pendingApplicationCount={count ?? 0} />
-      <div className="mt-6">{children}</div>
+    <div className="flex min-h-dvh">
+      <AdminSidebar pendingApplicationCount={count ?? 0} />
+      <main className="flex-1 px-8 py-8">
+        <div className="mx-auto w-full max-w-[880px]">{children}</div>
+      </main>
     </div>
   );
 }
