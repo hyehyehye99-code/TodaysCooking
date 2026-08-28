@@ -13,7 +13,10 @@ import type { ExploreCreator, ExploreFeedItem } from "./page";
 // waterfall RecipeThumb already uses elsewhere.
 function ExploreFeedRow({ item, dict }: { item: ExploreFeedItem | ExploreSearchResult; dict: ReturnType<typeof useDict> }) {
   return (
-    <Link href={`/explore/recipe/${item.source}/${item.id}`} className="flex items-center gap-3 px-4 py-3.5">
+    <Link
+      href={`/explore/recipe/${item.source}/${item.id}`}
+      className="flex items-center gap-3 rounded-lg border border-border bg-white px-4 py-3.5"
+    >
       <RecipeThumb coverPhotoUrl={item.cover_photo_urls[0]} iconEmoji={item.icon_emoji} rounded="rounded-lg" />
       <div className="min-w-0 flex-1">
         <p className="truncate text-[15px] font-bold">{item.title || dict.recipes.untitledLink}</p>
@@ -31,21 +34,13 @@ function ExploreFeedRow({ item, dict }: { item: ExploreFeedItem | ExploreSearchR
           </div>
         )}
       </div>
-      <span className="flex shrink-0 items-center gap-1 text-[11px] font-bold text-accent-ink">
-        <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-          <path d="M12 3v12" />
-          <path d="M7 10l5 5 5-5" />
-          <path d="M5 19h14" />
-        </svg>
-        {item.add_count}
-      </span>
     </Link>
   );
 }
 
 function ExploreFeedList({ items, dict }: { items: (ExploreFeedItem | ExploreSearchResult)[]; dict: ReturnType<typeof useDict> }) {
   return (
-    <div className="divide-y divide-border overflow-hidden rounded-lg border border-border bg-white">
+    <div className="flex flex-col gap-2">
       {items.map((item) => (
         <ExploreFeedRow key={`${item.source}-${item.id}`} item={item} dict={dict} />
       ))}
@@ -55,7 +50,10 @@ function ExploreFeedList({ items, dict }: { items: (ExploreFeedItem | ExploreSea
 
 function ExploreCreatorRow({ creator, dict }: { creator: ExploreCreator; dict: ReturnType<typeof useDict> }) {
   return (
-    <Link href={`/explore/creator/${creator.id}`} className="flex items-center gap-3 px-4 py-3.5">
+    <Link
+      href={`/explore/creator/${creator.id}`}
+      className="flex items-center gap-3 rounded-lg border border-border bg-white px-4 py-3.5"
+    >
       <RecipeThumb coverPhotoUrl={creator.avatar_url} iconEmoji={creator.icon_emoji ?? "👤"} rounded="rounded-lg" />
       <div className="min-w-0 flex-1">
         <p className="truncate text-[15px] font-bold">{creator.name}</p>
@@ -243,7 +241,7 @@ export function ExploreView({
               {creators.length === 0 ? dict.explore.comingSoonDesc : dict.explore.noResults}
             </p>
           ) : (
-            <div className="divide-y divide-border overflow-hidden rounded-lg border border-border bg-white">
+            <div className="flex flex-col gap-2">
               {visibleCreators.map((c) => (
                 <ExploreCreatorRow key={c.id} creator={c} dict={dict} />
               ))}
