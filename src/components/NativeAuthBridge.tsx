@@ -30,6 +30,17 @@ export function NativeAuthBridge() {
     // network round trip instead of silently swallowing an error each time.
     let lastCode: string | null = null;
     const listener = App.addListener("appUrlOpen", async ({ url }) => {
+      // The iOS Share Extension (ios/App/ShareExtension) hands off a shared
+      // link this way: it puts the URL on the general pasteboard and opens
+      // com.hyeji.ourmenu://share-recipe to bring the app to the front. The
+      // new-recipe screen already offers to use whatever link is on the
+      // clipboard (see useClipboardLinkSuggestion.ts), so there's nothing
+      // else to read off this URL itself.
+      if (url.includes("share-recipe")) {
+        router.replace("/recipes/new");
+        return;
+      }
+
       if (!url.includes("auth/callback")) return;
       await Browser.close().catch(() => {});
       const code = new URL(url).searchParams.get("code");
