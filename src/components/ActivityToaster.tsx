@@ -4,28 +4,32 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
-type ToastNotification = {
+type ActivityToast = {
   id: string;
   title: string;
   body: string;
   url: string | null;
+  actor_user_id: string;
 };
 
 const AUTO_DISMISS_MS = 5000;
 
-export function NotificationToaster({ userId }: { userId: string }) {
-  const [toasts, setToasts] = useState<ToastNotification[]>([]);
+export function ActivityToaster({ userId, householdId }: { userId: string; householdId: string }) {
+  const [toasts, setToasts] = useState<ActivityToast[]>([]);
   const router = useRouter();
 
   useEffect(() => {
     const supabase = createClient();
     const channel = supabase
-      .channel(`notifications:${userId}`)
+      .channel(`household_activity:${householdId}`)
       .on(
         "postgres_changes",
-        { event: "INSERT", schema: "public", table: "notifications", filter: `user_id=eq.${userId}` },
+        { event: "INSERT", schema: "public", table: "household_activity", filter: `household_id=eq.${householdId}` },
         (payload) => {
-          const row = payload.new as ToastNotification;
+          const row = payload.new as ActivityToast;
+          // Don't pop a toast for your own action — you already just saw
+          // the result of doing it.
+          if (row.actor_user_id === userId) return;
           setToasts((prev) => [...prev, row]);
           setTimeout(() => {
             setToasts((prev) => prev.filter((t) => t.id !== row.id));
@@ -37,13 +41,13 @@ export function NotificationToaster({ userId }: { userId: string }) {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [userId]);
+  }, [userId, householdId]);
 
   function dismiss(id: string) {
     setToasts((prev) => prev.filter((t) => t.id !== id));
   }
 
-  function handleClick(toast: ToastNotification) {
+  function handleClick(toast: ActivityToast) {
     dismiss(toast.id);
     if (toast.url) router.push(toast.url);
   }

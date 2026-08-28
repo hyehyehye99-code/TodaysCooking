@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, useTransition } from "react";
+import { useMemo, useRef, useState, useTransition } from "react";
 import Link from "next/link";
 import { ClearableInput } from "@/components/ClearableInput";
 import { searchExploreRecipes, type ExploreSearchResult } from "@/lib/actions/explore";
@@ -81,9 +81,13 @@ export function ExploreView({
   const dict = useDict();
   const [tab, setTab] = useState<"all" | "creators">("all");
   const [query, setQuery] = useState("");
+  const [activeTag, setActiveTag] = useState<string | null>(null);
   const [results, setResults] = useState<ExploreSearchResult[] | null>(null);
   const [pending, startTransition] = useTransition();
   const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const allTags = useMemo(() => [...new Set(feed.flatMap((item) => item.tags))], [feed]);
+  const visibleFeed = activeTag ? feed.filter((item) => item.tags.includes(activeTag)) : feed;
 
   function handleQueryChange(value: string) {
     setQuery(value);
@@ -101,7 +105,28 @@ export function ExploreView({
 
   return (
     <div>
-      <div className="mb-5">
+      <div className="mb-5 flex items-center justify-center gap-8 border-b border-border">
+        <button
+          type="button"
+          onClick={() => setTab("all")}
+          className={`border-b-2 pb-2.5 text-sm ${
+            tab === "all" ? "border-ink font-bold text-ink" : "border-transparent font-semibold text-ink-faint"
+          }`}
+        >
+          {dict.explore.tabAll}
+        </button>
+        <button
+          type="button"
+          onClick={() => setTab("creators")}
+          className={`border-b-2 pb-2.5 text-sm ${
+            tab === "creators" ? "border-ink font-bold text-ink" : "border-transparent font-semibold text-ink-faint"
+          }`}
+        >
+          {dict.explore.tabCreators}
+        </button>
+      </div>
+
+      <div className="mb-4">
         <ClearableInput
           value={query}
           onChange={(e) => handleQueryChange(e.target.value)}
@@ -119,51 +144,54 @@ export function ExploreView({
             <ExploreFeedList items={results} dict={dict} />
           )}
         </div>
-      ) : (
+      ) : tab === "all" ? (
         <>
-          <div className="mb-4 flex gap-1.5">
-            <button
-              type="button"
-              onClick={() => setTab("all")}
-              className={`rounded-full px-3.5 py-1.5 text-xs font-semibold ${
-                tab === "all" ? "bg-accent text-white" : "bg-surface text-ink-soft"
-              }`}
-            >
-              {dict.explore.tabAll}
-            </button>
-            <button
-              type="button"
-              onClick={() => setTab("creators")}
-              className={`rounded-full px-3.5 py-1.5 text-xs font-semibold ${
-                tab === "creators" ? "bg-accent text-white" : "bg-surface text-ink-soft"
-              }`}
-            >
-              {dict.explore.tabCreators}
-            </button>
-          </div>
-
-          {tab === "all" ? (
-            feed.length === 0 ? (
-              <p className="mt-10 text-center text-sm text-ink-soft">{dict.explore.comingSoonDesc}</p>
-            ) : (
-              <ExploreFeedList items={feed} dict={dict} />
-            )
-          ) : creators.length === 0 ? (
-            <p className="mt-10 text-center text-sm text-ink-soft">{dict.explore.comingSoonDesc}</p>
-          ) : (
-            <div className="grid grid-cols-3 gap-4">
-              {creators.map((c) => (
-                <Link key={c.id} href={`/explore/creator/${c.id}`} className="flex flex-col items-center gap-1.5">
-                  <CreatorAvatar iconEmoji={c.icon_emoji} avatarUrl={c.avatar_url} size={72} />
-                  <span className="max-w-full truncate text-xs font-semibold text-ink-soft">{c.name}</span>
-                  <span className="text-[10px] text-ink-faint">
-                    {dict.explore.recipeCountTemplate.replace("{count}", String(c.recipe_count))}
-                  </span>
-                </Link>
+          {allTags.length > 0 && (
+            <div className="mb-4 flex flex-wrap gap-1.5">
+              <button
+                type="button"
+                onClick={() => setActiveTag(null)}
+                className={`rounded-full px-3 py-1.5 text-xs font-semibold ${
+                  activeTag === null ? "bg-accent text-white" : "bg-surface text-ink-soft"
+                }`}
+              >
+                {dict.recipes.all}
+              </button>
+              {allTags.map((tag) => (
+                <button
+                  key={tag}
+                  type="button"
+                  onClick={() => setActiveTag((prev) => (prev === tag ? null : tag))}
+                  className={`rounded-full px-3 py-1.5 text-xs font-semibold ${
+                    activeTag === tag ? "bg-accent text-white" : "bg-surface text-ink-soft"
+                  }`}
+                >
+                  #{tag}
+                </button>
               ))}
             </div>
           )}
+
+          {visibleFeed.length === 0 ? (
+            <p className="mt-10 text-center text-sm text-ink-soft">{dict.explore.comingSoonDesc}</p>
+          ) : (
+            <ExploreFeedList items={visibleFeed} dict={dict} />
+          )}
         </>
+      ) : creators.length === 0 ? (
+        <p className="mt-10 text-center text-sm text-ink-soft">{dict.explore.comingSoonDesc}</p>
+      ) : (
+        <div className="grid grid-cols-3 gap-4">
+          {creators.map((c) => (
+            <Link key={c.id} href={`/explore/creator/${c.id}`} className="flex flex-col items-center gap-1.5">
+              <CreatorAvatar iconEmoji={c.icon_emoji} avatarUrl={c.avatar_url} size={72} />
+              <span className="max-w-full truncate text-xs font-semibold text-ink-soft">{c.name}</span>
+              <span className="text-[10px] text-ink-faint">
+                {dict.explore.recipeCountTemplate.replace("{count}", String(c.recipe_count))}
+              </span>
+            </Link>
+          ))}
+        </div>
       )}
     </div>
   );

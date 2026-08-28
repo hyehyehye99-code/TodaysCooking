@@ -53,6 +53,12 @@ function cropAndResizeToSquare(file: File): Promise<File> {
   });
 }
 
+function formatLogTimestamp(iso: string) {
+  const d = new Date(iso);
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
 function StarPicker({ value, onChange }: { value: number; onChange: (n: number) => void }) {
   return (
     <div className="flex items-center gap-1">
@@ -101,7 +107,9 @@ export function CookLogSection({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
   const logsWithPhoto = logs.filter((log) => log.photo_url);
-  const logsWithoutPhoto = logs.filter((log) => !log.photo_url);
+  const logsByRecency = [...logs].sort(
+    (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+  );
 
   function close() {
     setOpen(false);
@@ -156,7 +164,7 @@ export function CookLogSection({
         <button
           type="button"
           onClick={() => setOpen(true)}
-          className="rounded-full bg-accent px-3.5 py-2 text-xs font-bold text-white"
+          className="rounded-full border border-accent px-3 py-1.5 text-xs font-bold text-accent-ink"
         >
           {dict.recipes.cookedItButton}
         </button>
@@ -197,18 +205,12 @@ export function CookLogSection({
         </div>
       )}
 
-      {logsWithoutPhoto.length > 0 && (
-        <ul className={logsWithPhoto.length > 0 ? "mt-2.5 space-y-1.5" : "space-y-1.5"}>
-          {logsWithoutPhoto.map((log) => (
-            <li
-              key={log.id}
-              className="flex items-center justify-between gap-2 rounded-xl bg-surface px-3.5 py-2.5 text-sm"
-            >
+      {logsByRecency.length > 0 && (
+        <ul className={logsWithPhoto.length > 0 ? "mt-3 divide-y divide-border" : "divide-y divide-border"}>
+          {logsByRecency.map((log) => (
+            <li key={log.id} className="flex items-center justify-between gap-2 py-2.5 text-sm">
               <span className="text-ink-soft">
-                {dict.recipes.cookLogTextEntry.replace(
-                  "{date}",
-                  new Date(log.cooked_at).toLocaleDateString("ko-KR", { month: "short", day: "numeric" })
-                )}
+                {formatLogTimestamp(log.created_at)}
                 {log.rating ? ` · ★${log.rating}` : ""}
               </span>
               <button

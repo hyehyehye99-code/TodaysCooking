@@ -5,7 +5,6 @@ import { createClient } from "@/lib/supabase/server";
 import { ProfileEditButton } from "./profile-edit-button";
 import { AddHouseholdSection } from "./add-household-section";
 import { HouseholdList } from "./household-list";
-import { getUnreadNotificationCount } from "@/lib/actions/notifications";
 import { getDictionary } from "@/lib/i18n/server";
 
 const CONTACT_URL = "mailto:hyehyehye1919@gmail.com?subject=%EC%9A%B0%EB%A6%AC%EC%A7%91%20%EB%A9%94%EB%89%B4%ED%8C%90%20%EB%AC%B8%EC%9D%98";
@@ -24,10 +23,9 @@ function daysAgoIso(days: number) {
 type Member = { user_id: string; nickname: string; icon_emoji: string | null; role: string; joined_at: string };
 
 export default async function MyPage() {
-  const [{ user, household: current }, households, unreadCount, { dict }] = await Promise.all([
+  const [{ user, household: current }, households, { dict }] = await Promise.all([
     getCurrentHousehold(),
     getMyHouseholds(),
-    getUnreadNotificationCount(),
     getDictionary(),
   ]);
   const supabase = await createClient();
@@ -77,24 +75,7 @@ export default async function MyPage() {
 
   return (
     <div>
-      <PageHeader
-        title={dict.mypage.title}
-        right={
-          <Link
-            href="/mypage/notifications"
-            aria-label="알림"
-            className="relative flex h-9 w-9 items-center justify-center rounded-full bg-surface text-ink-soft"
-          >
-            <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M12 4a5 5 0 0 0-5 5v3.2c0 .6-.2 1.2-.6 1.7L5 16h14l-1.4-2.1a2.8 2.8 0 0 1-.6-1.7V9a5 5 0 0 0-5-5z" />
-              <path d="M9.5 19a2.5 2.5 0 0 0 5 0" />
-            </svg>
-            {unreadCount > 0 && (
-              <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-warn" />
-            )}
-          </Link>
-        }
-      />
+      <PageHeader title={dict.mypage.title} />
 
       <GlassCard className="mb-8 bg-white p-4">
         <ProfileEditButton nickname={myNickname} iconEmoji={myIconEmoji} />
@@ -180,6 +161,15 @@ export default async function MyPage() {
             className="flex items-center justify-between px-4 py-4 text-sm font-semibold text-ink"
           >
             {dict.mypage.tagManagement}
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--color-ink-faint)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M9 6l6 6-6 6" />
+            </svg>
+          </Link>
+          <Link
+            href="/mypage/activity"
+            className="flex items-center justify-between px-4 py-4 text-sm font-semibold text-ink"
+          >
+            {dict.mypage.activityLog}
             <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--color-ink-faint)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M9 6l6 6-6 6" />
             </svg>

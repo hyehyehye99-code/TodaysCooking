@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentHousehold } from "@/lib/household";
 import { INGREDIENT_CATEGORIES } from "@/lib/ingredients";
-import { notifyHousehold } from "@/lib/actions/notifications";
+import { notifyHousehold } from "@/lib/actions/activity";
 
 async function getNickname(supabase: Awaited<ReturnType<typeof createClient>>, userId: string) {
   const { data } = await supabase.from("profiles").select("nickname").eq("id", userId).maybeSingle();

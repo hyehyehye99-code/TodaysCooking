@@ -6,7 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getCurrentHousehold } from "@/lib/household";
 import { uploadRecipePhotos } from "@/lib/actions/storage";
 import { fetchLinkPreview } from "@/lib/actions/link-preview";
-import { notifyHousehold } from "@/lib/actions/notifications";
+import { notifyHousehold } from "@/lib/actions/activity";
 import { MAX_RECIPE_PHOTOS } from "@/lib/constants";
 
 async function getNickname(supabase: Awaited<ReturnType<typeof createClient>>, userId: string) {

@@ -73,6 +73,7 @@ export function RecipeList({
   const [favoritesOnly, setFavoritesOnly] = useState(false);
   const [makeableOnly, setMakeableOnly] = useState(false);
   const [linkOnly, setLinkOnly] = useState(false);
+  const [tagsExpanded, setTagsExpanded] = useState(false);
   const [sortBy, setSortBy] = useState<"custom" | "newest" | "oldest" | "name">("custom");
   const [editing, setEditing] = useState(false);
   const {
@@ -97,6 +98,8 @@ export function RecipeList({
     () => [...new Set(recipes.flatMap((r) => r.tags))],
     [recipes]
   );
+  const TAG_COLLAPSE_LIMIT = 6;
+  const visibleTags = tagsExpanded ? allTags : allTags.slice(0, TAG_COLLAPSE_LIMIT);
 
   // A link-only card has nothing to "make" — an empty ingredient list would
   // otherwise vacuously pass the every() check below and wrongly badge it.
@@ -236,6 +239,19 @@ export function RecipeList({
             <option value="oldest">{dict.recipes.sortOldest}</option>
             <option value="name">{dict.recipes.sortByName}</option>
           </select>
+          {recipes.length > 1 && (
+            <button
+              onClick={startEditing}
+              aria-label={dict.recipes.editMenu}
+              className="flex h-[42px] w-[42px] shrink-0 items-center justify-center rounded-xl bg-surface text-ink-soft"
+            >
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M3 6h18" />
+                <path d="M6 12h12" />
+                <path d="M10 18h4" />
+              </svg>
+            </button>
+          )}
         </div>
       )}
 
@@ -302,7 +318,7 @@ export function RecipeList({
             </svg>
             {dict.recipes.linkOnlyFilter}
           </button>
-          {allTags.map((tag) => (
+          {visibleTags.map((tag) => (
             <button
               key={tag}
               onClick={() => setActiveTag((prev) => (prev === tag ? null : tag))}
@@ -313,16 +329,17 @@ export function RecipeList({
               {tag}
             </button>
           ))}
-          {recipes.length > 1 && (
+          {allTags.length > TAG_COLLAPSE_LIMIT && (
             <button
-              onClick={startEditing}
-              aria-label={dict.recipes.editMenu}
-              className="ml-auto flex h-[26px] w-[26px] shrink-0 items-center justify-center rounded-full bg-surface text-ink-soft"
+              onClick={() => setTagsExpanded((prev) => !prev)}
+              className="rounded-full bg-surface px-3 py-1.5 text-xs font-semibold text-ink-faint"
             >
-              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M4 20l1-4L16 5l3 3L8 19l-4 1z" />
-                <path d="M14 7l3 3" />
-              </svg>
+              {tagsExpanded
+                ? dict.recipes.collapseTags
+                : dict.recipes.showMoreTagsTemplate.replace(
+                    "{count}",
+                    String(allTags.length - TAG_COLLAPSE_LIMIT)
+                  )}
             </button>
           )}
         </div>
