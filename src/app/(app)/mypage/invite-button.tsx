@@ -13,10 +13,22 @@ export function InviteButton({
   const [open, setOpen] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
   const [copiedCode, setCopiedCode] = useState(false);
-  const [showCode, setShowCode] = useState(false);
 
-  async function copyLink() {
+  // navigator.share opens the native share sheet (Messages/KakaoTalk/etc.)
+  // so the invite link goes straight to whoever it's meant for, instead of
+  // just sitting on the clipboard waiting to be pasted somewhere — same
+  // pattern as share-recipe-button.tsx. Falls back to a clipboard copy on
+  // platforms/browsers without it.
+  async function shareLink() {
     const url = `${window.location.origin}/join?code=${inviteCode}`;
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: `${householdName}에 초대하기`, url });
+      } catch {
+        // Includes the user dismissing the share sheet — nothing to show.
+      }
+      return;
+    }
     await navigator.clipboard.writeText(url);
     setCopiedLink(true);
     setTimeout(() => setCopiedLink(false), 1500);
@@ -47,36 +59,26 @@ export function InviteButton({
 
             <button
               type="button"
-              onClick={copyLink}
+              onClick={shareLink}
               className={`w-full rounded-xl border py-3.5 text-sm font-bold ${
                 copiedLink
                   ? "border-accent bg-white text-accent-ink"
                   : "border-transparent bg-accent text-white"
               }`}
             >
-              {copiedLink ? "링크를 복사했어요!" : "초대 링크 복사하기"}
+              {copiedLink ? "링크를 복사했어요!" : "링크로 초대하기"}
             </button>
 
-            {!showCode ? (
-              <button
-                type="button"
-                onClick={() => setShowCode(true)}
-                className="mt-3 w-full text-center text-xs font-bold text-ink-faint underline"
-              >
-                코드로 직접 초대하기
-              </button>
-            ) : (
-              <button
-                type="button"
-                onClick={copyCode}
-                className="mt-3 w-full rounded-xl border border-transparent bg-surface px-4 py-3 text-center"
-              >
-                <p className="text-[11px] text-ink-soft">
-                  {copiedCode ? "복사했어요!" : "눌러서 코드 복사하기"}
-                </p>
-                <p className="mt-1 text-2xl font-bold tracking-[0.2em]">{inviteCode}</p>
-              </button>
-            )}
+            <button
+              type="button"
+              onClick={copyCode}
+              className="mt-3 w-full rounded-xl border border-transparent bg-surface px-4 py-3 text-center"
+            >
+              <p className="text-[11px] text-ink-soft">
+                {copiedCode ? "복사했어요!" : "눌러서 코드 복사하기"}
+              </p>
+              <p className="mt-1 text-2xl font-bold tracking-[0.2em]">{inviteCode}</p>
+            </button>
 
             <button
               type="button"
