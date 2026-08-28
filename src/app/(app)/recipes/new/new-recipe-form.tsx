@@ -19,6 +19,7 @@ export function NewRecipeForm({ existingTags }: { existingTags: string[] }) {
   const [state, formAction, pending] = useActionState(createRecipe, undefined);
   const [confirmingClose, setConfirmingClose] = useState(false);
   const [photoCount, setPhotoCount] = useState(0);
+  const [hideIngredients, setHideIngredients] = useState(false);
   const router = useRouter();
   const titleRef = useRef<HTMLInputElement>(null);
   const ingredientsRef = useRef<HTMLTextAreaElement>(null);
@@ -103,15 +104,29 @@ export function NewRecipeForm({ existingTags }: { existingTags: string[] }) {
         </GlassCard>
 
         <GlassCard className="bg-white p-4">
-          <FieldLabel>{dict.welcome.ingredients}</FieldLabel>
-          <p className="mb-3 text-xs text-ink-soft">{dict.welcome.ingredientsPlaceholder}</p>
-          <textarea
-            ref={ingredientsRef}
-            name="ingredients"
-            rows={12}
-            placeholder={dict.recipes.ingredientsExamplePlaceholder}
-            className="w-full rounded-xl border border-transparent bg-surface px-3.5 py-3 text-sm outline-none focus:border-accent"
-          />
+          <div className="mb-1 flex items-center justify-between gap-2">
+            <FieldLabel>{dict.welcome.ingredients}</FieldLabel>
+            <label className="mb-3 flex shrink-0 items-center gap-1.5 text-xs font-semibold text-ink-soft">
+              <input
+                type="checkbox"
+                name="hideIngredients"
+                checked={hideIngredients}
+                onChange={(e) => setHideIngredients(e.target.checked)}
+                className="h-4 w-4 rounded border-border accent-accent"
+              />
+              {dict.recipes.hideIngredientsLabel}
+            </label>
+          </div>
+          <div className={hideIngredients ? "hidden" : ""}>
+            <p className="mb-3 text-xs text-ink-soft">{dict.welcome.ingredientsPlaceholder}</p>
+            <textarea
+              ref={ingredientsRef}
+              name="ingredients"
+              rows={12}
+              placeholder={dict.recipes.ingredientsExamplePlaceholder}
+              className="w-full rounded-xl border border-transparent bg-surface px-3.5 py-3 text-sm outline-none focus:border-accent"
+            />
+          </div>
         </GlassCard>
 
         <GlassCard className="bg-white p-4">

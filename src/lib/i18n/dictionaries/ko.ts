@@ -336,6 +336,7 @@ const ko = {
     leave: "나가기",
     dishNamePlaceholder: "요리 이름을 입력해주세요",
     dishNameOptionalPlaceholder: "요리 이름 (링크만 저장하려면 비워두세요)",
+    hideIngredientsLabel: "재료·만들 수 있어요 표시 안 함",
     referenceLinkHint: "여기 넣은 링크는 보관함 탭에도 함께 저장돼요",
     notesPlaceholder: "예) 다음엔 국물을 더 자작하게, 마늘은 좀 줄이기",
     photoOrEmojiLabel: "사진 또는 이모지",

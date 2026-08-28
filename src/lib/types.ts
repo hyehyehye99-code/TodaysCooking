@@ -13,6 +13,7 @@ export type Recipe = {
   notes: string | null;
   position: number | null;
   is_favorite: boolean;
+  hide_ingredients: boolean;
   created_by: string;
   created_at: string;
 };

@@ -30,6 +30,7 @@ export function EditRecipeForm({
   const [state, formAction, pending] = useActionState(updateRecipe, undefined);
   const [confirmingClose, setConfirmingClose] = useState(false);
   const [photoCount, setPhotoCount] = useState(recipe.cover_photo_urls.length);
+  const [hideIngredients, setHideIngredients] = useState(recipe.hide_ingredients);
   const router = useRouter();
   const ingredientsText = recipe.recipe_ingredients
     .slice()
@@ -101,14 +102,28 @@ export function EditRecipeForm({
         </GlassCard>
 
         <GlassCard className="bg-white p-4">
-          <FieldLabel>{dict.welcome.ingredients}</FieldLabel>
-          <p className="mb-3 text-xs text-ink-soft">{dict.welcome.ingredientsPlaceholder}</p>
-          <textarea
-            name="ingredients"
-            rows={12}
-            defaultValue={ingredientsText}
-            className="w-full rounded-xl border border-transparent bg-surface px-3.5 py-3 text-sm outline-none focus:border-accent"
-          />
+          <div className="mb-1 flex items-center justify-between gap-2">
+            <FieldLabel>{dict.welcome.ingredients}</FieldLabel>
+            <label className="mb-3 flex shrink-0 items-center gap-1.5 text-xs font-semibold text-ink-soft">
+              <input
+                type="checkbox"
+                name="hideIngredients"
+                checked={hideIngredients}
+                onChange={(e) => setHideIngredients(e.target.checked)}
+                className="h-4 w-4 rounded border-border accent-accent"
+              />
+              {dict.recipes.hideIngredientsLabel}
+            </label>
+          </div>
+          <div className={hideIngredients ? "hidden" : ""}>
+            <p className="mb-3 text-xs text-ink-soft">{dict.welcome.ingredientsPlaceholder}</p>
+            <textarea
+              name="ingredients"
+              rows={12}
+              defaultValue={ingredientsText}
+              className="w-full rounded-xl border border-transparent bg-surface px-3.5 py-3 text-sm outline-none focus:border-accent"
+            />
+          </div>
         </GlassCard>
 
         <GlassCard className="bg-white p-4">

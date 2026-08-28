@@ -159,6 +159,7 @@ export async function createRecipe(_prevState: unknown, formData: FormData) {
   const iconEmoji = String(formData.get("iconEmoji") ?? "").trim();
   const notes = String(formData.get("notes") ?? "").trim();
   const referenceUrl = String(formData.get("referenceUrl") ?? "");
+  const hideIngredients = formData.get("hideIngredients") === "on";
 
   const { user, household } = await getCurrentHousehold();
   if (!user || !household) return { error: "우리집을 먼저 만들어주세요." };
@@ -191,6 +192,7 @@ export async function createRecipe(_prevState: unknown, formData: FormData) {
       icon_emoji: iconEmoji || null,
       tags,
       notes: notes || null,
+      hide_ingredients: hideIngredients,
       created_by: user.id,
       position: newPosition,
     })
@@ -231,6 +233,7 @@ export async function updateRecipe(_prevState: unknown, formData: FormData) {
   const iconEmoji = String(formData.get("iconEmoji") ?? "").trim();
   const notes = String(formData.get("notes") ?? "").trim();
   const referenceUrl = String(formData.get("referenceUrl") ?? "");
+  const hideIngredients = formData.get("hideIngredients") === "on";
 
   if (!id) return { error: "메뉴를 찾을 수 없어요." };
 
@@ -248,6 +251,7 @@ export async function updateRecipe(_prevState: unknown, formData: FormData) {
     icon_emoji: iconEmoji || null,
     tags,
     notes: notes || null,
+    hide_ingredients: hideIngredients,
     cover_photo_urls: photos.urls,
   };
 

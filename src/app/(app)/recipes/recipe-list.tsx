@@ -107,6 +107,7 @@ export function RecipeList({
           .filter(
             (r) =>
               r.title &&
+              !r.hide_ingredients &&
               r.recipe_ingredients.filter((ing) => !ing.skipped).every((ing) => owned.has(ing.name))
           )
           .map((r) => r.id)

@@ -333,6 +333,7 @@ const ja: Dictionary = {
     leave: "退出する",
     dishNamePlaceholder: "料理名を入力してください",
     dishNameOptionalPlaceholder: "料理名（リンクだけ保存する場合は空欄でOK）",
+    hideIngredientsLabel: "材料・作れますバッジを表示しない",
     referenceLinkHint: "ここに入力したリンクは保存済みタブにも保存されます",
     notesPlaceholder: "例）次回はスープをもっと濃く、にんにくを控えめに",
     photoOrEmojiLabel: "写真または絵文字",

@@ -157,7 +157,7 @@ export default async function RecipeDetailPage({
         </a>
       )}
 
-      {ingredients.length > 0 && (
+      {!r.hide_ingredients && ingredients.length > 0 && (
         <div className="mt-5">
           <p className="mb-2 flex items-center gap-1.5">
             <span className="text-[15px] font-bold">{dict.welcome.ingredients}</span>
@@ -191,7 +191,7 @@ export default async function RecipeDetailPage({
         </div>
       )}
 
-      {activeIngredients.length > 0 && (
+      {!r.hide_ingredients && activeIngredients.length > 0 && (
         <div className="mt-4">
           {makeable ? (
             <div className="flex items-center gap-2 rounded-xl border border-transparent bg-positive/10 px-3 py-2.5">

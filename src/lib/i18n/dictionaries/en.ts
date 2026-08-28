@@ -336,6 +336,7 @@ const en: Dictionary = {
     leave: "Leave",
     dishNamePlaceholder: "Enter a dish name",
     dishNameOptionalPlaceholder: "Dish name (leave blank to just save a link)",
+    hideIngredientsLabel: "Hide ingredients & ready-to-cook badge",
     referenceLinkHint: "Links added here are also saved to the Saved tab",
     notesPlaceholder: "e.g. Make the broth richer next time, go easy on the garlic",
     photoOrEmojiLabel: "Photo or emoji",
