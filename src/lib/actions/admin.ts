@@ -122,6 +122,10 @@ export type CreatorRecipeInput = {
   tags: string[];
   notes: string;
   ingredients: { name: string; amount: string }[];
+  // The link a recipe was generated from (AI 자동 작성 URL, or a channel
+  // video picked from the bulk importer) — recorded so the channel-video
+  // picker can tell a video already has a recipe and skip it next time.
+  sourceUrl?: string;
 };
 
 export async function createCreatorRecipe(
@@ -143,9 +147,11 @@ export async function createCreatorRecipe(
       cover_photo_urls: input.coverPhotoUrl.trim() ? [input.coverPhotoUrl.trim()] : [],
       tags: input.tags,
       notes: input.notes.trim() || null,
+      source_url: input.sourceUrl?.trim() || null,
     })
     .select("id")
     .single();
+  if (error?.code === "23505") return { error: "이미 이 링크로 추가된 레시피가 있어요." };
   if (error || !recipe) return { error: "레시피 추가에 실패했어요." };
 
   const ingredients = input.ingredients
@@ -191,8 +197,10 @@ export async function updateCreatorRecipe(
       cover_photo_urls: input.coverPhotoUrl.trim() ? [input.coverPhotoUrl.trim()] : [],
       tags: input.tags,
       notes: input.notes.trim() || null,
+      source_url: input.sourceUrl?.trim() || null,
     })
     .eq("id", input.recipeId);
+  if (error?.code === "23505") return { error: "이미 이 링크로 추가된 레시피가 있어요." };
   if (error) return { error: "레시피 수정에 실패했어요." };
 
   // Simplest correct way to keep ingredient order/content in sync with the

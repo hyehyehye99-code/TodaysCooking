@@ -3,8 +3,15 @@ import { notFound } from "next/navigation";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { CreatorRecipeForm } from "./creator-recipe-form";
 
-export default async function AdminNewCreatorRecipePage({ params }: { params: Promise<{ id: string }> }) {
+export default async function AdminNewCreatorRecipePage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ url?: string }>;
+}) {
   const { id } = await params;
+  const { url } = await searchParams;
 
   const supabase = createAdminClient();
   const [{ data: creator }, { data: recipes }] = await Promise.all([
@@ -25,7 +32,7 @@ export default async function AdminNewCreatorRecipePage({ params }: { params: Pr
         </Link>
       </div>
       <h1 className="mb-6 text-xl font-bold">새 레시피 추가</h1>
-      <CreatorRecipeForm creatorId={id} existingTags={existingTags} />
+      <CreatorRecipeForm creatorId={id} existingTags={existingTags} initialUrl={url} />
     </div>
   );
 }

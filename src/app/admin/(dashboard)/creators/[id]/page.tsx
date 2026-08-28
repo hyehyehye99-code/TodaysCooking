@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { DeleteRecipeButton } from "./delete-recipe-button";
 import { CreatorHeader } from "./creator-header";
+import { CreatorActionBar } from "./creator-action-bar";
 
 type Creator = {
   id: string;
@@ -35,6 +36,8 @@ export default async function AdminCreatorDetailPage({ params }: { params: Promi
 
   if (!creator) notFound();
   const list = (recipes as CreatorRecipe[] | null) ?? [];
+  const typedCreator = creator as Creator;
+  const isYoutubeChannel = !!typedCreator.channel_link && /(^|\.)youtube\.com|youtu\.be/i.test(typedCreator.channel_link);
 
   return (
     <div>
@@ -44,22 +47,9 @@ export default async function AdminCreatorDetailPage({ params }: { params: Promi
         </Link>
       </div>
 
-      <CreatorHeader creator={creator as Creator} recipeCount={list.length} />
+      <CreatorHeader creator={typedCreator} recipeCount={list.length} />
 
-      <div className="mb-6 flex gap-2">
-        <Link
-          href={`/admin/creators/${id}/new`}
-          className="flex-1 rounded-xl bg-accent py-3 text-center text-sm font-bold text-white"
-        >
-          + 새 레시피 추가
-        </Link>
-        <Link
-          href="/admin/import"
-          className="flex-1 rounded-xl border border-accent bg-white py-3 text-center text-sm font-bold text-accent-ink"
-        >
-          엑셀로 가져오기
-        </Link>
-      </div>
+      <CreatorActionBar creatorId={id} channelLink={isYoutubeChannel ? typedCreator.channel_link : null} />
 
       <p className="mb-2 text-sm font-bold">레시피 목록 ({list.length})</p>
       {list.length === 0 ? (

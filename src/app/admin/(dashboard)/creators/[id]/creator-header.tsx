@@ -31,7 +31,7 @@ export function CreatorHeader({ creator, recipeCount }: { creator: Creator; reci
     <div className="mb-6 flex items-center justify-between gap-3">
       <div className="flex items-center gap-3">
         {creator.avatar_url ? (
-          <img src={creator.avatar_url} alt="" className="h-10 w-10 shrink-0 rounded-full object-cover" />
+          <img src={creator.avatar_url} alt="" className="h-10 w-10 shrink-0 rounded-lg object-cover" />
         ) : (
           <span className="text-2xl">{creator.icon_emoji ?? "👤"}</span>
         )}

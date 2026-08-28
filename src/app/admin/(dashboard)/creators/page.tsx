@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { NewCreatorForm } from "./new-creator-form";
+import { NewCreatorSection } from "./new-creator-section";
 
 type Creator = {
   id: string;
@@ -30,10 +30,7 @@ export default async function AdminCreatorsPage() {
         </div>
       </div>
 
-      <div className="mb-8 rounded-2xl border border-border bg-white p-4">
-        <p className="mb-3 text-sm font-bold">새 크리에이터</p>
-        <NewCreatorForm />
-      </div>
+      <NewCreatorSection />
 
       <p className="mb-2 text-sm font-bold">크리에이터 목록 ({creators.length})</p>
       {creators.length === 0 ? (
@@ -54,7 +51,7 @@ export default async function AdminCreatorsPage() {
                 <tr key={c.id} className="border-b border-border last:border-0 hover:bg-surface">
                   <td className="px-3 py-2">
                     {c.avatar_url ? (
-                      <img src={c.avatar_url} alt="" className="h-7 w-7 rounded-full object-cover" />
+                      <img src={c.avatar_url} alt="" className="h-7 w-7 rounded-lg object-cover" />
                     ) : (
                       <span className="text-lg">{c.icon_emoji ?? "👤"}</span>
                     )}

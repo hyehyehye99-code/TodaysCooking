@@ -11,6 +11,7 @@ type Recipe = {
   cover_photo_urls: string[];
   tags: string[];
   notes: string | null;
+  source_url: string | null;
 };
 
 export default async function EditCreatorRecipePage({
@@ -25,7 +26,7 @@ export default async function EditCreatorRecipePage({
     supabase.from("creators").select("id, name").eq("id", id).maybeSingle(),
     supabase
       .from("creator_recipes")
-      .select("id, title, subtitle, icon_emoji, cover_photo_urls, tags, notes")
+      .select("id, title, subtitle, icon_emoji, cover_photo_urls, tags, notes, source_url")
       .eq("id", recipeId)
       .maybeSingle(),
     supabase
@@ -62,6 +63,7 @@ export default async function EditCreatorRecipePage({
           tags: r.tags,
           notes: r.notes ?? "",
           ingredients: (ingredients as { name: string; amount: string }[] | null) ?? [],
+          sourceUrl: r.source_url ?? "",
         }}
       />
     </div>

@@ -20,21 +20,24 @@ type InitialRecipe = {
   tags: string[];
   notes: string;
   ingredients: Ingredient[];
+  sourceUrl: string;
 };
 
 export function CreatorRecipeForm({
   creatorId,
   existingTags,
   initial,
+  initialUrl,
 }: {
   creatorId: string;
   existingTags: string[];
   initial?: InitialRecipe;
+  initialUrl?: string;
 }) {
   const isEdit = !!initial;
   const router = useRouter();
 
-  const [url, setUrl] = useState("");
+  const [url, setUrl] = useState(initial?.sourceUrl ?? initialUrl ?? "");
   const [aiPending, startAiTransition] = useTransition();
   const [aiError, setAiError] = useState<string | null>(null);
 
@@ -100,7 +103,7 @@ export function CreatorRecipeForm({
   function handleSave() {
     setSaveError(null);
     startSaveTransition(async () => {
-      const payload = { creatorId, title, subtitle, iconEmoji, coverPhotoUrl, tags, notes, ingredients };
+      const payload = { creatorId, title, subtitle, iconEmoji, coverPhotoUrl, tags, notes, ingredients, sourceUrl: url.trim() };
       const result = isEdit
         ? await updateCreatorRecipe({ ...payload, recipeId: initial.recipeId })
         : await createCreatorRecipe(payload);
