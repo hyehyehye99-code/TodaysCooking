@@ -69,21 +69,22 @@ export default async function ExploreRecipeDetailPage({
 
       <RecipePhotoGallery photos={recipe.cover_photo_urls} />
 
-      <p className="text-xs font-semibold text-accent">{recipe.creator_name}</p>
-
-      <div className="mt-2 flex items-center gap-1.5 text-xs font-bold text-accent-ink">
-        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-          <path d="M12 3v12" />
-          <path d="M7 10l5 5 5-5" />
-          <path d="M5 19h14" />
-        </svg>
-        {dict.explore.addedCountTemplate.replace("{count}", String(recipe.add_count))}
+      <div className="flex items-center justify-between gap-3">
+        <p className="text-sm font-bold text-accent">{recipe.creator_name}</p>
+        <div className="flex shrink-0 items-center gap-1.5 text-xs font-bold text-accent-ink">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M12 3v12" />
+            <path d="M7 10l5 5 5-5" />
+            <path d="M5 19h14" />
+          </svg>
+          {dict.explore.addedCountTemplate.replace("{count}", String(recipe.add_count))}
+        </div>
       </div>
 
       {recipe.tags.length > 0 && (
         <div className="mt-2 flex flex-wrap gap-1.5">
           {recipe.tags.map((tag) => (
-            <span key={tag} className="rounded-full bg-surface px-2.5 py-1 text-[11px] font-semibold text-positive-ink">
+            <span key={tag} className="rounded-full bg-positive/10 px-2.5 py-1 text-[11px] font-bold text-positive-ink">
               #{tag}
             </span>
           ))}
