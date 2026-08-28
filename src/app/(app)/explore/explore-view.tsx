@@ -2,70 +2,62 @@
 
 import { useMemo, useRef, useState, useTransition } from "react";
 import Link from "next/link";
+import { RecipeThumb } from "@/components/RecipeThumb";
 import { ClearableInput } from "@/components/ClearableInput";
 import { searchExploreRecipes, type ExploreSearchResult } from "@/lib/actions/explore";
 import { useDict } from "@/lib/i18n/client";
 import type { ExploreCreator, ExploreFeedItem } from "./page";
 
-// A 2-column grid of cards — distinct from both the 레시피 tab (single-
-// column rows) and a big-photo feed (single column, one post at a time).
-// A photo/video cover shows full-bleed on top when there is one; otherwise
-// the emoji sits on a plain surface tile, same waterfall as elsewhere.
-function ExploreFeedCard({ item, dict }: { item: ExploreFeedItem | ExploreSearchResult; dict: ReturnType<typeof useDict> }) {
-  const photo = item.cover_photo_urls[0];
+// A list row — same visual weight as the 레시피 tab's rows (small square
+// thumbnail + text). cover_photo_urls/icon_emoji fall through the same
+// waterfall RecipeThumb already uses elsewhere.
+function ExploreFeedRow({ item, dict }: { item: ExploreFeedItem | ExploreSearchResult; dict: ReturnType<typeof useDict> }) {
   return (
-    <Link href={`/explore/recipe/${item.source}/${item.id}`} className="block overflow-hidden rounded-2xl border border-border bg-white">
-      {photo ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img src={photo} alt="" className="aspect-square w-full object-cover" />
-      ) : (
-        <div className="flex aspect-square w-full items-center justify-center bg-surface text-4xl">
-          {item.icon_emoji ?? "🍽️"}
-        </div>
-      )}
-      <div className="p-2.5">
-        <p className="truncate text-[13px] font-bold">{item.title || dict.recipes.untitledLink}</p>
-        <p className="mt-0.5 truncate text-[11px] text-ink-soft">{item.creator_name}</p>
+    <Link href={`/explore/recipe/${item.source}/${item.id}`} className="flex items-center gap-3 px-4 py-3.5">
+      <RecipeThumb coverPhotoUrl={item.cover_photo_urls[0]} iconEmoji={item.icon_emoji} rounded="rounded-lg" />
+      <div className="min-w-0 flex-1">
+        <p className="truncate text-[15px] font-bold">{item.title || dict.recipes.untitledLink}</p>
+        <p className="mt-0.5 truncate text-xs text-ink-soft">
+          {item.creator_name}
+          {item.subtitle ? ` · ${item.subtitle}` : ""}
+        </p>
         {item.tags.length > 0 && (
-          <p className="mt-1 truncate text-[10px] font-semibold text-positive-ink">
-            {item.tags.map((tag) => `#${tag}`).join(" ")}
-          </p>
+          <div className="mt-1 flex flex-wrap gap-1.5">
+            {item.tags.map((tag) => (
+              <span key={tag} className="text-[11px] font-semibold text-positive-ink">
+                #{tag}
+              </span>
+            ))}
+          </div>
         )}
-        <div className="mt-1.5 flex items-center gap-1 text-[10px] font-bold text-accent-ink">
-          <svg viewBox="0 0 24 24" width="10" height="10" fill="currentColor" aria-hidden="true">
-            <path d="M12 21s-7.5-4.6-10-9.2C.4 8.6 2 5 5.6 5c2 0 3.4 1 4.4 2.4C11 6 12.4 5 14.4 5 18 5 19.6 8.6 22 11.8 19.5 16.4 12 21 12 21z" />
-          </svg>
-          {item.add_count}
-        </div>
       </div>
+      <span className="flex shrink-0 items-center gap-1 text-[11px] font-bold text-accent-ink">
+        <svg viewBox="0 0 24 24" width="11" height="11" fill="currentColor" aria-hidden="true">
+          <path d="M12 21s-7.5-4.6-10-9.2C.4 8.6 2 5 5.6 5c2 0 3.4 1 4.4 2.4C11 6 12.4 5 14.4 5 18 5 19.6 8.6 22 11.8 19.5 16.4 12 21 12 21z" />
+        </svg>
+        {item.add_count}
+      </span>
     </Link>
   );
 }
 
-function ExploreFeedGrid({ items, dict }: { items: (ExploreFeedItem | ExploreSearchResult)[]; dict: ReturnType<typeof useDict> }) {
+function ExploreFeedList({ items, dict }: { items: (ExploreFeedItem | ExploreSearchResult)[]; dict: ReturnType<typeof useDict> }) {
   return (
-    <div className="grid grid-cols-2 gap-3">
+    <div className="divide-y divide-border overflow-hidden rounded-lg border border-border bg-white">
       {items.map((item) => (
-        <ExploreFeedCard key={`${item.source}-${item.id}`} item={item} dict={dict} />
+        <ExploreFeedRow key={`${item.source}-${item.id}`} item={item} dict={dict} />
       ))}
     </div>
   );
 }
 
-function ExploreCreatorCard({ creator, dict }: { creator: ExploreCreator; dict: ReturnType<typeof useDict> }) {
+function ExploreCreatorRow({ creator, dict }: { creator: ExploreCreator; dict: ReturnType<typeof useDict> }) {
   return (
-    <Link href={`/explore/creator/${creator.id}`} className="block overflow-hidden rounded-2xl border border-border bg-white">
-      {creator.avatar_url ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img src={creator.avatar_url} alt="" className="aspect-square w-full object-cover" />
-      ) : (
-        <div className="flex aspect-square w-full items-center justify-center bg-surface text-4xl">
-          {creator.icon_emoji ?? "👤"}
-        </div>
-      )}
-      <div className="p-2.5">
-        <p className="truncate text-[13px] font-bold">{creator.name}</p>
-        <p className="mt-0.5 truncate text-[11px] text-ink-soft">
+    <Link href={`/explore/creator/${creator.id}`} className="flex items-center gap-3 px-4 py-3.5">
+      <RecipeThumb coverPhotoUrl={creator.avatar_url} iconEmoji={creator.icon_emoji ?? "👤"} rounded="rounded-lg" />
+      <div className="min-w-0 flex-1">
+        <p className="truncate text-[15px] font-bold">{creator.name}</p>
+        <p className="mt-0.5 truncate text-xs text-ink-soft">
           {creator.channel_type}
           {creator.channel_type ? " · " : ""}
           {dict.explore.recipeCountTemplate.replace("{count}", String(creator.recipe_count))}
@@ -179,7 +171,7 @@ export function ExploreView({
           {!pending && results.length === 0 ? (
             <p className="mt-10 text-center text-sm text-ink-soft">{dict.explore.noResults}</p>
           ) : (
-            <ExploreFeedGrid items={results} dict={dict} />
+            <ExploreFeedList items={results} dict={dict} />
           )}
         </div>
       ) : tab === "all" ? (
@@ -213,7 +205,7 @@ export function ExploreView({
           {visibleFeed.length === 0 ? (
             <p className="mt-10 text-center text-sm text-ink-soft">{dict.explore.comingSoonDesc}</p>
           ) : (
-            <ExploreFeedGrid items={visibleFeed} dict={dict} />
+            <ExploreFeedList items={visibleFeed} dict={dict} />
           )}
         </>
       ) : (
@@ -249,9 +241,9 @@ export function ExploreView({
               {creators.length === 0 ? dict.explore.comingSoonDesc : dict.explore.noResults}
             </p>
           ) : (
-            <div className="grid grid-cols-2 gap-3">
+            <div className="divide-y divide-border overflow-hidden rounded-lg border border-border bg-white">
               {visibleCreators.map((c) => (
-                <ExploreCreatorCard key={c.id} creator={c} dict={dict} />
+                <ExploreCreatorRow key={c.id} creator={c} dict={dict} />
               ))}
             </div>
           )}
