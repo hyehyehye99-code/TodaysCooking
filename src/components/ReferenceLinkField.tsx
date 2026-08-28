@@ -15,16 +15,25 @@ type AiResult = { title: string | null; ingredients: string[]; instructions: str
 
 const DEBOUNCE_MS = 700;
 
-const YOUTUBE_HOSTS = new Set(["youtube.com", "www.youtube.com", "m.youtube.com", "youtu.be"]);
+const AI_SUPPORTED_HOSTS = new Set([
+  "youtube.com",
+  "www.youtube.com",
+  "m.youtube.com",
+  "youtu.be",
+  "instagram.com",
+  "www.instagram.com",
+]);
 
-// AI extraction leans on the video description/comments (see
-// generateRecipeFromLink) — a non-YouTube link only has a plain OG title, so
-// results were unreliable enough that it's better to not offer the button
-// than to burn someone's limited weekly quota on a guess.
-function isYoutubeUrl(value: string): boolean {
+// AI extraction leans on the post's description (see generateRecipeFromLink)
+// — YouTube gets its description via the Data API, and Instagram reels
+// reliably carry the full caption in their og:description, so both are
+// worth offering the button for. Any other link only has a plain OG title,
+// unreliable enough that it's better to not offer the button than to burn
+// someone's limited weekly quota on a guess.
+function isAiSupportedUrl(value: string): boolean {
   try {
     const url = new URL(value.startsWith("http") ? value : `https://${value}`);
-    return YOUTUBE_HOSTS.has(url.hostname);
+    return AI_SUPPORTED_HOSTS.has(url.hostname);
   } catch {
     return false;
   }
@@ -287,7 +296,7 @@ export function ReferenceLinkField({
 
       {!loading && preview && onAiResult && (
         <>
-          {isYoutubeUrl(url) ? (
+          {isAiSupportedUrl(url) ? (
             <button
               type="button"
               onClick={handleAiFill}
