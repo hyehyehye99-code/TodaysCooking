@@ -171,14 +171,6 @@ export function NewRecipeForm({ existingTags }: { existingTags: string[] }) {
               <FieldLabel>{dict.recipes.tagsLabel}</FieldLabel>
               <TagPicker name="tags" existingTags={existingTags} />
             </div>
-            <label className="flex items-center gap-2 text-sm font-semibold text-ink-soft">
-              <input
-                type="checkbox"
-                name="isPublic"
-                className="h-4 w-4 rounded border-border accent-accent"
-              />
-              {dict.recipes.publishToExploreLabel}
-            </label>
           </div>
         </GlassCard>
 

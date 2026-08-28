@@ -1,8 +1,10 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
+import { getCurrentHousehold } from "@/lib/household";
 import { GlassCard } from "@/components/ui";
 import { RecipePhotoGallery } from "@/app/(app)/recipes/[id]/recipe-photo-gallery";
+import { AddSharedRecipeButton } from "./add-to-household-button";
 
 // This is an unlisted link, not a public listing — keep it out of search
 // results even though the page itself needs no login to view.
@@ -35,9 +37,11 @@ export default async function SharedRecipePage({ params }: { params: Promise<{ c
     </div>
   );
 
-  const { data: recipe } = (await supabase
-    .rpc("get_shared_recipe", { p_share_code: code })
-    .maybeSingle()) as { data: SharedRecipe | null };
+  const [recipeResult, { user, household }] = await Promise.all([
+    supabase.rpc("get_shared_recipe", { p_share_code: code }).maybeSingle(),
+    getCurrentHousehold(),
+  ]);
+  const recipe = recipeResult.data as SharedRecipe | null;
 
   if (!recipe) {
     return shell(
@@ -107,11 +111,15 @@ export default async function SharedRecipePage({ params }: { params: Promise<{ c
         </div>
       )}
 
-      <p className="mt-10 text-center text-[11px] text-ink-faint">
-        <Link href="/welcome" className="underline">
-          나도 이런 레시피 만들어볼까?
-        </Link>
-      </p>
+      {user && household ? (
+        <AddSharedRecipeButton code={code} />
+      ) : (
+        <p className="mt-10 text-center text-[11px] text-ink-faint">
+          <Link href="/welcome" className="underline">
+            나도 이런 레시피 만들어볼까?
+          </Link>
+        </p>
+      )}
     </div>
   );
 }

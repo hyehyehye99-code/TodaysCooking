@@ -19,13 +19,17 @@ export function ShoppingItemLink({
   const [, startTransition] = useTransition();
   const router = useRouter();
 
+  // No router.refresh() here on purpose: toggleShoppingItem already calls
+  // revalidatePath("/shopping") server-side, and this click also fires
+  // router.push(/redirect/coupang) right after — a refresh() landing while
+  // that push is still resolving raced the two Router Cache updates against
+  // each other, which is what made this button need several taps to work.
   function toggleChecked() {
     startTransition(async () => {
       const formData = new FormData();
       formData.set("id", id);
       formData.set("nextChecked", (!checked).toString());
       await toggleShoppingItem(formData);
-      router.refresh();
     });
   }
 

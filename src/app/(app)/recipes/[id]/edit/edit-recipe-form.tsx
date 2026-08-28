@@ -173,15 +173,6 @@ export function EditRecipeForm({
               <FieldLabel>{dict.recipes.tagsLabel}</FieldLabel>
               <TagPicker name="tags" existingTags={existingTags} defaultSelected={recipe.tags} />
             </div>
-            <label className="flex items-center gap-2 text-sm font-semibold text-ink-soft">
-              <input
-                type="checkbox"
-                name="isPublic"
-                defaultChecked={recipe.is_public}
-                className="h-4 w-4 rounded border-border accent-accent"
-              />
-              {dict.recipes.publishToExploreLabel}
-            </label>
           </div>
         </GlassCard>
 

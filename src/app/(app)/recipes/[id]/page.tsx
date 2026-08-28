@@ -7,7 +7,7 @@ import { ProfileAvatar } from "@/components/ProfileAvatar";
 import { chefName } from "@/lib/format";
 import { getDictionary } from "@/lib/i18n/server";
 import type { RecipeCookLog, RecipeWithIngredients } from "@/lib/types";
-import { DeleteRecipeButton } from "./delete-recipe-button";
+import { RecipeMenuButton } from "./recipe-menu-button";
 import { MissingIngredientsButton } from "./missing-ingredients-button";
 import { RecipePhotoGallery } from "./recipe-photo-gallery";
 import { ReactionLog } from "./reaction-log";
@@ -97,6 +97,7 @@ export default async function RecipeDetailPage({
         </div>
         <div className="flex shrink-0 items-center gap-2">
           <ShareRecipeButton recipeId={r.id} title={displayTitle} />
+          <RecipeMenuButton recipeId={r.id} />
           <Link
             href="/recipes"
             aria-label={dict.common.close}
@@ -226,16 +227,6 @@ export default async function RecipeDetailPage({
           </GlassCard>
         </div>
       )}
-
-      <div className="mt-10 flex gap-2.5">
-        <DeleteRecipeButton recipeId={r.id} />
-        <Link
-          href={`/recipes/${r.id}/edit`}
-          className="flex-1 rounded-xl border border-accent bg-white py-3 text-center text-sm font-bold text-accent-ink"
-        >
-          {dict.recipes.editButton}
-        </Link>
-      </div>
 
       <CookLogSection recipeId={r.id} recipeTitle={displayTitle} logs={(cookLogs as RecipeCookLog[] | null) ?? []} />
 

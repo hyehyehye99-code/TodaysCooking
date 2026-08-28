@@ -32,6 +32,20 @@ const TABS: {
     ),
   },
   {
+    href: "/shopping",
+    labelKey: "shopping",
+    cx: 12.25,
+    cy: 12.15,
+    scale: 0.82,
+    icon: (
+      <>
+        <circle cx="9" cy="20.5" r="1.3" />
+        <circle cx="18" cy="20.5" r="1.3" />
+        <path d="M2.5 2.5h3l2.5 12.5a1.8 1.8 0 0 0 1.8 1.5h8.4a1.8 1.8 0 0 0 1.8-1.5L22 6.5H6" />
+      </>
+    ),
+  },
+  {
     href: "/fridge",
     labelKey: "fridge",
     cx: 12,
@@ -43,20 +57,6 @@ const TABS: {
         <path d="M5 9h14" />
         <path d="M8 5v2" />
         <path d="M8 12v2" />
-      </>
-    ),
-  },
-  {
-    href: "/shopping",
-    labelKey: "shopping",
-    cx: 12.25,
-    cy: 12.15,
-    scale: 0.82,
-    icon: (
-      <>
-        <circle cx="9" cy="20.5" r="1.3" />
-        <circle cx="18" cy="20.5" r="1.3" />
-        <path d="M2.5 2.5h3l2.5 12.5a1.8 1.8 0 0 0 1.8 1.5h8.4a1.8 1.8 0 0 0 1.8-1.5L22 6.5H6" />
       </>
     ),
   },
