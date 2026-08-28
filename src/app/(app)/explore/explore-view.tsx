@@ -2,61 +2,42 @@
 
 import { useMemo, useRef, useState, useTransition } from "react";
 import Link from "next/link";
+import { RecipeThumb } from "@/components/RecipeThumb";
 import { ClearableInput } from "@/components/ClearableInput";
 import { searchExploreRecipes, type ExploreSearchResult } from "@/lib/actions/explore";
 import { useDict } from "@/lib/i18n/client";
 import type { ExploreCreator, ExploreFeedItem } from "./page";
 
-function CreatorAvatar({ iconEmoji, avatarUrl, size = 56 }: { iconEmoji: string | null; avatarUrl?: string | null; size?: number }) {
-  const style = { width: size, height: size };
-  if (avatarUrl) {
-    return (
-      <div style={style} className="shrink-0 overflow-hidden rounded-full bg-surface">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={avatarUrl} alt="" className="h-full w-full object-cover" />
-      </div>
-    );
-  }
-  return (
-    <div style={style} className="flex shrink-0 items-center justify-center overflow-hidden rounded-full bg-surface text-2xl">
-      {iconEmoji ?? "👤"}
-    </div>
-  );
-}
-
-// A lean, text-first thread row — not a photo-forward card. Photos aren't
-// the point here, so this deliberately skips cover_photo_urls entirely and
-// only keeps a small emoji marker; rows are stacked in one continuous
-// divided list (see ExploreFeedList below) rather than separate floating
-// cards, which is what actually reads as "a list" instead of a feed of posts.
+// A list row — same visual weight as the 레시피 tab's rows (small square
+// thumbnail + text), not a big photo-forward card. cover_photo_urls/
+// icon_emoji fall through the same waterfall RecipeThumb already uses
+// elsewhere, so a recipe with a photo/video thumbnail shows it here too.
 function ExploreFeedRow({ item, dict }: { item: ExploreFeedItem | ExploreSearchResult; dict: ReturnType<typeof useDict> }) {
   return (
-    <Link href={`/explore/recipe/${item.source}/${item.id}`} className="block px-4 py-3.5">
-      <div className="flex items-start gap-2.5">
-        <span className="mt-0.5 shrink-0 text-lg leading-none">{item.icon_emoji ?? "🍽️"}</span>
-        <div className="min-w-0 flex-1">
-          <p className="truncate text-[15px] font-bold">{item.title || dict.recipes.untitledLink}</p>
-          <p className="mt-0.5 truncate text-xs text-ink-soft">
-            {item.creator_name}
-            {item.subtitle ? ` · ${item.subtitle}` : ""}
-          </p>
-          {item.tags.length > 0 && (
-            <div className="mt-1 flex flex-wrap gap-1.5">
-              {item.tags.map((tag) => (
-                <span key={tag} className="text-[11px] font-semibold text-positive-ink">
-                  #{tag}
-                </span>
-              ))}
-            </div>
-          )}
-        </div>
-        <span className="mt-0.5 flex shrink-0 items-center gap-1 text-[11px] font-bold text-accent-ink">
-          <svg viewBox="0 0 24 24" width="11" height="11" fill="currentColor" aria-hidden="true">
-            <path d="M12 21s-7.5-4.6-10-9.2C.4 8.6 2 5 5.6 5c2 0 3.4 1 4.4 2.4C11 6 12.4 5 14.4 5 18 5 19.6 8.6 22 11.8 19.5 16.4 12 21 12 21z" />
-          </svg>
-          {item.add_count}
-        </span>
+    <Link href={`/explore/recipe/${item.source}/${item.id}`} className="flex items-center gap-3 px-4 py-3.5">
+      <RecipeThumb coverPhotoUrl={item.cover_photo_urls[0]} iconEmoji={item.icon_emoji} />
+      <div className="min-w-0 flex-1">
+        <p className="truncate text-[15px] font-bold">{item.title || dict.recipes.untitledLink}</p>
+        <p className="mt-0.5 truncate text-xs text-ink-soft">
+          {item.creator_name}
+          {item.subtitle ? ` · ${item.subtitle}` : ""}
+        </p>
+        {item.tags.length > 0 && (
+          <div className="mt-1 flex flex-wrap gap-1.5">
+            {item.tags.map((tag) => (
+              <span key={tag} className="text-[11px] font-semibold text-positive-ink">
+                #{tag}
+              </span>
+            ))}
+          </div>
+        )}
       </div>
+      <span className="flex shrink-0 items-center gap-1 text-[11px] font-bold text-accent-ink">
+        <svg viewBox="0 0 24 24" width="11" height="11" fill="currentColor" aria-hidden="true">
+          <path d="M12 21s-7.5-4.6-10-9.2C.4 8.6 2 5 5.6 5c2 0 3.4 1 4.4 2.4C11 6 12.4 5 14.4 5 18 5 19.6 8.6 22 11.8 19.5 16.4 12 21 12 21z" />
+        </svg>
+        {item.add_count}
+      </span>
     </Link>
   );
 }
@@ -68,6 +49,22 @@ function ExploreFeedList({ items, dict }: { items: (ExploreFeedItem | ExploreSea
         <ExploreFeedRow key={`${item.source}-${item.id}`} item={item} dict={dict} />
       ))}
     </div>
+  );
+}
+
+function ExploreCreatorRow({ creator, dict }: { creator: ExploreCreator; dict: ReturnType<typeof useDict> }) {
+  return (
+    <Link href={`/explore/creator/${creator.id}`} className="flex items-center gap-3 px-4 py-3.5">
+      <RecipeThumb coverPhotoUrl={creator.avatar_url} iconEmoji={creator.icon_emoji ?? "👤"} />
+      <div className="min-w-0 flex-1">
+        <p className="truncate text-[15px] font-bold">{creator.name}</p>
+        <p className="mt-0.5 truncate text-xs text-ink-soft">
+          {creator.type}
+          {creator.type ? " · " : ""}
+          {dict.explore.recipeCountTemplate.replace("{count}", String(creator.recipe_count))}
+        </p>
+      </div>
+    </Link>
   );
 }
 
@@ -89,8 +86,41 @@ export function ExploreView({
   const allTags = useMemo(() => [...new Set(feed.flatMap((item) => item.tags))], [feed]);
   const visibleFeed = activeTag ? feed.filter((item) => item.tags.includes(activeTag)) : feed;
 
+  // Which tags each creator's recipes carry, so the same tag chips can
+  // filter the creator list too (creators themselves have no tags of
+  // their own — this is derived from their recipes in the combined feed).
+  const creatorTagsById = useMemo(() => {
+    const map = new Map<string, Set<string>>();
+    for (const item of feed) {
+      if (item.source !== "creator" || !item.creator_id) continue;
+      const set = map.get(item.creator_id) ?? new Set<string>();
+      item.tags.forEach((t) => set.add(t));
+      map.set(item.creator_id, set);
+    }
+    return map;
+  }, [feed]);
+  const creatorTagOptions = useMemo(
+    () => [...new Set(feed.filter((item) => item.source === "creator").flatMap((item) => item.tags))],
+    [feed]
+  );
+  const visibleCreators = creators.filter((c) => {
+    const matchesQuery = !query.trim() || c.name.toLowerCase().includes(query.trim().toLowerCase());
+    const matchesTag = !activeTag || creatorTagsById.get(c.id)?.has(activeTag);
+    return matchesQuery && matchesTag;
+  });
+
+  function switchTab(next: "all" | "creators") {
+    setTab(next);
+    setQuery("");
+    setActiveTag(null);
+    setResults(null);
+  }
+
   function handleQueryChange(value: string) {
     setQuery(value);
+    // The creators tab filters the already-loaded `creators` list locally
+    // (see visibleCreators above) — no server round trip needed for that.
+    if (tab === "creators") return;
     if (debounceTimer.current) clearTimeout(debounceTimer.current);
     if (!value.trim()) {
       setResults(null);
@@ -108,7 +138,7 @@ export function ExploreView({
       <div className="mb-5 flex items-center justify-center gap-8 border-b border-border">
         <button
           type="button"
-          onClick={() => setTab("all")}
+          onClick={() => switchTab("all")}
           className={`border-b-2 pb-2.5 text-sm ${
             tab === "all" ? "border-ink font-bold text-ink" : "border-transparent font-semibold text-ink-faint"
           }`}
@@ -117,7 +147,7 @@ export function ExploreView({
         </button>
         <button
           type="button"
-          onClick={() => setTab("creators")}
+          onClick={() => switchTab("creators")}
           className={`border-b-2 pb-2.5 text-sm ${
             tab === "creators" ? "border-ink font-bold text-ink" : "border-transparent font-semibold text-ink-faint"
           }`}
@@ -130,12 +160,12 @@ export function ExploreView({
         <ClearableInput
           value={query}
           onChange={(e) => handleQueryChange(e.target.value)}
-          placeholder={dict.explore.searchPlaceholder}
+          placeholder={tab === "creators" ? dict.explore.searchCreatorsPlaceholder : dict.explore.searchPlaceholder}
           className="w-full rounded-xl border border-transparent bg-surface px-3.5 py-2.5 text-sm outline-none focus:border-accent"
         />
       </div>
 
-      {results !== null ? (
+      {tab === "all" && results !== null ? (
         <div>
           {pending && <p className="mb-3 text-xs text-ink-faint">{dict.common.loading}</p>}
           {!pending && results.length === 0 ? (
@@ -178,20 +208,46 @@ export function ExploreView({
             <ExploreFeedList items={visibleFeed} dict={dict} />
           )}
         </>
-      ) : creators.length === 0 ? (
-        <p className="mt-10 text-center text-sm text-ink-soft">{dict.explore.comingSoonDesc}</p>
       ) : (
-        <div className="grid grid-cols-3 gap-4">
-          {creators.map((c) => (
-            <Link key={c.id} href={`/explore/creator/${c.id}`} className="flex flex-col items-center gap-1.5">
-              <CreatorAvatar iconEmoji={c.icon_emoji} avatarUrl={c.avatar_url} size={72} />
-              <span className="max-w-full truncate text-xs font-semibold text-ink-soft">{c.name}</span>
-              <span className="text-[10px] text-ink-faint">
-                {dict.explore.recipeCountTemplate.replace("{count}", String(c.recipe_count))}
-              </span>
-            </Link>
-          ))}
-        </div>
+        <>
+          {creatorTagOptions.length > 0 && (
+            <div className="mb-4 flex flex-wrap gap-1.5">
+              <button
+                type="button"
+                onClick={() => setActiveTag(null)}
+                className={`rounded-full px-3 py-1.5 text-xs font-semibold ${
+                  activeTag === null ? "bg-accent text-white" : "bg-surface text-ink-soft"
+                }`}
+              >
+                {dict.recipes.all}
+              </button>
+              {creatorTagOptions.map((tag) => (
+                <button
+                  key={tag}
+                  type="button"
+                  onClick={() => setActiveTag((prev) => (prev === tag ? null : tag))}
+                  className={`rounded-full px-3 py-1.5 text-xs font-semibold ${
+                    activeTag === tag ? "bg-accent text-white" : "bg-surface text-ink-soft"
+                  }`}
+                >
+                  #{tag}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {visibleCreators.length === 0 ? (
+            <p className="mt-10 text-center text-sm text-ink-soft">
+              {creators.length === 0 ? dict.explore.comingSoonDesc : dict.explore.noResults}
+            </p>
+          ) : (
+            <div className="divide-y divide-border overflow-hidden rounded-2xl border border-border bg-white">
+              {visibleCreators.map((c) => (
+                <ExploreCreatorRow key={c.id} creator={c} dict={dict} />
+              ))}
+            </div>
+          )}
+        </>
       )}
     </div>
   );

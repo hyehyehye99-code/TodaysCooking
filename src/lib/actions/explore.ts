@@ -13,6 +13,7 @@ export type ExploreSearchResult = {
   cover_photo_urls: string[];
   icon_emoji: string | null;
   tags: string[];
+  creator_id: string | null;
   creator_name: string;
   creator_icon_emoji: string | null;
   add_count: number;

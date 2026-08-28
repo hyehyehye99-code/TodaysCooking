@@ -6,6 +6,7 @@ export type ExploreCreator = {
   name: string;
   icon_emoji: string | null;
   avatar_url: string | null;
+  type: string | null;
   recipe_count: number;
 };
 
@@ -17,6 +18,7 @@ export type ExploreFeedItem = {
   cover_photo_urls: string[];
   icon_emoji: string | null;
   tags: string[];
+  creator_id: string | null;
   creator_name: string;
   creator_icon_emoji: string | null;
   add_count: number;

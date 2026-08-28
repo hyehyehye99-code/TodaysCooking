@@ -2,7 +2,7 @@ import { BackButton } from "@/components/ui";
 
 export default function PrivacyPage() {
   return (
-    <div className="mx-auto w-full max-w-[560px] px-6 pb-16 pt-[max(env(safe-area-inset-top),24px)]">
+    <div className="mx-auto h-dvh w-full max-w-[560px] overflow-y-auto overscroll-contain px-6 pb-16 pt-[max(env(safe-area-inset-top),24px)]">
       <div className="mb-5 flex items-center gap-3">
         <BackButton href="/mypage" />
         <h1 className="text-lg font-bold text-ink">우리집 레시피 개인정보 처리방침</h1>

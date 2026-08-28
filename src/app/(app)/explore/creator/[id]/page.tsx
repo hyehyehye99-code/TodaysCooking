@@ -5,7 +5,15 @@ import { getDictionary } from "@/lib/i18n/server";
 import { RecipeThumb } from "@/components/RecipeThumb";
 import { GlassCard } from "@/components/ui";
 
-type Creator = { id: string; name: string; bio: string | null; icon_emoji: string | null; avatar_url: string | null };
+type Creator = {
+  id: string;
+  name: string;
+  bio: string | null;
+  icon_emoji: string | null;
+  avatar_url: string | null;
+  youtube_url: string | null;
+  type: string | null;
+};
 type CreatorRecipe = {
   id: string;
   title: string;
@@ -43,7 +51,7 @@ export default async function CreatorPage({ params }: { params: Promise<{ id: st
           )}
           <div className="min-w-0 flex-1">
             <h1 className="truncate text-[20px] font-bold">{c.name}</h1>
-            {c.bio && <p className="mt-0.5 text-xs text-ink-soft">{c.bio}</p>}
+            {c.type && <p className="mt-0.5 text-xs font-semibold text-accent-ink">{c.type}</p>}
           </div>
         </div>
         <Link
@@ -57,6 +65,21 @@ export default async function CreatorPage({ params }: { params: Promise<{ id: st
           </svg>
         </Link>
       </div>
+
+      {c.bio && <p className="mb-3 text-sm leading-relaxed text-ink-soft">{c.bio}</p>}
+
+      {c.youtube_url && (
+        <a
+          href={c.youtube_url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mb-5 inline-block text-xs font-bold text-accent-ink underline"
+        >
+          {dict.explore.viewChannel}
+        </a>
+      )}
+
+      <p className="mb-2.5 text-[15px] font-bold">{dict.explore.creatorRecipesHeading}</p>
 
       {list.length === 0 ? (
         <p className="mt-10 text-center text-sm text-ink-soft">{dict.explore.noPublicRecipes}</p>
