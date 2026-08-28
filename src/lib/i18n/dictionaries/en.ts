@@ -295,7 +295,6 @@ const en: Dictionary = {
     restoreError: "No purchases found to restore.",
     iosOnly: "You can subscribe from the iOS app.",
     manageOnApple: "Manage subscription on Apple",
-    koreaOnly: "Subscriptions are currently only available in Korea.",
     restoring: "Restoring...",
     restorePurchases: "Restore purchases",
     subscriptionDisclaimer: "Subscriptions renew automatically and can be cancelled anytime in the App Store.",

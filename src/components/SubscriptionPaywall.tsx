@@ -37,22 +37,6 @@ function getIsNativeServerSnapshot() {
   return false;
 }
 
-// The purchase button is only offered where App Store pricing is actually
-// set up (Korea) — everywhere else the storefront would show a converted
-// price nobody has reviewed. Read from the device's language/region setting
-// rather than the App Store storefront itself, since that reads before
-// RevenueCat/StoreKit is configured and needs no extra native call.
-function getRegionSnapshot() {
-  try {
-    return new Intl.Locale(Intl.DateTimeFormat().resolvedOptions().locale).region ?? null;
-  } catch {
-    return null;
-  }
-}
-function getRegionServerSnapshot() {
-  return null;
-}
-
 type Status = "idle" | "loading" | "purchasing" | "restoring";
 
 export function SubscriptionPaywall({
@@ -64,15 +48,20 @@ export function SubscriptionPaywall({
 }) {
   const dict = useDict();
   const isNative = useSyncExternalStore(subscribeNever, getIsNativeSnapshot, getIsNativeServerSnapshot);
-  const region = useSyncExternalStore(subscribeNever, getRegionSnapshot, getRegionServerSnapshot);
-  const isKorea = region === "KR";
   const router = useRouter();
   const [status, setStatus] = useState<Status>("idle");
   const [packages, setPackages] = useState<PurchasesPackage[]>([]);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!isNative || !householdId || isPremium || !isKorea) return;
+    // Deliberately not gated on device region/locale (App Store guideline
+    // 3.1.2: the purchase screen must actually be reachable/testable by
+    // Apple's reviewer, whatever region their test device happens to be
+    // set to). App Store Connect's own territory pricing is what actually
+    // controls where this product can be bought — if it's unavailable in a
+    // given storefront, getOfferings() below just comes back with nothing
+    // to buy, and the static plan card + restore + legal links still show.
+    if (!isNative || !householdId || isPremium) return;
     (async () => {
       setStatus("loading");
       try {
@@ -94,7 +83,7 @@ export function SubscriptionPaywall({
         setStatus("idle");
       }
     })();
-  }, [isNative, householdId, isPremium, isKorea, dict.components.subFetchError]);
+  }, [isNative, householdId, isPremium, dict.components.subFetchError]);
 
   async function purchase(pkg: PurchasesPackage) {
     setStatus("purchasing");
@@ -152,14 +141,6 @@ export function SubscriptionPaywall({
         >
           {dict.components.manageOnApple}
         </a>
-      </GlassCard>
-    );
-  }
-
-  if (!isKorea) {
-    return (
-      <GlassCard className="bg-white p-4">
-        <p className="text-sm text-ink-soft">{dict.components.koreaOnly}</p>
       </GlassCard>
     );
   }

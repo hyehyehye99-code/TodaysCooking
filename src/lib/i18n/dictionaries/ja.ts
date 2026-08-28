@@ -292,7 +292,6 @@ const ja: Dictionary = {
     restoreError: "復元できる購入履歴が見つかりませんでした。",
     iosOnly: "iOSアプリから購読できます。",
     manageOnApple: "Appleで購読を管理する",
-    koreaOnly: "現在、購読は韓国でのみご利用いただけます。",
     restoring: "復元中...",
     restorePurchases: "購入を復元する",
     subscriptionDisclaimer: "購読は自動更新され、App Storeでいつでも解約できます。",

@@ -295,7 +295,6 @@ const ko = {
     restoreError: "복원할 구매 내역을 찾지 못했어요.",
     iosOnly: "iOS 앱에서 구독할 수 있어요.",
     manageOnApple: "Apple에서 구독 관리하기",
-    koreaOnly: "현재 한국에서만 구독을 제공하고 있어요.",
     restoring: "복원하는 중...",
     restorePurchases: "구매 복원하기",
     subscriptionDisclaimer: "구독은 자동으로 갱신되며, 언제든 App Store에서 해지할 수 있어요.",
