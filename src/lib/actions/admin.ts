@@ -37,14 +37,9 @@ export async function createCreator(
   const name = String(formData.get("name") ?? "").trim();
   if (!name) return { error: "크리에이터 이름을 입력해주세요." };
   const channelType = String(formData.get("channelType") ?? "").trim() || null;
-  const channelName = String(formData.get("channelName") ?? "").trim() || null;
   const channelLink = String(formData.get("channelLink") ?? "").trim() || null;
   const iconEmoji = String(formData.get("iconEmoji") ?? "").trim() || null;
   const avatarUrl = String(formData.get("avatarUrl") ?? "").trim() || null;
-  const tags = String(formData.get("tags") ?? "")
-    .split(",")
-    .map((t) => t.trim())
-    .filter(Boolean);
 
   const supabase = createAdminClient();
   const { data, error } = await supabase
@@ -52,11 +47,9 @@ export async function createCreator(
     .insert({
       name,
       channel_type: channelType,
-      channel_name: channelName,
       channel_link: channelLink,
       icon_emoji: iconEmoji,
       avatar_url: avatarUrl,
-      tags,
     })
     .select("id")
     .single();
@@ -76,14 +69,9 @@ export async function updateCreator(
   const name = String(formData.get("name") ?? "").trim();
   if (!name) return { error: "크리에이터 이름을 입력해주세요." };
   const channelType = String(formData.get("channelType") ?? "").trim() || null;
-  const channelName = String(formData.get("channelName") ?? "").trim() || null;
   const channelLink = String(formData.get("channelLink") ?? "").trim() || null;
   const iconEmoji = String(formData.get("iconEmoji") ?? "").trim() || null;
   const avatarUrl = String(formData.get("avatarUrl") ?? "").trim() || null;
-  const tags = String(formData.get("tags") ?? "")
-    .split(",")
-    .map((t) => t.trim())
-    .filter(Boolean);
 
   const supabase = createAdminClient();
   const { error } = await supabase
@@ -91,11 +79,9 @@ export async function updateCreator(
     .update({
       name,
       channel_type: channelType,
-      channel_name: channelName,
       channel_link: channelLink,
       icon_emoji: iconEmoji,
       avatar_url: avatarUrl,
-      tags,
     })
     .eq("id", creatorId);
   if (error) return { error: "크리에이터 수정에 실패했어요." };
@@ -250,9 +236,7 @@ function parseIngredientsCell(value: string) {
 const IMPORT_HEADERS = {
   creatorName: "크리에이터이름",
   channelType: "채널종류",
-  channelName: "채널이름",
   channelLink: "채널링크",
-  creatorTags: "크리에이터태그",
   title: "레시피제목",
   link: "링크",
   subtitle: "한줄소개",
@@ -266,9 +250,7 @@ const IMPORT_HEADERS = {
 export type ImportPreviewRow = {
   creatorName: string;
   channelType: string;
-  channelName: string;
   channelLink: string;
-  creatorTags: string;
   title: string;
   link: string;
   subtitle: string;
@@ -308,9 +290,7 @@ export async function parseExcelForPreview(
     return {
       creatorName: get("creatorName"),
       channelType: get("channelType"),
-      channelName: get("channelName"),
       channelLink: get("channelLink"),
-      creatorTags: get("creatorTags"),
       title: get("title"),
       link: get("link"),
       subtitle: get("subtitle"),
@@ -348,9 +328,7 @@ export async function commitImportRows(rows: ImportPreviewRow[]): Promise<
       .insert({
         name: creatorName,
         channel_type: row.channelType.trim() || null,
-        channel_name: row.channelName.trim() || null,
         channel_link: row.channelLink.trim() || null,
-        tags: splitTags(row.creatorTags),
       })
       .select("id")
       .single();

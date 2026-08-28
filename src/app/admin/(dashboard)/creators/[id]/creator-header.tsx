@@ -10,9 +10,7 @@ type Creator = {
   icon_emoji: string | null;
   avatar_url: string | null;
   channel_type: string | null;
-  channel_name: string | null;
   channel_link: string | null;
-  tags: string[];
 };
 
 export function CreatorHeader({ creator, recipeCount }: { creator: Creator; recipeCount: number }) {

@@ -10,9 +10,7 @@ export async function GET() {
   const headers = [
     "크리에이터이름",
     "채널종류",
-    "채널이름",
     "채널링크",
-    "크리에이터태그",
     "레시피제목",
     "링크",
     "한줄소개",
@@ -25,9 +23,7 @@ export async function GET() {
   const example1 = [
     "김할매 부엌",
     "유튜브",
-    "김할매의 부엌",
     "https://youtube.com/@example",
-    "한식,집밥",
     "된장찌개",
     "",
     "기본 중의 기본",
@@ -43,8 +39,6 @@ export async function GET() {
     "김할매 부엌",
     "",
     "",
-    "",
-    "",
     "계란찜",
     "",
     "폭신폭신 기본 계란찜",
@@ -57,23 +51,9 @@ export async function GET() {
   // 링크만 채운 행 — 제목·재료·만드는법을 비워두면 저장할 때 AI가 그
   // 링크에서 자동으로 채워요. 여러 행에 이런 식으로 링크만 쭉 넣고
   // 올리면 한 번에 처리돼요.
-  const example3 = [
-    "새로운 크리에이터",
-    "유튜브",
-    "",
-    "",
-    "",
-    "",
-    "https://www.youtube.com/watch?v=example",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-  ];
+  const example3 = ["새로운 크리에이터", "유튜브", "", "", "https://www.youtube.com/watch?v=example", "", "", "", "", "", ""];
   // 레시피제목·링크를 둘 다 비워두면 레시피 없이 크리에이터만 등록돼요.
-  const example4 = ["또 다른 크리에이터", "인스타그램", "", "", "집밥", "", "", "", "", "", "", "", ""];
+  const example4 = ["또 다른 크리에이터", "인스타그램", "", "", "", "", "", "", "", "", ""];
 
   const ws = XLSX.utils.aoa_to_sheet([headers, example1, example2, example3, example4]);
   ws["!cols"] = headers.map((h) => {

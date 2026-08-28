@@ -86,11 +86,10 @@ export function ExploreView({
   const visibleFeed = activeTag ? feed.filter((item) => item.tags.includes(activeTag)) : feed;
 
   // Which tags each creator carries, so the same tag chips can filter the
-  // creator list too — a union of the creator's own tags and whatever
-  // tags their recipes in the combined feed carry.
+  // creator list too — creators have no tags of their own, so this is
+  // purely whatever tags their recipes in the combined feed carry.
   const creatorTagsById = useMemo(() => {
     const map = new Map<string, Set<string>>();
-    for (const c of creators) map.set(c.id, new Set(c.tags));
     for (const item of feed) {
       if (item.source !== "creator" || !item.creator_id) continue;
       const set = map.get(item.creator_id) ?? new Set<string>();
@@ -98,7 +97,7 @@ export function ExploreView({
       map.set(item.creator_id, set);
     }
     return map;
-  }, [creators, feed]);
+  }, [feed]);
   const creatorTagOptions = useMemo(
     () => [...new Set([...creatorTagsById.values()].flatMap((set) => [...set]))],
     [creatorTagsById]
