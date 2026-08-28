@@ -571,3 +571,90 @@ export async function deleteExpense(expenseId: string) {
   await supabase.from("expenses").delete().eq("id", expenseId);
   revalidatePath("/admin/expenses");
 }
+
+export async function createPromoCode(
+  _prevState: { error: string } | null,
+  formData: FormData
+): Promise<{ error: string } | null> {
+  await requireAdmin();
+
+  const code = String(formData.get("code") ?? "").trim().toUpperCase();
+  if (!code) return { error: "코드를 입력해주세요." };
+  const note = String(formData.get("note") ?? "").trim() || null;
+  const durationRaw = String(formData.get("durationDays") ?? "").trim();
+  const durationDays = durationRaw ? Number(durationRaw) : null;
+  if (durationRaw && (Number.isNaN(durationDays) || (durationDays as number) <= 0)) {
+    return { error: "기간은 양의 숫자로 입력해주세요." };
+  }
+
+  const supabase = createAdminClient();
+  const { error } = await supabase.from("promo_codes").insert({
+    code,
+    note,
+    duration_days: durationDays,
+  });
+  if (error) return { error: error.code === "23505" ? "이미 있는 코드예요." : "코드 생성에 실패했어요." };
+
+  revalidatePath("/admin/promotions");
+  return null;
+}
+
+export async function togglePromoCodeActive(code: string, active: boolean) {
+  await requireAdmin();
+  const supabase = createAdminClient();
+  await supabase.from("promo_codes").update({ active }).eq("code", code);
+  revalidatePath("/admin/promotions");
+}
+
+export async function deletePromoCode(code: string): Promise<{ error: string } | null> {
+  await requireAdmin();
+  const supabase = createAdminClient();
+  const { error } = await supabase.from("promo_codes").delete().eq("code", code);
+  if (error) return { error: "이미 지급된 코드는 삭제할 수 없어요. 비활성화해주세요." };
+  revalidatePath("/admin/promotions");
+  return null;
+}
+
+export async function grantPromoToUser(
+  userId: string,
+  code: string
+): Promise<{ error: string } | { ok: true }> {
+  await requireAdmin();
+  if (!userId) return { error: "유저를 선택해주세요." };
+  if (!code) return { error: "프로모션 코드를 선택해주세요." };
+
+  const supabase = createAdminClient();
+  const { data: promo } = await supabase
+    .from("promo_codes")
+    .select("code, duration_days, active")
+    .eq("code", code)
+    .maybeSingle();
+  if (!promo) return { error: "존재하지 않는 코드예요." };
+  if (!promo.active) return { error: "비활성화된 코드예요." };
+
+  const expiresAt = promo.duration_days
+    ? new Date(Date.now() + promo.duration_days * 24 * 60 * 60 * 1000).toISOString()
+    : null;
+
+  const { error } = await supabase.from("promo_code_redemptions").upsert(
+    {
+      user_id: userId,
+      code: promo.code,
+      expires_at: expiresAt,
+      granted_by: "admin",
+      redeemed_at: new Date().toISOString(),
+    },
+    { onConflict: "user_id" }
+  );
+  if (error) return { error: "지급에 실패했어요." };
+
+  revalidatePath("/admin/promotions");
+  return { ok: true };
+}
+
+export async function revokePromoRedemption(userId: string) {
+  await requireAdmin();
+  const supabase = createAdminClient();
+  await supabase.from("promo_code_redemptions").delete().eq("user_id", userId);
+  revalidatePath("/admin/promotions");
+}
