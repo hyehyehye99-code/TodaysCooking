@@ -73,7 +73,7 @@ export default async function AdminCreatorDetailPage({ params }: { params: Promi
             <tbody>
               {list.map((r) => (
                 <tr key={r.id} className="border-b border-border last:border-0 hover:bg-surface">
-                  <td className="px-3 py-2 text-lg">{r.icon_emoji ?? "🍳"}</td>
+                  <td className="px-3 py-2 text-lg">{r.icon_emoji}</td>
                   <td className="px-3 py-2">
                     <Link
                       href={`/admin/creators/${id}/${r.id}/edit`}

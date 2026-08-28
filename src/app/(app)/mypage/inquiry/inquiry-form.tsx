@@ -11,7 +11,11 @@ export function InquiryForm() {
   if (state && "success" in state) {
     return (
       <div className="flex h-[40dvh] flex-col items-center justify-center text-center">
-        <span className="text-[40px] leading-none">📮</span>
+        <div className="flex h-14 w-14 items-center justify-center rounded-full bg-positive/10">
+          <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="var(--color-positive-ink)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M5 12l5 5L19 7" />
+          </svg>
+        </div>
         <p className="mt-4 text-lg font-bold">문의를 접수했어요!</p>
         <p className="mt-2 text-sm text-ink-soft">확인 후 답변 드릴게요.</p>
       </div>

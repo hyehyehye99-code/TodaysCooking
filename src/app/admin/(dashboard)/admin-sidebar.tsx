@@ -95,14 +95,9 @@ export function AdminSidebar({ badges = {} }: { badges?: Badges }) {
 
   return (
     <aside className="flex h-dvh w-60 shrink-0 flex-col border-r border-border bg-white px-4 py-6">
-      <div className="mb-1 flex items-center gap-2 px-2">
-        <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-accent to-accent-ink text-lg">
-          🍳
-        </span>
-        <div>
-          <p className="text-sm font-bold leading-none">우리집 레시피</p>
-          <p className="mt-0.5 text-[11px] font-semibold leading-none text-ink-faint">Admin</p>
-        </div>
+      <div className="mb-1 px-2">
+        <p className="text-sm font-bold leading-none">우리집 레시피</p>
+        <p className="mt-1 text-[11px] font-semibold leading-none text-ink-faint">Admin</p>
       </div>
 
       <p className="mb-6 mt-5 px-2 text-xs leading-relaxed text-ink-soft">

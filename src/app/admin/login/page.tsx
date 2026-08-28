@@ -9,12 +9,9 @@ export default function AdminLoginPage() {
   return (
     <div className="flex min-h-dvh items-center justify-center px-4">
       <div className="w-full max-w-[320px]">
-        <div className="mb-6 flex items-center gap-2">
-          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-accent text-lg">🍳</span>
-          <div>
-            <p className="text-sm font-bold leading-none">우리집 레시피</p>
-            <p className="mt-0.5 text-[11px] font-semibold leading-none text-ink-faint">Admin</p>
-          </div>
+        <div className="mb-6">
+          <p className="text-sm font-bold leading-none">우리집 레시피</p>
+          <p className="mt-1 text-[11px] font-semibold leading-none text-ink-faint">Admin</p>
         </div>
         <form action={formAction} className="w-full rounded-2xl border border-border bg-white p-6 shadow-sm">
           <h1 className="mb-4 text-lg font-bold">관리자 로그인</h1>
