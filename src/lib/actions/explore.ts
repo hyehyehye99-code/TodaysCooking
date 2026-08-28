@@ -46,8 +46,32 @@ type ExploreRecipeSource = {
 };
 
 // Copies a public Explore recipe (from either source) into the caller's own
+// Looks up whether the current household already has its own copy of a
+// given explore recipe, so the "추가하기" button can show its already-added
+// state on load instead of only after a click in the same session.
+export async function findHouseholdCopyOfExploreRecipe(
+  source: "creator" | "personal",
+  id: string
+): Promise<string | null> {
+  const { household } = await getCurrentHousehold();
+  if (!household) return null;
+
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("recipes")
+    .select("id")
+    .eq("household_id", household.id)
+    .eq("source_type", source)
+    .eq("source_id", id)
+    .maybeSingle();
+  return data?.id ?? null;
+}
+
 // household as a brand new recipe — a one-time fork, not a live link back
 // to the original, same as how a person would otherwise just retype it.
+// Idempotent: pressing it again for the same household just returns the
+// existing copy instead of creating a duplicate (see the unique index on
+// recipes(household_id, source_type, source_id)).
 export async function addExploreRecipeToHousehold(
   source: "creator" | "personal",
   id: string
@@ -56,6 +80,9 @@ export async function addExploreRecipeToHousehold(
   if (!user || !household) return { error: "우리집을 먼저 만들어주세요." };
 
   const supabase = await createClient();
+
+  const existing = await findHouseholdCopyOfExploreRecipe(source, id);
+  if (existing) return { recipeId: existing };
 
   const { data, error } = (await supabase
     .rpc(source === "creator" ? "get_creator_recipe" : "get_public_recipe", { p_id: id })
@@ -82,12 +109,22 @@ export async function addExploreRecipeToHousehold(
       tags: data.tags,
       notes: data.notes,
       source_creator_name: data.creator_name,
+      source_type: source,
+      source_id: id,
       created_by: user.id,
       position: newPosition,
     })
     .select("id")
     .single();
-  if (insertError || !recipe) return { error: "레시피를 추가하지 못했어요." };
+  if (insertError) {
+    // A concurrent click from the same household raced us past the check
+    // above — the unique index caught it, so fetch what that insert landed
+    // instead of surfacing a confusing duplicate-key error.
+    const raced = await findHouseholdCopyOfExploreRecipe(source, id);
+    if (raced) return { recipeId: raced };
+    return { error: "레시피를 추가하지 못했어요." };
+  }
+  if (!recipe) return { error: "레시피를 추가하지 못했어요." };
 
   const ingredients = data.ingredients ?? [];
   if (ingredients.length > 0) {

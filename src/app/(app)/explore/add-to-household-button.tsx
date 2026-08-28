@@ -5,11 +5,19 @@ import Link from "next/link";
 import { addExploreRecipeToHousehold } from "@/lib/actions/explore";
 import { useDict } from "@/lib/i18n/client";
 
-export function AddToHouseholdButton({ source, id }: { source: "creator" | "personal"; id: string }) {
+export function AddToHouseholdButton({
+  source,
+  id,
+  initialAddedRecipeId = null,
+}: {
+  source: "creator" | "personal";
+  id: string;
+  initialAddedRecipeId?: string | null;
+}) {
   const dict = useDict();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
-  const [addedRecipeId, setAddedRecipeId] = useState<string | null>(null);
+  const [addedRecipeId, setAddedRecipeId] = useState<string | null>(initialAddedRecipeId);
 
   function handleClick() {
     setError(null);

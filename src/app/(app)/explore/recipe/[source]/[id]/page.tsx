@@ -5,6 +5,7 @@ import { getDictionary } from "@/lib/i18n/server";
 import { GlassCard } from "@/components/ui";
 import { RecipePhotoGallery } from "@/app/(app)/recipes/[id]/recipe-photo-gallery";
 import { AddToHouseholdButton } from "../../../add-to-household-button";
+import { findHouseholdCopyOfExploreRecipe } from "@/lib/actions/explore";
 
 type ExploreIngredient = { name: string; amount: string | null };
 
@@ -33,9 +34,10 @@ export default async function ExploreRecipeDetailPage({
   const supabase = await createClient();
   const { dict } = await getDictionary();
 
-  const { data } = await supabase
-    .rpc(source === "creator" ? "get_creator_recipe" : "get_public_recipe", { p_id: id })
-    .maybeSingle();
+  const [{ data }, alreadyAddedRecipeId] = await Promise.all([
+    supabase.rpc(source === "creator" ? "get_creator_recipe" : "get_public_recipe", { p_id: id }).maybeSingle(),
+    findHouseholdCopyOfExploreRecipe(source, id),
+  ]);
 
   if (!data) notFound();
   const recipe = data as ExploreRecipeDetail;
@@ -118,7 +120,7 @@ export default async function ExploreRecipeDetailPage({
       )}
 
       <div className="mt-8">
-        <AddToHouseholdButton source={source} id={recipe.id} />
+        <AddToHouseholdButton source={source} id={recipe.id} initialAddedRecipeId={alreadyAddedRecipeId} />
       </div>
     </div>
   );
