@@ -40,6 +40,7 @@ export async function createCreator(
   const channelName = String(formData.get("channelName") ?? "").trim() || null;
   const channelLink = String(formData.get("channelLink") ?? "").trim() || null;
   const iconEmoji = String(formData.get("iconEmoji") ?? "").trim() || null;
+  const avatarUrl = String(formData.get("avatarUrl") ?? "").trim() || null;
   const tags = String(formData.get("tags") ?? "")
     .split(",")
     .map((t) => t.trim())
@@ -54,6 +55,7 @@ export async function createCreator(
       channel_name: channelName,
       channel_link: channelLink,
       icon_emoji: iconEmoji,
+      avatar_url: avatarUrl,
       tags,
     })
     .select("id")
@@ -77,6 +79,7 @@ export async function updateCreator(
   const channelName = String(formData.get("channelName") ?? "").trim() || null;
   const channelLink = String(formData.get("channelLink") ?? "").trim() || null;
   const iconEmoji = String(formData.get("iconEmoji") ?? "").trim() || null;
+  const avatarUrl = String(formData.get("avatarUrl") ?? "").trim() || null;
   const tags = String(formData.get("tags") ?? "")
     .split(",")
     .map((t) => t.trim())
@@ -91,6 +94,7 @@ export async function updateCreator(
       channel_name: channelName,
       channel_link: channelLink,
       icon_emoji: iconEmoji,
+      avatar_url: avatarUrl,
       tags,
     })
     .eq("id", creatorId);
@@ -657,4 +661,84 @@ export async function revokePromoRedemption(userId: string) {
   const supabase = createAdminClient();
   await supabase.from("promo_code_redemptions").delete().eq("user_id", userId);
   revalidatePath("/admin/promotions");
+}
+
+export async function createRecurringExpense(
+  _prevState: { error: string } | null,
+  formData: FormData
+): Promise<{ error: string } | null> {
+  await requireAdmin();
+
+  const category = String(formData.get("category") ?? "").trim();
+  const amountRaw = String(formData.get("amount") ?? "").trim();
+  const amount = Number(amountRaw);
+  const cycle = String(formData.get("cycle") ?? "monthly").trim();
+  const memo = String(formData.get("memo") ?? "").trim();
+
+  if (!category) return { error: "카테고리를 입력해주세요." };
+  if (!amountRaw || Number.isNaN(amount) || amount <= 0) return { error: "금액을 올바르게 입력해주세요." };
+  if (cycle !== "monthly" && cycle !== "yearly") return { error: "주기를 선택해주세요." };
+
+  const supabase = createAdminClient();
+  const { error } = await supabase.from("recurring_expenses").insert({
+    category,
+    amount,
+    cycle,
+    memo: memo || null,
+  });
+  if (error) return { error: "정기 지출 등록에 실패했어요." };
+
+  revalidatePath("/admin/expenses");
+  return null;
+}
+
+export async function toggleRecurringExpenseActive(id: string, active: boolean) {
+  await requireAdmin();
+  const supabase = createAdminClient();
+  await supabase.from("recurring_expenses").update({ active }).eq("id", id);
+  revalidatePath("/admin/expenses");
+}
+
+export async function deleteRecurringExpense(id: string) {
+  await requireAdmin();
+  const supabase = createAdminClient();
+  await supabase.from("recurring_expenses").delete().eq("id", id);
+  revalidatePath("/admin/expenses");
+}
+
+export async function logRecurringExpenseOccurrence(id: string): Promise<{ error: string } | { ok: true }> {
+  await requireAdmin();
+  const supabase = createAdminClient();
+
+  const { data: recurring } = await supabase
+    .from("recurring_expenses")
+    .select("category, amount, memo, cycle")
+    .eq("id", id)
+    .maybeSingle();
+  if (!recurring) return { error: "정기 지출 항목을 찾을 수 없어요." };
+
+  const now = new Date();
+  const periodStart =
+    recurring.cycle === "yearly"
+      ? new Date(now.getFullYear(), 0, 1)
+      : new Date(now.getFullYear(), now.getMonth(), 1);
+
+  const { count } = await supabase
+    .from("expenses")
+    .select("id", { count: "exact", head: true })
+    .eq("recurring_expense_id", id)
+    .gte("spent_at", periodStart.toISOString().slice(0, 10));
+  if (count && count > 0) return { error: "이번 주기에 이미 기록했어요." };
+
+  const { error } = await supabase.from("expenses").insert({
+    category: recurring.category,
+    amount: recurring.amount,
+    memo: recurring.memo,
+    spent_at: now.toISOString().slice(0, 10),
+    recurring_expense_id: id,
+  });
+  if (error) return { error: "기록에 실패했어요." };
+
+  revalidatePath("/admin/expenses");
+  return { ok: true };
 }

@@ -33,12 +33,17 @@ export default async function AdminCreatorRecipesPage() {
           <h1 className="text-xl font-bold">크리에이터 레시피 관리</h1>
           <p className="mt-1 text-sm text-ink-soft">전체 크리에이터의 레시피 {rows.length}개예요.</p>
         </div>
-        <a
-          href="/admin/creator-recipes/export"
-          className="rounded-xl border border-accent bg-white px-3.5 py-2.5 text-xs font-bold text-accent-ink"
-        >
-          ⬇ 엑셀로 내보내기
-        </a>
+        <div className="flex items-center gap-4">
+          <Link href="/admin/import" className="text-xs font-bold text-accent-ink">
+            엑셀로 가져오기
+          </Link>
+          <a
+            href="/admin/creator-recipes/export"
+            className="rounded-xl border border-accent bg-white px-3.5 py-2.5 text-xs font-bold text-accent-ink"
+          >
+            ⬇ 엑셀로 내보내기
+          </a>
+        </div>
       </div>
 
       {rows.length === 0 ? (

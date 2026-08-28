@@ -8,6 +8,7 @@ type Creator = {
   id: string;
   name: string;
   icon_emoji: string | null;
+  avatar_url: string | null;
   channel_type: string | null;
   channel_name: string | null;
   channel_link: string | null;
@@ -22,7 +23,7 @@ export default async function AdminCreatorDetailPage({ params }: { params: Promi
   const [{ data: creator }, { data: recipes }] = await Promise.all([
     supabase
       .from("creators")
-      .select("id, name, icon_emoji, channel_type, channel_name, channel_link, tags")
+      .select("id, name, icon_emoji, avatar_url, channel_type, channel_name, channel_link, tags")
       .eq("id", id)
       .maybeSingle(),
     supabase

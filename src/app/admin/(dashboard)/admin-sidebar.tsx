@@ -63,13 +63,6 @@ const RECIPE_ICON = (
     <path d="M15 3v7a3 3 0 0 0 3 3" />
   </svg>
 );
-const IMPORT_ICON = (
-  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M12 15V4" />
-    <path d="M8 8l4-4 4 4" />
-    <path d="M4.5 14v4.5a1 1 0 0 0 1 1h13a1 1 0 0 0 1-1V14" />
-  </svg>
-);
 const EXPENSE_ICON = (
   <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M19 8H8a4 4 0 0 0 0 8h8a4 4 0 0 1 0 4H4" />
@@ -112,10 +105,9 @@ const NAV_GROUPS: NavGroup[] = [
   {
     title: "크리에이터 관리",
     items: [
-      { label: "크리에이터 신청 관리", href: "/admin/applications", icon: APPLICATION_ICON, badgeKey: "applications" },
       { label: "크리에이터 관리 리스트", href: "/admin/creators", icon: CREATOR_ICON },
       { label: "크리에이터 레시피 관리", href: "/admin/creator-recipes", icon: RECIPE_ICON },
-      { label: "엑셀로 가져오기", href: "/admin/import", icon: IMPORT_ICON },
+      { label: "크리에이터 신청 관리", href: "/admin/applications", icon: APPLICATION_ICON, badgeKey: "applications" },
     ],
   },
   {

@@ -10,6 +10,7 @@ type Creator = {
   id: string;
   name: string;
   icon_emoji: string | null;
+  avatar_url: string | null;
   channel_type: string | null;
   channel_name: string | null;
   channel_link: string | null;
@@ -59,6 +60,13 @@ export function EditCreatorForm({ creator, onDone }: { creator: Creator; onDone:
         name="tags"
         defaultValue={creator.tags.join(", ")}
         placeholder="태그 (쉼표로 구분, 예: 자취요리,밀프렙)"
+        className="w-full rounded-xl border border-transparent bg-surface px-3.5 py-2.5 text-sm outline-none focus:border-accent"
+      />
+      <input
+        name="avatarUrl"
+        type="url"
+        defaultValue={creator.avatar_url ?? ""}
+        placeholder="프로필 이미지 URL (선택, 없으면 이모지 아이콘 사용)"
         className="w-full rounded-xl border border-transparent bg-surface px-3.5 py-2.5 text-sm outline-none focus:border-accent"
       />
       <div>

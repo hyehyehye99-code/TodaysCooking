@@ -8,6 +8,7 @@ type Creator = {
   id: string;
   name: string;
   icon_emoji: string | null;
+  avatar_url: string | null;
   channel_type: string | null;
   channel_name: string | null;
   channel_link: string | null;
@@ -29,7 +30,11 @@ export function CreatorHeader({ creator, recipeCount }: { creator: Creator; reci
   return (
     <div className="mb-6 flex items-center justify-between gap-3">
       <div className="flex items-center gap-3">
-        <span className="text-2xl">{creator.icon_emoji ?? "👤"}</span>
+        {creator.avatar_url ? (
+          <img src={creator.avatar_url} alt="" className="h-10 w-10 shrink-0 rounded-full object-cover" />
+        ) : (
+          <span className="text-2xl">{creator.icon_emoji ?? "👤"}</span>
+        )}
         <div>
           <h1 className="text-xl font-bold">{creator.name}</h1>
           {creator.channel_type && <p className="text-xs text-ink-soft">{creator.channel_type}</p>}

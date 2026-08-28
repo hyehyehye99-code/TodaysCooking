@@ -6,6 +6,7 @@ type Creator = {
   id: string;
   name: string;
   icon_emoji: string | null;
+  avatar_url: string | null;
   channel_type: string | null;
   recipe_count: number;
 };
@@ -51,7 +52,13 @@ export default async function AdminCreatorsPage() {
             <tbody>
               {creators.map((c) => (
                 <tr key={c.id} className="border-b border-border last:border-0 hover:bg-surface">
-                  <td className="px-3 py-2 text-lg">{c.icon_emoji ?? "👤"}</td>
+                  <td className="px-3 py-2">
+                    {c.avatar_url ? (
+                      <img src={c.avatar_url} alt="" className="h-7 w-7 rounded-full object-cover" />
+                    ) : (
+                      <span className="text-lg">{c.icon_emoji ?? "👤"}</span>
+                    )}
+                  </td>
                   <td className="px-3 py-2">
                     <Link href={`/admin/creators/${c.id}`} className="font-bold text-ink underline-offset-2 hover:underline">
                       {c.name}
