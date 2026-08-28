@@ -388,7 +388,9 @@ const ja: Dictionary = {
     addToMyRecipes: "我が家のレシピに追加",
     addingToMyRecipes: "追加中...",
     addToMyRecipesError: "追加できませんでした。",
-    addedCountTemplate: "おいしいと言われました！ {count}",
+    addedToMyRecipes: "追加しました",
+    viewInMyRecipes: "レシピを見る",
+    addedCountTemplate: "{count}回追加されました",
   },
 };
 

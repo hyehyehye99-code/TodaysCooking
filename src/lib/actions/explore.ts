@@ -1,7 +1,6 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentHousehold } from "@/lib/household";
 
@@ -52,7 +51,7 @@ type ExploreRecipeSource = {
 export async function addExploreRecipeToHousehold(
   source: "creator" | "personal",
   id: string
-) {
+): Promise<{ error: string } | { recipeId: string }> {
   const { user, household } = await getCurrentHousehold();
   if (!user || !household) return { error: "우리집을 먼저 만들어주세요." };
 
@@ -97,13 +96,13 @@ export async function addExploreRecipeToHousehold(
     );
   }
 
-  // "맛있다고 표현했어요!" on the original is just this counter — adding it
-  // to your own recipes IS the compliment, no separate reaction needed.
+  // The count shown on the original is just this counter — adding it to
+  // your own recipes IS the compliment, no separate reaction needed.
   await supabase.rpc(
     source === "creator" ? "increment_creator_recipe_add_count" : "increment_recipe_explore_add_count",
     { p_id: id }
   );
 
   revalidatePath("/recipes");
-  redirect(`/recipes/${recipe.id}`);
+  return { recipeId: recipe.id };
 }

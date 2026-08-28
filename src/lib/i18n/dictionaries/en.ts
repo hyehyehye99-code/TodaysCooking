@@ -391,7 +391,9 @@ const en: Dictionary = {
     addToMyRecipes: "Add to my recipes",
     addingToMyRecipes: "Adding...",
     addToMyRecipesError: "Couldn't add it.",
-    addedCountTemplate: "{count} people said yum!",
+    addedToMyRecipes: "Added!",
+    viewInMyRecipes: "View recipe",
+    addedCountTemplate: "Added {count} times",
   },
 };
 

@@ -391,7 +391,9 @@ const ko = {
     addToMyRecipes: "우리집 레시피에 추가",
     addingToMyRecipes: "추가하는 중...",
     addToMyRecipesError: "추가하지 못했어요.",
-    addedCountTemplate: "맛있다고 표현했어요! {count}",
+    addedToMyRecipes: "추가했어요",
+    viewInMyRecipes: "레시피 보기",
+    addedCountTemplate: "{count}번 담아갔어요",
   },
 } as const;
 
