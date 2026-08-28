@@ -1,7 +1,10 @@
 export type Recipe = {
   id: string;
   household_id: string;
-  title: string;
+  // Optional: a recipe created with just a reference link and nothing else
+  // (the recipes-tab equivalent of the old standalone bookmark) has no
+  // title — see RecipeList/RecipeDetailPage for how that renders.
+  title: string | null;
   subtitle: string | null;
   cook_time_minutes: number | null;
   cover_photo_urls: string[];
@@ -25,7 +28,7 @@ export type RecipeIngredient = {
 
 export type RecipeWithIngredients = Recipe & {
   recipe_ingredients: RecipeIngredient[];
-  bookmarks?: { thumbnail_url: string | null }[];
+  bookmarks?: { url: string; title: string | null; domain: string | null; thumbnail_url: string | null }[];
 };
 
 export type RecipeCookLog = {

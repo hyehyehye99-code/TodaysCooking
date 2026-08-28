@@ -12,7 +12,7 @@ type HouseholdOption = { id: string; name: string };
 const TAB_TITLE_KEYS: Record<string, keyof Dictionary["tabBar"]> = {
   "/recipes": "recipes",
   "/fridge": "fridge",
-  "/bookmarks": "bookmarks",
+  "/explore": "explore",
   "/shopping": "shopping",
 };
 
@@ -34,7 +34,6 @@ export function AppHeader({
   const isRecipesTab = pathname === "/recipes";
   const tabTitleKey = TAB_TITLE_KEYS[pathname];
   const tabTitle = tabTitleKey ? dict.tabBar[tabTitleKey] : "";
-  const showAddBookmarkButton = pathname === "/bookmarks";
 
   const nameClassName = isRecipesTab
     ? "flex items-center gap-1.5 whitespace-nowrap text-[26px] font-bold tracking-tight"
@@ -120,11 +119,6 @@ export function AppHeader({
 
       <div className="flex items-baseline justify-between gap-3">
         <h1 className="text-[26px] font-bold tracking-tight">{tabTitle}</h1>
-        {showAddBookmarkButton && (
-          <Link href="/bookmarks?add=1" className="shrink-0 text-sm font-bold text-accent">
-            {dict.components.addBookmarkLink}
-          </Link>
-        )}
       </div>
     </div>
   );

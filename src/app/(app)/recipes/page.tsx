@@ -10,7 +10,7 @@ export default async function RecipesPage() {
   const [{ data: recipes }, { data: fridgeItems }] = await Promise.all([
     supabase
       .from("recipes")
-      .select("*, recipe_ingredients(*), bookmarks(thumbnail_url)")
+      .select("*, recipe_ingredients(*), bookmarks(url, title, domain, thumbnail_url)")
       .eq("household_id", household!.id)
       .order("position", { ascending: true, nullsFirst: false })
       .order("created_at", { ascending: false }),

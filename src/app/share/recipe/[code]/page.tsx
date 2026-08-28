@@ -14,7 +14,7 @@ type SharedIngredient = { name: string; amount: string | null; skipped: boolean 
 
 type SharedRecipe = {
   id: string;
-  title: string;
+  title: string | null;
   subtitle: string | null;
   cover_photo_urls: string[];
   icon_emoji: string | null;
@@ -68,7 +68,7 @@ export default async function SharedRecipePage({ params }: { params: Promise<{ c
         </div>
       ) : null}
 
-      <h1 className="text-2xl font-bold">{recipe.title}</h1>
+      <h1 className="text-2xl font-bold">{recipe.title || "저장한 링크"}</h1>
       {recipe.subtitle && <p className="mt-1 text-sm text-ink-soft">{recipe.subtitle}</p>}
       {recipe.tags.length > 0 && (
         <div className="mt-2.5 flex flex-wrap gap-1.5">

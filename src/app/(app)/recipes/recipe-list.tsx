@@ -12,6 +12,16 @@ import { useDragReorder } from "@/lib/useDragReorder";
 import { useDict } from "@/lib/i18n/client";
 import type { RecipeWithIngredients } from "@/lib/types";
 
+// A recipe created with no title (just a reference link, the recipes-tab
+// equivalent of the old standalone bookmark) falls back to the linked
+// bookmark's scraped page title, then its domain, so the card/search/sort
+// never has to deal with a blank string.
+function displayTitle(recipe: RecipeWithIngredients, untitledFallback: string) {
+  if (recipe.title) return recipe.title;
+  const bookmark = recipe.bookmarks?.[0];
+  return bookmark?.title || bookmark?.domain || untitledFallback;
+}
+
 function FavoriteButton({ recipe }: { recipe: RecipeWithIngredients }) {
   const dict = useDict();
   const [optimisticFavorite, setOptimisticFavorite] = useOptimistic(recipe.is_favorite);
@@ -62,6 +72,7 @@ export function RecipeList({
   const [activeTag, setActiveTag] = useState<string | null>(null);
   const [favoritesOnly, setFavoritesOnly] = useState(false);
   const [makeableOnly, setMakeableOnly] = useState(false);
+  const [linkOnly, setLinkOnly] = useState(false);
   const [sortBy, setSortBy] = useState<"custom" | "newest" | "oldest" | "name">("custom");
   const [editing, setEditing] = useState(false);
   const {
@@ -87,12 +98,16 @@ export function RecipeList({
     [recipes]
   );
 
+  // A link-only card has nothing to "make" — an empty ingredient list would
+  // otherwise vacuously pass the every() check below and wrongly badge it.
   const makeableIds = useMemo(
     () =>
       new Set(
         recipes
-          .filter((r) =>
-            r.recipe_ingredients.filter((ing) => !ing.skipped).every((ing) => owned.has(ing.name))
+          .filter(
+            (r) =>
+              r.title &&
+              r.recipe_ingredients.filter((ing) => !ing.skipped).every((ing) => owned.has(ing.name))
           )
           .map((r) => r.id)
       ),
@@ -103,14 +118,15 @@ export function RecipeList({
     const q = query.toLowerCase();
     const matchesQuery =
       !query ||
-      r.title.toLowerCase().includes(q) ||
+      displayTitle(r, "").toLowerCase().includes(q) ||
       (r.subtitle ?? "").toLowerCase().includes(q) ||
       r.tags.some((t) => t.toLowerCase().includes(q)) ||
       r.recipe_ingredients.some((ing) => ing.name.toLowerCase().includes(q));
     const matchesTag = !activeTag || r.tags.includes(activeTag);
     const matchesFavorite = !favoritesOnly || r.is_favorite;
     const matchesMakeable = !makeableOnly || makeableIds.has(r.id);
-    return matchesQuery && matchesTag && matchesFavorite && matchesMakeable;
+    const matchesLinkOnly = !linkOnly || !r.title;
+    return matchesQuery && matchesTag && matchesFavorite && matchesMakeable && matchesLinkOnly;
   });
 
   // "custom" keeps the server-provided order (position, i.e. whatever the
@@ -122,7 +138,7 @@ export function RecipeList({
       : sortBy === "oldest"
         ? [...filtered].sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
         : sortBy === "name"
-          ? [...filtered].sort((a, b) => a.title.localeCompare(b.title, "ko"))
+          ? [...filtered].sort((a, b) => displayTitle(a, "").localeCompare(displayTitle(b, ""), "ko"))
           : filtered;
 
   function startEditing() {
@@ -219,18 +235,6 @@ export function RecipeList({
             <option value="oldest">{dict.recipes.sortOldest}</option>
             <option value="name">{dict.recipes.sortByName}</option>
           </select>
-          {recipes.length > 1 && (
-            <button
-              onClick={startEditing}
-              aria-label={dict.recipes.editMenu}
-              className="flex h-[42px] w-[42px] shrink-0 items-center justify-center rounded-xl bg-surface text-ink-soft"
-            >
-              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M4 20l1-4L16 5l3 3L8 19l-4 1z" />
-                <path d="M14 7l3 3" />
-              </svg>
-            </button>
-          )}
         </div>
       )}
 
@@ -284,6 +288,19 @@ export function RecipeList({
             </svg>
             {dict.recipes.makeableFilter}
           </button>
+          <button
+            onClick={() => setLinkOnly((prev) => !prev)}
+            className={`inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-semibold ${
+              linkOnly ? "bg-accent text-white" : "bg-surface text-ink-soft"
+            }`}
+          >
+            <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M9.5 14.5l5-5" />
+              <path d="M13 7l1.5-1.5a3 3 0 1 1 4.2 4.2L17.2 11" />
+              <path d="M11 17l-1.5 1.5a3 3 0 1 1-4.2-4.2L6.8 13" />
+            </svg>
+            {dict.recipes.linkOnlyFilter}
+          </button>
           {allTags.map((tag) => (
             <button
               key={tag}
@@ -295,6 +312,18 @@ export function RecipeList({
               {tag}
             </button>
           ))}
+          {recipes.length > 1 && (
+            <button
+              onClick={startEditing}
+              aria-label={dict.recipes.editMenu}
+              className="ml-auto flex h-[26px] w-[26px] shrink-0 items-center justify-center rounded-full bg-surface text-ink-soft"
+            >
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M4 20l1-4L16 5l3 3L8 19l-4 1z" />
+                <path d="M14 7l3 3" />
+              </svg>
+            </button>
+          )}
         </div>
       )}
 
@@ -331,7 +360,9 @@ export function RecipeList({
                       linkThumbnailUrl={recipe.bookmarks?.[0]?.thumbnail_url}
                     />
                     <div className="min-w-0 flex-1">
-                      <p className="truncate text-[15px] font-bold">{recipe.title}</p>
+                      <p className="truncate text-[15px] font-bold">
+                        {displayTitle(recipe, dict.recipes.untitledLink)}
+                      </p>
                     </div>
                     <div
                       className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 ${
@@ -375,17 +406,24 @@ export function RecipeList({
         <div className="flex flex-col gap-3">
           {sorted.map((recipe) => {
             const makeable = makeableIds.has(recipe.id);
+            const isLinkOnly = !recipe.title;
+            const bookmark = recipe.bookmarks?.[0];
             return (
             <Link key={recipe.id} href={`/recipes/${recipe.id}`}>
               <GlassCard className="flex items-center gap-3 bg-white p-3.5">
                 <RecipeThumb
                   coverPhotoUrl={recipe.cover_photo_urls[0]}
                   iconEmoji={recipe.icon_emoji}
-                  linkThumbnailUrl={recipe.bookmarks?.[0]?.thumbnail_url}
+                  linkThumbnailUrl={bookmark?.thumbnail_url}
                 />
                 <div className="min-w-0 flex-1">
-                  <p className="text-[15px] font-bold">{recipe.title}</p>
-                  {recipe.subtitle && (
+                  <p className={isLinkOnly ? "truncate text-[15px] font-semibold text-ink-soft" : "text-[15px] font-bold"}>
+                    {displayTitle(recipe, dict.recipes.untitledLink)}
+                  </p>
+                  {isLinkOnly && bookmark?.domain && (
+                    <p className="mt-0.5 truncate text-xs text-ink-faint">{bookmark.domain}</p>
+                  )}
+                  {!isLinkOnly && recipe.subtitle && (
                     <p className="mt-0.5 truncate text-xs text-ink-soft">{recipe.subtitle}</p>
                   )}
                   {(makeable || recipe.tags.length > 0) && (

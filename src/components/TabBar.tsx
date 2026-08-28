@@ -61,12 +61,17 @@ const TABS: {
     ),
   },
   {
-    href: "/bookmarks",
-    labelKey: "bookmarks",
+    href: "/explore",
+    labelKey: "explore",
     cx: 12,
-    cy: 12.25,
-    scale: 0.91,
-    icon: <path d="M6 3.5h12a.5.5 0 0 1 .5.5v17l-6.5-4-6.5 4v-17a.5.5 0 0 1 .5-.5z" />,
+    cy: 12,
+    scale: 0.85,
+    icon: (
+      <>
+        <circle cx="10.5" cy="10.5" r="6.5" />
+        <path d="M20.5 20.5l-5-5" />
+      </>
+    ),
   },
   {
     href: "/mypage",

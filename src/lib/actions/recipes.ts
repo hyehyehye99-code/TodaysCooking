@@ -160,8 +160,6 @@ export async function createRecipe(_prevState: unknown, formData: FormData) {
   const notes = String(formData.get("notes") ?? "").trim();
   const referenceUrl = String(formData.get("referenceUrl") ?? "");
 
-  if (!title) return { error: "요리 이름을 입력해주세요." };
-
   const { user, household } = await getCurrentHousehold();
   if (!user || !household) return { error: "우리집을 먼저 만들어주세요." };
 
@@ -187,7 +185,7 @@ export async function createRecipe(_prevState: unknown, formData: FormData) {
     .from("recipes")
     .insert({
       household_id: household.id,
-      title,
+      title: title || null,
       subtitle: subtitle || null,
       cover_photo_urls: photos.urls,
       icon_emoji: iconEmoji || null,
@@ -214,12 +212,13 @@ export async function createRecipe(_prevState: unknown, formData: FormData) {
   const nickname = await getNickname(supabase, user.id);
   notifyHousehold(household.id, user.id, {
     title: "새 레시피 추가",
-    body: `${nickname}님이 "${title}" 레시피를 추가했어요`,
+    body: title
+      ? `${nickname}님이 "${title}" 레시피를 추가했어요`
+      : `${nickname}님이 링크를 저장했어요`,
     url: `/recipes/${recipe.id}`,
   }).catch(() => {});
 
   revalidatePath("/recipes");
-  revalidatePath("/bookmarks");
   redirect(`/recipes/${recipe.id}`);
 }
 
@@ -234,7 +233,6 @@ export async function updateRecipe(_prevState: unknown, formData: FormData) {
   const referenceUrl = String(formData.get("referenceUrl") ?? "");
 
   if (!id) return { error: "메뉴를 찾을 수 없어요." };
-  if (!title) return { error: "요리 이름을 입력해주세요." };
 
   const { user, household } = await getCurrentHousehold();
   if (!user || !household) return { error: "우리집을 먼저 만들어주세요." };
@@ -245,7 +243,7 @@ export async function updateRecipe(_prevState: unknown, formData: FormData) {
   if ("error" in photos) return { error: photos.error };
 
   const update: Record<string, unknown> = {
-    title,
+    title: title || null,
     subtitle: subtitle || null,
     icon_emoji: iconEmoji || null,
     tags,
@@ -271,7 +269,6 @@ export async function updateRecipe(_prevState: unknown, formData: FormData) {
 
   revalidatePath("/recipes");
   revalidatePath(`/recipes/${id}`);
-  revalidatePath("/bookmarks");
   redirect(`/recipes/${id}`);
 }
 
@@ -283,7 +280,6 @@ export async function deleteRecipe(formData: FormData) {
   await supabase.from("recipes").delete().eq("id", id);
 
   revalidatePath("/recipes");
-  revalidatePath("/bookmarks");
   redirect("/recipes");
 }
 
@@ -297,7 +293,6 @@ export async function deleteRecipes(ids: string[]) {
   await supabase.from("recipes").delete().in("id", ids);
 
   revalidatePath("/recipes");
-  revalidatePath("/bookmarks");
 }
 
 export async function resolveMissingIngredients(payload: {

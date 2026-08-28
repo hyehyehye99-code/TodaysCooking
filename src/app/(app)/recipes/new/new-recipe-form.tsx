@@ -86,12 +86,11 @@ export function NewRecipeForm({ existingTags }: { existingTags: string[] }) {
         className="flex flex-col gap-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))]"
       >
         <div>
-          <FieldLabel required>{dict.welcome.dishName}</FieldLabel>
+          <FieldLabel>{dict.welcome.dishName}</FieldLabel>
           <ClearableInput
             ref={titleRef}
             name="title"
-            required
-            placeholder={dict.recipes.dishNamePlaceholder}
+            placeholder={dict.recipes.dishNameOptionalPlaceholder}
             className="w-full rounded-xl border border-transparent bg-surface px-3.5 py-3 text-base font-bold outline-none focus:border-accent"
           />
         </div>

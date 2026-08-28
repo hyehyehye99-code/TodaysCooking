@@ -85,12 +85,11 @@ export function EditRecipeForm({
         <input type="hidden" name="id" value={recipe.id} />
 
         <div>
-          <FieldLabel required>{dict.welcome.dishName}</FieldLabel>
+          <FieldLabel>{dict.welcome.dishName}</FieldLabel>
           <ClearableInput
             name="title"
-            required
-            defaultValue={recipe.title}
-            placeholder={dict.recipes.dishNamePlaceholder}
+            defaultValue={recipe.title ?? ""}
+            placeholder={dict.recipes.dishNameOptionalPlaceholder}
             className="w-full rounded-xl border border-transparent bg-surface px-3.5 py-3 text-base font-bold outline-none focus:border-accent"
           />
         </div>

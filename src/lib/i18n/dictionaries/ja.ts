@@ -14,7 +14,7 @@ const ja: Dictionary = {
     recipes: "レシピ",
     fridge: "冷蔵庫",
     shopping: "買い物",
-    bookmarks: "保存済み",
+    explore: "探す",
     mypage: "マイページ",
   },
   landing: {
@@ -252,7 +252,6 @@ const ja: Dictionary = {
     clear: "クリア",
     inUse: "使用中",
     newRecipeLink: "+ 新しいメニュー",
-    addBookmarkLink: "+ リンクを追加",
     emojiInputPlaceholder: "絵文字を入力",
     more: "もっと見る",
     photoMaxTemplate: "写真は最大{max}枚まで登録できます。",
@@ -313,6 +312,8 @@ const ja: Dictionary = {
     sortByName: "名前順",
     all: "すべて",
     makeableFilter: "すぐに作れる料理",
+    linkOnlyFilter: "リンクのみ",
+    untitledLink: "保存したリンク",
     emptyNoRecipes: "まだ登録されたメニューがありません。最初のメニューを登録してみましょう。",
     emptySearch: "検索結果がありません。",
     dragReorder: "ドラッグで並び替え",
@@ -332,6 +333,7 @@ const ja: Dictionary = {
     keepEditing: "編集を続ける",
     leave: "退出する",
     dishNamePlaceholder: "料理名を入力してください",
+    dishNameOptionalPlaceholder: "料理名（リンクだけ保存する場合は空欄でOK）",
     referenceLinkHint: "ここに入力したリンクは保存済みタブにも保存されます",
     notesPlaceholder: "例）次回はスープをもっと濃く、にんにくを控えめに",
     photoOrEmojiLabel: "写真または絵文字",
@@ -391,19 +393,9 @@ const ja: Dictionary = {
     cannotUndo: "元に戻せません。",
     buyButton: "購入する",
   },
-  bookmarks: {
-    addLinkHeading: "リンクを追加",
-    urlPlaceholder: "リンクを貼り付けてください",
-    notePlaceholderOptional: "メモ（任意）",
-    noteInputPlaceholder: "メモを入力",
-    addNote: "+ メモを追加",
-    alsoInRecipeTitle: "メニューからも削除されます",
-    alsoInRecipeDesc:
-      "このリンクはメニューの参考リンクとしても使われています。削除するとメニューからもこのリンクが削除されます。",
-    searchPlaceholder: "保存済みを検索",
-    reorder: "並び替え",
-    emptyList: "メニューのリンクを保存するとここに集まります。",
-    linkedRecipeTemplate: "{title} メニュー",
+  explore: {
+    comingSoonTitle: "探すは準備中です",
+    comingSoonDesc: "近いうちに新しい発見ができる場所になります。",
   },
 };
 

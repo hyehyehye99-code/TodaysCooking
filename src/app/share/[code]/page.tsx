@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 
 type SharedRecipe = {
   id: string;
-  title: string;
+  title: string | null;
   subtitle: string | null;
   cover_photo_urls: string[];
   icon_emoji: string | null;
@@ -92,7 +92,7 @@ export default async function SharePage({ params }: { params: Promise<{ code: st
                 iconEmoji={recipe.icon_emoji}
               />
               <div className="min-w-0 flex-1">
-                <p className="truncate text-[15px] font-bold">{recipe.title}</p>
+                <p className="truncate text-[15px] font-bold">{recipe.title || "저장한 링크"}</p>
                 {recipe.subtitle && (
                   <p className="mt-0.5 truncate text-xs text-ink-soft">{recipe.subtitle}</p>
                 )}

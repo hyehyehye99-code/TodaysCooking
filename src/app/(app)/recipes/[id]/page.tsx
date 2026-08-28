@@ -65,6 +65,12 @@ export default async function RecipeDetailPage({
   const owned = new Set((fridgeItems ?? []).filter((i) => i.in_stock).map((i) => i.name));
   const onShoppingList = new Set((shoppingItems ?? []).map((i) => i.name));
 
+  // A recipe created with just a reference link and no title (the recipes-
+  // tab equivalent of the old standalone bookmark) falls back to the linked
+  // bookmark's scraped page title, then its domain, then a generic label.
+  const displayTitle =
+    r.title || referenceBookmark?.title || referenceBookmark?.domain || dict.recipes.untitledLink;
+
   const ingredients = r.recipe_ingredients;
   // 생략(skipped) ingredients are excluded from the "보유 중" ratio and the
   // makeable check entirely, but still surface in the resolve-missing modal
@@ -85,12 +91,12 @@ export default async function RecipeDetailPage({
             </div>
           )}
           <div className="min-w-0 flex-1">
-            <h1 className="text-[22px] font-bold">{r.title}</h1>
+            <h1 className="text-[22px] font-bold">{displayTitle}</h1>
             {r.subtitle && <p className="mt-0.5 text-sm text-ink-soft">{r.subtitle}</p>}
           </div>
         </div>
         <div className="flex shrink-0 items-center gap-2">
-          <ShareRecipeButton recipeId={r.id} title={r.title} />
+          <ShareRecipeButton recipeId={r.id} title={displayTitle} />
           <Link
             href="/recipes"
             aria-label={dict.common.close}
@@ -151,57 +157,61 @@ export default async function RecipeDetailPage({
         </a>
       )}
 
-      <div className="mt-5">
-        <p className="mb-2 flex items-center gap-1.5">
-          <span className="text-[15px] font-bold">{dict.welcome.ingredients}</span>
-          <span className="text-xs text-ink-faint">
-            {dict.recipes.ownedCountTemplate
-              .replace("{owned}", String(activeIngredients.length - missing.length))
-              .replace("{total}", String(activeIngredients.length))}
-          </span>
-        </p>
-        <div className="flex flex-wrap gap-2">
-          {ingredients.map((ing) => {
-            const stateClass = ing.skipped
-              ? "border-ink-faint bg-surface text-ink-faint"
-              : owned.has(ing.name)
-                ? "border-accent bg-surface text-accent-ink"
-                : onShoppingList.has(ing.name)
-                  ? "border-positive bg-surface text-positive-ink"
-                  : "border-transparent bg-surface text-ink-soft";
-            return (
-              <span
-                key={ing.id}
-                className={`rounded-full border px-3.5 py-2 text-[13px] font-semibold ${stateClass}`}
-              >
-                {ing.name}
-                {ing.amount && <span className="ml-1 font-normal opacity-70">{ing.amount}</span>}
-                {ing.skipped && <span className="ml-1 text-[10px] font-normal">{dict.recipes.skippedSuffix}</span>}
-              </span>
-            );
-          })}
+      {ingredients.length > 0 && (
+        <div className="mt-5">
+          <p className="mb-2 flex items-center gap-1.5">
+            <span className="text-[15px] font-bold">{dict.welcome.ingredients}</span>
+            <span className="text-xs text-ink-faint">
+              {dict.recipes.ownedCountTemplate
+                .replace("{owned}", String(activeIngredients.length - missing.length))
+                .replace("{total}", String(activeIngredients.length))}
+            </span>
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {ingredients.map((ing) => {
+              const stateClass = ing.skipped
+                ? "border-ink-faint bg-surface text-ink-faint"
+                : owned.has(ing.name)
+                  ? "border-accent bg-surface text-accent-ink"
+                  : onShoppingList.has(ing.name)
+                    ? "border-positive bg-surface text-positive-ink"
+                    : "border-transparent bg-surface text-ink-soft";
+              return (
+                <span
+                  key={ing.id}
+                  className={`rounded-full border px-3.5 py-2 text-[13px] font-semibold ${stateClass}`}
+                >
+                  {ing.name}
+                  {ing.amount && <span className="ml-1 font-normal opacity-70">{ing.amount}</span>}
+                  {ing.skipped && <span className="ml-1 text-[10px] font-normal">{dict.recipes.skippedSuffix}</span>}
+                </span>
+              );
+            })}
+          </div>
         </div>
-      </div>
+      )}
 
-      <div className="mt-4">
-        {makeable ? (
-          <div className="flex items-center gap-2 rounded-xl border border-transparent bg-positive/10 px-3 py-2.5">
-            <svg viewBox="0 0 14 14" width="14" height="14" fill="none" stroke="var(--color-positive-ink)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M2.5 7.5l3 3 6-7" />
-            </svg>
-            <span className="text-[13px] font-bold text-positive-ink">{dict.recipes.makeableBadge}</span>
-          </div>
-        ) : allAdded ? (
-          <div className="flex items-center justify-center gap-1.5 rounded-xl border border-transparent bg-surface py-2.5">
-            <span className="text-[13px] font-bold text-ink-faint">{dict.welcome.addedToShoppingList}</span>
-          </div>
-        ) : (
-          <MissingIngredientsButton
-            recipeId={r.id}
-            missing={modalCandidates.map((m) => ({ name: m.name, skipped: m.skipped }))}
-          />
-        )}
-      </div>
+      {activeIngredients.length > 0 && (
+        <div className="mt-4">
+          {makeable ? (
+            <div className="flex items-center gap-2 rounded-xl border border-transparent bg-positive/10 px-3 py-2.5">
+              <svg viewBox="0 0 14 14" width="14" height="14" fill="none" stroke="var(--color-positive-ink)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M2.5 7.5l3 3 6-7" />
+              </svg>
+              <span className="text-[13px] font-bold text-positive-ink">{dict.recipes.makeableBadge}</span>
+            </div>
+          ) : allAdded ? (
+            <div className="flex items-center justify-center gap-1.5 rounded-xl border border-transparent bg-surface py-2.5">
+              <span className="text-[13px] font-bold text-ink-faint">{dict.welcome.addedToShoppingList}</span>
+            </div>
+          ) : (
+            <MissingIngredientsButton
+              recipeId={r.id}
+              missing={modalCandidates.map((m) => ({ name: m.name, skipped: m.skipped }))}
+            />
+          )}
+        </div>
+      )}
 
       {r.notes && (
         <div className="mt-6">
@@ -222,7 +232,7 @@ export default async function RecipeDetailPage({
         </Link>
       </div>
 
-      <CookLogSection recipeId={r.id} recipeTitle={r.title} logs={(cookLogs as RecipeCookLog[] | null) ?? []} />
+      <CookLogSection recipeId={r.id} recipeTitle={displayTitle} logs={(cookLogs as RecipeCookLog[] | null) ?? []} />
 
       <ReactionLog recipeId={r.id} reactions={reactions ?? []} />
     </div>

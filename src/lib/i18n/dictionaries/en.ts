@@ -14,7 +14,7 @@ const en: Dictionary = {
     recipes: "Recipes",
     fridge: "Fridge",
     shopping: "Shopping",
-    bookmarks: "Saved",
+    explore: "Explore",
     mypage: "My Page",
   },
   landing: {
@@ -255,7 +255,6 @@ const en: Dictionary = {
     clear: "Clear",
     inUse: "In use",
     newRecipeLink: "+ New menu",
-    addBookmarkLink: "+ Add link",
     emojiInputPlaceholder: "Type an emoji",
     more: "More",
     photoMaxTemplate: "You can add up to {max} photos.",
@@ -316,6 +315,8 @@ const en: Dictionary = {
     sortByName: "By name",
     all: "All",
     makeableFilter: "Ready to cook now",
+    linkOnlyFilter: "Links only",
+    untitledLink: "Saved link",
     emptyNoRecipes: "No recipes yet. Add your first one.",
     emptySearch: "No results found.",
     dragReorder: "Drag to reorder",
@@ -335,6 +336,7 @@ const en: Dictionary = {
     keepEditing: "Keep editing",
     leave: "Leave",
     dishNamePlaceholder: "Enter a dish name",
+    dishNameOptionalPlaceholder: "Dish name (leave blank to just save a link)",
     referenceLinkHint: "Links added here are also saved to the Saved tab",
     notesPlaceholder: "e.g. Make the broth richer next time, go easy on the garlic",
     photoOrEmojiLabel: "Photo or emoji",
@@ -394,19 +396,9 @@ const en: Dictionary = {
     cannotUndo: "This can't be undone.",
     buyButton: "Buy",
   },
-  bookmarks: {
-    addLinkHeading: "Add link",
-    urlPlaceholder: "Paste a link",
-    notePlaceholderOptional: "Note (optional)",
-    noteInputPlaceholder: "Enter a note",
-    addNote: "+ Add note",
-    alsoInRecipeTitle: "This will also disappear from the recipe",
-    alsoInRecipeDesc:
-      "This link is also used as a recipe's reference link. Deleting it will remove it from that recipe too.",
-    searchPlaceholder: "Search saved links",
-    reorder: "Reorder",
-    emptyList: "Save a recipe link and it'll show up here.",
-    linkedRecipeTemplate: "{title} recipe",
+  explore: {
+    comingSoonTitle: "Explore is coming soon",
+    comingSoonDesc: "This will be a place to discover something new.",
   },
 };
 
