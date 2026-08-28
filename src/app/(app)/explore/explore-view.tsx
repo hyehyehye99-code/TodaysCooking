@@ -3,11 +3,10 @@
 import { useRef, useState, useTransition } from "react";
 import Link from "next/link";
 import { GlassCard } from "@/components/ui";
-import { RecipeThumb } from "@/components/RecipeThumb";
 import { ClearableInput } from "@/components/ClearableInput";
 import { searchExploreRecipes, type ExploreSearchResult } from "@/lib/actions/explore";
 import { useDict } from "@/lib/i18n/client";
-import type { ExploreCreator, ExplorePublicRecipe } from "./page";
+import type { ExploreCreator, ExploreFeedItem } from "./page";
 
 function CreatorAvatar({ iconEmoji, avatarUrl, size = 56 }: { iconEmoji: string | null; avatarUrl?: string | null; size?: number }) {
   const style = { width: size, height: size };
@@ -26,12 +25,58 @@ function CreatorAvatar({ iconEmoji, avatarUrl, size = 56 }: { iconEmoji: string 
   );
 }
 
+// A thread/feed-style card — deliberately much bigger and more vertical
+// than the compact rows on the 레시피 tab (RecipeThumb + one-line text), so
+// browsing Explore doesn't feel like just another recipe list.
+function ExploreFeedCard({ item, dict }: { item: ExploreFeedItem | ExploreSearchResult; dict: ReturnType<typeof useDict> }) {
+  const photo = item.cover_photo_urls[0];
+  return (
+    <Link href={`/explore/recipe/${item.source}/${item.id}`}>
+      <GlassCard className="overflow-hidden bg-white">
+        <div className="flex items-center gap-2 px-4 pt-3.5">
+          <CreatorAvatar iconEmoji={item.creator_icon_emoji} size={28} />
+          <span className="min-w-0 flex-1 truncate text-xs font-bold text-ink-soft">{item.creator_name}</span>
+        </div>
+
+        {photo ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={photo} alt="" className="mt-3 aspect-[4/3] w-full object-cover" />
+        ) : (
+          <div className="mt-3 flex aspect-[4/3] w-full items-center justify-center bg-surface text-[56px]">
+            {item.icon_emoji ?? "🍽️"}
+          </div>
+        )}
+
+        <div className="p-4">
+          <p className="text-[16px] font-bold">{item.title || dict.recipes.untitledLink}</p>
+          {item.subtitle && <p className="mt-0.5 text-sm text-ink-soft">{item.subtitle}</p>}
+          {item.tags.length > 0 && (
+            <div className="mt-2 flex flex-wrap gap-1.5">
+              {item.tags.map((tag) => (
+                <span key={tag} className="text-[11px] font-semibold text-positive-ink">
+                  #{tag}
+                </span>
+              ))}
+            </div>
+          )}
+          <div className="mt-3 flex items-center gap-1.5 border-t border-border pt-3 text-xs font-bold text-accent-ink">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true">
+              <path d="M12 21s-7.5-4.6-10-9.2C.4 8.6 2 5 5.6 5c2 0 3.4 1 4.4 2.4C11 6 12.4 5 14.4 5 18 5 19.6 8.6 22 11.8 19.5 16.4 12 21 12 21z" />
+            </svg>
+            {dict.explore.addedCountTemplate.replace("{count}", String(item.add_count))}
+          </div>
+        </div>
+      </GlassCard>
+    </Link>
+  );
+}
+
 export function ExploreView({
   creators,
-  publicRecipes,
+  feed,
 }: {
   creators: ExploreCreator[];
-  publicRecipes: ExplorePublicRecipe[];
+  feed: ExploreFeedItem[];
 }) {
   const dict = useDict();
   const [query, setQuery] = useState("");
@@ -55,29 +100,28 @@ export function ExploreView({
 
   return (
     <div>
-      <ClearableInput
-        value={query}
-        onChange={(e) => handleQueryChange(e.target.value)}
-        placeholder={dict.explore.searchPlaceholder}
-        className="mb-5 w-full rounded-xl border border-transparent bg-surface px-3.5 py-2.5 text-sm outline-none focus:border-accent"
-      />
+      <div className="mb-5 flex items-center justify-between gap-3">
+        <div className="min-w-0 flex-1">
+          <ClearableInput
+            value={query}
+            onChange={(e) => handleQueryChange(e.target.value)}
+            placeholder={dict.explore.searchPlaceholder}
+            className="w-full rounded-xl border border-transparent bg-surface px-3.5 py-2.5 text-sm outline-none focus:border-accent"
+          />
+        </div>
+        <Link href="/explore/my-recipes" className="shrink-0 text-xs font-bold text-accent">
+          {dict.explore.myRecipesLink}
+        </Link>
+      </div>
 
       {results !== null ? (
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-4">
           {pending && <p className="text-xs text-ink-faint">{dict.common.loading}</p>}
           {!pending && results.length === 0 && (
             <p className="mt-10 text-center text-sm text-ink-soft">{dict.explore.noResults}</p>
           )}
           {results.map((r) => (
-            <Link key={`${r.source}-${r.id}`} href={`/explore/recipe/${r.source}/${r.id}`}>
-              <GlassCard className="flex items-center gap-3 bg-white p-3.5">
-                <RecipeThumb coverPhotoUrl={r.cover_photo_urls[0]} iconEmoji={r.icon_emoji} />
-                <div className="min-w-0 flex-1">
-                  <p className="text-[15px] font-bold">{r.title || dict.recipes.untitledLink}</p>
-                  <p className="mt-0.5 truncate text-xs text-ink-soft">{r.creator_name}</p>
-                </div>
-              </GlassCard>
-            </Link>
+            <ExploreFeedCard key={`${r.source}-${r.id}`} item={r} dict={dict} />
           ))}
         </div>
       ) : (
@@ -96,37 +140,15 @@ export function ExploreView({
             </div>
           )}
 
-          <div>
-            <p className="mb-2.5 text-[15px] font-bold">{dict.explore.publicRecipesHeading}</p>
-            {publicRecipes.length === 0 && creators.length === 0 ? (
-              <p className="mt-10 text-center text-sm text-ink-soft">{dict.explore.comingSoonDesc}</p>
-            ) : publicRecipes.length === 0 ? (
-              <p className="text-center text-sm text-ink-soft">{dict.explore.noPublicRecipes}</p>
-            ) : (
-              <div className="flex flex-col gap-3">
-                {publicRecipes.map((r) => (
-                  <Link key={r.id} href={`/explore/recipe/personal/${r.id}`}>
-                    <GlassCard className="flex items-center gap-3 bg-white p-3.5">
-                      <RecipeThumb coverPhotoUrl={r.cover_photo_urls[0]} iconEmoji={r.icon_emoji} />
-                      <div className="min-w-0 flex-1">
-                        <p className="text-[15px] font-bold">{r.title || dict.recipes.untitledLink}</p>
-                        <p className="mt-0.5 truncate text-xs text-ink-soft">{r.creator_name}</p>
-                        {r.tags.length > 0 && (
-                          <div className="mt-1 flex flex-wrap gap-1.5">
-                            {r.tags.map((tag) => (
-                              <span key={tag} className="text-[10px] font-semibold text-positive-ink">
-                                #{tag}
-                              </span>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    </GlassCard>
-                  </Link>
-                ))}
-              </div>
-            )}
-          </div>
+          {feed.length === 0 ? (
+            <p className="mt-10 text-center text-sm text-ink-soft">{dict.explore.comingSoonDesc}</p>
+          ) : (
+            <div className="flex flex-col gap-4">
+              {feed.map((item) => (
+                <ExploreFeedCard key={`${item.source}-${item.id}`} item={item} dict={dict} />
+              ))}
+            </div>
+          )}
         </>
       )}
     </div>

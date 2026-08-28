@@ -116,6 +116,11 @@ export default async function RecipeDetailPage({
         <ProfileAvatar iconEmoji={creatorProfile?.icon_emoji} nickname={creatorProfile?.nickname ?? ""} size={16} />
         {dict.recipes.registeredByTemplate.replace("{name}", chefName(creatorProfile?.nickname, dict))}
       </p>
+      {r.source_creator_name && (
+        <p className="mt-1 text-[11px] text-ink-faint">
+          {dict.recipes.sourceTemplate.replace("{name}", r.source_creator_name)}
+        </p>
+      )}
       {r.tags.length > 0 && (
         <div className="mt-2 flex flex-wrap gap-1.5">
           {r.tags.map((tag) => (

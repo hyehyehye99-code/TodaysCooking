@@ -19,6 +19,7 @@ type ExploreRecipeDetail = {
   ingredients: ExploreIngredient[];
   creator_name: string;
   creator_icon_emoji: string | null;
+  add_count: number;
 };
 
 export default async function ExploreRecipeDetailPage({
@@ -69,6 +70,13 @@ export default async function ExploreRecipeDetailPage({
       <RecipePhotoGallery photos={recipe.cover_photo_urls} />
 
       <p className="text-xs font-semibold text-accent">{recipe.creator_name}</p>
+
+      <div className="mt-2 flex items-center gap-1.5 text-xs font-bold text-accent-ink">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true">
+          <path d="M12 21s-7.5-4.6-10-9.2C.4 8.6 2 5 5.6 5c2 0 3.4 1 4.4 2.4C11 6 12.4 5 14.4 5 18 5 19.6 8.6 22 11.8 19.5 16.4 12 21 12 21z" />
+        </svg>
+        {dict.explore.addedCountTemplate.replace("{count}", String(recipe.add_count))}
+      </div>
 
       {recipe.tags.length > 0 && (
         <div className="mt-2 flex flex-wrap gap-1.5">

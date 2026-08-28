@@ -15,6 +15,8 @@ export type ExploreSearchResult = {
   tags: string[];
   creator_name: string;
   creator_icon_emoji: string | null;
+  add_count: number;
+  created_at: string;
 };
 
 export async function searchExploreRecipes(query: string): Promise<ExploreSearchResult[]> {
@@ -40,6 +42,7 @@ type ExploreRecipeSource = {
   tags: string[];
   notes: string | null;
   ingredients: ExploreIngredient[];
+  creator_name: string;
 };
 
 // Copies a public Explore recipe (from either source) into the caller's own
@@ -78,6 +81,7 @@ export async function addExploreRecipeToHousehold(
       icon_emoji: data.icon_emoji,
       tags: data.tags,
       notes: data.notes,
+      source_creator_name: data.creator_name,
       created_by: user.id,
       position: newPosition,
     })
@@ -91,6 +95,13 @@ export async function addExploreRecipeToHousehold(
       ingredients.map((ing, i) => ({ recipe_id: recipe.id, name: ing.name, amount: ing.amount, position: i }))
     );
   }
+
+  // "맛있다고 표현했어요!" on the original is just this counter — adding it
+  // to your own recipes IS the compliment, no separate reaction needed.
+  await supabase.rpc(
+    source === "creator" ? "increment_creator_recipe_add_count" : "increment_recipe_explore_add_count",
+    { p_id: id }
+  );
 
   revalidatePath("/recipes");
   redirect(`/recipes/${recipe.id}`);
