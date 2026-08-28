@@ -7,8 +7,6 @@ import { AddHouseholdSection } from "./add-household-section";
 import { HouseholdList } from "./household-list";
 import { getDictionary } from "@/lib/i18n/server";
 
-const CONTACT_URL = "mailto:hyehyehye1919@gmail.com?subject=%EC%9A%B0%EB%A6%AC%EC%A7%91%20%EB%A9%94%EB%89%B4%ED%8C%90%20%EB%AC%B8%EC%9D%98";
-
 // Kept in sync with FREE_WEEKLY_LIMIT / PREMIUM_MONTHLY_LIMIT in
 // src/lib/actions/ai-recipe.ts — this page only displays the count, the
 // actual enforcement lives server-side in that action. Free and premium use
@@ -197,17 +195,15 @@ export default async function MyPage() {
               <path d="M9 6l6 6-6 6" />
             </svg>
           </Link>
-          <a
-            href={CONTACT_URL}
-            target="_blank"
-            rel="noopener noreferrer"
+          <Link
+            href="/mypage/inquiry"
             className="flex items-center justify-between px-4 py-4 text-sm font-semibold text-ink"
           >
             {dict.mypage.contact}
             <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--color-ink-faint)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M9 6l6 6-6 6" />
             </svg>
-          </a>
+          </Link>
           <Link
             href="/terms"
             className="flex items-center justify-between px-4 py-4 text-sm font-semibold text-ink"

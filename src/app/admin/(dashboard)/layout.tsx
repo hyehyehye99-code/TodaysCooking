@@ -11,14 +11,21 @@ export default async function AdminDashboardLayout({ children }: { children: Rea
   if (!(await isAdminAuthenticated())) redirect("/admin/login");
 
   const supabase = createAdminClient();
-  const { count } = await supabase
-    .from("creator_applications")
-    .select("id", { count: "exact", head: true })
-    .eq("status", "pending");
+  const [{ count: pendingApplications }, { count: openInquiries }, { count: aiReports }] = await Promise.all([
+    supabase.from("creator_applications").select("id", { count: "exact", head: true }).eq("status", "pending"),
+    supabase.from("inquiries").select("id", { count: "exact", head: true }).eq("status", "open"),
+    supabase.from("ai_recipe_reports").select("id", { count: "exact", head: true }),
+  ]);
 
   return (
     <div className="flex min-h-dvh">
-      <AdminSidebar pendingApplicationCount={count ?? 0} />
+      <AdminSidebar
+        badges={{
+          applications: pendingApplications ?? 0,
+          inquiries: openInquiries ?? 0,
+          aiReports: aiReports ?? 0,
+        }}
+      />
       <main className="flex-1 px-8 py-8">
         <div className="mx-auto w-full max-w-[880px]">{children}</div>
       </main>

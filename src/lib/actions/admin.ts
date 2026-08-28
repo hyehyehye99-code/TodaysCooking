@@ -426,3 +426,56 @@ export async function rejectCreatorApplication(applicationId: string): Promise<{
   revalidatePath("/admin/applications");
   return { ok: true };
 }
+
+export async function resolveInquiry(
+  inquiryId: string,
+  adminNote: string
+): Promise<{ error: string } | { ok: true }> {
+  await requireAdmin();
+  const supabase = createAdminClient();
+  const { error } = await supabase
+    .from("inquiries")
+    .update({ status: "resolved", admin_note: adminNote.trim() || null, resolved_at: new Date().toISOString() })
+    .eq("id", inquiryId);
+  if (error) return { error: "처리에 실패했어요." };
+
+  revalidatePath("/admin/inquiries");
+  return { ok: true };
+}
+
+export async function reopenInquiry(inquiryId: string): Promise<{ error: string } | { ok: true }> {
+  await requireAdmin();
+  const supabase = createAdminClient();
+  const { error } = await supabase
+    .from("inquiries")
+    .update({ status: "open", resolved_at: null })
+    .eq("id", inquiryId);
+  if (error) return { error: "처리에 실패했어요." };
+
+  revalidatePath("/admin/inquiries");
+  return { ok: true };
+}
+
+// Per the ai_recipe_reports migration's own documented workflow: a bad AI
+// result is "fixed" by deleting the matching ai_recipe_generations row,
+// which refunds the reporter's weekly/monthly quota count. Dismissing
+// without a refund just removes the report (e.g. the result was actually
+// fine). Either way the report itself is cleared once handled — there's no
+// separate "resolved" flag to track, the row's absence is the record.
+export async function resolveAiReport(
+  reportId: string,
+  generationId: string,
+  refund: boolean
+): Promise<{ error: string } | { ok: true }> {
+  await requireAdmin();
+  const supabase = createAdminClient();
+
+  if (refund) {
+    await supabase.from("ai_recipe_generations").delete().eq("id", generationId);
+  }
+  const { error } = await supabase.from("ai_recipe_reports").delete().eq("id", reportId);
+  if (error) return { error: "처리에 실패했어요." };
+
+  revalidatePath("/admin/ai-reports");
+  return { ok: true };
+}
