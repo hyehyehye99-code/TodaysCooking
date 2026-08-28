@@ -43,6 +43,14 @@ export default async function ExploreRecipeDetailPage({
   if (!data) notFound();
   const recipe = data as ExploreRecipeDetail;
   const displayTitle = recipe.title || dict.recipes.untitledLink;
+  const sourceDomain = (() => {
+    if (!recipe.source_url) return null;
+    try {
+      return new URL(recipe.source_url).hostname.replace(/^www\./, "");
+    } catch {
+      return null;
+    }
+  })();
 
   return (
     <div className="animate-fade-in-up pt-2">
@@ -70,7 +78,11 @@ export default async function ExploreRecipeDetailPage({
         </Link>
       </div>
 
-      <RecipePhotoGallery photos={recipe.cover_photo_urls} />
+      {/* Creator recipes get a link-preview card further down instead of a
+          hero photo (the cover photo is just the source video's thumbnail,
+          not something the creator actually took) — personal recipes still
+          get the full gallery since those photos are the point. */}
+      {source === "personal" && <RecipePhotoGallery photos={recipe.cover_photo_urls} />}
 
       <div className="flex items-center justify-between gap-3">
         <p className="text-sm font-bold text-accent">{recipe.creator_name}</p>
@@ -84,22 +96,6 @@ export default async function ExploreRecipeDetailPage({
         </div>
       </div>
 
-      {recipe.source_url && (
-        <a
-          href={recipe.source_url}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="mt-2 inline-flex items-center gap-1.5 text-xs font-bold text-accent-ink underline underline-offset-2"
-        >
-          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <path d="M14 4h6v6" />
-            <path d="M20 4 10 14" />
-            <path d="M18 13v5a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h5" />
-          </svg>
-          {dict.explore.sourceLink}
-        </a>
-      )}
-
       {recipe.tags.length > 0 && (
         <div className="mt-2 flex flex-wrap gap-1.5">
           {recipe.tags.map((tag) => (
@@ -108,6 +104,31 @@ export default async function ExploreRecipeDetailPage({
             </span>
           ))}
         </div>
+      )}
+
+      {/* Same treatment as a personal recipe's reference-link card
+          (recipes/[id]/page.tsx) — a link preview, not a hero photo. */}
+      {source === "creator" && recipe.source_url && (
+        <a href={recipe.source_url} target="_blank" rel="noopener noreferrer" className="mt-3 block">
+          <GlassCard className="flex gap-3 bg-white p-2.5">
+            <div className="h-[72px] w-[88px] shrink-0 overflow-hidden rounded-xl bg-black/[0.04]">
+              {recipe.cover_photo_urls[0] ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={recipe.cover_photo_urls[0]} alt="" className="h-full w-full object-cover" />
+              ) : (
+                <div className="flex h-full w-full items-center justify-center">
+                  <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="var(--color-ink-faint)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M6 3.5h12a.5.5 0 0 1 .5.5v17l-6.5-4-6.5 4v-17a.5.5 0 0 1 .5-.5z" />
+                  </svg>
+                </div>
+              )}
+            </div>
+            <div className="flex min-w-0 flex-1 flex-col justify-center gap-1">
+              <p className="line-clamp-2 text-[13px] font-bold leading-snug">{dict.explore.sourceLink}</p>
+              {sourceDomain && <span className="text-[11px] text-ink-faint">{sourceDomain}</span>}
+            </div>
+          </GlassCard>
+        </a>
       )}
 
       {recipe.ingredients.length > 0 && (
