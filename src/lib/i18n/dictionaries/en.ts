@@ -386,6 +386,7 @@ const en: Dictionary = {
     recipeCountTemplate: "{count} recipes",
     noPublicRecipes: "No public recipes yet.",
     viewChannel: "View channel",
+    channelLinkHeading: "Go to creator's channel",
     creatorRecipesHeading: "Recipes",
     comingSoonDesc: "Nothing to browse yet. Check back soon.",
     addToMyRecipes: "Add to my recipes",

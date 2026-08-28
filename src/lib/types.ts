@@ -17,6 +17,7 @@ export type Recipe = {
   is_public: boolean;
   explore_add_count: number;
   source_creator_name: string | null;
+  source_type: "creator" | "personal" | null;
   created_by: string;
   created_at: string;
 };

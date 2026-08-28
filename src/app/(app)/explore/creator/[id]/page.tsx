@@ -91,6 +91,9 @@ export default async function CreatorPage({ params }: { params: Promise<{ id: st
         </div>
       )}
 
+      {c.channel_link && (
+        <p className="mb-1.5 text-xs font-bold text-ink-soft">{dict.explore.channelLinkHeading}</p>
+      )}
       {c.channel_link &&
         (channelPreview?.ok && (channelPreview.title || channelPreview.thumbnailUrl) ? (
           <a

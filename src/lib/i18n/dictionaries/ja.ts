@@ -383,6 +383,7 @@ const ja: Dictionary = {
     recipeCountTemplate: "レシピ{count}件",
     noPublicRecipes: "まだ公開されたレシピがありません。",
     viewChannel: "チャンネルを見る",
+    channelLinkHeading: "クリエイターのチャンネルへ",
     creatorRecipesHeading: "登録されたレシピ",
     comingSoonDesc: "まだ見るものがありません。近日公開予定です。",
     addToMyRecipes: "我が家のレシピに追加",

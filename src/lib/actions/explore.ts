@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentHousehold } from "@/lib/household";
+import { fetchLinkPreview } from "@/lib/actions/link-preview";
 
 export type ExploreSearchResult = {
   source: "creator" | "personal";
@@ -43,6 +44,7 @@ type ExploreRecipeSource = {
   notes: string | null;
   ingredients: ExploreIngredient[];
   creator_name: string;
+  source_url: string | null;
 };
 
 // Copies a public Explore recipe (from either source) into the caller's own
@@ -169,6 +171,28 @@ export async function addExploreRecipeToHousehold(
     await supabase.from("recipe_ingredients").insert(
       ingredients.map((ing, i) => ({ recipe_id: recipe.id, name: ing.name, amount: ing.amount, position: i }))
     );
+  }
+
+  // Give the copy a bookmarks row pointing at the source video, the same
+  // shape saveReferenceLink (recipes.ts) creates for a manually-pasted
+  // reference link — the recipe detail page already renders that as a
+  // thumbnail+title link card, so this is the only piece needed to make a
+  // creator-recipe copy look like one instead of showing the video
+  // thumbnail as a fake hero photo. Best-effort: a failed fetch just means
+  // no card, not a failed copy.
+  if (source === "creator" && data.source_url) {
+    const preview = await fetchLinkPreview(data.source_url);
+    if (preview.ok) {
+      await supabase.from("bookmarks").insert({
+        household_id: household.id,
+        url: preview.url,
+        title: preview.title,
+        domain: preview.domain,
+        thumbnail_url: preview.thumbnailUrl,
+        recipe_id: recipe.id,
+        created_by: user.id,
+      });
+    }
   }
 
   // The count shown on the original is just this counter — adding it to

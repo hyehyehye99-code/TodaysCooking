@@ -6,6 +6,7 @@ import { GlassCard } from "@/components/ui";
 import { RecipePhotoGallery } from "@/app/(app)/recipes/[id]/recipe-photo-gallery";
 import { AddToHouseholdButton } from "../../../add-to-household-button";
 import { findHouseholdCopyOfExploreRecipe } from "@/lib/actions/explore";
+import { fetchLinkPreview } from "@/lib/actions/link-preview";
 
 type ExploreIngredient = { name: string; amount: string | null };
 
@@ -45,14 +46,22 @@ export default async function ExploreRecipeDetailPage({
   if (!data) notFound();
   const recipe = data as ExploreRecipeDetail;
   const displayTitle = recipe.title || dict.recipes.untitledLink;
-  const sourceDomain = (() => {
-    if (!recipe.source_url) return null;
-    try {
-      return new URL(recipe.source_url).hostname.replace(/^www\./, "");
-    } catch {
-      return null;
-    }
-  })();
+
+  // Best-effort live fetch for the source video's real title (recipe.title
+  // is the AI-cleaned dish name, which can read differently) — falls back
+  // to the generic label + a plain hostname if it fails.
+  const sourcePreview = source === "creator" && recipe.source_url ? await fetchLinkPreview(recipe.source_url) : null;
+  const sourceTitle = (sourcePreview?.ok && sourcePreview.title) || dict.explore.sourceLink;
+  const sourceDomain =
+    (sourcePreview?.ok && sourcePreview.domain) ||
+    (() => {
+      if (!recipe.source_url) return null;
+      try {
+        return new URL(recipe.source_url).hostname.replace(/^www\./, "");
+      } catch {
+        return null;
+      }
+    })();
 
   return (
     <div className="animate-fade-in-up pt-2">
@@ -140,7 +149,7 @@ export default async function ExploreRecipeDetailPage({
               )}
             </div>
             <div className="flex min-w-0 flex-1 flex-col justify-center gap-1">
-              <p className="line-clamp-2 text-[13px] font-bold leading-snug">{dict.explore.sourceLink}</p>
+              <p className="line-clamp-2 text-[13px] font-bold leading-snug">{sourceTitle}</p>
               {sourceDomain && <span className="text-[11px] text-ink-faint">{sourceDomain}</span>}
             </div>
           </GlassCard>

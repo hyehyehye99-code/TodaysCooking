@@ -386,6 +386,7 @@ const ko = {
     recipeCountTemplate: "레시피 {count}개",
     noPublicRecipes: "아직 공개된 레시피가 없어요.",
     viewChannel: "채널 보러가기",
+    channelLinkHeading: "크리에이터 채널 바로가기",
     creatorRecipesHeading: "등록된 레시피",
     comingSoonDesc: "아직 둘러볼 게 없어요. 곧 채워질 거예요.",
     addToMyRecipes: "우리집 레시피에 추가",

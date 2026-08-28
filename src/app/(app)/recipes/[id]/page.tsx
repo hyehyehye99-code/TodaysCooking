@@ -111,7 +111,11 @@ export default async function RecipeDetailPage({
         </div>
       </div>
 
-      <RecipePhotoGallery photos={r.cover_photo_urls} />
+      {/* A creator-copied recipe's cover_photo_urls is just the source
+          video's thumbnail, not an actual photo of the dish — shown as the
+          reference-link card below instead (same as explore's recipe
+          detail page for the same reason). */}
+      {r.source_type !== "creator" && <RecipePhotoGallery photos={r.cover_photo_urls} />}
 
       <p className="flex items-center gap-1.5 text-xs font-semibold text-accent">
         <ProfileAvatar iconEmoji={creatorProfile?.icon_emoji} nickname={creatorProfile?.nickname ?? ""} size={16} />
