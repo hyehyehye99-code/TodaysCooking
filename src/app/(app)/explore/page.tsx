@@ -6,7 +6,8 @@ export type ExploreCreator = {
   name: string;
   icon_emoji: string | null;
   avatar_url: string | null;
-  type: string | null;
+  channel_type: string | null;
+  tags: string[];
   recipe_count: number;
 };
 

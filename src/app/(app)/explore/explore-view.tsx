@@ -66,8 +66,8 @@ function ExploreCreatorCard({ creator, dict }: { creator: ExploreCreator; dict: 
       <div className="p-2.5">
         <p className="truncate text-[13px] font-bold">{creator.name}</p>
         <p className="mt-0.5 truncate text-[11px] text-ink-soft">
-          {creator.type}
-          {creator.type ? " · " : ""}
+          {creator.channel_type}
+          {creator.channel_type ? " · " : ""}
           {dict.explore.recipeCountTemplate.replace("{count}", String(creator.recipe_count))}
         </p>
       </div>
@@ -93,11 +93,12 @@ export function ExploreView({
   const allTags = useMemo(() => [...new Set(feed.flatMap((item) => item.tags))], [feed]);
   const visibleFeed = activeTag ? feed.filter((item) => item.tags.includes(activeTag)) : feed;
 
-  // Which tags each creator's recipes carry, so the same tag chips can
-  // filter the creator list too (creators themselves have no tags of
-  // their own — this is derived from their recipes in the combined feed).
+  // Which tags each creator carries, so the same tag chips can filter the
+  // creator list too — a union of the creator's own tags and whatever
+  // tags their recipes in the combined feed carry.
   const creatorTagsById = useMemo(() => {
     const map = new Map<string, Set<string>>();
+    for (const c of creators) map.set(c.id, new Set(c.tags));
     for (const item of feed) {
       if (item.source !== "creator" || !item.creator_id) continue;
       const set = map.get(item.creator_id) ?? new Set<string>();
@@ -105,10 +106,10 @@ export function ExploreView({
       map.set(item.creator_id, set);
     }
     return map;
-  }, [feed]);
+  }, [creators, feed]);
   const creatorTagOptions = useMemo(
-    () => [...new Set(feed.filter((item) => item.source === "creator").flatMap((item) => item.tags))],
-    [feed]
+    () => [...new Set([...creatorTagsById.values()].flatMap((set) => [...set]))],
+    [creatorTagsById]
   );
   const visibleCreators = creators.filter((c) => {
     const matchesQuery = !query.trim() || c.name.toLowerCase().includes(query.trim().toLowerCase());
