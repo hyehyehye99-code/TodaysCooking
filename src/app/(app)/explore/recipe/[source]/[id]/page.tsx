@@ -18,8 +18,10 @@ type ExploreRecipeDetail = {
   tags: string[];
   notes: string | null;
   ingredients: ExploreIngredient[];
+  creator_id: string | null;
   creator_name: string;
   creator_icon_emoji: string | null;
+  creator_avatar_url: string | null;
   add_count: number;
   source_url: string | null;
 };
@@ -85,7 +87,21 @@ export default async function ExploreRecipeDetailPage({
       {source === "personal" && <RecipePhotoGallery photos={recipe.cover_photo_urls} />}
 
       <div className="flex items-center justify-between gap-3">
-        <p className="text-sm font-bold text-accent">{recipe.creator_name}</p>
+        {source === "creator" && recipe.creator_id ? (
+          <Link href={`/explore/creator/${recipe.creator_id}`} className="flex min-w-0 items-center gap-2">
+            {recipe.creator_avatar_url ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={recipe.creator_avatar_url} alt="" className="h-6 w-6 shrink-0 rounded-full object-cover" />
+            ) : (
+              <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-surface text-xs">
+                {recipe.creator_icon_emoji ?? "👤"}
+              </span>
+            )}
+            <span className="truncate text-sm font-bold text-accent">{recipe.creator_name}</span>
+          </Link>
+        ) : (
+          <p className="text-sm font-bold text-accent">{recipe.creator_name}</p>
+        )}
         <div className="flex shrink-0 items-center gap-1.5 text-xs font-bold text-accent-ink">
           <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <path d="M12 3v12" />
