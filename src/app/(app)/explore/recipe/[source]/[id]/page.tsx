@@ -98,7 +98,7 @@ export default async function ExploreRecipeDetailPage({
             {recipe.ingredients.map((ing) => (
               <span
                 key={ing.name}
-                className="rounded-full border border-transparent bg-surface px-3.5 py-2 text-[13px] font-semibold text-ink-soft"
+                className="rounded-full border border-transparent bg-surface px-3.5 py-2 text-[13px] font-bold text-ink"
               >
                 {ing.name}
                 {ing.amount && <span className="ml-1 font-normal opacity-70">{ing.amount}</span>}
@@ -111,7 +111,7 @@ export default async function ExploreRecipeDetailPage({
       {recipe.notes && (
         <div className="mt-6">
           <p className="mb-2 text-[15px] font-bold">{dict.welcome.instructions}</p>
-          <GlassCard className="bg-surface p-4">
+          <GlassCard className="bg-white p-4">
             <p className="whitespace-pre-line text-sm text-ink">{recipe.notes}</p>
           </GlassCard>
         </div>
