@@ -111,7 +111,7 @@ export default async function ExploreRecipeDetailPage({
       {recipe.notes && (
         <div className="mt-6">
           <p className="mb-2 text-[15px] font-bold">{dict.welcome.instructions}</p>
-          <GlassCard className="bg-white p-4">
+          <GlassCard className="bg-surface p-4">
             <p className="whitespace-pre-line text-sm text-ink">{recipe.notes}</p>
           </GlassCard>
         </div>
