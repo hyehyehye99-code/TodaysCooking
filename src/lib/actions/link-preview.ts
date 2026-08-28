@@ -71,12 +71,16 @@ function extractTitle(html: string) {
 }
 
 function extractDescription(html: string) {
+  // Unlike the title, a description SHOULD carry a multi-line caption when
+  // the site has one (Instagram reels included) — that's often exactly
+  // where a creator wrote out the actual recipe. Any embedded line breaks
+  // get flattened to spaces below, same as the title's whitespace cleanup.
   const candidates = [
     html.match(/<meta[^>]+property=["']og:description["'][^>]+content=["']([^"']+)["']/i)?.[1],
     html.match(/<meta[^>]+name=["']twitter:description["'][^>]+content=["']([^"']+)["']/i)?.[1],
     html.match(/<meta[^>]+name=["']description["'][^>]+content=["']([^"']+)["']/i)?.[1],
   ];
-  const raw = candidates.find((c) => c && !/[\r\n]/.test(c));
+  const raw = candidates.find((c) => c);
   if (!raw) return null;
   const decoded = decodeHtmlEntities(raw).trim().replace(/\s+/g, " ");
   return decoded.length > 500 ? decoded.slice(0, 500).trim() + "…" : decoded;
