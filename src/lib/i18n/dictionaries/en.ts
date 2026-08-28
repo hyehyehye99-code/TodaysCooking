@@ -26,8 +26,7 @@ const en: Dictionary = {
     headline4: "at a glance!",
     subtitle:
       "Just paste a recipe link and AI sorts out the ingredients. Missing items go straight to your shopping list, and once you're done shopping, they land in your fridge automatically — a kitchen menu the whole family shares.",
-    ctaWeb: "Get started on web",
-    ctaIos: "iOS app (coming soon)",
+    start: "Get started",
     painHeading: "Sound familiar?",
     pain1: "You save recipes on YouTube and Instagram but can never find them when it's time to cook",
     pain2: "You're not sure what to buy once you're at the store",

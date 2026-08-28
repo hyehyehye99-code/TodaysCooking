@@ -26,8 +26,7 @@ const ja: Dictionary = {
     headline4: "ひと目でわかる！",
     subtitle:
       "レシピのリンクを貼るだけでAIが材料を整理。足りない材料はそのまま買い物リストへ、買い物が終われば冷蔵庫にも自動で反映されます。家族で使う「おうちレシピ」。",
-    ctaWeb: "Webで始める",
-    ctaIos: "iOSアプリ（近日公開）",
+    start: "はじめる",
     painHeading: "こんな経験、ありませんか？",
     pain1: "YouTubeやInstagramに保存しただけで、いざ料理する時に見つからない",
     pain2: "買い物に行っても何を買えばいいかわからない",

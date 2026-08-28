@@ -45,7 +45,6 @@ export default async function LandingPage() {
   // own, so the CTA below works correctly either way.
   const [{ user, household }, { dict }] = await Promise.all([getCurrentHousehold(), getDictionary()]);
   const appHref = !user ? "/login" : household ? "/recipes" : "/onboarding";
-  const webCtaLabel = user ? dict.landing.goToApp : dict.landing.ctaWeb;
 
   const highlightFeatures = [
     { title: dict.landing.feature1Title, description: dict.landing.feature1Desc },
@@ -92,14 +91,8 @@ export default async function LandingPage() {
               href={appHref}
               className="inline-block rounded-xl bg-accent px-7 py-4 text-sm font-bold text-white"
             >
-              {webCtaLabel}
+              {dict.landing.start}
             </Link>
-            <span
-              aria-disabled="true"
-              className="inline-flex cursor-not-allowed items-center gap-2 rounded-xl border border-border px-7 py-4 text-sm font-bold text-ink-faint"
-            >
-              {dict.landing.ctaIos}
-            </span>
           </div>
         </div>
 
@@ -211,14 +204,8 @@ export default async function LandingPage() {
               href={appHref}
               className="inline-block rounded-xl bg-accent px-8 py-4 text-sm font-bold text-white"
             >
-              {webCtaLabel}
+              {dict.landing.start}
             </Link>
-            <span
-              aria-disabled="true"
-              className="inline-flex cursor-not-allowed items-center gap-2 rounded-xl border border-border px-8 py-4 text-sm font-bold text-ink-faint"
-            >
-              {dict.landing.ctaIos}
-            </span>
           </div>
         </div>
       </section>
