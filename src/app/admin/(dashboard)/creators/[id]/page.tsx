@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { RecipeThumb } from "@/components/RecipeThumb";
 import { DeleteRecipeButton } from "./delete-recipe-button";
 import { CreatorHeader } from "./creator-header";
 import { CreatorActionBar } from "./creator-action-bar";
@@ -20,6 +21,7 @@ type CreatorRecipe = {
   title: string;
   subtitle: string | null;
   icon_emoji: string | null;
+  cover_photo_urls: string[];
   tags: string[];
   source_url: string | null;
 };
@@ -36,7 +38,7 @@ export default async function AdminCreatorDetailPage({ params }: { params: Promi
       .maybeSingle(),
     supabase
       .from("creator_recipes")
-      .select("id, title, subtitle, icon_emoji, tags, source_url")
+      .select("id, title, subtitle, icon_emoji, cover_photo_urls, tags, source_url")
       .eq("creator_id", id)
       .order("created_at", { ascending: false }),
   ]);
@@ -66,7 +68,7 @@ export default async function AdminCreatorDetailPage({ params }: { params: Promi
           <table className="w-full min-w-[560px] border-collapse text-sm">
             <thead>
               <tr className="border-b border-border bg-surface text-left text-xs text-ink-soft">
-                <th className="w-10 px-3 py-2 font-semibold" />
+                <th className="w-14 px-3 py-2 font-semibold" />
                 <th className="px-3 py-2 font-semibold">제목</th>
                 <th className="px-3 py-2 font-semibold">한 줄 소개</th>
                 <th className="px-3 py-2 font-semibold">태그</th>
@@ -77,7 +79,9 @@ export default async function AdminCreatorDetailPage({ params }: { params: Promi
             <tbody>
               {list.map((r) => (
                 <tr key={r.id} className="border-b border-border last:border-0 hover:bg-surface">
-                  <td className="px-3 py-2 text-lg">{r.icon_emoji}</td>
+                  <td className="px-3 py-2">
+                    <RecipeThumb coverPhotoUrl={r.cover_photo_urls[0]} iconEmoji={r.icon_emoji} size={40} />
+                  </td>
                   <td className="px-3 py-2">
                     <Link
                       href={`/admin/creators/${id}/${r.id}/edit`}

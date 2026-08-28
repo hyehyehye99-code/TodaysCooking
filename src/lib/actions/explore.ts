@@ -72,10 +72,16 @@ export async function findHouseholdCopyOfExploreRecipe(
 // Idempotent: pressing it again for the same household just returns the
 // existing copy instead of creating a duplicate (see the unique index on
 // recipes(household_id, source_type, source_id)).
+//
+// Free households cap out at FREE_WEEKLY_LIMIT adds per rolling week — same
+// shape as the AI recipe quota in ai-recipe.ts (promo redemption or an
+// active subscription lifts the cap entirely, checked in that order).
+const FREE_WEEKLY_LIMIT = 5;
+
 export async function addExploreRecipeToHousehold(
   source: "creator" | "personal",
   id: string
-): Promise<{ error: string } | { recipeId: string }> {
+): Promise<{ error: string; limitReached?: boolean } | { recipeId: string }> {
   const { user, household } = await getCurrentHousehold();
   if (!user || !household) return { error: "우리집을 먼저 만들어주세요." };
 
@@ -83,6 +89,38 @@ export async function addExploreRecipeToHousehold(
 
   const existing = await findHouseholdCopyOfExploreRecipe(source, id);
   if (existing) return { recipeId: existing };
+
+  const { data: promoGrant } = await supabase
+    .from("promo_code_redemptions")
+    .select("expires_at")
+    .eq("user_id", user.id)
+    .maybeSingle();
+  let isUnlimited = !!promoGrant && (!promoGrant.expires_at || new Date(promoGrant.expires_at) > new Date());
+
+  if (!isUnlimited) {
+    const { data: sub } = await supabase
+      .from("household_subscriptions")
+      .select("active, expires_at")
+      .eq("household_id", household.id)
+      .maybeSingle();
+    isUnlimited = !!sub?.active && (!sub.expires_at || new Date(sub.expires_at) > new Date());
+  }
+
+  if (!isUnlimited) {
+    const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+    const { count } = await supabase
+      .from("recipes")
+      .select("id", { count: "exact", head: true })
+      .eq("household_id", household.id)
+      .not("source_type", "is", null)
+      .gte("created_at", since);
+    if ((count ?? 0) >= FREE_WEEKLY_LIMIT) {
+      return {
+        error: `이번 주 무료로 추가할 수 있는 레시피(${FREE_WEEKLY_LIMIT}개)를 다 썼어요. 구독하면 무제한으로 추가할 수 있어요.`,
+        limitReached: true,
+      };
+    }
+  }
 
   const { data, error } = (await supabase
     .rpc(source === "creator" ? "get_creator_recipe" : "get_public_recipe", { p_id: id })

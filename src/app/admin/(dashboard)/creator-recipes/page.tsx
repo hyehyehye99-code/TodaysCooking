@@ -1,11 +1,13 @@
 import Link from "next/link";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { RecipeThumb } from "@/components/RecipeThumb";
 
 type Row = {
   id: string;
   title: string;
   subtitle: string | null;
   icon_emoji: string | null;
+  cover_photo_urls: string[];
   tags: string[];
   creator_id: string;
   source_url: string | null;
@@ -22,7 +24,7 @@ export default async function AdminCreatorRecipesPage() {
   const supabase = createAdminClient();
   const { data } = await supabase
     .from("creator_recipes")
-    .select("id, title, subtitle, icon_emoji, tags, creator_id, source_url, creators ( name )")
+    .select("id, title, subtitle, icon_emoji, cover_photo_urls, tags, creator_id, source_url, creators ( name )")
     .order("created_at", { ascending: false });
 
   const rows = (data as Row[] | null) ?? [];
@@ -54,7 +56,7 @@ export default async function AdminCreatorRecipesPage() {
           <table className="w-full min-w-[680px] border-collapse text-sm">
             <thead>
               <tr className="border-b border-border bg-surface text-left text-xs text-ink-soft">
-                <th className="w-10 px-3 py-2 font-semibold" />
+                <th className="w-14 px-3 py-2 font-semibold" />
                 <th className="px-3 py-2 font-semibold">제목</th>
                 <th className="px-3 py-2 font-semibold">크리에이터</th>
                 <th className="px-3 py-2 font-semibold">한 줄 소개</th>
@@ -65,7 +67,9 @@ export default async function AdminCreatorRecipesPage() {
             <tbody>
               {rows.map((r) => (
                 <tr key={r.id} className="border-b border-border last:border-0 hover:bg-surface">
-                  <td className="px-3 py-2 text-lg">{r.icon_emoji}</td>
+                  <td className="px-3 py-2">
+                    <RecipeThumb coverPhotoUrl={r.cover_photo_urls[0]} iconEmoji={r.icon_emoji} size={40} />
+                  </td>
                   <td className="px-3 py-2">
                     <Link
                       href={`/admin/creators/${r.creator_id}/${r.id}/edit`}

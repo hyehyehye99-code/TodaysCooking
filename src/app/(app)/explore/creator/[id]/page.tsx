@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getDictionary } from "@/lib/i18n/server";
+import { fetchLinkPreview } from "@/lib/actions/link-preview";
 import { RecipeThumb } from "@/components/RecipeThumb";
 import { GlassCard } from "@/components/ui";
 
@@ -38,6 +39,10 @@ export default async function CreatorPage({ params }: { params: Promise<{ id: st
   if (!creator) notFound();
   const c = creator as Creator;
   const list = (recipes as CreatorRecipe[] | null) ?? [];
+
+  // Best-effort — if the fetch fails/times out, the link still falls back
+  // to the plain "채널 보러가기" text link below.
+  const channelPreview = c.channel_link ? await fetchLinkPreview(c.channel_link) : null;
 
   return (
     <div className="animate-fade-in-up pt-2">
@@ -86,16 +91,38 @@ export default async function CreatorPage({ params }: { params: Promise<{ id: st
         </div>
       )}
 
-      {c.channel_link && (
-        <a
-          href={c.channel_link}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="mb-5 inline-block text-xs font-bold text-accent-ink underline"
-        >
-          {dict.explore.viewChannel}
-        </a>
-      )}
+      {c.channel_link &&
+        (channelPreview?.ok && (channelPreview.title || channelPreview.thumbnailUrl) ? (
+          <a
+            href={c.channel_link}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mb-5 flex items-center gap-3 rounded-2xl border border-border bg-white p-2.5"
+          >
+            {channelPreview.thumbnailUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={channelPreview.thumbnailUrl} alt="" className="h-12 w-12 shrink-0 rounded-xl object-cover" />
+            ) : (
+              <div className="h-12 w-12 shrink-0 rounded-xl bg-surface" />
+            )}
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-bold text-ink">{channelPreview.title ?? c.channel_link}</p>
+              <p className="truncate text-xs text-ink-faint">{channelPreview.domain}</p>
+            </div>
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 text-ink-faint">
+              <path d="M9 6l6 6-6 6" />
+            </svg>
+          </a>
+        ) : (
+          <a
+            href={c.channel_link}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mb-5 inline-block text-xs font-bold text-accent-ink underline"
+          >
+            {dict.explore.viewChannel}
+          </a>
+        ))}
 
       <p className="mb-2.5 text-[15px] font-bold">{dict.explore.creatorRecipesHeading}</p>
 
