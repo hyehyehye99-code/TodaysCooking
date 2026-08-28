@@ -42,33 +42,59 @@ export default async function AdminCreatorDetailPage({ params }: { params: Promi
         </div>
       </div>
 
-      <Link
-        href={`/admin/creators/${id}/new`}
-        className="mb-6 block w-full rounded-xl bg-accent py-3 text-center text-sm font-bold text-white"
-      >
-        + 새 레시피 추가
-      </Link>
+      <div className="mb-6 flex gap-2">
+        <Link
+          href={`/admin/creators/${id}/new`}
+          className="flex-1 rounded-xl bg-accent py-3 text-center text-sm font-bold text-white"
+        >
+          + 새 레시피 추가
+        </Link>
+        <Link
+          href="/admin/import"
+          className="flex-1 rounded-xl border border-accent bg-white py-3 text-center text-sm font-bold text-accent-ink"
+        >
+          엑셀로 대량 등록
+        </Link>
+      </div>
 
       <p className="mb-2 text-sm font-bold">레시피 목록 ({list.length})</p>
       {list.length === 0 ? (
         <p className="text-sm text-ink-soft">아직 등록된 레시피가 없어요.</p>
       ) : (
-        <div className="flex flex-col gap-2">
-          {list.map((r) => (
-            <div key={r.id} className="flex items-center gap-3 rounded-xl border border-border bg-white px-4 py-3">
-              <span className="text-xl">{r.icon_emoji ?? "🍳"}</span>
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-bold">{r.title}</p>
-                {r.subtitle && <p className="truncate text-xs text-ink-soft">{r.subtitle}</p>}
-                {r.tags.length > 0 && (
-                  <p className="mt-0.5 truncate text-[11px] font-semibold text-positive-ink">
+        <div className="overflow-x-auto rounded-xl border border-border bg-white">
+          <table className="w-full min-w-[560px] border-collapse text-sm">
+            <thead>
+              <tr className="border-b border-border bg-surface text-left text-xs text-ink-soft">
+                <th className="w-10 px-3 py-2 font-semibold" />
+                <th className="px-3 py-2 font-semibold">제목</th>
+                <th className="px-3 py-2 font-semibold">한 줄 소개</th>
+                <th className="px-3 py-2 font-semibold">태그</th>
+                <th className="w-20 px-3 py-2" />
+              </tr>
+            </thead>
+            <tbody>
+              {list.map((r) => (
+                <tr key={r.id} className="border-b border-border last:border-0 hover:bg-surface">
+                  <td className="px-3 py-2 text-lg">{r.icon_emoji ?? "🍳"}</td>
+                  <td className="px-3 py-2">
+                    <Link
+                      href={`/admin/creators/${id}/${r.id}/edit`}
+                      className="font-bold text-ink underline-offset-2 hover:underline"
+                    >
+                      {r.title}
+                    </Link>
+                  </td>
+                  <td className="max-w-[220px] truncate px-3 py-2 text-ink-soft">{r.subtitle}</td>
+                  <td className="max-w-[200px] truncate px-3 py-2 text-[12px] font-semibold text-positive-ink">
                     {r.tags.map((t) => `#${t}`).join(" ")}
-                  </p>
-                )}
-              </div>
-              <DeleteRecipeButton creatorId={id} recipeId={r.id} />
-            </div>
-          ))}
+                  </td>
+                  <td className="px-3 py-2 text-right">
+                    <DeleteRecipeButton creatorId={id} recipeId={r.id} />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       )}
     </div>

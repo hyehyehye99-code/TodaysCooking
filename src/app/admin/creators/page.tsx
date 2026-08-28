@@ -24,11 +24,16 @@ export default async function AdminCreatorsPage() {
     <div>
       <div className="mb-6 flex items-center justify-between">
         <h1 className="text-xl font-bold">크리에이터 관리</h1>
-        <form action={adminLogout}>
-          <button type="submit" className="text-xs font-semibold text-ink-faint underline">
-            로그아웃
-          </button>
-        </form>
+        <div className="flex items-center gap-4">
+          <Link href="/admin/import" className="text-xs font-bold text-accent-ink">
+            엑셀로 대량 등록
+          </Link>
+          <form action={adminLogout}>
+            <button type="submit" className="text-xs font-semibold text-ink-faint underline">
+              로그아웃
+            </button>
+          </form>
+        </div>
       </div>
 
       <div className="mb-8 rounded-2xl border border-border bg-white p-4">
@@ -40,22 +45,31 @@ export default async function AdminCreatorsPage() {
       {creators.length === 0 ? (
         <p className="text-sm text-ink-soft">아직 등록된 크리에이터가 없어요.</p>
       ) : (
-        <div className="flex flex-col gap-2">
-          {creators.map((c) => (
-            <Link
-              key={c.id}
-              href={`/admin/creators/${c.id}`}
-              className="flex items-center gap-3 rounded-xl border border-border bg-white px-4 py-3"
-            >
-              <span className="text-xl">{c.icon_emoji ?? "👤"}</span>
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-bold">{c.name}</p>
-                <p className="text-xs text-ink-soft">
-                  {c.channel_type ?? "채널 종류 없음"} · 레시피 {c.recipe_count}개
-                </p>
-              </div>
-            </Link>
-          ))}
+        <div className="overflow-x-auto rounded-xl border border-border bg-white">
+          <table className="w-full min-w-[480px] border-collapse text-sm">
+            <thead>
+              <tr className="border-b border-border bg-surface text-left text-xs text-ink-soft">
+                <th className="w-10 px-3 py-2 font-semibold" />
+                <th className="px-3 py-2 font-semibold">이름</th>
+                <th className="px-3 py-2 font-semibold">채널 종류</th>
+                <th className="px-3 py-2 text-right font-semibold">레시피 수</th>
+              </tr>
+            </thead>
+            <tbody>
+              {creators.map((c) => (
+                <tr key={c.id} className="border-b border-border last:border-0 hover:bg-surface">
+                  <td className="px-3 py-2 text-lg">{c.icon_emoji ?? "👤"}</td>
+                  <td className="px-3 py-2">
+                    <Link href={`/admin/creators/${c.id}`} className="font-bold text-ink underline-offset-2 hover:underline">
+                      {c.name}
+                    </Link>
+                  </td>
+                  <td className="px-3 py-2 text-ink-soft">{c.channel_type ?? "-"}</td>
+                  <td className="px-3 py-2 text-right text-ink-soft">{c.recipe_count}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       )}
     </div>

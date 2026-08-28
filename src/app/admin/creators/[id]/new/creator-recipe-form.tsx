@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { adminGenerateRecipeFromLink } from "@/lib/actions/ai-recipe";
-import { createCreatorRecipe } from "@/lib/actions/admin";
+import { createCreatorRecipe, updateCreatorRecipe } from "@/lib/actions/admin";
 import { TagPicker } from "@/components/TagPicker";
 import { EmojiPicker } from "@/components/EmojiPicker";
 
@@ -10,18 +11,42 @@ type Ingredient = { name: string; amount: string };
 
 const EMPTY_INGREDIENT: Ingredient = { name: "", amount: "" };
 
-export function CreatorRecipeForm({ creatorId, existingTags }: { creatorId: string; existingTags: string[] }) {
+type InitialRecipe = {
+  recipeId: string;
+  title: string;
+  subtitle: string;
+  iconEmoji: string;
+  coverPhotoUrl: string;
+  tags: string[];
+  notes: string;
+  ingredients: Ingredient[];
+};
+
+export function CreatorRecipeForm({
+  creatorId,
+  existingTags,
+  initial,
+}: {
+  creatorId: string;
+  existingTags: string[];
+  initial?: InitialRecipe;
+}) {
+  const isEdit = !!initial;
+  const router = useRouter();
+
   const [url, setUrl] = useState("");
   const [aiPending, startAiTransition] = useTransition();
   const [aiError, setAiError] = useState<string | null>(null);
 
-  const [title, setTitle] = useState("");
-  const [subtitle, setSubtitle] = useState("");
-  const [iconEmoji, setIconEmoji] = useState("");
-  const [coverPhotoUrl, setCoverPhotoUrl] = useState("");
-  const [notes, setNotes] = useState("");
-  const [tags, setTags] = useState<string[]>([]);
-  const [ingredients, setIngredients] = useState<Ingredient[]>([EMPTY_INGREDIENT]);
+  const [title, setTitle] = useState(initial?.title ?? "");
+  const [subtitle, setSubtitle] = useState(initial?.subtitle ?? "");
+  const [iconEmoji, setIconEmoji] = useState(initial?.iconEmoji ?? "");
+  const [coverPhotoUrl, setCoverPhotoUrl] = useState(initial?.coverPhotoUrl ?? "");
+  const [notes, setNotes] = useState(initial?.notes ?? "");
+  const [tags, setTags] = useState<string[]>(initial?.tags ?? []);
+  const [ingredients, setIngredients] = useState<Ingredient[]>(
+    initial?.ingredients && initial.ingredients.length > 0 ? initial.ingredients : [EMPTY_INGREDIENT]
+  );
   // Bumping this remounts TagPicker so its internal selection picks up a new
   // defaultSelected after AI fill — TagPicker has no controlled `value` prop.
   const [tagPickerKey, setTagPickerKey] = useState(0);
@@ -75,18 +100,16 @@ export function CreatorRecipeForm({ creatorId, existingTags }: { creatorId: stri
   function handleSave() {
     setSaveError(null);
     startSaveTransition(async () => {
-      const result = await createCreatorRecipe({
-        creatorId,
-        title,
-        subtitle,
-        iconEmoji,
-        coverPhotoUrl,
-        tags,
-        notes,
-        ingredients,
-      });
+      const payload = { creatorId, title, subtitle, iconEmoji, coverPhotoUrl, tags, notes, ingredients };
+      const result = isEdit
+        ? await updateCreatorRecipe({ ...payload, recipeId: initial.recipeId })
+        : await createCreatorRecipe(payload);
       if ("error" in result) {
         setSaveError(result.error);
+        return;
+      }
+      if (isEdit) {
+        router.push(`/admin/creators/${creatorId}`);
         return;
       }
       setSavedCount((n) => n + 1);
@@ -215,7 +238,7 @@ export function CreatorRecipeForm({ creatorId, existingTags }: { creatorId: stri
         disabled={savePending || !title.trim()}
         className="w-full rounded-xl bg-accent py-3.5 text-sm font-bold text-white disabled:opacity-60"
       >
-        {savePending ? "저장하는 중..." : "레시피 저장"}
+        {savePending ? "저장하는 중..." : isEdit ? "수정 저장" : "레시피 저장"}
       </button>
     </div>
   );
