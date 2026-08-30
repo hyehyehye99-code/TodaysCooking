@@ -25,10 +25,17 @@ const STATE_STYLES: Record<ChoiceState, string> = {
 
 export function MissingIngredientsButton({
   recipeId,
-  missing,
+  ingredients,
+  variant = "button",
 }: {
   recipeId: string;
-  missing: { name: string; skipped: boolean }[];
+  ingredients: { name: string; skipped: boolean; owned: boolean }[];
+  // "button" is the full-width primary CTA used when something's actually
+  // missing; "link" is a small secondary trigger for when the recipe is
+  // already makeable (or everything missing is already on the shopping
+  // list) — the badge/message stays primary, this just stays reachable so
+  // "보유 재료 수정" isn't only available while something's missing.
+  variant?: "button" | "link";
 }) {
   const dict = useDict();
   const [open, setOpen] = useState(false);
@@ -37,24 +44,38 @@ export function MissingIngredientsButton({
   const router = useRouter();
 
   function setAllTo(state: ChoiceState) {
-    setChoices(Object.fromEntries(missing.map((m) => [m.name, state])));
+    setChoices(Object.fromEntries(ingredients.map((i) => [i.name, state])));
   }
 
   function openModal() {
+    // Seed each ingredient's control to reflect where it already stands —
+    // skipped stays skipped, an owned ingredient starts on "fridge" (so
+    // confirming without touching anything is a no-op), everything else
+    // starts unselected (genuinely missing, untouched).
     setChoices(
       Object.fromEntries(
-        missing.filter((m) => m.skipped).map((m) => [m.name, "skip" as ChoiceState])
+        ingredients
+          .map((i): [string, ChoiceState] | null => {
+            if (i.skipped) return [i.name, "skip"];
+            if (i.owned) return [i.name, "fridge"];
+            return null;
+          })
+          .filter((entry): entry is [string, ChoiceState] => entry !== null)
       )
     );
     setOpen(true);
   }
 
   function handleConfirm() {
-    const shopping = missing.filter((m) => choices[m.name] === "shopping").map((m) => m.name);
-    const fridge = missing.filter((m) => choices[m.name] === "fridge").map((m) => m.name);
-    const skip = missing.filter((m) => choices[m.name] === "skip").map((m) => m.name);
+    const shopping = ingredients.filter((i) => choices[i.name] === "shopping").map((i) => i.name);
+    const fridge = ingredients.filter((i) => choices[i.name] === "fridge").map((i) => i.name);
+    const skip = ingredients.filter((i) => choices[i.name] === "skip").map((i) => i.name);
+    // Anything that started owned but didn't end up back on "fridge" —
+    // deselected, switched to shopping/skip, whatever — needs to actually
+    // come out of the fridge, not just sit unrepresented in the payload.
+    const unown = ingredients.filter((i) => i.owned && choices[i.name] !== "fridge").map((i) => i.name);
     startTransition(async () => {
-      await resolveMissingIngredients({ recipeId, shopping, fridge, skip });
+      await resolveMissingIngredients({ recipeId, shopping, fridge, skip, unown });
       setOpen(false);
       router.refresh();
     });
@@ -65,7 +86,11 @@ export function MissingIngredientsButton({
       <button
         type="button"
         onClick={openModal}
-        className="w-full rounded-xl bg-accent py-2.5 text-[13px] font-bold text-white"
+        className={
+          variant === "button"
+            ? "w-full rounded-xl bg-accent py-2.5 text-[13px] font-bold text-white"
+            : "text-xs font-bold text-accent-ink underline underline-offset-2"
+        }
       >
         {dict.recipes.editOwnedIngredients}
       </button>
@@ -93,7 +118,7 @@ export function MissingIngredientsButton({
             </div>
 
             <div className="mt-1 flex flex-col gap-2 overflow-y-auto">
-              {missing.map((m) => (
+              {ingredients.map((m) => (
                 <div key={m.name} className="rounded-xl bg-surface px-3.5 py-2.5">
                   <div className="flex items-center justify-between gap-2">
                     <span className="text-sm font-semibold">{m.name}</span>

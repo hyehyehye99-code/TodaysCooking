@@ -304,8 +304,13 @@ export async function resolveMissingIngredients(payload: {
   shopping: string[];
   fridge: string[];
   skip: string[];
+  // Ingredients that were in the fridge but got deselected/reassigned away
+  // from "fridge" in the edit modal — needs an explicit write, since
+  // leaving something out of every other list is otherwise indistinguishable
+  // from "never touched, wasn't owned to begin with".
+  unown?: string[];
 }) {
-  const { recipeId, shopping, fridge, skip } = payload;
+  const { recipeId, shopping, fridge, skip, unown = [] } = payload;
   if (!recipeId) return;
 
   const { household } = await getCurrentHousehold();
@@ -389,6 +394,18 @@ export async function resolveMissingIngredients(payload: {
         household_id: household.id,
         name,
         in_stock: true,
+        updated_at: new Date().toISOString(),
+      })),
+      { onConflict: "household_id,name" }
+    );
+  }
+
+  if (unown.length) {
+    await supabase.from("fridge_items").upsert(
+      unown.map((name) => ({
+        household_id: household.id,
+        name,
+        in_stock: false,
         updated_at: new Date().toISOString(),
       })),
       { onConflict: "household_id,name" }
