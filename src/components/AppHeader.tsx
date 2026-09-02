@@ -34,6 +34,7 @@ export function AppHeader({
 
   const isRecipesTab = pathname === "/recipes";
   const isExploreTab = pathname === "/explore";
+  if (isExploreTab) return null;
   const tabTitleKey = TAB_TITLE_KEYS[pathname];
   const tabTitle = tabTitleKey ? dict.tabBar[tabTitleKey] : "";
 
@@ -117,7 +118,7 @@ export function AppHeader({
 
   return (
     <div className="mb-3">
-      {!isExploreTab && <div className="mb-1">{householdSwitcher}</div>}
+      <div className="mb-1">{householdSwitcher}</div>
 
       <div className="flex items-baseline justify-between gap-3">
         <h1 className="text-[26px] font-bold tracking-tight">{tabTitle}</h1>

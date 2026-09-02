@@ -15,6 +15,7 @@ export type Banner = {
   title: string;
   emoji: string | null;
   link_url: string | null;
+  image_url: string | null;
   active: boolean;
   position: number;
 };

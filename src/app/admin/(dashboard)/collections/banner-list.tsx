@@ -56,17 +56,23 @@ function DeleteButton({ id, title }: { id: string; title: string }) {
   );
 }
 
+// 1200×400 (3:1) matches the wide banner slot in the 탐색 tab — a
+// narrower/taller image would either get cropped hard by object-cover or
+// leave visible gray letterboxing.
+const RECOMMENDED_BANNER_SIZE = "1200 x 400px (3:1 비율)";
+
 function NewBannerForm() {
   const [title, setTitle] = useState("");
   const [emoji, setEmoji] = useState("");
   const [linkUrl, setLinkUrl] = useState("");
+  const [imageUrl, setImageUrl] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
   function submit() {
     setError(null);
     startTransition(async () => {
-      const res = await createBanner(title, emoji.trim() || null, linkUrl.trim() || null);
+      const res = await createBanner(title, emoji.trim() || null, linkUrl.trim() || null, imageUrl.trim() || null);
       if ("error" in res) {
         setError(res.error);
         return;
@@ -74,12 +80,16 @@ function NewBannerForm() {
       setTitle("");
       setEmoji("");
       setLinkUrl("");
+      setImageUrl("");
     });
   }
 
   return (
     <div className="mb-4 rounded-2xl border border-border bg-white p-4">
       <p className="mb-3 text-sm font-bold">새 배너 만들기</p>
+      <p className="mb-3 text-xs text-ink-soft">
+        권장 이미지 사이즈: <span className="font-semibold text-ink">{RECOMMENDED_BANNER_SIZE}</span> — 이미지 URL을 비워두면 문구만 있는 회색 목업으로 보여요.
+      </p>
       <div className="flex flex-col gap-2">
         <div className="flex gap-2">
           <input
@@ -96,6 +106,12 @@ function NewBannerForm() {
             className="w-full rounded-xl border border-transparent bg-surface px-3.5 py-2.5 text-sm outline-none focus:border-accent"
           />
         </div>
+        <input
+          value={imageUrl}
+          onChange={(e) => setImageUrl(e.target.value)}
+          placeholder={`배너 이미지 URL (선택, ${RECOMMENDED_BANNER_SIZE})`}
+          className="w-full rounded-xl border border-transparent bg-surface px-3.5 py-2.5 text-sm outline-none focus:border-accent"
+        />
         <input
           value={linkUrl}
           onChange={(e) => setLinkUrl(e.target.value)}

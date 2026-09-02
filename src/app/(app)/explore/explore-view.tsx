@@ -53,30 +53,45 @@ function CollectionSection({ collection, items, dict }: { collection: ExploreCol
   );
 }
 
+// A wide hero banner (3:1) sized to peek the next one when there's more
+// than one — real content is a hosted image once the admin adds one, with
+// the title overlaid on a dark gradient scrim like a magazine cover; until
+// then it falls back to a plain gray mockup box so the slot's shape still
+// reads correctly with nothing to show yet.
 function BannerStrip({ banners }: { banners: ExploreBanner[] }) {
   if (banners.length === 0) return null;
   return (
-    <div className="-mx-5 mb-6 flex gap-3 overflow-x-auto px-5 pb-1">
+    <div className="-mx-5 mb-5 flex snap-x snap-mandatory gap-3 overflow-x-auto px-5 pb-1">
       {banners.map((b) => {
-        const card = (
-          <div className="relative flex h-24 w-72 shrink-0 items-center overflow-hidden rounded-[24px] bg-gradient-to-br from-accent to-orange-300 px-5 shadow-[0_10px_24px_-10px_rgba(251,85,45,0.5)]">
-            {b.emoji && (
-              <span aria-hidden className="absolute -right-3 -top-4 text-7xl opacity-20">
-                {b.emoji}
-              </span>
+        const inner = (
+          <div className="relative aspect-[3/1] w-full overflow-hidden rounded-2xl bg-[#e2e4e8]">
+            {b.image_url ? (
+              <>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={b.image_url} alt="" className="h-full w-full object-cover" />
+                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/60 to-transparent px-4 pb-3 pt-8">
+                  <p className="text-[15px] font-extrabold leading-snug text-white">
+                    {b.emoji ? `${b.emoji} ` : ""}
+                    {b.title}
+                  </p>
+                </div>
+              </>
+            ) : (
+              <div className="flex h-full w-full flex-col items-center justify-center gap-1">
+                {b.emoji && <span className="text-2xl">{b.emoji}</span>}
+                <span className="text-xs font-semibold text-ink-faint">{b.title}</span>
+              </div>
             )}
-            <p className="relative text-[15px] font-extrabold leading-snug text-white">
-              {b.emoji ? `${b.emoji} ` : ""}
-              {b.title}
-            </p>
           </div>
         );
         return b.link_url ? (
-          <Link key={b.id} href={b.link_url}>
-            {card}
+          <Link key={b.id} href={b.link_url} className="w-[88%] shrink-0 snap-center">
+            {inner}
           </Link>
         ) : (
-          <div key={b.id}>{card}</div>
+          <div key={b.id} className="w-[88%] shrink-0 snap-center">
+            {inner}
+          </div>
         );
       })}
     </div>
@@ -160,13 +175,7 @@ export function ExploreView({
 
   return (
     <div>
-      <BannerStrip banners={banners} />
-      {collections.map((c) => (
-        <CollectionSection key={c.id} collection={c} items={collectionRecipesById[c.id] ?? []} dict={dict} />
-      ))}
-
-      <div className="mb-4 mt-2 border-t border-border pt-6">
-        <p className="mb-3 text-[15px] font-bold text-ink">{dict.explore.allRecipesHeading}</p>
+      <div className="mb-5">
         <ClearableInput
           value={query}
           onChange={(e) => handleQueryChange(e.target.value)}
@@ -186,6 +195,15 @@ export function ExploreView({
         </div>
       ) : (
         <>
+          <BannerStrip banners={banners} />
+          {collections.map((c) => (
+            <CollectionSection key={c.id} collection={c} items={collectionRecipesById[c.id] ?? []} dict={dict} />
+          ))}
+
+          <div className="mb-4 mt-2 border-t border-border pt-6">
+            <p className="mb-3 text-[15px] font-bold text-ink">{dict.explore.allRecipesHeading}</p>
+          </div>
+
           {allTags.length > 0 && (
             <div className="mb-4 flex flex-wrap gap-1.5">
               <button
