@@ -8,27 +8,33 @@ import { searchExploreRecipes, type ExploreSearchResult } from "@/lib/actions/ex
 import { useDict } from "@/lib/i18n/client";
 import type { ExploreFeedItem, ExploreCollection, ExploreBanner } from "./page";
 
-// A horizontally scrollable strip of small recipe cards for one curated
-// collection — bigger, squarer thumbnails than the list rows below since
-// this is meant to read as a browsable shelf, not another list.
+// A horizontally scrollable shelf of recipe cards for one curated
+// collection, wrapped in its own soft-shadowed white card so the curated
+// area reads as a distinct, magazine-like block above the plain list rows
+// further down the page.
 function CollectionSection({ collection, items, dict }: { collection: ExploreCollection; items: ExploreFeedItem[]; dict: ReturnType<typeof useDict> }) {
   if (items.length === 0) return null;
   return (
-    <div className="mb-8">
-      <div className="mb-3 flex items-end justify-between">
-        <p className="text-xl font-extrabold text-ink">
-          {collection.emoji ? `${collection.emoji} ` : ""}
-          {collection.title}
+    <div className="mb-5 rounded-[28px] bg-[#fff7f2] p-4 shadow-[0_8px_24px_-12px_rgba(0,0,0,0.12)]">
+      <div className="mb-4 flex items-center justify-between gap-2">
+        <p className="flex min-w-0 items-center gap-1.5 text-[19px] font-extrabold leading-tight text-ink">
+          {collection.emoji && <span className="text-xl">{collection.emoji}</span>}
+          <span className="truncate">{collection.title}</span>
         </p>
-        <Link href={`/explore/collection/${collection.id}`} className="shrink-0 pb-0.5 text-xs font-bold text-ink-faint">
+        <Link
+          href={`/explore/collection/${collection.id}`}
+          className="shrink-0 rounded-full bg-surface px-3 py-1.5 text-[11px] font-bold text-ink-soft"
+        >
           {dict.components.more}
         </Link>
       </div>
-      <div className="-mx-5 flex gap-3 overflow-x-auto px-5 pb-1">
+      <div className="-mx-1 flex gap-3 overflow-x-auto px-1 pb-1">
         {items.map((item) => (
-          <Link key={`${item.source}-${item.id}`} href={`/explore/recipe/${item.source}/${item.id}`} className="w-28 shrink-0">
-            <RecipeThumb coverPhotoUrl={item.cover_photo_urls[0]} iconEmoji={item.icon_emoji} size={112} rounded="rounded-2xl" />
-            <p className="mt-1.5 line-clamp-2 text-xs font-semibold leading-snug">{item.title || dict.recipes.untitledLink}</p>
+          <Link key={`${item.source}-${item.id}`} href={`/explore/recipe/${item.source}/${item.id}`} className="w-[104px] shrink-0">
+            <div className="rounded-2xl shadow-[0_6px_16px_-8px_rgba(0,0,0,0.25)]">
+              <RecipeThumb coverPhotoUrl={item.cover_photo_urls[0]} iconEmoji={item.icon_emoji} size={104} rounded="rounded-2xl" />
+            </div>
+            <p className="mt-2 line-clamp-2 text-xs font-semibold leading-snug text-ink">{item.title || dict.recipes.untitledLink}</p>
           </Link>
         ))}
       </div>
@@ -39,11 +45,16 @@ function CollectionSection({ collection, items, dict }: { collection: ExploreCol
 function BannerStrip({ banners }: { banners: ExploreBanner[] }) {
   if (banners.length === 0) return null;
   return (
-    <div className="-mx-5 mb-7 flex gap-3 overflow-x-auto px-5 pb-1">
+    <div className="-mx-5 mb-6 flex gap-3 overflow-x-auto px-5 pb-1">
       {banners.map((b) => {
         const card = (
-          <div className="flex h-[72px] w-64 shrink-0 items-center rounded-2xl bg-accent/10 px-4">
-            <p className="text-sm font-bold text-accent-ink">
+          <div className="relative flex h-24 w-72 shrink-0 items-center overflow-hidden rounded-[28px] bg-gradient-to-br from-accent to-orange-300 px-5 shadow-[0_10px_24px_-10px_rgba(251,85,45,0.55)]">
+            {b.emoji && (
+              <span aria-hidden className="absolute -right-3 -top-4 text-7xl opacity-25">
+                {b.emoji}
+              </span>
+            )}
+            <p className="relative text-[15px] font-extrabold leading-snug text-white">
               {b.emoji ? `${b.emoji} ` : ""}
               {b.title}
             </p>
