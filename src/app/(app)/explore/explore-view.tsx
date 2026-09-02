@@ -9,32 +9,32 @@ import { useDict } from "@/lib/i18n/client";
 import type { ExploreFeedItem, ExploreCollection, ExploreBanner } from "./page";
 
 // A horizontally scrollable shelf of recipe cards for one curated
-// collection, wrapped in its own soft-shadowed white card so the curated
-// area reads as a distinct, magazine-like block above the plain list rows
-// further down the page.
+// collection — plain background, image-led thumbnails, restrained
+// typography (오늘의집-style: the photo does the work, text stays quiet).
 function CollectionSection({ collection, items, dict }: { collection: ExploreCollection; items: ExploreFeedItem[]; dict: ReturnType<typeof useDict> }) {
   if (items.length === 0) return null;
   return (
-    <div className="mb-5 rounded-[28px] bg-[#fff7f2] p-4 shadow-[0_8px_24px_-12px_rgba(0,0,0,0.12)]">
-      <div className="mb-4 flex items-center justify-between gap-2">
-        <p className="flex min-w-0 items-center gap-1.5 text-[19px] font-extrabold leading-tight text-ink">
-          {collection.emoji && <span className="text-xl">{collection.emoji}</span>}
+    <div className="mb-7">
+      <div className="mb-3 flex items-center justify-between gap-2">
+        <p className="flex min-w-0 items-center gap-1 text-[15px] font-bold text-ink">
+          {collection.emoji && <span>{collection.emoji}</span>}
           <span className="truncate">{collection.title}</span>
         </p>
         <Link
           href={`/explore/collection/${collection.id}`}
-          className="shrink-0 rounded-full bg-surface px-3 py-1.5 text-[11px] font-bold text-ink-soft"
+          className="flex shrink-0 items-center gap-0.5 text-xs font-medium text-ink-faint"
         >
           {dict.components.more}
+          <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M9 6l6 6-6 6" />
+          </svg>
         </Link>
       </div>
-      <div className="-mx-1 flex gap-3 overflow-x-auto px-1 pb-1">
+      <div className="-mx-5 flex gap-2.5 overflow-x-auto px-5 pb-1">
         {items.map((item) => (
-          <Link key={`${item.source}-${item.id}`} href={`/explore/recipe/${item.source}/${item.id}`} className="w-[104px] shrink-0">
-            <div className="rounded-2xl shadow-[0_6px_16px_-8px_rgba(0,0,0,0.25)]">
-              <RecipeThumb coverPhotoUrl={item.cover_photo_urls[0]} iconEmoji={item.icon_emoji} size={104} rounded="rounded-2xl" />
-            </div>
-            <p className="mt-2 line-clamp-2 text-xs font-semibold leading-snug text-ink">{item.title || dict.recipes.untitledLink}</p>
+          <Link key={`${item.source}-${item.id}`} href={`/explore/recipe/${item.source}/${item.id}`} className="w-24 shrink-0">
+            <RecipeThumb coverPhotoUrl={item.cover_photo_urls[0]} iconEmoji={item.icon_emoji} size={96} rounded="rounded-xl" />
+            <p className="mt-1.5 line-clamp-2 text-[11px] font-medium leading-snug text-ink-soft">{item.title || dict.recipes.untitledLink}</p>
           </Link>
         ))}
       </div>
@@ -45,19 +45,12 @@ function CollectionSection({ collection, items, dict }: { collection: ExploreCol
 function BannerStrip({ banners }: { banners: ExploreBanner[] }) {
   if (banners.length === 0) return null;
   return (
-    <div className="-mx-5 mb-6 flex gap-3 overflow-x-auto px-5 pb-1">
+    <div className="-mx-5 mb-6 flex gap-2.5 overflow-x-auto px-5 pb-1">
       {banners.map((b) => {
         const card = (
-          <div className="relative flex h-24 w-72 shrink-0 items-center overflow-hidden rounded-[28px] bg-gradient-to-br from-accent to-orange-300 px-5 shadow-[0_10px_24px_-10px_rgba(251,85,45,0.55)]">
-            {b.emoji && (
-              <span aria-hidden className="absolute -right-3 -top-4 text-7xl opacity-25">
-                {b.emoji}
-              </span>
-            )}
-            <p className="relative text-[15px] font-extrabold leading-snug text-white">
-              {b.emoji ? `${b.emoji} ` : ""}
-              {b.title}
-            </p>
+          <div className="flex h-16 w-60 shrink-0 items-center gap-2.5 rounded-2xl border border-border bg-surface px-4">
+            {b.emoji && <span className="text-lg">{b.emoji}</span>}
+            <p className="truncate text-[13px] font-semibold text-ink">{b.title}</p>
           </div>
         );
         return b.link_url ? (
