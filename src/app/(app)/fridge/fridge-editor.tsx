@@ -165,14 +165,31 @@ export function FridgeEditor({ categories }: { categories: Category[] }) {
     void saveFridge([{ name: itemName, category: toCat, inStock: item.selected }]);
   }
 
-  const ownedCount = local.reduce((n, c) => n + c.items.length, 0);
+  const ownedCount = local.reduce((n, c) => n + c.items.filter((i) => i.selected).length, 0);
   const q = search.trim().toLowerCase();
   const matchesSearch = (name: string) => !q || name.toLowerCase().includes(q);
 
-  // There's no catalog to fall back to any more — every chip shown is
-  // already something the household has, so tapping it off means it's
-  // actually gone, not just unchecked.
-  function removeItem(catName: string, itemName: string) {
+  function toggle(catName: string, itemName: string) {
+    const item = local.find((c) => c.name === catName)?.items.find((i) => i.name === itemName);
+    if (!item) return;
+    const nextSelected = !item.selected;
+
+    setLocal((prev) =>
+      prev.map((c) =>
+        c.name !== catName
+          ? c
+          : {
+              ...c,
+              items: c.items.map((i) =>
+                i.name === itemName ? { ...i, selected: nextSelected } : i
+              ),
+            }
+      )
+    );
+    void saveFridge([{ name: itemName, category: catName, inStock: nextSelected }]);
+  }
+
+  function removeCustom(catName: string, itemName: string) {
     setLocal((prev) =>
       prev.map((c) =>
         c.name !== catName ? c : { ...c, items: c.items.filter((i) => i.name !== itemName) }
@@ -259,17 +276,48 @@ export function FridgeEditor({ categories }: { categories: Category[] }) {
                   }`}
                 >
                   {cat.items.map((item) => {
+                    const chipClass = item.selected ? "bg-accent text-white" : "bg-surface text-ink-soft";
                     const isBeingDragged = dragging?.catName === cat.name && dragging.itemName === item.name;
+
+                    if (item.custom) {
+                      return (
+                        <span
+                          key={item.name}
+                          className={`inline-flex items-center rounded-full border border-transparent ${chipClass} ${
+                            isBeingDragged ? "opacity-40" : ""
+                          }`}
+                        >
+                          <button
+                            type="button"
+                            onClick={() => toggle(cat.name, item.name)}
+                            onPointerDown={(e) => handleChipPointerDown(e, cat.name, item.name)}
+                            onPointerMove={handleChipPointerMove}
+                            onPointerUp={handleChipPointerUp}
+                            className="touch-none py-2 pl-3.5 pr-1.5 text-[13px] font-semibold"
+                          >
+                            {item.name}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => removeCustom(cat.name, item.name)}
+                            aria-label={dict.common.delete}
+                            className="flex h-5 w-5 items-center justify-center pr-2.5 text-xs opacity-70"
+                          >
+                            ×
+                          </button>
+                        </span>
+                      );
+                    }
 
                     return (
                       <button
                         key={item.name}
                         type="button"
-                        onClick={() => removeItem(cat.name, item.name)}
+                        onClick={() => toggle(cat.name, item.name)}
                         onPointerDown={(e) => handleChipPointerDown(e, cat.name, item.name)}
                         onPointerMove={handleChipPointerMove}
                         onPointerUp={handleChipPointerUp}
-                        className={`touch-none rounded-full border border-transparent bg-accent px-3.5 py-2 text-[13px] font-semibold text-white ${
+                        className={`touch-none rounded-full border border-transparent px-3.5 py-2 text-[13px] font-semibold ${chipClass} ${
                           isBeingDragged ? "opacity-40" : ""
                         }`}
                       >

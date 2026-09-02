@@ -131,6 +131,8 @@ const ko = {
     accountManagement: "계정 관리",
     tagManagement: "태그 관리",
     tagManagementDesc: "레시피와 북마크에 쓴 태그 이름을 한 번에 바꿀 수 있어요.",
+    fridgeIngredientManagement: "냉장고 재료 관리",
+    fridgeIngredientManagementDesc: "체크된 재료만 냉장고 탭의 각 칸에 나타나요. 안 쓰는 재료는 눌러서 숨겨보세요.",
     tagRename: "이름 바꾸기",
     tagRenameSave: "저장",
     noTagsYet: "아직 만든 태그가 없어요.",
@@ -321,7 +323,7 @@ const ko = {
     saveNewButton: "메뉴 저장",
   },
   fridge: {
-    summaryTemplate: "{count}개 재료 보유 중 · 탭하면 빠지고, 길게 눌러서 다른 칸으로 옮길 수 있어요",
+    summaryTemplate: "{count}개 재료 보유 중 · 탭하면 바로 추가되거나 빠져요, 길게 눌러서 다른 칸으로 옮길 수 있어요",
     searchPlaceholder: "재료 검색",
     noMatchesTemplate: "‘{term}’을(를) 찾을 수 없어요. 어느 칸에 추가할까요?",
     addCustomPlaceholder: "직접 추가",

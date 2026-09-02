@@ -131,6 +131,8 @@ const en: Dictionary = {
     accountManagement: "Account",
     tagManagement: "Manage tags",
     tagManagementDesc: "Rename a tag used on your recipes and bookmarks everywhere at once.",
+    fridgeIngredientManagement: "Manage fridge ingredients",
+    fridgeIngredientManagementDesc: "Only checked ingredients show up in each fridge tab category. Tap one you never use to hide it.",
     tagRename: "Rename",
     tagRenameSave: "Save",
     noTagsYet: "No tags yet.",
@@ -321,7 +323,7 @@ const en: Dictionary = {
     saveNewButton: "Save menu",
   },
   fridge: {
-    summaryTemplate: "{count} ingredients in stock · Tap to remove, press and hold to move to another category",
+    summaryTemplate: "{count} ingredients in stock · Tap to add or remove instantly, press and hold to move to another category",
     searchPlaceholder: "Search ingredients",
     noMatchesTemplate: "Couldn't find “{term}”. Which category should it go in?",
     addCustomPlaceholder: "Add your own",

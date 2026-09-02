@@ -1,46 +1,65 @@
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentHousehold } from "@/lib/household";
-import { INGREDIENT_CATEGORIES } from "@/lib/ingredients";
+import { INGREDIENT_CATEGORIES, ALL_KNOWN_INGREDIENTS } from "@/lib/ingredients";
 import { FridgeEditor } from "./fridge-editor";
 import type { FridgeItem } from "@/lib/types";
 
-const UNCATEGORIZED = "미분류";
+function bySelectedFirst<T extends { selected: boolean }>(items: T[]) {
+  return [...items].sort((a, b) => Number(b.selected) - Number(a.selected));
+}
 
 export default async function FridgePage() {
   const { household } = await getCurrentHousehold();
   const supabase = await createClient();
 
-  // Only rows the household actually has — the old version also merged in
-  // every name from INGREDIENT_CATEGORIES as an unowned placeholder chip,
-  // which just cluttered each category with things nobody added.
-  const { data } = await supabase
-    .from("fridge_items")
-    .select("*")
-    .eq("household_id", household!.id)
-    .eq("in_stock", true);
+  const [{ data }, { data: hiddenRows }] = await Promise.all([
+    supabase.from("fridge_items").select("*").eq("household_id", household!.id),
+    supabase.from("fridge_hidden_ingredients").select("name").eq("household_id", household!.id),
+  ]);
 
   const fridgeItems = (data as FridgeItem[] | null) ?? [];
-  const staticNames = new Set(INGREDIENT_CATEGORIES.map((c) => c.name));
-  const itemsFor = (name: string) =>
-    fridgeItems
-      .filter((i) => (i.category ?? UNCATEGORIZED) === name)
-      .map((i) => ({ name: i.name, selected: true, custom: true }));
+  const stock = new Map(fridgeItems.map((i) => [i.name, i.in_stock]));
 
-  // 미분류 goes first, not appended after the named categories — it's where
-  // a freshly-typed item with no category lands, so it needs to be the
-  // thing users see first in order to drag items out of it into a real one.
+  // Hidden via 마이페이지 > 냉장고 재료 관리 — dropped from the preset catalog
+  // below unless the household actually has it in stock right now, so
+  // hiding a preset never makes something you actually own disappear.
+  const hidden = new Set((hiddenRows ?? []).map((r) => r.name as string));
+
+  const customItems = fridgeItems.filter((i) => !ALL_KNOWN_INGREDIENTS.has(i.name));
+  const staticNames = new Set(INGREDIENT_CATEGORIES.map((c) => c.name));
+
+  const staticCategories = INGREDIENT_CATEGORIES.map((cat) => ({
+    name: cat.name,
+    items: bySelectedFirst([
+      ...cat.items
+        .filter((name) => !hidden.has(name) || stock.get(name))
+        .map((name) => ({ name, selected: !!stock.get(name), custom: false })),
+      ...customItems
+        .filter((i) => (i.category ?? "미분류") === cat.name)
+        .map((i) => ({ name: i.name, selected: i.in_stock, custom: true })),
+    ]),
+  }));
+
+  // "미분류" goes first, not appended after the named categories — it's
+  // where every not-yet-sorted item lands, so it needs to be the thing
+  // users see first in order to drag items out of it into a real category.
   const extraCategoryNames = [
     ...new Set(
-      fridgeItems
-        .map((i) => i.category ?? UNCATEGORIZED)
-        .filter((name) => name !== UNCATEGORIZED && !staticNames.has(name))
+      customItems
+        .map((i) => i.category ?? "미분류")
+        .filter((name) => !staticNames.has(name))
     ),
   ];
-
   const categories = [
-    { name: UNCATEGORIZED, items: itemsFor(UNCATEGORIZED) },
-    ...INGREDIENT_CATEGORIES.map((cat) => ({ name: cat.name, items: itemsFor(cat.name) })),
-    ...extraCategoryNames.map((name) => ({ name, items: itemsFor(name) })),
+    ...extraCategoryNames.map((name) => ({
+      name,
+      items: bySelectedFirst(
+        customItems
+          .filter((i) => (i.category ?? "미분류") === name)
+          .map((i) => ({ name: i.name, selected: i.in_stock, custom: true }))
+      ),
+    })),
+    ...staticCategories,
   ];
 
   return (
