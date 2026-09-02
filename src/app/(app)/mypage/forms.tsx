@@ -2,12 +2,14 @@
 
 import { useActionState } from "react";
 import { ClearableInput } from "@/components/ClearableInput";
+import { useDict } from "@/lib/i18n/client";
 
 export function CreateHouseholdForm({
   action,
 }: {
   action: (prevState: unknown, formData: FormData) => Promise<{ error?: string } | undefined>;
 }) {
+  const dict = useDict();
   const [state, formAction, pending] = useActionState(action, undefined);
 
   return (
@@ -15,7 +17,7 @@ export function CreateHouseholdForm({
       <ClearableInput
         name="name"
         required
-        placeholder="예) 혜동이네 집"
+        placeholder={dict.onboarding.namePlaceholder}
         className="w-full rounded-xl border border-transparent bg-surface px-3.5 py-3 text-sm outline-none focus:border-accent"
       />
       {state?.error && <p className="text-xs text-warn-ink">{state.error}</p>}
@@ -24,7 +26,7 @@ export function CreateHouseholdForm({
         disabled={pending}
         className="rounded-xl bg-accent py-2.5 text-sm font-bold text-white disabled:opacity-60"
       >
-        {pending ? "만드는 중..." : "만들기"}
+        {pending ? dict.mypage.creating : dict.mypage.create}
       </button>
     </form>
   );
@@ -35,6 +37,7 @@ export function JoinHouseholdForm({
 }: {
   action: (prevState: unknown, formData: FormData) => Promise<{ error?: string } | undefined>;
 }) {
+  const dict = useDict();
   const [state, formAction, pending] = useActionState(action, undefined);
 
   return (
@@ -42,7 +45,7 @@ export function JoinHouseholdForm({
       <ClearableInput
         name="code"
         required
-        placeholder="초대 코드 입력"
+        placeholder={dict.mypage.inviteCodePlaceholder}
         className="w-full rounded-xl border border-transparent bg-surface px-3.5 py-3 text-sm uppercase tracking-widest outline-none focus:border-accent"
       />
       {state?.error && <p className="text-xs text-warn-ink">{state.error}</p>}
@@ -51,7 +54,7 @@ export function JoinHouseholdForm({
         disabled={pending}
         className="rounded-xl bg-accent py-2.5 text-sm font-bold text-white disabled:opacity-60"
       >
-        {pending ? "참여하는 중..." : "참여하기"}
+        {pending ? dict.mypage.joining : dict.mypage.join}
       </button>
     </form>
   );

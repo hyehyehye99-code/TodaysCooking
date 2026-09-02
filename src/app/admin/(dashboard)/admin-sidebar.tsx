@@ -36,13 +36,6 @@ const USERS_ICON = (
     <path d="M15.5 12.2c2.2.2 3.9 1.6 4.8 4.1" />
   </svg>
 );
-const SUBSCRIPTION_ICON = (
-  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <rect x="3.5" y="5" width="17" height="14" rx="2" />
-    <path d="M3.5 10h17" />
-    <path d="M7 14.5h4" />
-  </svg>
-);
 const CREATOR_ICON = (
   <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <circle cx="12" cy="8" r="3.5" />
@@ -66,12 +59,6 @@ const RECIPE_ICON = (
 const EXPENSE_ICON = (
   <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M19 8H8a4 4 0 0 0 0 8h8a4 4 0 0 1 0 4H4" />
-  </svg>
-);
-const REVENUE_ICON = (
-  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M3 17l5-5 4 4 8-8" />
-    <path d="M15 8h5v5" />
   </svg>
 );
 const PROMO_ICON = (
@@ -98,7 +85,6 @@ const NAV_GROUPS: NavGroup[] = [
     title: "사용자 관리",
     items: [
       { label: "사용자 리스트", href: "/admin/users", icon: USERS_ICON },
-      { label: "구독 사용자 리스트", href: "/admin/subscriptions", icon: SUBSCRIPTION_ICON },
       { label: "프로모션 코드 관리", href: "/admin/promotions", icon: PROMO_ICON },
     ],
   },
@@ -112,10 +98,7 @@ const NAV_GROUPS: NavGroup[] = [
   },
   {
     title: "비용관리",
-    items: [
-      { label: "지출 관리", href: "/admin/expenses", icon: EXPENSE_ICON },
-      { label: "수익 관리", href: "/admin/revenue", icon: REVENUE_ICON },
-    ],
+    items: [{ label: "지출 관리", href: "/admin/expenses", icon: EXPENSE_ICON }],
   },
 ];
 

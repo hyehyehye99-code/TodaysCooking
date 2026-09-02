@@ -1,7 +1,7 @@
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 
 // Service-role client — bypasses RLS entirely. Only for server-to-server
-// contexts with no user session (e.g. the RevenueCat webhook), where the
+// contexts with no user session (e.g. admin dashboard actions), where the
 // cookie-bound createClient() in ./server.ts has no auth to work with.
 // Never import this from anywhere a user request could reach without its
 // own separate authorization check.

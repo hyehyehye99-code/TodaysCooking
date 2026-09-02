@@ -52,10 +52,8 @@ export default function PrivacyPage() {
             정보를 수집합니다.
           </p>
           <p>
-            유료 구독을 이용하는 경우 구독 상태·상품·만료일 정보가, 프로모션 코드를 사용하는
-            경우 사용 코드와 만료일이, 푸시 알림을 켠 경우 기기 알림 토큰(또는 브라우저 구독
-            정보)이 함께 수집됩니다. 신용카드 번호 등 결제수단 정보는 서비스가 직접 수집하지
-            않으며, Apple(App Store)이 결제를 처리합니다.
+            프로모션 코드를 사용하는 경우 사용 코드와 만료일이, 푸시 알림을 켠 경우 기기 알림
+            토큰(또는 브라우저 구독 정보)이 함께 수집됩니다.
           </p>
         </section>
 
@@ -73,8 +71,7 @@ export default function PrivacyPage() {
             </li>
             <li>
               <b className="text-ink">서비스 제공</b> — 레시피·냉장고·장보기 기능 제공, AI를
-              이용한 재료·조리법 자동 정리, 유료 구독 이용 여부 확인 및 결제 상태 관리, 앱·웹
-              푸시 알림 발송
+              이용한 재료·조리법 자동 정리, 앱·웹 푸시 알림 발송
             </li>
             <li>
               <b className="text-ink">서비스 개선</b> — 오류 개선, AI 자동 정리 결과 품질 향상
@@ -86,7 +83,6 @@ export default function PrivacyPage() {
           <h2 className="mb-1.5 scroll-mt-4 text-sm font-bold text-ink">3. 개인정보의 보유 및 이용 기간</h2>
           <p>
             회원 탈퇴(마이페이지 &gt; 계정 관리 &gt; 계정 삭제) 시 지체 없이 파기합니다. 다만
-            결제·구독 관련 기록은 「전자상거래 등에서의 소비자보호에 관한 법률」에 따라 5년간,
             부정 이용 방지를 위한 접속 기록은 「통신비밀보호법」에 따라 3개월간 별도 보관 후
             파기합니다. 그 밖에 관계 법령에 따라 보존이 필요한 경우 해당 기간 동안 보관합니다.
           </p>
@@ -105,7 +101,6 @@ export default function PrivacyPage() {
             <li>Google LLC (Firebase) — 앱 푸시 알림 발송</li>
             <li>Google LLC (Gemini API) — 레시피 링크의 재료·조리법 AI 자동 추출</li>
             <li>Google LLC (YouTube Data API) — 참고 영상의 제목·설명·댓글 조회</li>
-            <li>RevenueCat, Inc. — 구독 결제 상태 확인 및 관리</li>
           </ul>
           <p className="mt-2 text-xs text-ink-faint">
             Vercel Inc.(웹·서버 호스팅)은 서울(icn1) 리전에서 서비스를 운영하므로 국내 위탁이며,
@@ -118,8 +113,7 @@ export default function PrivacyPage() {
           <p>
             서비스는 이용자의 개인정보를 원칙적으로 외부에 제공하지 않습니다. 다만 법령에 특별한
             규정이 있거나 수사기관이 적법한 절차에 따라 요청하는 경우, 이용자가 별도로 동의한
-            경우에 한해 예외적으로 제공할 수 있습니다. 구독 결제 시 결제 처리를 위해
-            Apple Inc.에 결제 인증 정보가 제공되며, 장보기 목록의 제휴 쇼핑 링크(쿠팡파트너스
+            경우에 한해 예외적으로 제공할 수 있습니다. 장보기 목록의 제휴 쇼핑 링크(쿠팡파트너스
             등)를 이용하는 경우 검색어만 해당 쇼핑몰에 전달되고 이용자를 식별할 수 있는 정보는
             전달되지 않습니다.
           </p>
@@ -165,25 +159,15 @@ export default function PrivacyPage() {
                   <td className="py-1.5 pr-3">이메일(로그인), 레시피 링크 내용, 알림 토큰</td>
                   <td className="py-1.5 pr-3">로그인·AI 추출·알림 발송 / 회원 탈퇴 또는 알림 해제 시까지</td>
                 </tr>
-                <tr className="border-b border-border align-top">
+                <tr className="align-top">
                   <td className="py-1.5 pr-3">
                     Apple Inc.
                     <br />
                     <span className="text-ink-faint">apple.com/legal/privacy</span>
                   </td>
                   <td className="py-1.5 pr-3">미국</td>
-                  <td className="py-1.5 pr-3">로그인 인증 정보, 구독 결제 정보</td>
-                  <td className="py-1.5 pr-3">로그인·결제 처리 / 회원 탈퇴 또는 구독 해지 시까지</td>
-                </tr>
-                <tr className="align-top">
-                  <td className="py-1.5 pr-3">
-                    RevenueCat, Inc.
-                    <br />
-                    <span className="text-ink-faint">revenuecat.com/privacy</span>
-                  </td>
-                  <td className="py-1.5 pr-3">미국</td>
-                  <td className="py-1.5 pr-3">우리집 식별자, 구독 상품·결제 상태</td>
-                  <td className="py-1.5 pr-3">구독 상태 관리 / 회원 탈퇴 시까지</td>
+                  <td className="py-1.5 pr-3">로그인 인증 정보</td>
+                  <td className="py-1.5 pr-3">로그인 처리 / 회원 탈퇴 시까지</td>
                 </tr>
               </tbody>
             </table>
@@ -191,12 +175,12 @@ export default function PrivacyPage() {
 
           <p className="mt-3">
             <b className="text-ink">이전 시기 및 방법</b> — 회원가입, 로그인, 레시피 등록, 알림
-            발송, 구독 결제 등 관련 기능을 이용하는 시점마다 TLS(HTTPS)로 암호화된 API 통신을
-            통해 실시간으로 전송됩니다.
+            발송 등 관련 기능을 이용하는 시점마다 TLS(HTTPS)로 암호화된 API 통신을 통해
+            실시간으로 전송됩니다.
           </p>
           <p className="mt-2">
             <b className="text-ink">이전 거부 방법·절차 및 거부의 효과</b> — 위 업체들은 로그인,
-            데이터 저장, 결제 처리 등 서비스 제공에 필수적인 기반이므로 개별 항목 단위로는 국외
+            데이터 저장 등 서비스 제공에 필수적인 기반이므로 개별 항목 단위로는 국외
             이전을 거부할 수 없습니다. 국외 이전 자체를 원하지 않으실 경우 마이페이지 &gt; 계정
             관리 &gt; 계정 삭제를 통해 회원 탈퇴하실 수 있으며, 탈퇴 시 서비스 이용이 종료되고
             보유 중인 개인정보는 제3항의 기간에 따라 파기됩니다.
@@ -215,8 +199,7 @@ export default function PrivacyPage() {
               <b className="text-ink">기술적 조치</b> — 이용자와 서버 간 모든 통신 구간 TLS(HTTPS)
               암호화, Supabase의 행 단위 접근 제어(Row Level Security)를 통해 이용자가 자신이
               속한 우리집의 데이터에만 접근하도록 통제, 비밀번호를 발급·저장하지 않는 소셜
-              로그인 전용 인증(비밀번호 유출 위험 자체가 없음), 결제수단 정보 비보유(Apple이
-              직접 처리)
+              로그인 전용 인증(비밀번호 유출 위험 자체가 없음)
             </li>
             <li>
               <b className="text-ink">물리적 조치</b> — 자체 서버를 두지 않고 Vercel·Supabase 등

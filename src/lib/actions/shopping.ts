@@ -42,16 +42,6 @@ export async function addShoppingItem(formData: FormData) {
   }).catch(() => {});
 }
 
-export async function deleteShoppingItem(formData: FormData) {
-  const id = String(formData.get("id") ?? "");
-  if (!id) return;
-
-  const supabase = await createClient();
-  await supabase.from("shopping_items").delete().eq("id", id);
-
-  revalidatePath("/shopping");
-}
-
 export async function setAllShoppingItemsChecked(formData: FormData) {
   const checked = formData.get("checked") === "true";
 

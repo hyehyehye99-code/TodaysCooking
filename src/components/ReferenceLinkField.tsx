@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import Link from "next/link";
 import { fetchLinkPreview } from "@/lib/actions/link-preview";
 import { generateRecipeFromLink, reportAiRecipeResult } from "@/lib/actions/ai-recipe";
 import { ClearableInput } from "@/components/ClearableInput";
@@ -145,7 +144,6 @@ export function ReferenceLinkField({
   const [loading, setLoading] = useState(false);
   const [aiLoading, setAiLoading] = useState(false);
   const [aiError, setAiError] = useState<string | null>(null);
-  const [aiLimitReached, setAiLimitReached] = useState(false);
   // Kept only so a "결과가 별로였나요?" report can reference exactly which
   // generation to look up — cleared whenever a new AI attempt starts so a
   // report can never be filed against a stale result.
@@ -200,14 +198,12 @@ export function ReferenceLinkField({
     if (!trimmed) return;
     setAiLoading(true);
     setAiError(null);
-    setAiLimitReached(false);
     setLastGeneration(null);
     setReportSent(false);
     const result = await generateRecipeFromLink(trimmed);
     setAiLoading(false);
     if (!result.ok) {
       setAiError(result.error);
-      setAiLimitReached(!!result.limitReached);
       return;
     }
     setLastGeneration({ id: result.generationId, url: trimmed, result });
@@ -311,11 +307,6 @@ export function ReferenceLinkField({
           {aiError && (
             <div className="mt-2 flex items-center gap-2">
               <p className="text-xs text-warn-ink">{aiError}</p>
-              {aiLimitReached && (
-                <Link href="/mypage/subscription" className="shrink-0 text-xs font-bold text-accent-ink underline">
-                  {dict.components.subscribeCta}
-                </Link>
-              )}
             </div>
           )}
           {lastGeneration && !reportSent && (

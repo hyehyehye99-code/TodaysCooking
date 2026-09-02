@@ -17,18 +17,15 @@ export function AddToHouseholdButton({
   const dict = useDict();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
-  const [limitReached, setLimitReached] = useState(false);
   const [addedRecipeId, setAddedRecipeId] = useState<string | null>(initialAddedRecipeId);
 
   function handleClick() {
     setError(null);
-    setLimitReached(false);
     startTransition(async () => {
       const result = await addExploreRecipeToHousehold(source, id);
       if (!result) return;
       if ("error" in result) {
         setError(result.error);
-        setLimitReached(!!result.limitReached);
         return;
       }
       setAddedRecipeId(result.recipeId);
@@ -64,11 +61,6 @@ export function AddToHouseholdButton({
       {error && (
         <div className="mt-2 flex items-center justify-center gap-2">
           <p className="text-center text-xs text-warn-ink">{error}</p>
-          {limitReached && (
-            <Link href="/mypage/subscription" className="shrink-0 text-xs font-bold text-accent-ink underline">
-              {dict.components.subscribeCta}
-            </Link>
-          )}
         </div>
       )}
     </div>

@@ -169,28 +169,14 @@ export default async function LandingPage() {
             {dict.landing.pricingSubtitle}
           </p>
 
-          <div className="mt-10 grid gap-5 md:grid-cols-2">
-            <div className="rounded-2xl border border-border p-7">
-              <p className="text-sm font-bold text-ink-faint">{dict.landing.freePlan}</p>
-              <p className="mt-2 text-3xl font-bold text-ink">₩0</p>
-              <ul className="mt-6 flex flex-col gap-3 text-sm text-ink-soft">
-                <li>· {dict.landing.freeFeature1}</li>
-                <li>· {dict.landing.freeFeature2}</li>
-                <li>· {dict.landing.freeFeature3}</li>
-              </ul>
-            </div>
-
-            <div className="rounded-2xl border-2 border-accent p-7">
-              <p className="text-sm font-bold text-accent">{dict.landing.premiumPlan}</p>
-              <p className="mt-2 text-3xl font-bold text-ink">
-                ₩3,300<span className="text-sm font-semibold text-ink-faint">{dict.landing.premiumPerMonth}</span>
-              </p>
-              <ul className="mt-6 flex flex-col gap-3 text-sm text-ink-soft">
-                <li>· {dict.landing.premiumFeature1}</li>
-                <li>· {dict.landing.premiumFeature2}</li>
-                <li>· {dict.landing.premiumFeature3}</li>
-              </ul>
-            </div>
+          <div className="mx-auto mt-10 max-w-sm rounded-2xl border border-border p-7">
+            <p className="text-sm font-bold text-ink-faint">{dict.landing.freePlan}</p>
+            <p className="mt-2 text-3xl font-bold text-ink">₩0</p>
+            <ul className="mt-6 flex flex-col gap-3 text-sm text-ink-soft">
+              <li>· {dict.landing.freeFeature1}</li>
+              <li>· {dict.landing.freeFeature2}</li>
+              <li>· {dict.landing.freeFeature3}</li>
+            </ul>
           </div>
         </div>
       </section>

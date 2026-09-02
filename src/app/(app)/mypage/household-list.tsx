@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { switchHousehold } from "@/lib/actions/household";
 import { GlassCard } from "@/components/ui";
 import { InviteButton } from "./invite-button";
@@ -15,12 +14,10 @@ export function HouseholdList({
   entries,
   currentId,
   myUserId,
-  activeIsPremium,
 }: {
   entries: HouseholdEntry[];
   currentId: string;
   myUserId: string;
-  activeIsPremium: boolean;
 }) {
   return (
     <div className="flex flex-col gap-2.5">
@@ -65,7 +62,6 @@ export function HouseholdList({
                 members={members}
                 myUserId={myUserId}
                 myRole={role}
-                isPremium={activeIsPremium}
               />
               <span className="shrink-0 rounded-full bg-accent/10 px-2.5 py-1 text-xs font-bold text-accent">
                 사용 중
@@ -74,17 +70,7 @@ export function HouseholdList({
 
             <div className="mt-3 flex items-center justify-between">
               <span className="text-xs text-ink-soft">참여 인원 {members.length}명</span>
-              <div className="flex items-center gap-1.5">
-                <Link
-                  href="/mypage/subscription"
-                  className={`rounded-lg px-3 py-2 text-xs font-bold ${
-                    activeIsPremium ? "bg-accent/10 text-accent" : "bg-surface text-ink-soft"
-                  }`}
-                >
-                  {activeIsPremium ? "프리미엄 ✓" : "구독"}
-                </Link>
-                <InviteButton householdName={household.name} inviteCode={household.invite_code} />
-              </div>
+              <InviteButton householdName={household.name} inviteCode={household.invite_code} />
             </div>
           </GlassCard>
         );

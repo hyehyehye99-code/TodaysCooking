@@ -7,12 +7,10 @@ import { AddHouseholdSection } from "./add-household-section";
 import { HouseholdList } from "./household-list";
 import { getDictionary } from "@/lib/i18n/server";
 
-// Kept in sync with FREE_WEEKLY_LIMIT / PREMIUM_MONTHLY_LIMIT in
-// src/lib/actions/ai-recipe.ts — this page only displays the count, the
-// actual enforcement lives server-side in that action. Free and premium use
-// different rolling windows (7 days vs 30), not just different caps.
-const FREE_WEEKLY_LIMIT = 5;
-const PREMIUM_MONTHLY_LIMIT = 100;
+// Kept in sync with FREE_WEEKLY_LIMIT in src/lib/actions/ai-recipe.ts — this
+// page only displays the count, the actual enforcement lives server-side in
+// that action.
+const FREE_WEEKLY_LIMIT = 20;
 
 function daysAgoIso(days: number) {
   return new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
@@ -43,25 +41,13 @@ export default async function MyPage() {
   const myNickname = me?.nickname ?? "";
   const myIconEmoji = me?.icon_emoji ?? null;
 
-  // Only the active household's card shows a subscription button/detail
-  // sheet (see HouseholdList), so this is the only household whose status
-  // is worth a query here.
-  const { data: sub } = current
-    ? await supabase
-        .from("household_subscriptions")
-        .select("active, expires_at")
-        .eq("household_id", current.id)
-        .maybeSingle()
-    : { data: null };
-  const activeIsPremium = !!sub?.active && (!sub.expires_at || new Date(sub.expires_at) > new Date());
-
   const { data: promoGrant } = user
     ? await supabase.from("promo_code_redemptions").select("expires_at").eq("user_id", user.id).maybeSingle()
     : { data: null };
   const isUnlimited = !!promoGrant && (!promoGrant.expires_at || new Date(promoGrant.expires_at) > new Date());
 
-  const planLimit = activeIsPremium ? PREMIUM_MONTHLY_LIMIT : FREE_WEEKLY_LIMIT;
-  const planSince = daysAgoIso(activeIsPremium ? 30 : 7);
+  const planLimit = FREE_WEEKLY_LIMIT;
+  const planSince = daysAgoIso(7);
   const { count: planUsageCount } = user
     ? await supabase
         .from("ai_recipe_generations")
@@ -86,36 +72,15 @@ export default async function MyPage() {
             </>
           ) : (
             <>
-              <p className="text-sm font-semibold text-ink">
-                {activeIsPremium ? dict.mypage.premiumActive : dict.mypage.freePlanActive}
-              </p>
+              <p className="text-sm font-semibold text-ink">{dict.mypage.freePlanActive}</p>
               <p className="mt-1 text-xs text-ink-soft">
-                {(activeIsPremium ? dict.mypage.usageMonthlyTemplate : dict.mypage.usageWeeklyTemplate)
+                {dict.mypage.usageWeeklyTemplate
                   .replace("{used}", String(planUsed))
                   .replace("{limit}", String(planLimit))}
               </p>
               <div className="mt-3">
-                <ProgressBar
-                  percent={(planUsed / planLimit) * 100}
-                  colorClass={activeIsPremium ? "bg-accent" : "bg-positive"}
-                />
+                <ProgressBar percent={(planUsed / planLimit) * 100} colorClass="bg-positive" />
               </div>
-              {current && sub?.expires_at && activeIsPremium && (
-                <p className="mt-3 text-xs text-ink-faint">
-                  {dict.mypage.nextBillingTemplate.replace(
-                    "{date}",
-                    new Date(sub.expires_at).toLocaleDateString("ko-KR")
-                  )}
-                </p>
-              )}
-              {!activeIsPremium && (
-                <Link
-                  href="/mypage/subscription"
-                  className="mt-3 flex items-center justify-center rounded-xl bg-accent py-2.5 text-[13px] font-bold text-white"
-                >
-                  {dict.components.subscribeCta}
-                </Link>
-              )}
             </>
           )}
         </div>
@@ -123,12 +88,7 @@ export default async function MyPage() {
 
       <p className="mb-3 text-[13px] font-bold text-ink-soft">{dict.mypage.householdManagement}</p>
       <div className="mb-4">
-        <HouseholdList
-          entries={entries}
-          currentId={current?.id ?? ""}
-          myUserId={user?.id ?? ""}
-          activeIsPremium={activeIsPremium}
-        />
+        <HouseholdList entries={entries} currentId={current?.id ?? ""} myUserId={user?.id ?? ""} />
       </div>
       <div className="mb-8">
         <AddHouseholdSection />
@@ -136,15 +96,6 @@ export default async function MyPage() {
 
       <GlassCard className="mb-8 bg-white">
         <div className="divide-y divide-border">
-          <Link
-            href="/mypage/subscription"
-            className="flex items-center justify-between px-4 py-4 text-sm font-semibold text-ink"
-          >
-            {dict.mypage.subscriptionManagement}
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--color-ink-faint)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M9 6l6 6-6 6" />
-            </svg>
-          </Link>
           <Link
             href="/mypage/account"
             className="flex items-center justify-between px-4 py-4 text-sm font-semibold text-ink"

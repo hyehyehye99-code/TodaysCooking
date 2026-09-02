@@ -42,21 +42,13 @@ export function ShoppingItemLink({
     return (
       <button
         type="button"
-        // The row this sits in arms a swipe-to-delete drag on pointerdown
-        // anywhere inside it (there's no non-interactive area to start a
-        // swipe from otherwise) and only decides "tap vs. drag" once the
-        // pointer has moved a few px — on a small edge button like this one,
-        // ordinary touch jitter during a tap crosses that threshold often
-        // enough that the resulting pointer capture swallows the click.
-        // data-swipe-ignore tells the row to never arm for a press that
-        // starts here, so this button always gets a clean click.
-        data-swipe-ignore
         onClick={() => {
           toggleChecked();
           router.push(`/redirect/coupang?name=${encodeURIComponent(name)}`);
         }}
-        className="shrink-0 rounded-lg bg-surface px-2.5 py-1.5 text-[11px] font-bold text-ink-soft"
+        className="flex shrink-0 items-center gap-1 rounded-lg bg-accent px-3 py-2 text-xs font-bold text-white"
       >
+        <CartIcon />
         {dict.shopping.buyButton}
       </button>
     );
@@ -74,10 +66,20 @@ export function ShoppingItemLink({
       // do nothing in one context or another. /redirect/coupang itself
       // handles returning to /shopping if the app regains focus stuck on it.
       onClick={toggleChecked}
-      data-swipe-ignore
-      className="shrink-0 rounded-lg bg-surface px-2.5 py-1.5 text-[11px] font-bold text-ink-soft"
+      className="flex shrink-0 items-center gap-1 rounded-lg bg-accent px-3 py-2 text-xs font-bold text-white"
     >
+      <CartIcon />
       {dict.shopping.buyButton}
     </a>
+  );
+}
+
+function CartIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <circle cx="9" cy="20" r="1.4" fill="currentColor" stroke="none" />
+      <circle cx="18" cy="20" r="1.4" fill="currentColor" stroke="none" />
+      <path d="M2.5 3.5h2l2.4 12.2a1.6 1.6 0 0 0 1.6 1.3h8.6a1.6 1.6 0 0 0 1.6-1.3l1.3-7.2H6.1" />
+    </svg>
   );
 }

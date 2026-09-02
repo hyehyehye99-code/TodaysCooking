@@ -4,18 +4,15 @@ import { GoogleGenAI, Type } from "@google/genai";
 import { createClient } from "@/lib/supabase/server";
 import { fetchLinkPreview } from "@/lib/actions/link-preview";
 import { extractYoutubeVideoId, fetchYoutubeVideoDetails } from "@/lib/actions/youtube";
-import { getCurrentHousehold } from "@/lib/household";
 import { isAdminAuthenticated } from "@/lib/admin-auth";
 
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
-// Free and premium use different rolling windows, not just different caps:
-// free resets weekly so a bad week doesn't lock someone out for a month,
-// while premium's monthly window matches how the subscription itself bills.
-const FREE_WEEKLY_LIMIT = 5;
-// Premium isn't literally unlimited — Gemini calls cost money per request
-// even for subscribers, so this stays a (generous) safety cap.
-const PREMIUM_MONTHLY_LIMIT = 100;
+// Resets weekly so a bad week doesn't lock someone out for a month. Flash-tier
+// Gemini pricing keeps a single generation's cost well under a cent, so this
+// is sized for a generous free experience rather than a tight cost cap —
+// revisit against actual Google AI Studio billing if usage patterns change.
+const FREE_WEEKLY_LIMIT = 20;
 
 // Comma-separated emails (e.g. in .env.local) that skip the daily cap
 // entirely — for the developer's own test account.
@@ -91,7 +88,7 @@ export async function generateRecipeFromLink(
   url: string
 ): Promise<
   | { ok: true; generationId: string; title: string | null; ingredients: string[]; instructions: string; tags: string[] }
-  | { ok: false; error: string; limitReached?: boolean; isPremium?: boolean }
+  | { ok: false; error: string; limitReached?: boolean }
 > {
   if (!process.env.GEMINI_API_KEY) {
     return { ok: false, error: "AI 기능이 아직 설정되지 않았어요." };
@@ -116,34 +113,18 @@ export async function generateRecipeFromLink(
       .maybeSingle();
     isUnlimited = !!promoGrant && (!promoGrant.expires_at || new Date(promoGrant.expires_at) > new Date());
   }
-  let isPremium = false;
   if (!isUnlimited) {
-    const { household } = await getCurrentHousehold();
-    const { data: sub } = household
-      ? await supabase
-          .from("household_subscriptions")
-          .select("active, expires_at")
-          .eq("household_id", household.id)
-          .maybeSingle()
-      : { data: null };
-    isPremium = !!sub?.active && (!sub.expires_at || new Date(sub.expires_at) > new Date());
-    const limit = isPremium ? PREMIUM_MONTHLY_LIMIT : FREE_WEEKLY_LIMIT;
-    const windowDays = isPremium ? 30 : 7;
-
-    const since = new Date(Date.now() - windowDays * 24 * 60 * 60 * 1000).toISOString();
+    const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
     const { count } = await supabase
       .from("ai_recipe_generations")
       .select("id", { count: "exact", head: true })
       .eq("user_id", user.id)
       .gte("created_at", since);
-    if ((count ?? 0) >= limit) {
+    if ((count ?? 0) >= FREE_WEEKLY_LIMIT) {
       return {
         ok: false,
-        error: isPremium
-          ? `이번 달 AI 사용 횟수(${limit}회)를 다 썼어요.`
-          : `이번 주 무료 AI 사용 횟수(${limit}회)를 다 썼어요. 구독하면 더 많이 쓸 수 있어요.`,
+        error: `이번 주 무료 AI 사용 횟수(${FREE_WEEKLY_LIMIT}회)를 다 썼어요.`,
         limitReached: true,
-        isPremium,
       };
     }
   }
