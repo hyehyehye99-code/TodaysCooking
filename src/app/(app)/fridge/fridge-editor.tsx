@@ -252,12 +252,7 @@ export function FridgeEditor({ categories }: { categories: Category[] }) {
 
       <div className="flex flex-col gap-1">
         {local
-          // Not searching: only show items already in the fridge, so a big
-          // catalog category doesn't bury what's actually owned under a wall
-          // of not-yet-added chips. Searching surfaces everything matching
-          // (owned or not) so a hidden/unowned item can still be found and
-          // tapped back in.
-          .map((cat) => ({ ...cat, items: cat.items.filter((i) => matchesSearch(i.name) && (q || i.selected)) }))
+          .map((cat) => ({ ...cat, items: cat.items.filter((i) => matchesSearch(i.name)) }))
           .filter((cat) => cat.items.length > 0 || !q)
           .map((cat) => {
             const isDropTarget = dropTarget === cat.name;
@@ -273,49 +268,22 @@ export function FridgeEditor({ categories }: { categories: Category[] }) {
                 >
                   {cat.items.map((item) => {
                     const isBeingDragged = dragging?.catName === cat.name && dragging.itemName === item.name;
-
-                    // Not yet in the fridge — only reachable via search.
-                    // Nothing to remove, so no drag and no × — a plain tap
-                    // adds it.
-                    if (!item.selected) {
-                      return (
-                        <button
-                          key={item.name}
-                          type="button"
-                          onClick={() => toggle(cat.name, item.name)}
-                          className="rounded-full border border-transparent bg-surface px-3.5 py-2 text-[13px] font-semibold text-ink-soft"
-                        >
-                          {item.name}
-                        </button>
-                      );
-                    }
+                    const chipClass = item.selected ? "bg-accent text-white" : "bg-surface text-ink-soft";
 
                     return (
-                      <span
+                      <button
                         key={item.name}
-                        className={`inline-flex items-center rounded-full border border-accent/20 bg-accent/10 text-accent-ink ${
+                        type="button"
+                        onClick={() => toggle(cat.name, item.name)}
+                        onPointerDown={(e) => handleChipPointerDown(e, cat.name, item.name)}
+                        onPointerMove={handleChipPointerMove}
+                        onPointerUp={handleChipPointerUp}
+                        className={`touch-none rounded-full border border-transparent px-3.5 py-2 text-[13px] font-semibold ${chipClass} ${
                           isBeingDragged ? "opacity-40" : ""
                         }`}
                       >
-                        <button
-                          type="button"
-                          onClick={() => toggle(cat.name, item.name)}
-                          onPointerDown={(e) => handleChipPointerDown(e, cat.name, item.name)}
-                          onPointerMove={handleChipPointerMove}
-                          onPointerUp={handleChipPointerUp}
-                          className="touch-none py-2 pl-3.5 pr-1.5 text-[13px] font-semibold"
-                        >
-                          {item.name}
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => toggle(cat.name, item.name)}
-                          aria-label="빼기"
-                          className="flex h-5 w-5 items-center justify-center pr-2.5 text-xs opacity-60"
-                        >
-                          ×
-                        </button>
-                      </span>
+                        {item.name}
+                      </button>
                     );
                   })}
 
