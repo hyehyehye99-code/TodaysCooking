@@ -350,6 +350,7 @@ const ko = {
     searchPlaceholder: "이름·유형·재료로 검색",
     noResults: "검색 결과가 없어요.",
     allRecipesHeading: "전체 크리에이터 레시피 보기",
+    viewAllLabel: "전체보기",
     noPublicRecipes: "아직 공개된 레시피가 없어요.",
     viewChannel: "채널 보러가기",
     channelLinkHeading: "크리에이터 채널 바로가기",

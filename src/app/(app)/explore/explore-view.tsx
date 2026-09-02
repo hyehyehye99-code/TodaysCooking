@@ -8,44 +8,42 @@ import { searchExploreRecipes, type ExploreSearchResult } from "@/lib/actions/ex
 import { useDict } from "@/lib/i18n/client";
 import type { ExploreFeedItem, ExploreCollection, ExploreBanner } from "./page";
 
-// A horizontally scrollable shelf of recipe cards for one curated
-// collection — modeled on 오늘의집's home-feed shelves: a tall photo card
-// with the creator's name overlaid at the bottom (like the space/product
-// cards there), plain page background, and a circular arrow instead of a
-// text "더보기" link.
+// A shelf of small square cards for one curated collection — modeled on
+// 배달의민족's "오늘만 이 가격" section: a plain "전체보기 >" heading link
+// and item photos carrying a small pill badge (creator name, here) in the
+// corner instead of a bottom gradient overlay or a full-card treatment.
 function CollectionSection({ collection, items, dict }: { collection: ExploreCollection; items: ExploreFeedItem[]; dict: ReturnType<typeof useDict> }) {
   if (items.length === 0) return null;
   return (
-    <div className="mb-8">
+    <div className="mb-7">
       <div className="mb-3 flex items-center justify-between gap-2">
-        <p className="flex min-w-0 items-center gap-1 text-base font-bold text-ink">
+        <p className="flex min-w-0 items-center gap-1 text-[16px] font-bold text-ink">
           {collection.emoji && <span>{collection.emoji}</span>}
           <span className="truncate">{collection.title}</span>
         </p>
         <Link
           href={`/explore/collection/${collection.id}`}
-          aria-label={dict.components.more}
-          className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-surface text-ink-soft"
+          className="flex shrink-0 items-center gap-0.5 text-xs font-semibold text-ink-faint"
         >
-          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+          {dict.explore.viewAllLabel}
+          <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round">
             <path d="M9 6l6 6-6 6" />
           </svg>
         </Link>
       </div>
       <div className="-mx-5 flex gap-3 overflow-x-auto px-5 pb-1">
         {items.map((item) => (
-          <Link key={`${item.source}-${item.id}`} href={`/explore/recipe/${item.source}/${item.id}`} className="w-[132px] shrink-0">
-            <div className="relative h-[172px] w-[132px] overflow-hidden rounded-2xl bg-surface">
+          <Link key={`${item.source}-${item.id}`} href={`/explore/recipe/${item.source}/${item.id}`} className="w-[104px] shrink-0">
+            <div className="relative h-[104px] w-[104px] overflow-hidden rounded-2xl bg-surface">
               {item.cover_photo_urls[0] ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={item.cover_photo_urls[0]} alt="" className="h-full w-full object-cover" />
               ) : (
-                <div className="flex h-full w-full items-center justify-center text-4xl">{item.icon_emoji ?? "🍳"}</div>
+                <div className="flex h-full w-full items-center justify-center text-3xl">{item.icon_emoji ?? "🍳"}</div>
               )}
-              <div className="absolute inset-x-0 bottom-0 flex items-center gap-1 bg-gradient-to-t from-black/65 to-transparent px-2 pb-2 pt-6">
-                {item.creator_icon_emoji && <span className="text-xs">{item.creator_icon_emoji}</span>}
-                <span className="truncate text-[11px] font-semibold text-white">{item.creator_name}</span>
-              </div>
+              <span className="absolute left-1.5 top-1.5 max-w-[calc(100%-12px)] truncate rounded-full bg-white/90 px-2 py-0.5 text-[10px] font-bold text-accent-ink shadow-sm">
+                {item.creator_name}
+              </span>
             </div>
             <p className="mt-1.5 line-clamp-2 text-xs font-semibold leading-snug text-ink">{item.title || dict.recipes.untitledLink}</p>
           </Link>
@@ -58,12 +56,19 @@ function CollectionSection({ collection, items, dict }: { collection: ExploreCol
 function BannerStrip({ banners }: { banners: ExploreBanner[] }) {
   if (banners.length === 0) return null;
   return (
-    <div className="-mx-5 mb-6 flex gap-2.5 overflow-x-auto px-5 pb-1">
+    <div className="-mx-5 mb-6 flex gap-3 overflow-x-auto px-5 pb-1">
       {banners.map((b) => {
         const card = (
-          <div className="flex h-16 w-60 shrink-0 items-center gap-2.5 rounded-2xl border border-border bg-surface px-4">
-            {b.emoji && <span className="text-lg">{b.emoji}</span>}
-            <p className="truncate text-[13px] font-semibold text-ink">{b.title}</p>
+          <div className="relative flex h-24 w-72 shrink-0 items-center overflow-hidden rounded-[24px] bg-gradient-to-br from-accent to-orange-300 px-5 shadow-[0_10px_24px_-10px_rgba(251,85,45,0.5)]">
+            {b.emoji && (
+              <span aria-hidden className="absolute -right-3 -top-4 text-7xl opacity-20">
+                {b.emoji}
+              </span>
+            )}
+            <p className="relative text-[15px] font-extrabold leading-snug text-white">
+              {b.emoji ? `${b.emoji} ` : ""}
+              {b.title}
+            </p>
           </div>
         );
         return b.link_url ? (

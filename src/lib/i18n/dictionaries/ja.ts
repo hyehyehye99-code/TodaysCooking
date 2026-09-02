@@ -347,6 +347,7 @@ const ja: Dictionary = {
     searchPlaceholder: "名前・タイプ・材料で検索",
     noResults: "検索結果がありません。",
     allRecipesHeading: "クリエイターのレシピをすべて見る",
+    viewAllLabel: "すべて見る",
     noPublicRecipes: "まだ公開されたレシピがありません。",
     viewChannel: "チャンネルを見る",
     channelLinkHeading: "クリエイターのチャンネルへ",

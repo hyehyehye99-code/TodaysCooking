@@ -350,6 +350,7 @@ const en: Dictionary = {
     searchPlaceholder: "Search by name, type, or ingredient",
     noResults: "No results.",
     allRecipesHeading: "Browse all creator recipes",
+    viewAllLabel: "View all",
     noPublicRecipes: "No public recipes yet.",
     viewChannel: "View channel",
     channelLinkHeading: "Go to creator's channel",
