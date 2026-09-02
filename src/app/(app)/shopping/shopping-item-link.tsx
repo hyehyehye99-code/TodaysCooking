@@ -46,7 +46,7 @@ export function ShoppingItemLink({
           toggleChecked();
           router.push(`/redirect/coupang?name=${encodeURIComponent(name)}`);
         }}
-        className="flex shrink-0 items-center gap-1.5 rounded-lg bg-accent px-3.5 py-2.5 text-[13px] font-bold text-white"
+        className="flex shrink-0 items-center gap-1 rounded-lg bg-accent px-2.5 py-1.5 text-[11px] font-bold text-white"
       >
         <CartIcon />
         {dict.shopping.buyButton}
@@ -66,7 +66,7 @@ export function ShoppingItemLink({
       // do nothing in one context or another. /redirect/coupang itself
       // handles returning to /shopping if the app regains focus stuck on it.
       onClick={toggleChecked}
-      className="flex shrink-0 items-center gap-1.5 rounded-lg bg-accent px-3.5 py-2.5 text-[13px] font-bold text-white"
+      className="flex shrink-0 items-center gap-1 rounded-lg bg-accent px-2.5 py-1.5 text-[11px] font-bold text-white"
     >
       <CartIcon />
       {dict.shopping.buyButton}
@@ -76,7 +76,7 @@ export function ShoppingItemLink({
 
 function CartIcon() {
   return (
-    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       <circle cx="9" cy="20" r="1.4" fill="currentColor" stroke="none" />
       <circle cx="18" cy="20" r="1.4" fill="currentColor" stroke="none" />
       <path d="M2.5 3.5h2l2.4 12.2a1.6 1.6 0 0 0 1.6 1.3h8.6a1.6 1.6 0 0 0 1.6-1.3l1.3-7.2H6.1" />
