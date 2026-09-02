@@ -6,7 +6,60 @@ import { RecipeThumb } from "@/components/RecipeThumb";
 import { ClearableInput } from "@/components/ClearableInput";
 import { searchExploreRecipes, type ExploreSearchResult } from "@/lib/actions/explore";
 import { useDict } from "@/lib/i18n/client";
-import type { ExploreCreator, ExploreFeedItem } from "./page";
+import type { ExploreCreator, ExploreFeedItem, ExploreCollection, ExploreBanner } from "./page";
+
+// A horizontally scrollable strip of small recipe cards for one curated
+// collection — bigger, squarer thumbnails than the list rows below since
+// this is meant to read as a browsable shelf, not another list.
+function CollectionSection({ collection, items, dict }: { collection: ExploreCollection; items: ExploreFeedItem[]; dict: ReturnType<typeof useDict> }) {
+  if (items.length === 0) return null;
+  return (
+    <div className="mb-7">
+      <div className="mb-3 flex items-center justify-between">
+        <p className="text-[15px] font-bold">
+          {collection.emoji ? `${collection.emoji} ` : ""}
+          {collection.title}
+        </p>
+        <Link href={`/explore/collection/${collection.id}`} className="text-xs font-bold text-ink-faint">
+          {dict.components.more}
+        </Link>
+      </div>
+      <div className="-mx-5 flex gap-3 overflow-x-auto px-5 pb-1">
+        {items.map((item) => (
+          <Link key={`${item.source}-${item.id}`} href={`/explore/recipe/${item.source}/${item.id}`} className="w-28 shrink-0">
+            <RecipeThumb coverPhotoUrl={item.cover_photo_urls[0]} iconEmoji={item.icon_emoji} size={112} rounded="rounded-2xl" />
+            <p className="mt-1.5 line-clamp-2 text-xs font-semibold leading-snug">{item.title || dict.recipes.untitledLink}</p>
+          </Link>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function BannerStrip({ banners }: { banners: ExploreBanner[] }) {
+  if (banners.length === 0) return null;
+  return (
+    <div className="-mx-5 mb-7 flex gap-3 overflow-x-auto px-5 pb-1">
+      {banners.map((b) => {
+        const card = (
+          <div className="flex h-[72px] w-64 shrink-0 items-center rounded-2xl bg-accent/10 px-4">
+            <p className="text-sm font-bold text-accent-ink">
+              {b.emoji ? `${b.emoji} ` : ""}
+              {b.title}
+            </p>
+          </div>
+        );
+        return b.link_url ? (
+          <Link key={b.id} href={b.link_url}>
+            {card}
+          </Link>
+        ) : (
+          <div key={b.id}>{card}</div>
+        );
+      })}
+    </div>
+  );
+}
 
 // A list row — same visual weight as the 레시피 tab's rows (small square
 // thumbnail + text). cover_photo_urls/icon_emoji fall through the same
@@ -70,9 +123,15 @@ function ExploreCreatorRow({ creator, dict }: { creator: ExploreCreator; dict: R
 export function ExploreView({
   creators,
   feed,
+  collections,
+  collectionRecipesById,
+  banners,
 }: {
   creators: ExploreCreator[];
   feed: ExploreFeedItem[];
+  collections: ExploreCollection[];
+  collectionRecipesById: Record<string, ExploreFeedItem[]>;
+  banners: ExploreBanner[];
 }) {
   const dict = useDict();
   const [tab, setTab] = useState<"all" | "creators">("all");
@@ -175,6 +234,11 @@ export function ExploreView({
         </div>
       ) : tab === "all" ? (
         <>
+          <BannerStrip banners={banners} />
+          {collections.map((c) => (
+            <CollectionSection key={c.id} collection={c} items={collectionRecipesById[c.id] ?? []} dict={dict} />
+          ))}
+
           {allTags.length > 0 && (
             <div className="mb-4 flex flex-wrap gap-1.5">
               <button

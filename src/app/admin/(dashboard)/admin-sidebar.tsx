@@ -61,6 +61,14 @@ const EXPENSE_ICON = (
     <path d="M19 8H8a4 4 0 0 0 0 8h8a4 4 0 0 1 0 4H4" />
   </svg>
 );
+const COLLECTION_ICON = (
+  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="3.5" y="4" width="7.5" height="7.5" rx="1.5" />
+    <rect x="13" y="4" width="7.5" height="7.5" rx="1.5" />
+    <rect x="3.5" y="13.5" width="7.5" height="7.5" rx="1.5" />
+    <rect x="13" y="13.5" width="7.5" height="7.5" rx="1.5" />
+  </svg>
+);
 const PROMO_ICON = (
   <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M12 3.5 3.5 8v8l8.5 4.5 8.5-4.5V8L12 3.5z" />
@@ -93,6 +101,7 @@ const NAV_GROUPS: NavGroup[] = [
     items: [
       { label: "크리에이터 관리 리스트", href: "/admin/creators", icon: CREATOR_ICON },
       { label: "크리에이터 레시피 관리", href: "/admin/creator-recipes", icon: RECIPE_ICON },
+      { label: "탐색 큐레이션 관리", href: "/admin/collections", icon: COLLECTION_ICON },
       { label: "크리에이터 신청 관리", href: "/admin/applications", icon: APPLICATION_ICON, badgeKey: "applications" },
     ],
   },

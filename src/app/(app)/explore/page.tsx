@@ -25,18 +25,45 @@ export type ExploreFeedItem = {
   created_at: string;
 };
 
+export type ExploreCollection = {
+  id: string;
+  title: string;
+  emoji: string | null;
+  recipe_count: number;
+};
+
+export type ExploreBanner = {
+  id: string;
+  title: string;
+  emoji: string | null;
+  link_url: string | null;
+};
+
 export default async function ExplorePage() {
   const supabase = await createClient();
 
-  const [{ data: creators }, { data: feed }] = await Promise.all([
+  const [{ data: creators }, { data: feed }, { data: collections }, { data: banners }] = await Promise.all([
     supabase.rpc("list_creators"),
     supabase.rpc("search_explore_recipes", { p_query: null }),
+    supabase.rpc("list_explore_collections"),
+    supabase.rpc("list_explore_banners"),
   ]);
+
+  const collectionList = (collections as ExploreCollection[] | null) ?? [];
+  const collectionRecipes = await Promise.all(
+    collectionList.map(async (c) => {
+      const { data } = await supabase.rpc("get_collection_recipes", { p_collection_id: c.id });
+      return [c.id, (data as ExploreFeedItem[] | null) ?? []] as const;
+    })
+  );
 
   return (
     <ExploreView
       creators={(creators as ExploreCreator[] | null) ?? []}
       feed={(feed as ExploreFeedItem[] | null) ?? []}
+      collections={collectionList}
+      collectionRecipesById={Object.fromEntries(collectionRecipes)}
+      banners={(banners as ExploreBanner[] | null) ?? []}
     />
   );
 }
