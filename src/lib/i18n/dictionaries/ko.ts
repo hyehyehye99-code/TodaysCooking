@@ -321,7 +321,7 @@ const ko = {
     saveNewButton: "메뉴 저장",
   },
   fridge: {
-    summaryTemplate: "{count}개 재료 보유 중 · 탭하면 바로 추가되거나 빠져요, 길게 눌러서 다른 칸으로 옮길 수 있어요",
+    summaryTemplate: "{count}개 재료 보유 중 · 탭하면 빠지고, 길게 눌러서 다른 칸으로 옮길 수 있어요",
     searchPlaceholder: "재료 검색",
     noMatchesTemplate: "‘{term}’을(를) 찾을 수 없어요. 어느 칸에 추가할까요?",
     addCustomPlaceholder: "직접 추가",

@@ -321,7 +321,7 @@ const en: Dictionary = {
     saveNewButton: "Save menu",
   },
   fridge: {
-    summaryTemplate: "{count} ingredients in stock · Tap to add or remove instantly, press and hold to move to another category",
+    summaryTemplate: "{count} ingredients in stock · Tap to remove, press and hold to move to another category",
     searchPlaceholder: "Search ingredients",
     noMatchesTemplate: "Couldn't find “{term}”. Which category should it go in?",
     addCustomPlaceholder: "Add your own",

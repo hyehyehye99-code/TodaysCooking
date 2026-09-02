@@ -318,7 +318,7 @@ const ja: Dictionary = {
     saveNewButton: "メニューを保存",
   },
   fridge: {
-    summaryTemplate: "{count}個の材料が在庫あり · タップで追加・解除、長押しで別のカテゴリへ移動できます",
+    summaryTemplate: "{count}個の材料が在庫あり · タップで削除、長押しで別のカテゴリへ移動できます",
     searchPlaceholder: "材料を検索",
     noMatchesTemplate: "「{term}」が見つかりません。どのカテゴリに追加しますか？",
     addCustomPlaceholder: "直接追加",

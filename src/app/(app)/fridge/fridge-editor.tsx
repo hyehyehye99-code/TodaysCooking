@@ -165,28 +165,20 @@ export function FridgeEditor({ categories }: { categories: Category[] }) {
     void saveFridge([{ name: itemName, category: toCat, inStock: item.selected }]);
   }
 
-  const ownedCount = local.reduce((n, c) => n + c.items.filter((i) => i.selected).length, 0);
+  const ownedCount = local.reduce((n, c) => n + c.items.length, 0);
   const q = search.trim().toLowerCase();
   const matchesSearch = (name: string) => !q || name.toLowerCase().includes(q);
 
-  function toggle(catName: string, itemName: string) {
-    const item = local.find((c) => c.name === catName)?.items.find((i) => i.name === itemName);
-    if (!item) return;
-    const nextSelected = !item.selected;
-
+  // There's no catalog to fall back to any more — every chip shown is
+  // already something the household has, so tapping it off means it's
+  // actually gone, not just unchecked.
+  function removeItem(catName: string, itemName: string) {
     setLocal((prev) =>
       prev.map((c) =>
-        c.name !== catName
-          ? c
-          : {
-              ...c,
-              items: c.items.map((i) =>
-                i.name === itemName ? { ...i, selected: nextSelected } : i
-              ),
-            }
+        c.name !== catName ? c : { ...c, items: c.items.filter((i) => i.name !== itemName) }
       )
     );
-    void saveFridge([{ name: itemName, category: catName, inStock: nextSelected }]);
+    void saveFridge([], [itemName]);
   }
 
   function addCustomNamed(catName: string, rawValue: string) {
@@ -268,17 +260,16 @@ export function FridgeEditor({ categories }: { categories: Category[] }) {
                 >
                   {cat.items.map((item) => {
                     const isBeingDragged = dragging?.catName === cat.name && dragging.itemName === item.name;
-                    const chipClass = item.selected ? "bg-accent text-white" : "bg-surface text-ink-soft";
 
                     return (
                       <button
                         key={item.name}
                         type="button"
-                        onClick={() => toggle(cat.name, item.name)}
+                        onClick={() => removeItem(cat.name, item.name)}
                         onPointerDown={(e) => handleChipPointerDown(e, cat.name, item.name)}
                         onPointerMove={handleChipPointerMove}
                         onPointerUp={handleChipPointerUp}
-                        className={`touch-none rounded-full border border-transparent px-3.5 py-2 text-[13px] font-semibold ${chipClass} ${
+                        className={`touch-none rounded-full border border-transparent bg-accent px-3.5 py-2 text-[13px] font-semibold text-white ${
                           isBeingDragged ? "opacity-40" : ""
                         }`}
                       >
