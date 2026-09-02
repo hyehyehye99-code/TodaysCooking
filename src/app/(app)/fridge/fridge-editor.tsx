@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { saveFridge } from "@/lib/actions/fridge";
 import { GlassCard } from "@/components/ui";
 import { ClearableInput } from "@/components/ClearableInput";
@@ -11,22 +11,34 @@ type Category = { name: string; items: Item[] };
 
 const LONG_PRESS_MS = 350;
 const MOVE_CANCEL_PX = 10;
+// How close to the scrollable page's top/bottom edge (in px) a drag has to
+// get before it starts auto-scrolling, and how fast it scrolls right at
+// the edge (tapering to 0 at AUTO_SCROLL_EDGE away from it).
+const AUTO_SCROLL_EDGE = 70;
+const AUTO_SCROLL_MAX_SPEED = 16;
 
 export function FridgeEditor({ categories }: { categories: Category[] }) {
   const dict = useDict();
   const [local, setLocal] = useState<Category[]>(categories);
   const [customInputs, setCustomInputs] = useState<Record<string, string>>({});
   const [search, setSearch] = useState("");
-  const [expanded, setExpanded] = useState<Set<string>>(() => new Set());
 
-  // Long-press-then-drag a chip into a different (open) category. The press
-  // timer is what separates this from a normal tap — pointer capture is
-  // deferred until the timer actually fires (not on every pointerdown),
-  // otherwise capturing retargets the click and swallows plain taps.
+  // Long-press-then-drag a chip into a different category. The press timer
+  // is what separates this from a normal tap — pointer capture is deferred
+  // until the timer actually fires (not on every pointerdown), otherwise
+  // capturing retargets the click and swallows plain taps.
   const [dragging, setDragging] = useState<{ catName: string; itemName: string; x: number; y: number } | null>(null);
   const [dropTarget, setDropTarget] = useState<string | null>(null);
   const pressRef = useRef<{ catName: string; itemName: string; x: number; y: number; timer: ReturnType<typeof setTimeout> } | null>(null);
   const catRefs = useRef<Map<string, HTMLElement>>(new Map());
+
+  // Mirrors the live drag position/target for the auto-scroll rAF loop
+  // below, which runs on frames scheduled while the pointer sits still near
+  // an edge — a plain closure over `dragging` state would go stale between
+  // the pointermove that started the hold and the next animation frame.
+  const dragPosRef = useRef<{ catName: string; x: number; y: number } | null>(null);
+  const scrollElRef = useRef<HTMLElement | null>(null);
+  const rafRef = useRef<number | null>(null);
 
   function registerCatRef(name: string) {
     return (el: HTMLElement | null) => {
@@ -44,6 +56,39 @@ export function FridgeEditor({ categories }: { categories: Category[] }) {
     return null;
   }
 
+  // The page's scroll container lives in PullToRefresh, a couple of levels
+  // up in the (app) layout — nothing here holds a ref to it, so it's found
+  // at drag-start time via the DOM instead of threading one down.
+  function autoScrollStep() {
+    const scrollEl = scrollElRef.current;
+    const drag = dragPosRef.current;
+    if (scrollEl && drag) {
+      const rect = scrollEl.getBoundingClientRect();
+      const distTop = drag.y - rect.top;
+      const distBottom = rect.bottom - drag.y;
+      let dy = 0;
+      if (distTop < AUTO_SCROLL_EDGE) {
+        dy = -AUTO_SCROLL_MAX_SPEED * (1 - Math.max(distTop, 0) / AUTO_SCROLL_EDGE);
+      } else if (distBottom < AUTO_SCROLL_EDGE) {
+        dy = AUTO_SCROLL_MAX_SPEED * (1 - Math.max(distBottom, 0) / AUTO_SCROLL_EDGE);
+      }
+      if (dy !== 0) {
+        scrollEl.scrollTop += dy;
+        // Category positions just shifted under a pointer that may not
+        // have moved at all — re-run the hit test so the highlighted drop
+        // target stays correct while auto-scrolling holds it still.
+        setDropTarget(findDropTarget(drag.x, drag.y, drag.catName));
+      }
+    }
+    rafRef.current = requestAnimationFrame(autoScrollStep);
+  }
+
+  useEffect(() => {
+    return () => {
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    };
+  }, []);
+
   function handleChipPointerDown(e: React.PointerEvent<HTMLButtonElement>, catName: string, itemName: string) {
     const startX = e.clientX;
     const startY = e.clientY;
@@ -52,6 +97,9 @@ export function FridgeEditor({ categories }: { categories: Category[] }) {
     const timer = setTimeout(() => {
       target.setPointerCapture(pointerId);
       setDragging({ catName, itemName, x: startX, y: startY });
+      dragPosRef.current = { catName, x: startX, y: startY };
+      scrollElRef.current = target.closest<HTMLElement>(".overflow-y-auto");
+      if (rafRef.current == null) rafRef.current = requestAnimationFrame(autoScrollStep);
       pressRef.current = null;
     }, LONG_PRESS_MS);
     pressRef.current = { catName, itemName, x: startX, y: startY, timer };
@@ -62,6 +110,7 @@ export function FridgeEditor({ categories }: { categories: Category[] }) {
       const x = e.clientX;
       const y = e.clientY;
       setDragging((d) => (d ? { ...d, x, y } : d));
+      dragPosRef.current = { catName: dragging.catName, x, y };
       setDropTarget(findDropTarget(x, y, dragging.catName));
       return;
     }
@@ -71,6 +120,15 @@ export function FridgeEditor({ categories }: { categories: Category[] }) {
       clearTimeout(press.timer);
       pressRef.current = null;
     }
+  }
+
+  function endDrag() {
+    if (rafRef.current != null) {
+      cancelAnimationFrame(rafRef.current);
+      rafRef.current = null;
+    }
+    dragPosRef.current = null;
+    scrollElRef.current = null;
   }
 
   function handleChipPointerUp(e: React.PointerEvent<HTMLButtonElement>) {
@@ -87,6 +145,7 @@ export function FridgeEditor({ categories }: { categories: Category[] }) {
       } catch {
         // already released
       }
+      endDrag();
       setDragging(null);
       setDropTarget(null);
     }
@@ -104,21 +163,6 @@ export function FridgeEditor({ categories }: { categories: Category[] }) {
       })
     );
     void saveFridge([{ name: itemName, category: toCat, inStock: item.selected }]);
-  }
-
-  function toggleExpand(catName: string) {
-    setExpanded((prev) => {
-      const next = new Set(prev);
-      if (next.has(catName)) next.delete(catName);
-      else next.add(catName);
-      return next;
-    });
-  }
-
-  const allExpanded = local.length > 0 && local.every((c) => expanded.has(c.name));
-
-  function toggleAllExpanded() {
-    setExpanded(allExpanded ? new Set() : new Set(local.map((c) => c.name)));
   }
 
   const ownedCount = local.reduce((n, c) => n + c.items.filter((i) => i.selected).length, 0);
@@ -195,14 +239,6 @@ export function FridgeEditor({ categories }: { categories: Category[] }) {
         className="mb-5 w-full rounded-xl border border-transparent bg-surface px-3.5 py-2.5 text-sm outline-none focus:border-accent"
       />
 
-      {!q && (
-        <div className="-mt-2 mb-2 flex justify-end">
-          <button type="button" onClick={toggleAllExpanded} className="px-4 py-2 text-xs font-bold text-accent">
-            {allExpanded ? dict.fridge.collapseAll : dict.fridge.expandAll}
-          </button>
-        </div>
-      )}
-
       {noMatches && (
         <GlassCard className="mb-5 border-transparent bg-surface p-4">
           <p className="mb-3 text-sm text-ink-soft">
@@ -225,63 +261,48 @@ export function FridgeEditor({ categories }: { categories: Category[] }) {
 
       <div className="flex flex-col gap-1">
         {local
-          .map((cat) => ({ ...cat, items: cat.items.filter((i) => matchesSearch(i.name)) }))
+          // Not searching: only show items already in the fridge, so a big
+          // catalog category doesn't bury what's actually owned under a wall
+          // of not-yet-added chips. Searching surfaces everything matching
+          // (owned or not) so a hidden/unowned item can still be found and
+          // tapped back in.
+          .map((cat) => ({ ...cat, items: cat.items.filter((i) => matchesSearch(i.name) && (q || i.selected)) }))
           .filter((cat) => cat.items.length > 0 || !q)
           .map((cat) => {
-            const isOpen = !!q || expanded.has(cat.name);
-            const ownedNames = cat.items.filter((i) => i.selected).map((i) => i.name);
             const isDropTarget = dropTarget === cat.name;
             return (
-            <div key={cat.name} className="border-b border-border py-3 last:border-none">
-              <button
-                type="button"
-                onClick={() => toggleExpand(cat.name)}
-                className="flex w-full items-center justify-between"
-              >
-                <span className="text-xs font-bold text-ink-soft">{cat.name}</span>
-                <svg
-                  viewBox="0 0 24 24"
-                  width="16"
-                  height="16"
-                  fill="none"
-                  stroke="var(--color-ink-faint)"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className={`transition-transform duration-150 ${isOpen ? "rotate-180" : ""}`}
-                >
-                  <path d="M6 9l6 6 6-6" />
-                </svg>
-              </button>
+              <div key={cat.name} className="border-b border-border py-3 last:border-none">
+                <p className="text-xs font-bold text-ink-soft">{cat.name}</p>
 
-              {!isOpen && (
-                <p
-                  className={`mt-1.5 text-sm ${
-                    ownedNames.length > 0 ? "text-ink" : "text-ink-faint"
+                <div
+                  ref={registerCatRef(cat.name)}
+                  className={`mt-3 flex flex-wrap items-center gap-2 rounded-2xl border-2 p-1.5 transition-colors ${
+                    isDropTarget ? "border-dashed border-accent bg-accent/5" : "border-transparent"
                   }`}
                 >
-                  {ownedNames.length > 0 ? ownedNames.join(", ") : dict.fridge.noOwnedItems}
-                </p>
-              )}
+                  {cat.items.map((item) => {
+                    const isBeingDragged = dragging?.catName === cat.name && dragging.itemName === item.name;
 
-              {isOpen && (
-              <div
-                ref={registerCatRef(cat.name)}
-                className={`mt-3 flex flex-wrap items-center gap-2 rounded-2xl border-2 p-1.5 transition-colors ${
-                  isDropTarget ? "border-dashed border-accent bg-accent/5" : "border-transparent"
-                }`}
-              >
-                {cat.items.map((item) => {
-                  const chipClass = item.selected
-                    ? "bg-accent text-white"
-                    : "bg-surface text-ink-soft";
-                  const isBeingDragged = dragging?.catName === cat.name && dragging.itemName === item.name;
+                    // Not yet in the fridge — only reachable via search.
+                    // Nothing to remove, so no drag and no × — a plain tap
+                    // adds it.
+                    if (!item.selected) {
+                      return (
+                        <button
+                          key={item.name}
+                          type="button"
+                          onClick={() => toggle(cat.name, item.name)}
+                          className="rounded-full border border-transparent bg-surface px-3.5 py-2 text-[13px] font-semibold text-ink-soft"
+                        >
+                          {item.name}
+                        </button>
+                      );
+                    }
 
-                  if (item.custom) {
                     return (
                       <span
                         key={item.name}
-                        className={`inline-flex items-center rounded-full border border-transparent ${chipClass} ${
+                        className={`inline-flex items-center rounded-full border border-accent/20 bg-accent/10 text-accent-ink ${
                           isBeingDragged ? "opacity-40" : ""
                         }`}
                       >
@@ -297,59 +318,43 @@ export function FridgeEditor({ categories }: { categories: Category[] }) {
                         </button>
                         <button
                           type="button"
-                          onClick={() => removeCustom(cat.name, item.name)}
+                          onClick={() =>
+                            item.custom ? removeCustom(cat.name, item.name) : toggle(cat.name, item.name)
+                          }
                           aria-label={dict.common.delete}
-                          className="flex h-5 w-5 items-center justify-center pr-2.5 text-xs opacity-70"
+                          className="flex h-5 w-5 items-center justify-center pr-2.5 text-xs opacity-60"
                         >
                           ×
                         </button>
                       </span>
                     );
-                  }
+                  })}
 
-                  return (
-                    <button
-                      key={item.name}
-                      type="button"
-                      onClick={() => toggle(cat.name, item.name)}
-                      onPointerDown={(e) => handleChipPointerDown(e, cat.name, item.name)}
-                      onPointerMove={handleChipPointerMove}
-                      onPointerUp={handleChipPointerUp}
-                      className={`touch-none rounded-full border border-transparent px-3.5 py-2 text-[13px] font-semibold ${chipClass} ${
-                        isBeingDragged ? "opacity-40" : ""
-                      }`}
-                    >
-                      {item.name}
-                    </button>
-                  );
-                })}
-
-                <span className="inline-flex items-center gap-1 rounded-full border border-transparent bg-surface py-1 pl-3 pr-1.5">
-                  <input
-                    value={customInputs[cat.name] ?? ""}
-                    onChange={(e) =>
-                      setCustomInputs((prev) => ({ ...prev, [cat.name]: e.target.value }))
-                    }
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") {
-                        e.preventDefault();
-                        addCustom(cat.name);
+                  <span className="inline-flex items-center gap-1 rounded-full border border-transparent bg-surface py-1 pl-3 pr-1.5">
+                    <input
+                      value={customInputs[cat.name] ?? ""}
+                      onChange={(e) =>
+                        setCustomInputs((prev) => ({ ...prev, [cat.name]: e.target.value }))
                       }
-                    }}
-                    placeholder={dict.fridge.addCustomPlaceholder}
-                    className="w-16 bg-transparent text-[13px] outline-none placeholder:text-ink-faint"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => addCustom(cat.name)}
-                    className="flex h-6 w-6 items-center justify-center rounded-full bg-accent text-xs font-bold text-white"
-                  >
-                    +
-                  </button>
-                </span>
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          addCustom(cat.name);
+                        }
+                      }}
+                      placeholder={dict.fridge.addCustomPlaceholder}
+                      className="w-16 bg-transparent text-[13px] outline-none placeholder:text-ink-faint"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => addCustom(cat.name)}
+                      className="flex h-6 w-6 items-center justify-center rounded-full bg-accent text-xs font-bold text-white"
+                    >
+                      +
+                    </button>
+                  </span>
+                </div>
               </div>
-              )}
-            </div>
             );
           })}
       </div>

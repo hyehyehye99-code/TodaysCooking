@@ -323,11 +323,8 @@ const ko = {
   fridge: {
     summaryTemplate: "{count}개 재료 보유 중 · 탭하면 바로 추가되거나 빠져요, 길게 눌러서 다른 칸으로 옮길 수 있어요",
     searchPlaceholder: "재료 검색",
-    collapseAll: "전체 닫기",
-    expandAll: "전체 열기",
     noMatchesTemplate: "‘{term}’을(를) 찾을 수 없어요. 어느 칸에 추가할까요?",
     addCustomPlaceholder: "직접 추가",
-    noOwnedItems: "보유한 재료가 없어요",
   },
   shopping: {
     currentTrip: "이번 장보기",

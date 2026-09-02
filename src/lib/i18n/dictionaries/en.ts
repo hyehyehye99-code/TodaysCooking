@@ -323,11 +323,8 @@ const en: Dictionary = {
   fridge: {
     summaryTemplate: "{count} ingredients in stock · Tap to add or remove instantly, press and hold to move to another category",
     searchPlaceholder: "Search ingredients",
-    collapseAll: "Collapse all",
-    expandAll: "Expand all",
     noMatchesTemplate: "Couldn't find “{term}”. Which category should it go in?",
     addCustomPlaceholder: "Add your own",
-    noOwnedItems: "No ingredients in stock",
   },
   shopping: {
     currentTrip: "This trip",

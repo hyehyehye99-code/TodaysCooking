@@ -320,11 +320,8 @@ const ja: Dictionary = {
   fridge: {
     summaryTemplate: "{count}個の材料が在庫あり · タップで追加・解除、長押しで別のカテゴリへ移動できます",
     searchPlaceholder: "材料を検索",
-    collapseAll: "すべて閉じる",
-    expandAll: "すべて開く",
     noMatchesTemplate: "「{term}」が見つかりません。どのカテゴリに追加しますか？",
     addCustomPlaceholder: "直接追加",
-    noOwnedItems: "在庫のある材料がありません",
   },
   shopping: {
     currentTrip: "今回の買い物",
