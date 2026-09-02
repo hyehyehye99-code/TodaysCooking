@@ -21,7 +21,7 @@ export async function GET() {
     user_id: string;
     code: string;
     redeemed_at: string;
-    expires_at: string | null;
+    remaining_count: number;
     granted_by: string;
   };
   const rows = ((redemptions as Redemption[] | null) ?? []).map((r) => ({
@@ -30,7 +30,7 @@ export async function GET() {
     코드: r.code,
     지급방식: r.granted_by === "admin" ? "관리자 지급" : "직접 입력",
     지급일: r.redeemed_at,
-    만료일: r.expires_at ?? "무제한",
+    남은횟수: r.remaining_count,
   }));
 
   return xlsxResponse(rows, "promotions.xlsx");

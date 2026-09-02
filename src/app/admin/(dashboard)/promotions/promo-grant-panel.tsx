@@ -94,7 +94,7 @@ export function PromoGrantPanel({ users, codes }: { users: PromoUser[]; codes: P
           ) : (
             codes.map((c) => (
               <option key={c.code} value={c.code}>
-                {c.code} ({c.duration_days ? `${c.duration_days}일` : "무제한"})
+                {c.code} ({c.grant_count}회)
               </option>
             ))
           )}

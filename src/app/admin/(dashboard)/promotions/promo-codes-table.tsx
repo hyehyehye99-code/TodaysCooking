@@ -86,7 +86,7 @@ export function PromoCodesTable({
           <tr className="border-b border-border bg-surface text-left text-xs text-ink-soft">
             <th className="px-3 py-2 font-semibold">코드</th>
             <th className="px-3 py-2 font-semibold">메모</th>
-            <th className="px-3 py-2 font-semibold">기간</th>
+            <th className="px-3 py-2 font-semibold">지급 횟수</th>
             <th className="px-3 py-2 text-right font-semibold">지급 수</th>
             <th className="px-3 py-2 font-semibold">상태</th>
             <th className="w-16 px-3 py-2" />
@@ -97,7 +97,7 @@ export function PromoCodesTable({
             <tr key={c.code} className="border-b border-border last:border-0 hover:bg-surface">
               <td className="px-3 py-2 font-bold">{c.code}</td>
               <td className="max-w-[220px] truncate px-3 py-2 text-ink-soft">{c.note ?? "-"}</td>
-              <td className="px-3 py-2 text-ink-soft">{c.duration_days ? `${c.duration_days}일` : "무제한"}</td>
+              <td className="px-3 py-2 text-ink-soft">{c.grant_count}회</td>
               <td className="px-3 py-2 text-right text-ink-soft">{redemptionCountByCode[c.code] ?? 0}</td>
               <td className="px-3 py-2">
                 <ToggleButton code={c.code} active={c.active} />

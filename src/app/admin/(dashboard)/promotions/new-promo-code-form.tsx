@@ -16,10 +16,11 @@ export function NewPromoCodeForm() {
           className="w-full rounded-xl border border-transparent bg-surface px-3.5 py-2.5 text-sm uppercase outline-none focus:border-accent"
         />
         <input
-          name="durationDays"
+          name="grantCount"
           type="number"
           min={1}
-          placeholder="기간(일), 비우면 무제한"
+          required
+          placeholder="지급 횟수 (예: 20) *"
           className="w-full rounded-xl border border-transparent bg-surface px-3.5 py-2.5 text-sm outline-none focus:border-accent"
         />
       </div>

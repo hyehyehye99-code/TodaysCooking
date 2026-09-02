@@ -571,17 +571,17 @@ export async function createPromoCode(
   const code = String(formData.get("code") ?? "").trim().toUpperCase();
   if (!code) return { error: "코드를 입력해주세요." };
   const note = String(formData.get("note") ?? "").trim() || null;
-  const durationRaw = String(formData.get("durationDays") ?? "").trim();
-  const durationDays = durationRaw ? Number(durationRaw) : null;
-  if (durationRaw && (Number.isNaN(durationDays) || (durationDays as number) <= 0)) {
-    return { error: "기간은 양의 숫자로 입력해주세요." };
+  const grantCountRaw = String(formData.get("grantCount") ?? "").trim();
+  const grantCount = Number(grantCountRaw);
+  if (!grantCountRaw || Number.isNaN(grantCount) || grantCount <= 0) {
+    return { error: "지급 횟수는 양의 숫자로 입력해주세요." };
   }
 
   const supabase = createAdminClient();
   const { error } = await supabase.from("promo_codes").insert({
     code,
     note,
-    duration_days: durationDays,
+    grant_count: grantCount,
   });
   if (error) return { error: error.code === "23505" ? "이미 있는 코드예요." : "코드 생성에 실패했어요." };
 
@@ -616,21 +616,17 @@ export async function grantPromoToUser(
   const supabase = createAdminClient();
   const { data: promo } = await supabase
     .from("promo_codes")
-    .select("code, duration_days, active")
+    .select("code, grant_count, active")
     .eq("code", code)
     .maybeSingle();
   if (!promo) return { error: "존재하지 않는 코드예요." };
   if (!promo.active) return { error: "비활성화된 코드예요." };
 
-  const expiresAt = promo.duration_days
-    ? new Date(Date.now() + promo.duration_days * 24 * 60 * 60 * 1000).toISOString()
-    : null;
-
   const { error } = await supabase.from("promo_code_redemptions").upsert(
     {
       user_id: userId,
       code: promo.code,
-      expires_at: expiresAt,
+      remaining_count: promo.grant_count,
       granted_by: "admin",
       redeemed_at: new Date().toISOString(),
     },

@@ -42,9 +42,9 @@ export default async function MyPage() {
   const myIconEmoji = me?.icon_emoji ?? null;
 
   const { data: promoGrant } = user
-    ? await supabase.from("promo_code_redemptions").select("expires_at").eq("user_id", user.id).maybeSingle()
+    ? await supabase.from("promo_code_redemptions").select("remaining_count").eq("user_id", user.id).maybeSingle()
     : { data: null };
-  const isUnlimited = !!promoGrant && (!promoGrant.expires_at || new Date(promoGrant.expires_at) > new Date());
+  const bonusRemaining = promoGrant?.remaining_count ?? 0;
 
   const planLimit = FREE_WEEKLY_LIMIT;
   const planSince = daysAgoIso(7);
@@ -53,6 +53,7 @@ export default async function MyPage() {
         .from("ai_recipe_generations")
         .select("id", { count: "exact", head: true })
         .eq("user_id", user.id)
+        .eq("via_bonus", false)
         .gte("created_at", planSince)
     : { count: 0 };
   const planUsed = Math.min(planUsageCount ?? 0, planLimit);
@@ -65,24 +66,20 @@ export default async function MyPage() {
         <ProfileEditButton nickname={myNickname} iconEmoji={myIconEmoji} />
 
         <div className="mt-4 border-t border-border pt-4">
-          {isUnlimited ? (
-            <>
-              <p className="text-sm font-semibold text-ink">{dict.mypage.unlimitedActive}</p>
-              <p className="mt-1 text-xs text-ink-soft">{dict.mypage.unlimitedDesc}</p>
-            </>
-          ) : (
-            <>
-              <p className="text-sm font-semibold text-ink">{dict.mypage.freePlanActive}</p>
-              <p className="mt-1 text-xs text-ink-soft">
-                {dict.mypage.usageWeeklyTemplate
-                  .replace("{used}", String(planUsed))
-                  .replace("{limit}", String(planLimit))}
-              </p>
-              <div className="mt-3">
-                <ProgressBar percent={(planUsed / planLimit) * 100} colorClass="bg-positive" />
-              </div>
-            </>
+          <p className="text-sm font-semibold text-ink">{dict.mypage.freePlanActive}</p>
+          <p className="mt-1 text-xs text-ink-soft">
+            {dict.mypage.usageWeeklyTemplate
+              .replace("{used}", String(planUsed))
+              .replace("{limit}", String(planLimit))}
+          </p>
+          {bonusRemaining > 0 && (
+            <p className="mt-2 text-xs font-semibold text-accent-ink">
+              {dict.mypage.bonusRemainingTemplate.replace("{count}", String(bonusRemaining))}
+            </p>
           )}
+          <div className="mt-3">
+            <ProgressBar percent={(planUsed / planLimit) * 100} colorClass="bg-positive" />
+          </div>
         </div>
       </GlassCard>
 

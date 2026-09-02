@@ -104,21 +104,26 @@ export async function generateRecipeFromLink(
   } = await supabase.auth.getUser();
   if (!user) return { ok: false, error: "로그인이 필요해요." };
 
-  let isUnlimited = !!user.email && UNLIMITED_EMAILS.has(user.email.toLowerCase());
-  if (!isUnlimited) {
-    const { data: promoGrant } = await supabase
-      .from("promo_code_redemptions")
-      .select("expires_at")
-      .eq("user_id", user.id)
-      .maybeSingle();
-    isUnlimited = !!promoGrant && (!promoGrant.expires_at || new Date(promoGrant.expires_at) > new Date());
-  }
-  if (!isUnlimited) {
+  const isDevUnlimited = !!user.email && UNLIMITED_EMAILS.has(user.email.toLowerCase());
+
+  // A promo grant is a finite top-up (see 마이페이지 어드민 > 프로모션 코드
+  // 관리), not unlimited — it adds remaining_count extra generations on top
+  // of the normal weekly quota rather than waiving it, so it's checked here
+  // but only actually spent (decremented) below once generation succeeds.
+  const { data: promoGrant } = await supabase
+    .from("promo_code_redemptions")
+    .select("remaining_count")
+    .eq("user_id", user.id)
+    .maybeSingle();
+  const bonusAvailable = (promoGrant?.remaining_count ?? 0) > 0;
+
+  if (!isDevUnlimited && !bonusAvailable) {
     const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
     const { count } = await supabase
       .from("ai_recipe_generations")
       .select("id", { count: "exact", head: true })
       .eq("user_id", user.id)
+      .eq("via_bonus", false)
       .gte("created_at", since);
     if ((count ?? 0) >= FREE_WEEKLY_LIMIT) {
       return {
@@ -128,6 +133,7 @@ export async function generateRecipeFromLink(
       };
     }
   }
+  const usingBonus = !isDevUnlimited && bonusAvailable;
 
   const content = await generateRecipeContent(url);
   if (!content.ok) return { ok: false, error: content.error };
@@ -147,9 +153,16 @@ export async function generateRecipeFromLink(
   // generation if the user reports the result as unsatisfactory.
   const { data: usageRow } = await supabase
     .from("ai_recipe_generations")
-    .insert({ user_id: user.id })
+    .insert({ user_id: user.id, via_bonus: usingBonus })
     .select("id")
     .single();
+
+  if (usingBonus && promoGrant) {
+    await supabase
+      .from("promo_code_redemptions")
+      .update({ remaining_count: promoGrant.remaining_count - 1 })
+      .eq("user_id", user.id);
+  }
 
   return {
     ok: true,

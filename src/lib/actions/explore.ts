@@ -75,9 +75,9 @@ export async function findHouseholdCopyOfExploreRecipe(
 // existing copy instead of creating a duplicate (see the unique index on
 // recipes(household_id, source_type, source_id)).
 //
-// Free households cap out at FREE_WEEKLY_LIMIT adds per rolling week — same
-// shape as the AI recipe quota in ai-recipe.ts (a promo grant lifts the cap
-// entirely).
+// Every household caps out at FREE_WEEKLY_LIMIT adds per rolling week — a
+// promo grant (see ai-recipe.ts) is a finite AI-generation top-up and
+// doesn't apply here.
 const FREE_WEEKLY_LIMIT = 5;
 
 export async function addExploreRecipeToHousehold(
@@ -92,27 +92,18 @@ export async function addExploreRecipeToHousehold(
   const existing = await findHouseholdCopyOfExploreRecipe(source, id);
   if (existing) return { recipeId: existing };
 
-  const { data: promoGrant } = await supabase
-    .from("promo_code_redemptions")
-    .select("expires_at")
-    .eq("user_id", user.id)
-    .maybeSingle();
-  const isUnlimited = !!promoGrant && (!promoGrant.expires_at || new Date(promoGrant.expires_at) > new Date());
-
-  if (!isUnlimited) {
-    const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
-    const { count } = await supabase
-      .from("recipes")
-      .select("id", { count: "exact", head: true })
-      .eq("household_id", household.id)
-      .not("source_type", "is", null)
-      .gte("created_at", since);
-    if ((count ?? 0) >= FREE_WEEKLY_LIMIT) {
-      return {
-        error: `이번 주 무료로 추가할 수 있는 레시피(${FREE_WEEKLY_LIMIT}개)를 다 썼어요.`,
-        limitReached: true,
-      };
-    }
+  const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+  const { count } = await supabase
+    .from("recipes")
+    .select("id", { count: "exact", head: true })
+    .eq("household_id", household.id)
+    .not("source_type", "is", null)
+    .gte("created_at", since);
+  if ((count ?? 0) >= FREE_WEEKLY_LIMIT) {
+    return {
+      error: `이번 주 무료로 추가할 수 있는 레시피(${FREE_WEEKLY_LIMIT}개)를 다 썼어요.`,
+      limitReached: true,
+    };
   }
 
   const { data, error } = (await supabase

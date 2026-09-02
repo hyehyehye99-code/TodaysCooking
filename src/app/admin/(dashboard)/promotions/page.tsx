@@ -8,7 +8,7 @@ export type PromoCode = {
   code: string;
   note: string | null;
   active: boolean;
-  duration_days: number | null;
+  grant_count: number;
   created_at: string;
 };
 
@@ -16,7 +16,7 @@ export type PromoRedemption = {
   user_id: string;
   code: string;
   redeemed_at: string;
-  expires_at: string | null;
+  remaining_count: number;
   granted_by: string;
 };
 

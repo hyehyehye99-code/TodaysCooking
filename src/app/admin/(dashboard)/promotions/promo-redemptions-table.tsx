@@ -81,7 +81,7 @@ export function PromoRedemptionsTable({
                 <th className="px-3 py-2 font-semibold">유저</th>
                 <th className="px-3 py-2 font-semibold">코드</th>
                 <th className="px-3 py-2 font-semibold">지급 방식</th>
-                <th className="px-3 py-2 font-semibold">만료일</th>
+                <th className="px-3 py-2 font-semibold">남은 횟수</th>
                 <th className="w-16 px-3 py-2" />
               </tr>
             </thead>
@@ -89,7 +89,7 @@ export function PromoRedemptionsTable({
               {filtered.map((r) => {
                 const u = userById.get(r.user_id);
                 const label = u?.nickname ?? u?.email ?? r.user_id;
-                const expired = r.expires_at ? new Date(r.expires_at) < new Date() : false;
+                const usedUp = r.remaining_count <= 0;
                 return (
                   <tr key={r.user_id} className="border-b border-border last:border-0 hover:bg-surface">
                     <td className="px-3 py-2">
@@ -98,8 +98,8 @@ export function PromoRedemptionsTable({
                     </td>
                     <td className="px-3 py-2 font-semibold">{r.code}</td>
                     <td className="px-3 py-2 text-ink-soft">{r.granted_by === "admin" ? "관리자 지급" : "직접 입력"}</td>
-                    <td className={`px-3 py-2 ${expired ? "text-ink-faint" : "text-ink-soft"}`}>
-                      {r.expires_at ? `${new Date(r.expires_at).toLocaleDateString("ko-KR")}${expired ? " (만료)" : ""}` : "무제한"}
+                    <td className={`px-3 py-2 ${usedUp ? "text-ink-faint" : "text-ink-soft"}`}>
+                      {usedUp ? "0회 (모두 사용)" : `${r.remaining_count}회 남음`}
                     </td>
                     <td className="px-3 py-2 text-right">
                       <RevokeButton userId={r.user_id} label={label} />
