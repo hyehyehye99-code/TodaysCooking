@@ -7,6 +7,7 @@ import { getCurrentHousehold } from "@/lib/household";
 import { uploadRecipePhotos } from "@/lib/actions/storage";
 import { fetchLinkPreview } from "@/lib/actions/link-preview";
 import { notifyHousehold } from "@/lib/actions/activity";
+import { CATEGORY_BY_INGREDIENT_NAME } from "@/lib/ingredients";
 import { MAX_RECIPE_PHOTOS } from "@/lib/constants";
 
 async function getNickname(supabase: Awaited<ReturnType<typeof createClient>>, userId: string) {
@@ -22,8 +23,14 @@ const QUANTITY_ONLY_WORDS = new Set([
   "약간", "적당량", "적당히", "조금", "조금씩", "약간씩", "약간만",
   "넉넉히", "넉넉하게", "듬뿍", "듬뿍씩", "많이", "충분히",
   "소량", "소량씩", "한꼬집", "한꼬집씩", "한줌", "한줌씩",
-  "한스푼", "한큰술", "한작은술", "한컵", "한주먹",
+  "한스푼", "한큰술", "한작은술", "한컵", "한주먹", "큰것",
 ]);
+
+// Size descriptors like "감자 1개 큰 것" written with a space — the two words
+// can never land in the same whitespace-delimited lastToken that
+// QUANTITY_ONLY_WORDS/AMOUNT_UNIT_SUFFIXES check below, so they're matched
+// as a trailing phrase before the normal single-token split runs.
+const MULTI_WORD_QUANTITY_PHRASES = ["큰 것"];
 
 // Unit suffixes that make a trailing token look like an amount even without
 // a digit or an exact QUANTITY_ONLY_WORDS match (e.g. "두어스푼", "몇큰술").
@@ -44,6 +51,12 @@ const AMOUNT_UNIT_SUFFIXES = [
 // unchanged — the common single-word-ingredient case is never touched.
 function splitIngredientLine(raw: string): { name: string; amount: string | null } {
   const trimmed = raw.trim();
+  for (const phrase of MULTI_WORD_QUANTITY_PHRASES) {
+    const suffix = ` ${phrase}`;
+    if (trimmed.length > suffix.length && trimmed.endsWith(suffix)) {
+      return { name: trimmed.slice(0, -suffix.length).trim(), amount: phrase };
+    }
+  }
   const match = trimmed.match(/^(.+?)\s+(\S+)$/);
   if (!match) return { name: trimmed, amount: null };
   const [, namePart, lastToken] = match;
@@ -393,6 +406,7 @@ export async function resolveMissingIngredients(payload: {
       fridge.map((name) => ({
         household_id: household.id,
         name,
+        category: CATEGORY_BY_INGREDIENT_NAME.get(name) ?? "미분류",
         in_stock: true,
         updated_at: new Date().toISOString(),
       })),

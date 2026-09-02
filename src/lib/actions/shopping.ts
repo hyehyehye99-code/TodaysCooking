@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentHousehold } from "@/lib/household";
-import { INGREDIENT_CATEGORIES } from "@/lib/ingredients";
+import { CATEGORY_BY_INGREDIENT_NAME } from "@/lib/ingredients";
 import { notifyHousehold } from "@/lib/actions/activity";
 
 async function getNickname(supabase: Awaited<ReturnType<typeof createClient>>, userId: string) {
@@ -81,10 +81,6 @@ export async function clearCheckedItems() {
   revalidatePath("/shopping");
 }
 
-const CATEGORY_BY_NAME = new Map(
-  INGREDIENT_CATEGORIES.flatMap((cat) => cat.items.map((name) => [name, cat.name]))
-);
-
 export async function finishShoppingTrip() {
   const { user, household } = await getCurrentHousehold();
   if (!household || !user) return;
@@ -102,7 +98,7 @@ export async function finishShoppingTrip() {
   const fridgeRows = checked.map((item) => ({
     household_id: household.id,
     name: item.name,
-    category: CATEGORY_BY_NAME.get(item.name) ?? "미분류",
+    category: CATEGORY_BY_INGREDIENT_NAME.get(item.name) ?? "미분류",
     in_stock: true,
     updated_at: new Date().toISOString(),
   }));

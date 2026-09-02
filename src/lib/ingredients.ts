@@ -55,3 +55,11 @@ export const INGREDIENT_CATEGORIES: { name: string; items: string[] }[] = [
 export const ALL_KNOWN_INGREDIENTS = new Set(
   INGREDIENT_CATEGORIES.flatMap((c) => c.items)
 );
+
+// Reverse lookup for wherever an ingredient lands in the fridge without the
+// user picking a category themselves (finishing a shopping trip, marking a
+// recipe ingredient as already-owned) — callers fall back to 미분류 when a
+// name isn't in the static catalog.
+export const CATEGORY_BY_INGREDIENT_NAME = new Map(
+  INGREDIENT_CATEGORIES.flatMap((cat) => cat.items.map((name) => [name, cat.name]))
+);
