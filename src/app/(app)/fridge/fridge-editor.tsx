@@ -302,7 +302,7 @@ export function FridgeEditor({ categories }: { categories: Category[] }) {
                     return (
                       <span
                         key={item.name}
-                        className={`inline-flex items-center rounded-full border border-accent/20 bg-accent/10 text-accent-ink ${
+                        className={`inline-flex items-center rounded-full border-2 border-accent bg-white text-accent-ink ${
                           isBeingDragged ? "opacity-40" : ""
                         }`}
                       >

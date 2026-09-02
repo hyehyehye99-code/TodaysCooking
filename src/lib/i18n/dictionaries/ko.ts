@@ -343,7 +343,7 @@ const ko = {
     deleteAllDesc: "체크 여부와 상관없이 목록의 모든 항목이 삭제돼요. 되돌릴 수 없어요.",
     deleteCheckedTitleTemplate: "체크한 {count}개 항목을 삭제할까요?",
     cannotUndo: "되돌릴 수 없어요.",
-    buyButton: "구매하기",
+    buyButton: "구매하러가기",
   },
   explore: {
     searchPlaceholder: "이름·유형·재료로 검색",
