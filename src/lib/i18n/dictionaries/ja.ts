@@ -345,11 +345,8 @@ const ja: Dictionary = {
   },
   explore: {
     searchPlaceholder: "名前・タイプ・材料で検索",
-    searchCreatorsPlaceholder: "クリエイターを検索",
     noResults: "検索結果がありません。",
-    tabAll: "クリエイターのレシピ",
-    tabCreators: "クリエイター",
-    recipeCountTemplate: "レシピ{count}件",
+    allRecipesHeading: "クリエイターのレシピをすべて見る",
     noPublicRecipes: "まだ公開されたレシピがありません。",
     viewChannel: "チャンネルを見る",
     channelLinkHeading: "クリエイターのチャンネルへ",

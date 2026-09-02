@@ -348,11 +348,8 @@ const en: Dictionary = {
   },
   explore: {
     searchPlaceholder: "Search by name, type, or ingredient",
-    searchCreatorsPlaceholder: "Search creators",
     noResults: "No results.",
-    tabAll: "Creator recipes",
-    tabCreators: "Creators",
-    recipeCountTemplate: "{count} recipes",
+    allRecipesHeading: "Browse all creator recipes",
     noPublicRecipes: "No public recipes yet.",
     viewChannel: "View channel",
     channelLinkHeading: "Go to creator's channel",

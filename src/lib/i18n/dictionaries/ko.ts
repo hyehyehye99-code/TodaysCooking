@@ -348,11 +348,8 @@ const ko = {
   },
   explore: {
     searchPlaceholder: "이름·유형·재료로 검색",
-    searchCreatorsPlaceholder: "크리에이터 검색하기",
     noResults: "검색 결과가 없어요.",
-    tabAll: "크리에이터 레시피",
-    tabCreators: "크리에이터",
-    recipeCountTemplate: "레시피 {count}개",
+    allRecipesHeading: "전체 크리에이터 레시피 보기",
     noPublicRecipes: "아직 공개된 레시피가 없어요.",
     viewChannel: "채널 보러가기",
     channelLinkHeading: "크리에이터 채널 바로가기",

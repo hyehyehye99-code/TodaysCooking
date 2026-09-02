@@ -42,8 +42,7 @@ export type ExploreBanner = {
 export default async function ExplorePage() {
   const supabase = await createClient();
 
-  const [{ data: creators }, { data: feed }, { data: collections }, { data: banners }] = await Promise.all([
-    supabase.rpc("list_creators"),
+  const [{ data: feed }, { data: collections }, { data: banners }] = await Promise.all([
     supabase.rpc("search_explore_recipes", { p_query: null }),
     supabase.rpc("list_explore_collections"),
     supabase.rpc("list_explore_banners"),
@@ -59,7 +58,6 @@ export default async function ExplorePage() {
 
   return (
     <ExploreView
-      creators={(creators as ExploreCreator[] | null) ?? []}
       feed={(feed as ExploreFeedItem[] | null) ?? []}
       collections={collectionList}
       collectionRecipesById={Object.fromEntries(collectionRecipes)}
