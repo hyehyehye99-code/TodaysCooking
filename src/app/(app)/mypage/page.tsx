@@ -67,19 +67,26 @@ export default async function MyPage() {
 
         <div className="mt-4 border-t border-border pt-4">
           <p className="text-sm font-semibold text-ink">{dict.mypage.freePlanActive}</p>
-          <p className="mt-1 text-xs text-ink-soft">
-            {dict.mypage.usageWeeklyTemplate
-              .replace("{used}", String(planUsed))
-              .replace("{limit}", String(planLimit))}
-          </p>
-          {bonusRemaining > 0 && (
-            <p className="mt-2 text-xs font-semibold text-accent-ink">
+          {bonusRemaining > 0 ? (
+            // While a bonus grant is active, every generation draws from it
+            // first (see ai-recipe.ts) — the weekly free count stays frozen
+            // in the meantime, so showing its bar here would read as "all
+            // used up" right when the opposite is true.
+            <p className="mt-1 text-xs font-semibold text-accent-ink">
               {dict.mypage.bonusRemainingTemplate.replace("{count}", String(bonusRemaining))}
             </p>
+          ) : (
+            <>
+              <p className="mt-1 text-xs text-ink-soft">
+                {dict.mypage.usageWeeklyTemplate
+                  .replace("{used}", String(planUsed))
+                  .replace("{limit}", String(planLimit))}
+              </p>
+              <div className="mt-3">
+                <ProgressBar percent={(planUsed / planLimit) * 100} colorClass="bg-positive" />
+              </div>
+            </>
           )}
-          <div className="mt-3">
-            <ProgressBar percent={(planUsed / planLimit) * 100} colorClass="bg-positive" />
-          </div>
         </div>
       </GlassCard>
 

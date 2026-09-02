@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import { saveFridge } from "@/lib/actions/fridge";
 import { GlassCard } from "@/components/ui";
 import { ClearableInput } from "@/components/ClearableInput";
@@ -228,9 +229,14 @@ export function FridgeEditor({ categories }: { categories: Category[] }) {
 
   return (
     <div>
-      <p className="mb-5 text-sm text-ink-soft">
-        {dict.fridge.summaryTemplate.replace("{count}", String(ownedCount))}
-      </p>
+      <div className="mb-5 flex items-center justify-between gap-2">
+        <p className="text-sm text-ink-soft">
+          {dict.fridge.summaryTemplate.replace("{count}", String(ownedCount))}
+        </p>
+        <Link href="/mypage/fridge-ingredients" className="shrink-0 text-xs font-bold text-accent-ink">
+          {dict.mypage.fridgeIngredientManagement}
+        </Link>
+      </div>
 
       <ClearableInput
         value={search}
