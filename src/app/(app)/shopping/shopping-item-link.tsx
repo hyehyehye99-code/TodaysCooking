@@ -46,7 +46,7 @@ export function ShoppingItemLink({
           toggleChecked();
           router.push(`/redirect/coupang?name=${encodeURIComponent(name)}`);
         }}
-        className="flex shrink-0 items-center gap-1.5 rounded-lg border-2 border-accent bg-white px-3.5 py-2.5 text-[13px] font-bold text-accent-ink"
+        className="flex shrink-0 items-center gap-1.5 rounded-lg bg-accent px-3.5 py-2.5 text-[13px] font-bold text-white"
       >
         <CartIcon />
         {dict.shopping.buyButton}
@@ -66,7 +66,7 @@ export function ShoppingItemLink({
       // do nothing in one context or another. /redirect/coupang itself
       // handles returning to /shopping if the app regains focus stuck on it.
       onClick={toggleChecked}
-      className="flex shrink-0 items-center gap-1.5 rounded-lg border-2 border-accent bg-white px-3.5 py-2.5 text-[13px] font-bold text-accent-ink"
+      className="flex shrink-0 items-center gap-1.5 rounded-lg bg-accent px-3.5 py-2.5 text-[13px] font-bold text-white"
     >
       <CartIcon />
       {dict.shopping.buyButton}

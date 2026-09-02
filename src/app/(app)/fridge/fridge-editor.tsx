@@ -189,15 +189,6 @@ export function FridgeEditor({ categories }: { categories: Category[] }) {
     void saveFridge([{ name: itemName, category: catName, inStock: nextSelected }]);
   }
 
-  function removeCustom(catName: string, itemName: string) {
-    setLocal((prev) =>
-      prev.map((c) =>
-        c.name !== catName ? c : { ...c, items: c.items.filter((i) => i.name !== itemName) }
-      )
-    );
-    void saveFridge([], [itemName]);
-  }
-
   function addCustomNamed(catName: string, rawValue: string) {
     const value = rawValue.trim();
     if (!value) return;
@@ -302,7 +293,7 @@ export function FridgeEditor({ categories }: { categories: Category[] }) {
                     return (
                       <span
                         key={item.name}
-                        className={`inline-flex items-center rounded-full border-2 border-accent bg-white text-accent-ink ${
+                        className={`inline-flex items-center rounded-full border border-accent/20 bg-accent/10 text-accent-ink ${
                           isBeingDragged ? "opacity-40" : ""
                         }`}
                       >
@@ -318,10 +309,8 @@ export function FridgeEditor({ categories }: { categories: Category[] }) {
                         </button>
                         <button
                           type="button"
-                          onClick={() =>
-                            item.custom ? removeCustom(cat.name, item.name) : toggle(cat.name, item.name)
-                          }
-                          aria-label={dict.common.delete}
+                          onClick={() => toggle(cat.name, item.name)}
+                          aria-label="빼기"
                           className="flex h-5 w-5 items-center justify-center pr-2.5 text-xs opacity-60"
                         >
                           ×
