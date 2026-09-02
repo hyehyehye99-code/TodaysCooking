@@ -119,16 +119,21 @@ export async function createBanner(
   title: string,
   emoji: string | null,
   linkUrl: string | null,
-  imageUrl: string | null
+  imageUrl: string | null,
+  collectionId: string | null
 ): Promise<{ error: string } | { ok: true }> {
   if (!(await isAdminAuthenticated())) return { error: "관리자 로그인이 필요해요." };
   const trimmed = title.trim();
   if (!trimmed) return { error: "문구를 입력해주세요." };
 
   const supabase = createAdminClient();
-  const { error } = await supabase
-    .from("explore_banners")
-    .insert({ title: trimmed, emoji: emoji || null, link_url: linkUrl || null, image_url: imageUrl || null });
+  const { error } = await supabase.from("explore_banners").insert({
+    title: trimmed,
+    emoji: emoji || null,
+    link_url: linkUrl || null,
+    image_url: imageUrl || null,
+    collection_id: collectionId || null,
+  });
   if (error) return { error: "만들지 못했어요." };
 
   revalidatePath("/admin/collections");
@@ -143,6 +148,7 @@ export async function updateBanner(
     emoji?: string | null;
     link_url?: string | null;
     image_url?: string | null;
+    collection_id?: string | null;
     active?: boolean;
     position?: number;
   }

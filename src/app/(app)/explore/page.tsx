@@ -38,6 +38,7 @@ export type ExploreBanner = {
   emoji: string | null;
   link_url: string | null;
   image_url: string | null;
+  collection_id: string | null;
 };
 
 export default async function ExplorePage() {

@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import { createBanner, updateBanner, deleteBanner } from "@/lib/actions/explore-collections";
 import { ConfirmModal } from "@/components/ConfirmModal";
-import type { Banner } from "./page";
+import type { Banner, Collection } from "./page";
 
 function ActiveToggle({ id, active }: { id: string; active: boolean }) {
   const [pending, startTransition] = useTransition();
@@ -61,18 +61,25 @@ function DeleteButton({ id, title }: { id: string; title: string }) {
 // leave visible gray letterboxing.
 const RECOMMENDED_BANNER_SIZE = "1200 x 400px (3:1 비율)";
 
-function NewBannerForm() {
+function NewBannerForm({ collections }: { collections: Collection[] }) {
   const [title, setTitle] = useState("");
   const [emoji, setEmoji] = useState("");
   const [linkUrl, setLinkUrl] = useState("");
   const [imageUrl, setImageUrl] = useState("");
+  const [collectionId, setCollectionId] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
   function submit() {
     setError(null);
     startTransition(async () => {
-      const res = await createBanner(title, emoji.trim() || null, linkUrl.trim() || null, imageUrl.trim() || null);
+      const res = await createBanner(
+        title,
+        emoji.trim() || null,
+        linkUrl.trim() || null,
+        imageUrl.trim() || null,
+        collectionId || null
+      );
       if ("error" in res) {
         setError(res.error);
         return;
@@ -81,6 +88,7 @@ function NewBannerForm() {
       setEmoji("");
       setLinkUrl("");
       setImageUrl("");
+      setCollectionId("");
     });
   }
 
@@ -112,10 +120,23 @@ function NewBannerForm() {
           placeholder={`배너 이미지 URL (선택, ${RECOMMENDED_BANNER_SIZE})`}
           className="w-full rounded-xl border border-transparent bg-surface px-3.5 py-2.5 text-sm outline-none focus:border-accent"
         />
+        <select
+          value={collectionId}
+          onChange={(e) => setCollectionId(e.target.value)}
+          className="w-full rounded-xl border border-transparent bg-surface px-3.5 py-2.5 text-sm outline-none focus:border-accent"
+        >
+          <option value="">연결할 컬렉션 선택 (탭하면 그 컬렉션으로 이동)</option>
+          {collections.map((c) => (
+            <option key={c.id} value={c.id}>
+              {c.emoji ? `${c.emoji} ` : ""}
+              {c.title}
+            </option>
+          ))}
+        </select>
         <input
           value={linkUrl}
           onChange={(e) => setLinkUrl(e.target.value)}
-          placeholder="연결 링크 (선택, 예: /explore/collection/...)"
+          placeholder="또는 직접 연결 링크 입력 (컬렉션 미선택 시, 예: https://...)"
           className="w-full rounded-xl border border-transparent bg-surface px-3.5 py-2.5 text-sm outline-none focus:border-accent"
         />
         <button
@@ -132,10 +153,11 @@ function NewBannerForm() {
   );
 }
 
-export function BannerList({ banners }: { banners: Banner[] }) {
+export function BannerList({ banners, collections }: { banners: Banner[]; collections: Collection[] }) {
+  const collectionTitleById = new Map(collections.map((c) => [c.id, c.title]));
   return (
     <div>
-      <NewBannerForm />
+      <NewBannerForm collections={collections} />
       {banners.length === 0 ? (
         <p className="text-sm text-ink-soft">아직 만든 배너가 없어요.</p>
       ) : (
@@ -144,7 +166,7 @@ export function BannerList({ banners }: { banners: Banner[] }) {
             <thead>
               <tr className="border-b border-border bg-surface text-left text-xs text-ink-soft">
                 <th className="px-3 py-2 font-semibold">배너</th>
-                <th className="px-3 py-2 font-semibold">링크</th>
+                <th className="px-3 py-2 font-semibold">연결</th>
                 <th className="px-3 py-2 font-semibold">상태</th>
                 <th className="w-16 px-3 py-2" />
               </tr>
@@ -156,7 +178,9 @@ export function BannerList({ banners }: { banners: Banner[] }) {
                     {b.emoji ? `${b.emoji} ` : ""}
                     {b.title}
                   </td>
-                  <td className="max-w-[220px] truncate px-3 py-2 text-ink-soft">{b.link_url ?? "-"}</td>
+                  <td className="max-w-[220px] truncate px-3 py-2 text-ink-soft">
+                    {b.collection_id ? `📁 ${collectionTitleById.get(b.collection_id) ?? "삭제된 컬렉션"}` : b.link_url ?? "-"}
+                  </td>
                   <td className="px-3 py-2">
                     <ActiveToggle id={b.id} active={b.active} />
                   </td>

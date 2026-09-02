@@ -2,7 +2,6 @@
 
 import { useMemo, useRef, useState, useTransition } from "react";
 import Link from "next/link";
-import { RecipeThumb } from "@/components/RecipeThumb";
 import { ClearableInput } from "@/components/ClearableInput";
 import { searchExploreRecipes, type ExploreSearchResult } from "@/lib/actions/explore";
 import { useDict } from "@/lib/i18n/client";
@@ -53,86 +52,121 @@ function CollectionSection({ collection, items, dict }: { collection: ExploreCol
   );
 }
 
-// A wide hero banner (3:1) sized to peek the next one when there's more
-// than one — real content is a hosted image once the admin adds one, with
-// the title overlaid on a dark gradient scrim like a magazine cover; until
-// then it falls back to a plain gray mockup box so the slot's shape still
-// reads correctly with nothing to show yet.
-function BannerStrip({ banners }: { banners: ExploreBanner[] }) {
-  if (banners.length === 0) return null;
+// A hero card modeled directly on 오늘의집's home-feed banner: a wide photo
+// (title overlaid on a bottom gradient scrim) with a strip of small preview
+// thumbnails from the linked collection underneath, plus a "더보기" chip —
+// so the card itself previews what tapping it opens, not just an image.
+// Sized to ~92% width so a second banner peeks in when there's more than
+// one. No image yet falls back to a plain gray mockup box.
+function BannerCard({
+  banner,
+  collectionRecipesById,
+  dict,
+}: {
+  banner: ExploreBanner;
+  collectionRecipesById: Record<string, ExploreFeedItem[]>;
+  dict: ReturnType<typeof useDict>;
+}) {
+  const href = banner.collection_id ? `/explore/collection/${banner.collection_id}` : banner.link_url;
+  const previewItems = banner.collection_id ? (collectionRecipesById[banner.collection_id] ?? []).slice(0, 4) : [];
+
+  const image = (
+    <div className="relative aspect-[12/5] w-full overflow-hidden bg-[#e2e4e8]">
+      {banner.image_url ? (
+        <>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={banner.image_url} alt="" className="h-full w-full object-cover" />
+          <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/60 to-transparent px-4 pb-3 pt-8">
+            <p className="text-[17px] font-extrabold leading-snug text-white">
+              {banner.emoji ? `${banner.emoji} ` : ""}
+              {banner.title}
+            </p>
+          </div>
+        </>
+      ) : (
+        <div className="flex h-full w-full flex-col items-center justify-center gap-1">
+          {banner.emoji && <span className="text-2xl">{banner.emoji}</span>}
+          <span className="text-xs font-semibold text-ink-faint">{banner.title}</span>
+        </div>
+      )}
+    </div>
+  );
+
   return (
-    <div className="-mx-5 mb-5 flex snap-x snap-mandatory gap-3 overflow-x-auto px-5 pb-1">
-      {banners.map((b) => {
-        const inner = (
-          <div className="relative aspect-[3/1] w-full overflow-hidden rounded-2xl bg-[#e2e4e8]">
-            {b.image_url ? (
-              <>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={b.image_url} alt="" className="h-full w-full object-cover" />
-                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/60 to-transparent px-4 pb-3 pt-8">
-                  <p className="text-[15px] font-extrabold leading-snug text-white">
-                    {b.emoji ? `${b.emoji} ` : ""}
-                    {b.title}
-                  </p>
-                </div>
-              </>
-            ) : (
-              <div className="flex h-full w-full flex-col items-center justify-center gap-1">
-                {b.emoji && <span className="text-2xl">{b.emoji}</span>}
-                <span className="text-xs font-semibold text-ink-faint">{b.title}</span>
-              </div>
-            )}
-          </div>
-        );
-        return b.link_url ? (
-          <Link key={b.id} href={b.link_url} className="w-[88%] shrink-0 snap-center">
-            {inner}
-          </Link>
-        ) : (
-          <div key={b.id} className="w-[88%] shrink-0 snap-center">
-            {inner}
-          </div>
-        );
-      })}
+    <div className="w-[92%] shrink-0 snap-center overflow-hidden rounded-2xl border border-border bg-white">
+      {href ? <Link href={href}>{image}</Link> : image}
+
+      {previewItems.length > 0 && (
+        <div className="flex items-center gap-2 p-3">
+          {previewItems.map((item) => (
+            <Link
+              key={`${item.source}-${item.id}`}
+              href={`/explore/recipe/${item.source}/${item.id}`}
+              className="h-11 w-11 shrink-0 overflow-hidden rounded-lg bg-surface"
+            >
+              {item.cover_photo_urls[0] ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={item.cover_photo_urls[0]} alt="" className="h-full w-full object-cover" />
+              ) : (
+                <div className="flex h-full w-full items-center justify-center text-lg">{item.icon_emoji ?? "🍳"}</div>
+              )}
+            </Link>
+          ))}
+          {href && (
+            <Link
+              href={href}
+              className="ml-auto flex shrink-0 items-center gap-0.5 rounded-full bg-surface px-3 py-2 text-xs font-bold text-ink-soft"
+            >
+              {dict.explore.viewAllLabel}
+              <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M9 6l6 6-6 6" />
+              </svg>
+            </Link>
+          )}
+        </div>
+      )}
     </div>
   );
 }
 
-// A list row — same visual weight as the 레시피 tab's rows (small square
-// thumbnail + text). cover_photo_urls/icon_emoji fall through the same
-// waterfall RecipeThumb already uses elsewhere.
-function ExploreFeedRow({ item, dict }: { item: ExploreFeedItem | ExploreSearchResult; dict: ReturnType<typeof useDict> }) {
+function BannerStrip({
+  banners,
+  collectionRecipesById,
+  dict,
+}: {
+  banners: ExploreBanner[];
+  collectionRecipesById: Record<string, ExploreFeedItem[]>;
+  dict: ReturnType<typeof useDict>;
+}) {
+  if (banners.length === 0) return null;
   return (
-    <Link
-      href={`/explore/recipe/${item.source}/${item.id}`}
-      className="flex items-center gap-3 rounded-lg border border-border bg-white px-4 py-3.5"
-    >
-      <RecipeThumb coverPhotoUrl={item.cover_photo_urls[0]} iconEmoji={item.icon_emoji} rounded="rounded-lg" />
-      <div className="min-w-0 flex-1">
-        <p className="truncate text-[15px] font-bold">{item.title || dict.recipes.untitledLink}</p>
-        <p className="mt-0.5 truncate text-xs text-ink-soft">
-          {item.creator_name}
-          {item.subtitle ? ` · ${item.subtitle}` : ""}
-        </p>
-        {item.tags.length > 0 && (
-          <div className="mt-1 flex flex-wrap gap-1.5">
-            {item.tags.map((tag) => (
-              <span key={tag} className="text-[11px] font-semibold text-positive-ink">
-                #{tag}
-              </span>
-            ))}
-          </div>
-        )}
-      </div>
-    </Link>
+    <div className="-mx-5 mb-6 flex snap-x snap-mandatory gap-3 overflow-x-auto px-5 pb-1">
+      {banners.map((b) => (
+        <BannerCard key={b.id} banner={b} collectionRecipesById={collectionRecipesById} dict={dict} />
+      ))}
+    </div>
   );
 }
 
-function ExploreFeedList({ items, dict }: { items: (ExploreFeedItem | ExploreSearchResult)[]; dict: ReturnType<typeof useDict> }) {
+// Plain photo grid, Instagram-explore-style — no title/caption, just tap
+// through to the recipe. Edge-to-edge (breaks out of the page's own
+// horizontal padding) with hairline gaps between tiles.
+function ExploreFeedGrid({ items }: { items: (ExploreFeedItem | ExploreSearchResult)[] }) {
   return (
-    <div className="flex flex-col gap-2">
+    <div className="-mx-5 grid grid-cols-3 gap-0.5">
       {items.map((item) => (
-        <ExploreFeedRow key={`${item.source}-${item.id}`} item={item} dict={dict} />
+        <Link
+          key={`${item.source}-${item.id}`}
+          href={`/explore/recipe/${item.source}/${item.id}`}
+          className="relative aspect-square overflow-hidden bg-surface"
+        >
+          {item.cover_photo_urls[0] ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={item.cover_photo_urls[0]} alt="" className="h-full w-full object-cover" />
+          ) : (
+            <div className="flex h-full w-full items-center justify-center text-2xl">{item.icon_emoji ?? "🍳"}</div>
+          )}
+        </Link>
       ))}
     </div>
   );
@@ -190,12 +224,12 @@ export function ExploreView({
           {!pending && results.length === 0 ? (
             <p className="mt-10 text-center text-sm text-ink-soft">{dict.explore.noResults}</p>
           ) : (
-            <ExploreFeedList items={results} dict={dict} />
+            <ExploreFeedGrid items={results} />
           )}
         </div>
       ) : (
         <>
-          <BannerStrip banners={banners} />
+          <BannerStrip banners={banners} collectionRecipesById={collectionRecipesById} dict={dict} />
           {collections.map((c) => (
             <CollectionSection key={c.id} collection={c} items={collectionRecipesById[c.id] ?? []} dict={dict} />
           ))}
@@ -233,7 +267,7 @@ export function ExploreView({
           {visibleFeed.length === 0 ? (
             <p className="mt-10 text-center text-sm text-ink-soft">{dict.explore.comingSoonDesc}</p>
           ) : (
-            <ExploreFeedList items={visibleFeed} dict={dict} />
+            <ExploreFeedGrid items={visibleFeed} />
           )}
         </>
       )}

@@ -16,6 +16,7 @@ export type Banner = {
   emoji: string | null;
   link_url: string | null;
   image_url: string | null;
+  collection_id: string | null;
   active: boolean;
   position: number;
 };
@@ -52,7 +53,7 @@ export default async function AdminCollectionsPage() {
       </div>
 
       <p className="mb-2 text-sm font-bold">배너 ({(banners ?? []).length})</p>
-      <BannerList banners={(banners as Banner[] | null) ?? []} />
+      <BannerList banners={(banners as Banner[] | null) ?? []} collections={(collections as Collection[] | null) ?? []} />
     </div>
   );
 }
