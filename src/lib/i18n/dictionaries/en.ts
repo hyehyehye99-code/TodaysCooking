@@ -132,7 +132,7 @@ const en: Dictionary = {
     tagManagement: "Manage tags",
     tagManagementDesc: "Rename a tag used on your recipes and bookmarks everywhere at once.",
     fridgeIngredientManagement: "Manage fridge ingredients",
-    fridgeIngredientManagementDesc: "Only checked ingredients show up in each fridge tab category. Tap one you never use to hide it.",
+    fridgeIngredientManagementDesc: "Only selected ingredients show up in each fridge tab category. Tap ones you use often to add them.",
     tagRename: "Rename",
     tagRenameSave: "Save",
     noTagsYet: "No tags yet.",

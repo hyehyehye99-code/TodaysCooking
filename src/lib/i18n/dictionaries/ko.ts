@@ -132,7 +132,7 @@ const ko = {
     tagManagement: "태그 관리",
     tagManagementDesc: "레시피와 북마크에 쓴 태그 이름을 한 번에 바꿀 수 있어요.",
     fridgeIngredientManagement: "냉장고 재료 관리",
-    fridgeIngredientManagementDesc: "체크된 재료만 냉장고 탭의 각 칸에 나타나요. 안 쓰는 재료는 눌러서 숨겨보세요.",
+    fridgeIngredientManagementDesc: "선택한 재료만 냉장고 탭의 각 칸에 나타나요. 자주 쓰는 재료를 눌러서 추가해보세요.",
     tagRename: "이름 바꾸기",
     tagRenameSave: "저장",
     noTagsYet: "아직 만든 태그가 없어요.",

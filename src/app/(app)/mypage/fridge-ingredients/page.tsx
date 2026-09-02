@@ -11,11 +11,11 @@ export default async function FridgeIngredientsPage() {
   const supabase = await createClient();
 
   const { data } = await supabase
-    .from("fridge_hidden_ingredients")
+    .from("fridge_visible_ingredients")
     .select("name")
     .eq("household_id", household!.id);
 
-  const hiddenNames = (data ?? []).map((r) => r.name as string);
+  const visibleNames = (data ?? []).map((r) => r.name as string);
 
   return (
     <div className="pt-2">
@@ -25,7 +25,7 @@ export default async function FridgeIngredientsPage() {
       </div>
       <p className="mb-5 text-sm text-ink-soft">{dict.mypage.fridgeIngredientManagementDesc}</p>
 
-      <FridgeIngredientVisibilityList categories={INGREDIENT_CATEGORIES} hiddenNames={hiddenNames} />
+      <FridgeIngredientVisibilityList categories={INGREDIENT_CATEGORIES} visibleNames={visibleNames} />
     </div>
   );
 }

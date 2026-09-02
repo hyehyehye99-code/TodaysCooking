@@ -129,7 +129,7 @@ const ja: Dictionary = {
     tagManagement: "タグ管理",
     tagManagementDesc: "レシピとブックマークで使っているタグの名前を一括で変更できます。",
     fridgeIngredientManagement: "冷蔵庫の材料管理",
-    fridgeIngredientManagementDesc: "チェックした材料だけが冷蔵庫タブの各カテゴリに表示されます。使わない材料はタップして非表示にできます。",
+    fridgeIngredientManagementDesc: "選択した材料だけが冷蔵庫タブの各カテゴリに表示されます。よく使う材料をタップして追加しましょう。",
     tagRename: "名前を変更",
     tagRenameSave: "保存",
     noTagsYet: "まだ作成したタグがありません。",
