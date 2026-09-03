@@ -6,56 +6,64 @@ import { useDragReorder } from "@/lib/useDragReorder";
 import { useDict } from "@/lib/i18n/client";
 
 const MAX_DIMENSION = 1080;
+// A fresh photo straight from an iPad/iPhone camera can be 40+ megapixels.
+// Decoding that at full resolution into an <img> (as this used to do)
+// forced WKWebView's content process to hold the whole decoded bitmap in
+// memory just to immediately downscale it — on iPadOS this was crashing
+// the app outright (reported by App Store review) rather than throwing a
+// catchable error. createImageBitmap's resize option decodes directly at a
+// bounded size instead, so the full-resolution image is never materialized.
+const MAX_DECODE_DIMENSION = 1600;
 const JPEG_QUALITY = 0.85;
 const TILE_GAP = 8;
 
 type PhotoItem = { id: string; url: string; file?: File };
 
+async function decodeBounded(file: File): Promise<ImageBitmap> {
+  try {
+    return await createImageBitmap(file, { resizeWidth: MAX_DECODE_DIMENSION, resizeQuality: "medium" });
+  } catch {
+    // Older engines without the resize option (or a odd decode failure)
+    // still get a correct result, just without the memory bound.
+    return await createImageBitmap(file);
+  }
+}
+
+function canvasToBlob(canvas: HTMLCanvasElement): Promise<Blob> {
+  return new Promise((resolve, reject) => {
+    canvas.toBlob(
+      (blob) => (blob ? resolve(blob) : reject(new Error("이미지를 처리하지 못했어요."))),
+      "image/jpeg",
+      JPEG_QUALITY
+    );
+  });
+}
+
 // Recipe photos are shown as squares everywhere (list thumbnails, the detail
 // page), so center-crop to 1:1 and cap the dimension client-side. This also
 // keeps uploads well under the server action's body size limit — a raw
 // camera photo can be 10x that.
-function cropAndResizeToSquare(file: File): Promise<File> {
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    const objectUrl = URL.createObjectURL(file);
+async function cropAndResizeToSquare(file: File): Promise<File> {
+  const bitmap = await decodeBounded(file);
+  try {
+    const side = Math.min(bitmap.width, bitmap.height);
+    const sx = (bitmap.width - side) / 2;
+    const sy = (bitmap.height - side) / 2;
+    const size = Math.min(side, MAX_DIMENSION);
 
-    img.onload = () => {
-      URL.revokeObjectURL(objectUrl);
-      const side = Math.min(img.width, img.height);
-      const sx = (img.width - side) / 2;
-      const sy = (img.height - side) / 2;
-      const size = Math.min(side, MAX_DIMENSION);
+    const canvas = document.createElement("canvas");
+    canvas.width = size;
+    canvas.height = size;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) throw new Error("canvas unsupported");
+    ctx.drawImage(bitmap, sx, sy, side, side, 0, 0, size, size);
 
-      const canvas = document.createElement("canvas");
-      canvas.width = size;
-      canvas.height = size;
-      const ctx = canvas.getContext("2d");
-      if (!ctx) {
-        reject(new Error("canvas unsupported"));
-        return;
-      }
-      ctx.drawImage(img, sx, sy, side, side, 0, 0, size, size);
-
-      canvas.toBlob(
-        (blob) => {
-          if (!blob) {
-            reject(new Error("이미지를 처리하지 못했어요."));
-            return;
-          }
-          const name = file.name.replace(/\.\w+$/, "") + ".jpg";
-          resolve(new File([blob], name, { type: "image/jpeg" }));
-        },
-        "image/jpeg",
-        JPEG_QUALITY
-      );
-    };
-    img.onerror = () => {
-      URL.revokeObjectURL(objectUrl);
-      reject(new Error("이미지를 불러오지 못했어요."));
-    };
-    img.src = objectUrl;
-  });
+    const blob = await canvasToBlob(canvas);
+    const name = file.name.replace(/\.\w+$/, "") + ".jpg";
+    return new File([blob], name, { type: "image/jpeg" });
+  } finally {
+    bitmap.close();
+  }
 }
 
 // The order (and interleaving of kept-existing vs newly-uploaded photos) is
