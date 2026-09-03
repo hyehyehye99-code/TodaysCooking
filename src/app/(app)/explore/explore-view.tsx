@@ -1,7 +1,8 @@
 "use client";
 
-import { useMemo, useRef, useState, useTransition } from "react";
+import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 import { ClearableInput } from "@/components/ClearableInput";
 import { searchExploreRecipes, type ExploreSearchResult } from "@/lib/actions/explore";
 import { useDict } from "@/lib/i18n/client";
@@ -184,7 +185,15 @@ export function ExploreView({
   banners: ExploreBanner[];
 }) {
   const dict = useDict();
-  const [query, setQuery] = useState("");
+  const router = useRouter();
+  // The query lives in the URL (?q=...) specifically so that pressing back
+  // after tapping into a search result lands on the same search instead of
+  // a blank search bar — Next's router cache restores this exact URL's
+  // state instantly, which plain useState across a full route change
+  // wouldn't survive.
+  const searchParams = useSearchParams();
+  const initialQuery = searchParams.get("q") ?? "";
+  const [query, setQuery] = useState(initialQuery);
   const [activeTag, setActiveTag] = useState<string | null>(null);
   const [results, setResults] = useState<ExploreSearchResult[] | null>(null);
   const [pending, startTransition] = useTransition();
@@ -193,16 +202,29 @@ export function ExploreView({
   const allTags = useMemo(() => [...new Set(feed.flatMap((item) => item.tags))], [feed]);
   const visibleFeed = activeTag ? feed.filter((item) => item.tags.includes(activeTag)) : feed;
 
+  // Runs the restored query once on mount (e.g. landing on /explore?q=...
+  // via back navigation) — typing itself is handled by handleQueryChange's
+  // own debounced search below, not this effect.
+  useEffect(() => {
+    if (!initialQuery.trim()) return;
+    startTransition(async () => {
+      setResults(await searchExploreRecipes(initialQuery.trim()));
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   function handleQueryChange(value: string) {
     setQuery(value);
     if (debounceTimer.current) clearTimeout(debounceTimer.current);
     if (!value.trim()) {
       setResults(null);
+      router.replace("/explore", { scroll: false });
       return;
     }
     debounceTimer.current = setTimeout(() => {
       startTransition(async () => {
         setResults(await searchExploreRecipes(value.trim()));
+        router.replace(`/explore?q=${encodeURIComponent(value.trim())}`, { scroll: false });
       });
     }, 300);
   }

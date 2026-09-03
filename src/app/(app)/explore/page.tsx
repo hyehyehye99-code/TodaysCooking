@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { createClient } from "@/lib/supabase/server";
 import { ExploreView } from "./explore-view";
 
@@ -59,11 +60,13 @@ export default async function ExplorePage() {
   );
 
   return (
-    <ExploreView
-      feed={(feed as ExploreFeedItem[] | null) ?? []}
-      collections={collectionList}
-      collectionRecipesById={Object.fromEntries(collectionRecipes)}
-      banners={(banners as ExploreBanner[] | null) ?? []}
-    />
+    <Suspense>
+      <ExploreView
+        feed={(feed as ExploreFeedItem[] | null) ?? []}
+        collections={collectionList}
+        collectionRecipesById={Object.fromEntries(collectionRecipes)}
+        banners={(banners as ExploreBanner[] | null) ?? []}
+      />
+    </Suspense>
   );
 }
