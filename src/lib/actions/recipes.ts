@@ -379,6 +379,13 @@ export async function setIngredientState(recipeId: string, name: string, state: 
         });
       }
     }
+  } else {
+    // Moved away from "shopping" (to fridge/skip/none) — the household's
+    // shopping-list row for this name is no longer wanted. Cycling a chip
+    // is the only thing that puts a row there in the first place, so
+    // un-cycling away from it should take the row back out, not leave a
+    // stale entry the chip itself no longer thinks it added.
+    await supabase.from("shopping_items").delete().eq("household_id", household.id).eq("name", name);
   }
 
   revalidatePath(`/recipes/${recipeId}`);
