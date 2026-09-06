@@ -22,6 +22,14 @@ function displayTitle(recipe: RecipeWithIngredients, untitledFallback: string) {
   return bookmark?.title || bookmark?.domain || untitledFallback;
 }
 
+function buildListUrl(query: string, tag: string | null) {
+  const params = new URLSearchParams();
+  if (query.trim()) params.set("q", query.trim());
+  if (tag) params.set("tag", tag);
+  const qs = params.toString();
+  return qs ? `/recipes?${qs}` : "/recipes";
+}
+
 function FavoriteButton({ recipe }: { recipe: RecipeWithIngredients }) {
   const dict = useDict();
   const [optimisticFavorite, setOptimisticFavorite] = useOptimistic(recipe.is_favorite);
@@ -69,14 +77,13 @@ export function RecipeList({
 }) {
   const dict = useDict();
   const router = useRouter();
-  // The query lives in the URL (?q=...) specifically so that pressing back
-  // after tapping into a recipe lands on the same search instead of a blank
-  // search bar — Next's router cache restores this exact URL's state
-  // instantly, which plain useState across a full route change wouldn't
-  // survive (same pattern used by Explore's search).
+  // Query and active tag both live in the URL (?q=&tag=) specifically so
+  // that a recipe's close (X) button — which links back to this exact URL —
+  // lands on the same search/filter instead of a blank list (same pattern
+  // used by Explore's search).
   const searchParams = useSearchParams();
   const [query, setQuery] = useState(() => searchParams.get("q") ?? "");
-  const [activeTag, setActiveTag] = useState<string | null>(null);
+  const [activeTag, setActiveTag] = useState<string | null>(() => searchParams.get("tag"));
   const [favoritesOnly, setFavoritesOnly] = useState(false);
   const [makeableOnly, setMakeableOnly] = useState(false);
   const [linkOnly, setLinkOnly] = useState(false);
@@ -219,9 +226,7 @@ export function RecipeList({
               onChange={(e) => {
                 const value = e.target.value;
                 setQuery(value);
-                router.replace(value.trim() ? `/recipes?q=${encodeURIComponent(value.trim())}` : "/recipes", {
-                  scroll: false,
-                });
+                router.replace(buildListUrl(value, activeTag), { scroll: false });
               }}
               placeholder={dict.recipes.searchPlaceholder}
               className="w-full rounded-xl border border-transparent bg-surface px-3.5 py-2.5 text-sm outline-none focus:border-accent"
@@ -246,7 +251,10 @@ export function RecipeList({
       {!editing && (recipes.length > 0 || allTags.length > 0) && (
         <div className="mb-4 flex flex-wrap gap-1.5">
           <button
-            onClick={() => setActiveTag(null)}
+            onClick={() => {
+              setActiveTag(null);
+              router.replace(buildListUrl(query, null), { scroll: false });
+            }}
             className={`rounded-full px-3 py-1.5 text-xs font-semibold ${
               activeTag === null ? "bg-accent text-white" : "bg-surface text-ink-soft"
             }`}
@@ -309,7 +317,11 @@ export function RecipeList({
           {visibleTags.map((tag) => (
             <button
               key={tag}
-              onClick={() => setActiveTag((prev) => (prev === tag ? null : tag))}
+              onClick={() => {
+                const next = activeTag === tag ? null : tag;
+                setActiveTag(next);
+                router.replace(buildListUrl(query, next), { scroll: false });
+              }}
               className={`rounded-full px-3 py-1.5 text-xs font-semibold ${
                 activeTag === tag ? "bg-accent text-white" : "bg-surface text-ink-soft"
               }`}
@@ -415,7 +427,10 @@ export function RecipeList({
             const isLinkOnly = !recipe.title;
             const bookmark = recipe.bookmarks?.[0];
             return (
-            <Link key={recipe.id} href={`/recipes/${recipe.id}`}>
+            <Link
+              key={recipe.id}
+              href={`/recipes/${recipe.id}?from=${encodeURIComponent(buildListUrl(query, activeTag))}`}
+            >
               <GlassCard className="flex items-center gap-3 bg-white p-3.5">
                 <RecipeThumb
                   coverPhotoUrl={recipe.cover_photo_urls[0]}

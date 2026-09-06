@@ -10,6 +10,22 @@ import { useDict } from "@/lib/i18n/client";
 type Item = { name: string; selected: boolean; custom: boolean };
 type Category = { name: string; items: Item[] };
 
+// Purely a visual scan-aid for the category cards below — not tied to any
+// data, so an unmatched (custom) category name just falls back to a plain
+// box.
+const CATEGORY_EMOJI: Record<string, string> = {
+  "채소": "🥬",
+  "해산물": "🐟",
+  "육류·가공육": "🥩",
+  "유제품·계란": "🥚",
+  "두부·콩류": "🫘",
+  "곡류·면·떡": "🍚",
+  "김치·젓갈·장아찌": "🫙",
+  "장류·오일": "🧴",
+  "양념·향신료": "🧂",
+  "미분류": "📦",
+};
+
 const LONG_PRESS_MS = 350;
 const MOVE_CANCEL_PX = 10;
 // How close to the scrollable page's top/bottom edge (in px) a drag has to
@@ -265,15 +281,24 @@ export function FridgeEditor({ categories }: { categories: Category[] }) {
         </GlassCard>
       )}
 
-      <div className="flex flex-col gap-1">
+      <div className="flex flex-col gap-3">
         {local
           .map((cat) => ({ ...cat, items: cat.items.filter((i) => matchesSearch(i.name)) }))
           .filter((cat) => cat.items.length > 0 || !q)
           .map((cat) => {
             const isDropTarget = dropTarget === cat.name;
+            const ownedInCat = cat.items.filter((i) => i.selected).length;
             return (
-              <div key={cat.name} className="border-b border-border py-3 last:border-none">
-                <p className="text-xs font-bold text-ink-soft">{cat.name}</p>
+              <GlassCard key={cat.name} className="bg-white p-4">
+                <p className="flex items-center gap-1.5 text-[13px] font-bold text-ink">
+                  <span>{CATEGORY_EMOJI[cat.name] ?? "🍽️"}</span>
+                  {cat.name}
+                  {ownedInCat > 0 && (
+                    <span className="text-xs font-semibold text-ink-faint">
+                      {ownedInCat}/{cat.items.length}
+                    </span>
+                  )}
+                </p>
 
                 <div
                   ref={registerCatRef(cat.name)}
@@ -282,14 +307,16 @@ export function FridgeEditor({ categories }: { categories: Category[] }) {
                   }`}
                 >
                   {cat.items.map((item) => {
-                    const chipClass = item.selected ? "bg-accent text-white" : "bg-surface text-ink-soft";
+                    const chipClass = item.selected
+                      ? "bg-accent text-white border-accent"
+                      : "bg-surface text-ink-soft border-border";
                     const isBeingDragged = dragging?.catName === cat.name && dragging.itemName === item.name;
 
                     if (item.custom) {
                       return (
                         <span
                           key={item.name}
-                          className={`inline-flex items-center rounded-full border border-transparent ${chipClass} ${
+                          className={`inline-flex items-center rounded-full border ${chipClass} ${
                             isBeingDragged ? "opacity-40" : ""
                           }`}
                         >
@@ -323,7 +350,7 @@ export function FridgeEditor({ categories }: { categories: Category[] }) {
                         onPointerDown={(e) => handleChipPointerDown(e, cat.name, item.name)}
                         onPointerMove={handleChipPointerMove}
                         onPointerUp={handleChipPointerUp}
-                        className={`touch-none rounded-full border border-transparent px-3.5 py-2 text-[13px] font-semibold ${chipClass} ${
+                        className={`touch-none rounded-full border px-3.5 py-2 text-[13px] font-semibold ${chipClass} ${
                           isBeingDragged ? "opacity-40" : ""
                         }`}
                       >
@@ -356,7 +383,7 @@ export function FridgeEditor({ categories }: { categories: Category[] }) {
                     </button>
                   </span>
                 </div>
-              </div>
+              </GlassCard>
             );
           })}
       </div>

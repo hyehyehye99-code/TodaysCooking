@@ -46,7 +46,7 @@ export function MealPlanInfoBox({
 
   return (
     <GlassCard className="mb-4 bg-surface p-4">
-      <h2 className="truncate text-lg font-bold">{title}</h2>
+      <h2 className="truncate text-center text-lg font-bold">{title}</h2>
 
       <div className="mt-2 flex items-center justify-between gap-2">
         {hasPrev ? (
