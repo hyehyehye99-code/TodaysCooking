@@ -66,7 +66,7 @@ export default async function MyPage() {
         <ProfileEditButton nickname={myNickname} iconEmoji={myIconEmoji} />
 
         <div className="mt-4 border-t border-border pt-4">
-          <p className="text-sm font-semibold text-ink">{dict.mypage.freePlanActive}</p>
+          <p className="text-sm font-semibold text-ink">{dict.mypage.aiUsageLabel}</p>
           {bonusRemaining > 0 ? (
             // While a bonus grant is active, every generation draws from it
             // first (see ai-recipe.ts) — the weekly free count stays frozen

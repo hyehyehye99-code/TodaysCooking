@@ -162,25 +162,6 @@ export default async function LandingPage() {
         </div>
       </section>
 
-      <section className="border-t border-border py-20">
-        <div className="mx-auto w-full max-w-4xl px-6">
-          <h2 className="text-center text-2xl font-bold text-ink md:text-3xl">{dict.landing.pricingHeading}</h2>
-          <p className="mx-auto mt-3 max-w-md text-center text-sm leading-relaxed text-ink-soft">
-            {dict.landing.pricingSubtitle}
-          </p>
-
-          <div className="mx-auto mt-10 max-w-sm rounded-2xl border border-border p-7">
-            <p className="text-sm font-bold text-ink-faint">{dict.landing.freePlan}</p>
-            <p className="mt-2 text-3xl font-bold text-ink">₩0</p>
-            <ul className="mt-6 flex flex-col gap-3 text-sm text-ink-soft">
-              <li>· {dict.landing.freeFeature1}</li>
-              <li>· {dict.landing.freeFeature2}</li>
-              <li>· {dict.landing.freeFeature3}</li>
-            </ul>
-          </div>
-        </div>
-      </section>
-
       <section className="border-t border-border bg-surface py-20">
         <div className="mx-auto w-full max-w-5xl px-6 text-center">
           <h2 className="text-2xl font-bold text-ink md:text-3xl">{dict.landing.finalCtaHeading}</h2>
