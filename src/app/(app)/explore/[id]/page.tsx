@@ -2,11 +2,10 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentHousehold } from "@/lib/household";
-import { GlassCard } from "@/components/ui";
-import { RecipeThumb } from "@/components/RecipeThumb";
 import { getDictionary } from "@/lib/i18n/server";
 import { MealPlanMenuButton } from "./meal-plan-menu-button";
 import { AddMissingButton } from "./add-missing-button";
+import { MealPlanRecipeCard } from "./meal-plan-recipe-card";
 
 type RecipeRow = {
   id: string;
@@ -86,47 +85,25 @@ export default async function MealPlanDetailPage({ params }: { params: Promise<{
       </div>
 
       <div className="flex flex-col gap-3">
-        {recipes.map((r) => {
-          const activeIngredients = r.recipe_ingredients.filter((ing) => !ing.skipped);
-          return (
-            <GlassCard key={r.id} className="bg-white p-3.5">
-              <Link href={`/recipes/${r.id}`} className="mb-2.5 flex items-center gap-2.5">
-                <RecipeThumb
-                  coverPhotoUrl={r.cover_photo_urls[0]}
-                  iconEmoji={r.icon_emoji}
-                  linkThumbnailUrl={r.bookmarks?.[0]?.thumbnail_url}
-                  size={36}
-                  rounded="rounded-lg"
-                />
-                <span className="min-w-0 flex-1 truncate text-[15px] font-bold">
-                  {r.title || dict.recipes.untitledLink}
-                </span>
-              </Link>
-              {activeIngredients.length > 0 && (
-                <div className="flex flex-wrap gap-1.5">
-                  {activeIngredients.map((ing) => {
-                    const isOwned = owned.has(ing.name);
-                    const isOnList = onShoppingList.has(ing.name);
-                    const stateClass = isOwned
-                      ? "border-accent bg-surface text-accent-ink"
-                      : isOnList
-                        ? "border-positive bg-surface text-positive-ink"
-                        : "border-transparent bg-surface text-ink-soft";
-                    return (
-                      <span
-                        key={ing.name}
-                        className={`rounded-full border px-3 py-1.5 text-[12px] font-semibold ${stateClass}`}
-                      >
-                        {ing.name}
-                        {ing.amount && <span className="ml-1 font-normal opacity-70">{ing.amount}</span>}
-                      </span>
-                    );
-                  })}
-                </div>
-              )}
-            </GlassCard>
-          );
-        })}
+        {recipes.map((r) => (
+          <MealPlanRecipeCard
+            key={r.id}
+            recipeId={r.id}
+            title={r.title}
+            untitledLabel={dict.recipes.untitledLink}
+            coverPhotoUrl={r.cover_photo_urls[0]}
+            iconEmoji={r.icon_emoji}
+            linkThumbnailUrl={r.bookmarks?.[0]?.thumbnail_url}
+            ingredients={r.recipe_ingredients
+              .filter((ing) => !ing.skipped)
+              .map((ing) => ({
+                name: ing.name,
+                amount: ing.amount,
+                owned: owned.has(ing.name),
+                onShoppingList: onShoppingList.has(ing.name),
+              }))}
+          />
+        ))}
       </div>
 
       <div className="mt-4">

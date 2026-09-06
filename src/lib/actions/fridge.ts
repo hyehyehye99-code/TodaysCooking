@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentHousehold } from "@/lib/household";
+import { CATEGORY_BY_INGREDIENT_NAME } from "@/lib/ingredients";
 
 export type FridgeSaveItem = { name: string; category: string; inStock: boolean };
 
@@ -38,6 +39,33 @@ export async function saveFridge(items: FridgeSaveItem[], toDelete: string[] = [
 
   revalidatePath("/fridge");
   revalidatePath("/recipes");
+  return { success: true as const };
+}
+
+// A single ingredient's owned/in_stock flip from outside the full fridge
+// editor (e.g. tapping an ingredient chip on a meal plan's recipe card) —
+// keeps the row (rather than deleting it on un-owning) so its category
+// isn't lost, same as resolveMissingIngredients' own fridge writes.
+export async function toggleFridgeStock(name: string, next: boolean) {
+  const { household } = await getCurrentHousehold();
+  if (!household) return { error: "우리집을 먼저 만들어주세요." };
+
+  const supabase = await createClient();
+  const { error } = await supabase.from("fridge_items").upsert(
+    {
+      household_id: household.id,
+      name,
+      category: CATEGORY_BY_INGREDIENT_NAME.get(name) ?? "미분류",
+      in_stock: next,
+      updated_at: new Date().toISOString(),
+    },
+    { onConflict: "household_id,name" }
+  );
+  if (error) return { error: "저장하지 못했어요." };
+
+  revalidatePath("/fridge");
+  revalidatePath("/recipes");
+  revalidatePath("/explore");
   return { success: true as const };
 }
 
