@@ -5,12 +5,18 @@ import { GlassCard } from "@/components/ui";
 import { RecipeThumb } from "@/components/RecipeThumb";
 import { getDictionary } from "@/lib/i18n/server";
 
+type RecipeThumbFields = {
+  cover_photo_urls: string[];
+  icon_emoji: string | null;
+  bookmarks: { thumbnail_url: string | null }[] | null;
+};
+
 type MealPlanRow = {
   id: string;
   title: string;
   meal_plan_recipes: {
     position: number;
-    recipes: { cover_photo_urls: string[]; icon_emoji: string | null } | { cover_photo_urls: string[]; icon_emoji: string | null }[] | null;
+    recipes: RecipeThumbFields | RecipeThumbFields[] | null;
   }[];
 };
 
@@ -28,7 +34,9 @@ export default async function ExplorePage() {
 
   const { data: mealPlans } = await supabase
     .from("meal_plans")
-    .select("id, title, meal_plan_recipes(position, recipes(cover_photo_urls, icon_emoji))")
+    .select(
+      "id, title, meal_plan_recipes(position, recipes(cover_photo_urls, icon_emoji, bookmarks(thumbnail_url)))"
+    )
     .eq("household_id", household!.id)
     .order("created_at", { ascending: false });
 
@@ -36,13 +44,6 @@ export default async function ExplorePage() {
 
   return (
     <div>
-      <Link
-        href="/explore/new"
-        className="mb-4 flex items-center justify-center gap-1.5 rounded-xl border border-dashed border-accent py-3 text-sm font-bold text-accent-ink"
-      >
-        + {dict.mealPlan.newButton}
-      </Link>
-
       {plans.length === 0 ? (
         <p className="mt-10 text-center text-sm text-ink-faint">{dict.mealPlan.emptyState}</p>
       ) : (
@@ -53,7 +54,12 @@ export default async function ExplorePage() {
             return (
               <Link key={plan.id} href={`/explore/${plan.id}`}>
                 <GlassCard className="flex items-center gap-3 bg-white p-3">
-                  <RecipeThumb coverPhotoUrl={thumb?.cover_photo_urls[0]} iconEmoji={thumb?.icon_emoji} size={52} />
+                  <RecipeThumb
+                    coverPhotoUrl={thumb?.cover_photo_urls[0]}
+                    iconEmoji={thumb?.icon_emoji}
+                    linkThumbnailUrl={thumb?.bookmarks?.[0]?.thumbnail_url}
+                    size={52}
+                  />
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-[15px] font-bold">{plan.title}</p>
                     <p className="mt-0.5 text-xs text-ink-soft">

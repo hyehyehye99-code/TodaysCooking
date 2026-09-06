@@ -8,7 +8,7 @@ export default async function NewMealPlanPage() {
 
   const { data: recipes } = await supabase
     .from("recipes")
-    .select("id, title, cover_photo_urls, icon_emoji")
+    .select("id, title, cover_photo_urls, icon_emoji, bookmarks(thumbnail_url)")
     .eq("household_id", household!.id)
     .order("position", { ascending: true, nullsFirst: false })
     .order("created_at", { ascending: false });

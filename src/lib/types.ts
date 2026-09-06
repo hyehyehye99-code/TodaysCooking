@@ -32,16 +32,6 @@ export type RecipeWithIngredients = Recipe & {
   bookmarks?: { url: string; title: string | null; domain: string | null; thumbnail_url: string | null }[];
 };
 
-export type RecipeCookLog = {
-  id: string;
-  household_id: string;
-  recipe_id: string;
-  photo_url: string | null;
-  cooked_at: string;
-  rating: number | null;
-  created_at: string;
-};
-
 export type FridgeItem = {
   id: string;
   household_id: string;

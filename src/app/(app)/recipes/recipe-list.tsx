@@ -14,7 +14,7 @@ import type { RecipeWithIngredients } from "@/lib/types";
 
 // A recipe created with no title (just a reference link, the recipes-tab
 // equivalent of the old standalone bookmark) falls back to the linked
-// bookmark's scraped page title, then its domain, so the card/search/sort
+// bookmark's scraped page title, then its domain, so the card/search
 // never has to deal with a blank string.
 function displayTitle(recipe: RecipeWithIngredients, untitledFallback: string) {
   if (recipe.title) return recipe.title;
@@ -81,7 +81,6 @@ export function RecipeList({
   const [makeableOnly, setMakeableOnly] = useState(false);
   const [linkOnly, setLinkOnly] = useState(false);
   const [tagsExpanded, setTagsExpanded] = useState(false);
-  const [sortBy, setSortBy] = useState<"custom" | "newest" | "oldest" | "name">("custom");
   const [editing, setEditing] = useState(false);
   const {
     order,
@@ -138,18 +137,6 @@ export function RecipeList({
     const matchesLinkOnly = !linkOnly || !r.title;
     return matchesQuery && matchesTag && matchesFavorite && matchesMakeable && matchesLinkOnly;
   });
-
-  // "custom" keeps the server-provided order (position, i.e. whatever the
-  // household last drag-reordered to) — everything else re-sorts on top of
-  // the filtered set without touching that saved order.
-  const sorted =
-    sortBy === "newest"
-      ? [...filtered].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-      : sortBy === "oldest"
-        ? [...filtered].sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
-        : sortBy === "name"
-          ? [...filtered].sort((a, b) => displayTitle(a, "").localeCompare(displayTitle(b, ""), "ko"))
-          : filtered;
 
   function startEditing() {
     setOrder(recipes);
@@ -240,17 +227,6 @@ export function RecipeList({
               className="w-full rounded-xl border border-transparent bg-surface px-3.5 py-2.5 text-sm outline-none focus:border-accent"
             />
           </div>
-          <select
-            value={sortBy}
-            onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
-            aria-label={dict.recipes.sortCustom}
-            className="h-[42px] shrink-0 rounded-xl bg-surface px-2.5 text-xs font-semibold text-ink-soft outline-none"
-          >
-            <option value="custom">{dict.recipes.sortCustom}</option>
-            <option value="newest">{dict.recipes.sortNewest}</option>
-            <option value="oldest">{dict.recipes.sortOldest}</option>
-            <option value="name">{dict.recipes.sortByName}</option>
-          </select>
           {recipes.length > 1 && (
             <button
               onClick={startEditing}
@@ -357,7 +333,7 @@ export function RecipeList({
         </div>
       )}
 
-      {!editing && sorted.length === 0 && (
+      {!editing && filtered.length === 0 && (
         <p className="mt-10 text-center text-sm text-ink-soft">
           {recipes.length === 0 ? dict.recipes.emptyNoRecipes : dict.recipes.emptySearch}
         </p>
@@ -434,7 +410,7 @@ export function RecipeList({
         </div>
       ) : (
         <div className="flex flex-col gap-3">
-          {sorted.map((recipe) => {
+          {filtered.map((recipe) => {
             const makeable = makeableIds.has(recipe.id);
             const isLinkOnly = !recipe.title;
             const bookmark = recipe.bookmarks?.[0];

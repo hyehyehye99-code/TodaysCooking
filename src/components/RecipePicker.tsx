@@ -10,6 +10,7 @@ type PickableRecipe = {
   title: string | null;
   cover_photo_urls: string[];
   icon_emoji: string | null;
+  bookmarks?: { thumbnail_url: string | null }[] | null;
 };
 
 export function RecipePicker({
@@ -64,6 +65,7 @@ export function RecipePicker({
               <RecipeThumb
                 coverPhotoUrl={r.cover_photo_urls[0]}
                 iconEmoji={r.icon_emoji}
+                linkThumbnailUrl={r.bookmarks?.[0]?.thumbnail_url}
                 size={40}
                 rounded="rounded-lg"
               />

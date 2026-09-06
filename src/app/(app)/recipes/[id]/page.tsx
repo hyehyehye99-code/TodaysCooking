@@ -6,14 +6,12 @@ import { GlassCard } from "@/components/ui";
 import { ProfileAvatar } from "@/components/ProfileAvatar";
 import { chefName } from "@/lib/format";
 import { getDictionary } from "@/lib/i18n/server";
-import type { RecipeCookLog, RecipeWithIngredients } from "@/lib/types";
+import type { RecipeWithIngredients } from "@/lib/types";
 import { RecipeMenuButton } from "./recipe-menu-button";
 import { FavoriteButton } from "./favorite-button";
 import { MissingIngredientsButton } from "./missing-ingredients-button";
 import { RecipePhotoGallery } from "./recipe-photo-gallery";
 import { ReactionLog } from "./reaction-log";
-import { CookLogSection } from "./cook-log-section";
-import { ShareRecipeButton } from "./share-recipe-button";
 
 export default async function RecipeDetailPage({
   params,
@@ -35,7 +33,8 @@ export default async function RecipeDetailPage({
     { data: shoppingItems },
     { data: referenceBookmark },
     { data: reactions },
-    { data: cookLogs },
+    { data: mealPlans },
+    { data: mealPlanMemberships },
   ] = await Promise.all([
     supabase.from("recipes").select("*, recipe_ingredients(*)").eq("id", id).single(),
     supabase.from("fridge_items").select("name, in_stock").eq("household_id", household!.id),
@@ -47,10 +46,11 @@ export default async function RecipeDetailPage({
       .maybeSingle(),
     supabase.rpc("get_recipe_reactions", { target_recipe_id: id }),
     supabase
-      .from("recipe_cook_logs")
-      .select("*")
-      .eq("recipe_id", id)
+      .from("meal_plans")
+      .select("id, title")
+      .eq("household_id", household!.id)
       .order("created_at", { ascending: false }),
+    supabase.from("meal_plan_recipes").select("meal_plan_id").eq("recipe_id", id),
   ]);
 
   if (!recipe) notFound();
@@ -105,8 +105,12 @@ export default async function RecipeDetailPage({
         </div>
         <div className="flex shrink-0 items-center gap-2">
           <FavoriteButton recipeId={r.id} isFavorite={r.is_favorite} />
-          <ShareRecipeButton recipeId={r.id} title={displayTitle} />
-          <RecipeMenuButton recipeId={r.id} />
+          <RecipeMenuButton
+            recipeId={r.id}
+            title={displayTitle}
+            mealPlans={mealPlans ?? []}
+            memberMealPlanIds={(mealPlanMemberships ?? []).map((m) => m.meal_plan_id)}
+          />
           <Link
             href="/recipes"
             aria-label={dict.common.close}
@@ -232,8 +236,6 @@ export default async function RecipeDetailPage({
           </GlassCard>
         </div>
       )}
-
-      <CookLogSection recipeId={r.id} recipeTitle={displayTitle} logs={(cookLogs as RecipeCookLog[] | null) ?? []} />
 
       <ReactionLog recipeId={r.id} reactions={reactions ?? []} />
     </div>

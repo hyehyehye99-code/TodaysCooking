@@ -33,6 +33,7 @@ export function AppHeader({
     return null;
 
   const isRecipesTab = pathname === "/recipes";
+  const isExploreTab = pathname === "/explore";
   const tabTitleKey = TAB_TITLE_KEYS[pathname];
   const tabTitle = tabTitleKey ? dict.tabBar[tabTitleKey] : "";
 
@@ -120,6 +121,11 @@ export function AppHeader({
 
       <div className="flex items-baseline justify-between gap-3">
         <h1 className="text-[26px] font-bold tracking-tight">{tabTitle}</h1>
+        {isExploreTab && (
+          <Link href="/explore/new" className="shrink-0 text-sm font-bold text-accent">
+            {dict.components.newMealPlanLink}
+          </Link>
+        )}
       </div>
     </div>
   );

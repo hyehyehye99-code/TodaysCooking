@@ -14,6 +14,7 @@ type RecipeRow = {
   cover_photo_urls: string[];
   icon_emoji: string | null;
   recipe_ingredients: { name: string; amount: string | null; skipped: boolean }[];
+  bookmarks: { thumbnail_url: string | null }[] | null;
 };
 
 type MealPlanRecipeRow = { position: number; recipes: RecipeRow | RecipeRow[] | null };
@@ -33,7 +34,9 @@ export default async function MealPlanDetailPage({ params }: { params: Promise<{
       supabase.from("meal_plans").select("id, title").eq("id", id).eq("household_id", household!.id).maybeSingle(),
       supabase
         .from("meal_plan_recipes")
-        .select("position, recipes(id, title, cover_photo_urls, icon_emoji, recipe_ingredients(name, amount, skipped))")
+        .select(
+          "position, recipes(id, title, cover_photo_urls, icon_emoji, recipe_ingredients(name, amount, skipped), bookmarks(thumbnail_url))"
+        )
         .eq("meal_plan_id", id)
         .order("position", { ascending: true }),
       supabase.from("fridge_items").select("name, in_stock").eq("household_id", household!.id),
@@ -49,26 +52,19 @@ export default async function MealPlanDetailPage({ params }: { params: Promise<{
   const owned = new Set((fridgeItems ?? []).filter((i) => i.in_stock).map((i) => i.name));
   const onShoppingList = new Set((shoppingItems ?? []).map((i) => i.name));
 
-  // One row per unique ingredient name across every recipe in the plan —
-  // this is the whole point of a meal plan: instead of checking each
-  // recipe's ingredient list on its own, see the combined need at once.
-  // Amounts aren't summed (free-text units like "2개"/"반모" can't be added
-  // reliably) — each recipe's own amount is kept and shown separately.
-  const aggregated = new Map<
-    string,
-    { name: string; recipeAmounts: { recipeTitle: string; amount: string | null }[] }
-  >();
-  for (const recipe of recipes) {
-    const recipeTitle = recipe.title || dict.recipes.untitledLink;
-    for (const ing of recipe.recipe_ingredients) {
-      if (ing.skipped) continue;
-      const entry = aggregated.get(ing.name) ?? { name: ing.name, recipeAmounts: [] };
-      entry.recipeAmounts.push({ recipeTitle, amount: ing.amount });
-      aggregated.set(ing.name, entry);
-    }
-  }
-  const ingredients = [...aggregated.values()].sort((a, b) => a.name.localeCompare(b.name, "ko"));
-  const missingNames = ingredients.filter((i) => !owned.has(i.name) && !onShoppingList.has(i.name)).map((i) => i.name);
+  // Deduped across every recipe in the plan — only used for the bulk "add
+  // missing to shopping" action below, not for display (each recipe shows
+  // its own ingredients regardless of whether another recipe also needs
+  // the same thing).
+  const missingNames = [
+    ...new Set(
+      recipes
+        .flatMap((r) => r.recipe_ingredients)
+        .filter((ing) => !ing.skipped)
+        .map((ing) => ing.name)
+        .filter((name) => !owned.has(name) && !onShoppingList.has(name))
+    ),
+  ];
 
   return (
     <div className="animate-fade-in-up pt-2">
@@ -89,63 +85,52 @@ export default async function MealPlanDetailPage({ params }: { params: Promise<{
         </div>
       </div>
 
-      <div className="flex gap-2 overflow-x-auto pb-1">
-        {recipes.map((r) => (
-          <Link
-            key={r.id}
-            href={`/recipes/${r.id}`}
-            className="flex w-20 shrink-0 flex-col items-center gap-1.5 text-center"
-          >
-            <RecipeThumb coverPhotoUrl={r.cover_photo_urls[0]} iconEmoji={r.icon_emoji} size={64} />
-            <span className="line-clamp-2 text-[11px] font-semibold leading-tight">
-              {r.title || dict.recipes.untitledLink}
-            </span>
-          </Link>
-        ))}
+      <div className="flex flex-col gap-3">
+        {recipes.map((r) => {
+          const activeIngredients = r.recipe_ingredients.filter((ing) => !ing.skipped);
+          return (
+            <GlassCard key={r.id} className="bg-white p-3.5">
+              <Link href={`/recipes/${r.id}`} className="mb-2.5 flex items-center gap-2.5">
+                <RecipeThumb
+                  coverPhotoUrl={r.cover_photo_urls[0]}
+                  iconEmoji={r.icon_emoji}
+                  linkThumbnailUrl={r.bookmarks?.[0]?.thumbnail_url}
+                  size={36}
+                  rounded="rounded-lg"
+                />
+                <span className="min-w-0 flex-1 truncate text-[15px] font-bold">
+                  {r.title || dict.recipes.untitledLink}
+                </span>
+              </Link>
+              {activeIngredients.length > 0 && (
+                <div className="flex flex-wrap gap-1.5">
+                  {activeIngredients.map((ing) => {
+                    const isOwned = owned.has(ing.name);
+                    const isOnList = onShoppingList.has(ing.name);
+                    const stateClass = isOwned
+                      ? "border-accent bg-surface text-accent-ink"
+                      : isOnList
+                        ? "border-positive bg-surface text-positive-ink"
+                        : "border-transparent bg-surface text-ink-soft";
+                    return (
+                      <span
+                        key={ing.name}
+                        className={`rounded-full border px-3 py-1.5 text-[12px] font-semibold ${stateClass}`}
+                      >
+                        {ing.name}
+                        {ing.amount && <span className="ml-1 font-normal opacity-70">{ing.amount}</span>}
+                      </span>
+                    );
+                  })}
+                </div>
+              )}
+            </GlassCard>
+          );
+        })}
       </div>
 
-      <div className="mt-5">
-        <p className="mb-2 text-[15px] font-bold">{dict.mealPlan.ingredientsHeading}</p>
-
-        {ingredients.length === 0 ? (
-          <p className="text-xs text-ink-faint">{dict.mealPlan.noIngredients}</p>
-        ) : (
-          <>
-            <div className="flex flex-col gap-2">
-              {ingredients.map((ing) => {
-                const isOwned = owned.has(ing.name);
-                const isOnList = onShoppingList.has(ing.name);
-                const stateClass = isOwned
-                  ? "border-accent bg-surface text-accent-ink"
-                  : isOnList
-                    ? "border-positive bg-surface text-positive-ink"
-                    : "border-transparent bg-surface text-ink-soft";
-                return (
-                  <GlassCard key={ing.name} className={`border ${stateClass} p-3`}>
-                    <div className="flex items-center justify-between gap-2">
-                      <span className="text-sm font-bold">{ing.name}</span>
-                      {isOwned && (
-                        <span className="shrink-0 text-[11px] font-bold">{dict.welcome.stateFridge}</span>
-                      )}
-                      {!isOwned && isOnList && (
-                        <span className="shrink-0 text-[11px] font-bold">{dict.mealPlan.onShoppingListBadge}</span>
-                      )}
-                    </div>
-                    <p className="mt-1 truncate text-[11px] text-ink-faint">
-                      {ing.recipeAmounts
-                        .map((ra) => (ra.amount ? `${ra.recipeTitle} ${ra.amount}` : ra.recipeTitle))
-                        .join(" · ")}
-                    </p>
-                  </GlassCard>
-                );
-              })}
-            </div>
-
-            <div className="mt-4">
-              <AddMissingButton mealPlanId={mealPlan.id} missingNames={missingNames} />
-            </div>
-          </>
-        )}
+      <div className="mt-4">
+        <AddMissingButton mealPlanId={mealPlan.id} missingNames={missingNames} />
       </div>
     </div>
   );
