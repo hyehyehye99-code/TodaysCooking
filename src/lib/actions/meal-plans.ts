@@ -83,6 +83,22 @@ export async function updateMealPlan(_prevState: unknown, formData: FormData) {
   redirect(`/explore/${id}`);
 }
 
+// Renames how one recipe shows up within this meal plan only — the actual
+// recipe's own title is untouched.
+export async function setMealPlanRecipeDisplayName(
+  mealPlanId: string,
+  recipeId: string,
+  displayName: string | null
+) {
+  const supabase = await createClient();
+  await supabase
+    .from("meal_plan_recipes")
+    .update({ display_name: displayName })
+    .eq("meal_plan_id", mealPlanId)
+    .eq("recipe_id", recipeId);
+  revalidatePath(`/explore/${mealPlanId}`);
+}
+
 // Toggling a single recipe in/out of a meal plan from the recipe's own
 // detail page — the alternative to building a whole plan at once via the
 // picker in new-meal-plan-form.tsx, for when it's easier to just add

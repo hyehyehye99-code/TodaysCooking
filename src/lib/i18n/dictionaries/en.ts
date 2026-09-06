@@ -341,6 +341,8 @@ const en: Dictionary = {
     titleLabel: "Meal plan name",
     titlePlaceholder: "e.g. Home party menu",
     pickRecipesLabel: "Pick recipes",
+    addRecipeButton: "+ Add recipe",
+    closeRecipePicker: "Close",
     noRecipesYet: "No recipes yet — add some in the Recipes tab first.",
     saveButton: "Create meal plan",
     deleteTitle: "Delete this meal plan?",
@@ -358,7 +360,9 @@ const en: Dictionary = {
     headcountSuffix: " people",
     generateCardButton: "Create menu card",
     shareCardButton: "Share",
-    listSheetTitle: "Meal plans",
+    chooseDesignTitle: "Choose a design",
+    saveImageButton: "Save image",
+    listSheetTitle: "Manage meal plans",
     hideAction: "Hide",
     unhideAction: "Unhide",
     eventDateLineTemplate: "Date: {date}",
@@ -367,6 +371,7 @@ const en: Dictionary = {
     deleteMealPlanButton: "Delete meal plan",
     prevPlan: "Previous meal plan",
     nextPlan: "Next meal plan",
+    renameRecipeButton: "Rename",
   },
 };
 

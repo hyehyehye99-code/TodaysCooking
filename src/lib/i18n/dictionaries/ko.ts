@@ -340,6 +340,8 @@ const ko = {
     titleLabel: "메뉴판 이름",
     titlePlaceholder: "예: 홈파티 메뉴",
     pickRecipesLabel: "레시피 고르기",
+    addRecipeButton: "+ 레시피 추가하기",
+    closeRecipePicker: "닫기",
     noRecipesYet: "아직 등록된 레시피가 없어요. 레시피 탭에서 먼저 등록해주세요.",
     saveButton: "메뉴판 만들기",
     deleteTitle: "메뉴판을 삭제할까요?",
@@ -357,7 +359,9 @@ const ko = {
     headcountSuffix: "명",
     generateCardButton: "메뉴판 만들기",
     shareCardButton: "공유하기",
-    listSheetTitle: "메뉴판 목록",
+    chooseDesignTitle: "디자인을 골라주세요",
+    saveImageButton: "이미지로 저장",
+    listSheetTitle: "메뉴판 관리하기",
     hideAction: "숨기기",
     unhideAction: "보이기",
     eventDateLineTemplate: "날짜: {date}",
@@ -366,6 +370,7 @@ const ko = {
     deleteMealPlanButton: "메뉴판 삭제",
     prevPlan: "이전 메뉴판",
     nextPlan: "다음 메뉴판",
+    renameRecipeButton: "이름 수정",
   },
 } as const;
 

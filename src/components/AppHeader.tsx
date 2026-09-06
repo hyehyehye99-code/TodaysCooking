@@ -127,14 +127,9 @@ export function AppHeader({
       <div className="flex items-baseline justify-between gap-3">
         <h1 className="text-[26px] font-bold tracking-tight">{tabTitle}</h1>
         {isExploreTab && (
-          <div className="flex shrink-0 items-center gap-3">
-            <Link href="/explore/list" className="text-sm font-bold text-ink-soft">
-              {dict.mealPlan.listSheetTitle}
-            </Link>
-            <Link href="/explore/new" className="text-sm font-bold text-accent">
-              {dict.components.newMealPlanLink}
-            </Link>
-          </div>
+          <Link href="/explore/list" className="shrink-0 text-sm font-bold text-accent">
+            {dict.mealPlan.listSheetTitle}
+          </Link>
         )}
       </div>
     </div>

@@ -18,6 +18,7 @@ export type CarouselPlan = {
   recipes: {
     id: string;
     title: string | null;
+    displayName: string | null;
     coverPhotoUrl?: string;
     iconEmoji: string | null;
     linkThumbnailUrl?: string | null;
@@ -109,6 +110,7 @@ export function ExploreCarousel({
                     recipeId={r.id}
                     mealPlanId={plan.id}
                     title={r.title}
+                    displayName={r.displayName}
                     untitledLabel={untitledLabel}
                     coverPhotoUrl={r.coverPhotoUrl}
                     iconEmoji={r.iconEmoji}

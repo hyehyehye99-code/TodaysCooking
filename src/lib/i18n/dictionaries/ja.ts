@@ -337,6 +337,8 @@ const ja: Dictionary = {
     titleLabel: "メニュー表の名前",
     titlePlaceholder: "例：ホームパーティーメニュー",
     pickRecipesLabel: "レシピを選ぶ",
+    addRecipeButton: "+ レシピを追加",
+    closeRecipePicker: "閉じる",
     noRecipesYet: "まだ登録されたレシピがありません。レシピタブで先に登録してください。",
     saveButton: "メニュー表を作る",
     deleteTitle: "メニュー表を削除しますか？",
@@ -354,7 +356,9 @@ const ja: Dictionary = {
     headcountSuffix: "人",
     generateCardButton: "メニュー表を作る",
     shareCardButton: "共有する",
-    listSheetTitle: "メニュー表一覧",
+    chooseDesignTitle: "デザインを選んでください",
+    saveImageButton: "画像を保存",
+    listSheetTitle: "メニュー表を管理",
     hideAction: "非表示にする",
     unhideAction: "表示する",
     eventDateLineTemplate: "日付: {date}",
@@ -363,6 +367,7 @@ const ja: Dictionary = {
     deleteMealPlanButton: "メニュー表を削除",
     prevPlan: "前のメニュー表",
     nextPlan: "次のメニュー表",
+    renameRecipeButton: "名前を編集",
   },
 };
 

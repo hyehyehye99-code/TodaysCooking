@@ -1,10 +1,11 @@
 "use client";
 
-import { useTransition } from "react";
+import { useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { GlassCard } from "@/components/ui";
-import { setMealPlanHidden } from "@/lib/actions/meal-plans";
+import { ConfirmModal } from "@/components/ConfirmModal";
+import { setMealPlanHidden, deleteMealPlan } from "@/lib/actions/meal-plans";
 import { useDict } from "@/lib/i18n/client";
 
 type Plan = { id: string; title: string; hidden: boolean };
@@ -13,11 +14,21 @@ export function MealPlanList({ plans }: { plans: Plan[] }) {
   const dict = useDict();
   const router = useRouter();
   const [pending, startTransition] = useTransition();
+  const [deletePending, startDeleteTransition] = useTransition();
+  const [confirmingId, setConfirmingId] = useState<string | null>(null);
 
   function toggleHidden(plan: Plan) {
     startTransition(async () => {
       await setMealPlanHidden(plan.id, !plan.hidden);
       router.refresh();
+    });
+  }
+
+  function doDelete() {
+    if (!confirmingId) return;
+    const id = confirmingId;
+    startDeleteTransition(async () => {
+      await deleteMealPlan(id);
     });
   }
 
@@ -37,6 +48,10 @@ export function MealPlanList({ plans }: { plans: Plan[] }) {
           </svg>
         </button>
       </div>
+
+      <Link href="/explore/new" className="mb-4 block text-sm font-bold text-accent">
+        {dict.components.newMealPlanLink}
+      </Link>
 
       {plans.length === 0 ? (
         <p className="mt-10 text-center text-sm text-ink-faint">{dict.mealPlan.emptyState}</p>
@@ -59,10 +74,34 @@ export function MealPlanList({ plans }: { plans: Plan[] }) {
               >
                 {plan.hidden ? dict.mealPlan.unhideAction : dict.mealPlan.hideAction}
               </button>
+              <button
+                type="button"
+                onClick={() => setConfirmingId(plan.id)}
+                className="shrink-0 rounded-lg bg-surface px-3 py-1.5 text-xs font-bold text-warn-ink"
+              >
+                {dict.mealPlan.deleteMealPlanButton}
+              </button>
             </GlassCard>
           ))}
         </div>
       )}
+
+      <ConfirmModal
+        open={!!confirmingId}
+        onClose={() => setConfirmingId(null)}
+        title={dict.mealPlan.deleteTitle}
+        description={dict.mealPlan.deleteDescription}
+        confirmSlot={
+          <button
+            type="button"
+            onClick={doDelete}
+            disabled={deletePending}
+            className="rounded-lg bg-warn px-3.5 py-2 text-xs font-bold text-white disabled:opacity-60"
+          >
+            {deletePending ? dict.recipes.deleting : dict.common.delete}
+          </button>
+        }
+      />
     </div>
   );
 }
