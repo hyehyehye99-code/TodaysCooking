@@ -95,12 +95,10 @@ export function MealPlanRecipeCard({
               setDraft(effectiveTitle);
               setEditing(true);
             }}
-            className="flex min-w-0 flex-1 items-center gap-1.5 text-left"
+            aria-label={dict.mealPlan.renameRecipeButton}
+            className="min-w-0 flex-1 truncate text-left text-[15px] font-bold"
           >
-            <span className="min-w-0 truncate text-[15px] font-bold">{effectiveTitle}</span>
-            <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="var(--color-ink-faint)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0" aria-label={dict.mealPlan.renameRecipeButton}>
-              <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z" />
-            </svg>
+            {effectiveTitle}
           </button>
         )}
       </div>

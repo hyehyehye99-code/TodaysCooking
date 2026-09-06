@@ -49,10 +49,6 @@ export function MealPlanList({ plans }: { plans: Plan[] }) {
         </button>
       </div>
 
-      <Link href="/explore/new" className="mb-4 block text-sm font-bold text-accent">
-        {dict.components.newMealPlanLink}
-      </Link>
-
       {plans.length === 0 ? (
         <p className="mt-10 text-center text-sm text-ink-faint">{dict.mealPlan.emptyState}</p>
       ) : (
