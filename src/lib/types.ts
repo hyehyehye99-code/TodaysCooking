@@ -73,6 +73,7 @@ export type MealPlan = {
   title: string;
   event_date: string | null;
   headcount: number | null;
+  hidden: boolean;
   created_by: string;
   created_at: string;
 };

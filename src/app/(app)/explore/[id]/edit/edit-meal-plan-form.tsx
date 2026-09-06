@@ -1,33 +1,57 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { updateMealPlan } from "@/lib/actions/meal-plans";
+import { updateMealPlan, deleteMealPlan } from "@/lib/actions/meal-plans";
 import { GlassCard } from "@/components/ui";
 import { RecipePicker } from "@/components/RecipePicker";
 import { FieldLabel } from "@/components/FieldLabel";
 import { StickyFormBar } from "@/components/StickyFormBar";
 import { Modal } from "@/components/Modal";
+import { ConfirmModal } from "@/components/ConfirmModal";
 import { ClearableInput } from "@/components/ClearableInput";
 import { useDict } from "@/lib/i18n/client";
 
 type PickableRecipe = { id: string; title: string | null; cover_photo_urls: string[]; icon_emoji: string | null };
 
+// <input type="datetime-local"> wants "YYYY-MM-DDTHH:mm" in the viewer's own
+// local time — computed client-side (via the Date object's local getters,
+// not the UTC ones) so it's correct for whatever timezone the browser is
+// actually in, not the server's.
+function toDatetimeLocalValue(iso: string | null): string {
+  if (!iso) return "";
+  const d = new Date(iso);
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
 export function EditMealPlanForm({
   mealPlanId,
   title,
+  eventDateIso,
+  headcount,
   recipes,
   defaultSelected,
 }: {
   mealPlanId: string;
   title: string;
+  eventDateIso: string | null;
+  headcount: number | null;
   recipes: PickableRecipe[];
   defaultSelected: string[];
 }) {
   const dict = useDict();
   const [state, formAction, pending] = useActionState(updateMealPlan, undefined);
   const [confirmingClose, setConfirmingClose] = useState(false);
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
+  const [deletePending, startDeleteTransition] = useTransition();
   const router = useRouter();
+
+  function doDelete() {
+    startDeleteTransition(async () => {
+      await deleteMealPlan(mealPlanId);
+    });
+  }
 
   return (
     <div>
@@ -86,6 +110,29 @@ export function EditMealPlanForm({
           />
         </div>
 
+        <div className="flex gap-3">
+          <div className="flex-1">
+            <FieldLabel>{dict.mealPlan.eventDateLabel}</FieldLabel>
+            <input
+              type="datetime-local"
+              name="eventDate"
+              defaultValue={toDatetimeLocalValue(eventDateIso)}
+              className="w-full rounded-xl border border-transparent bg-surface px-3.5 py-3 text-sm outline-none focus:border-accent"
+            />
+          </div>
+          <div className="w-24">
+            <FieldLabel>{dict.mealPlan.headcountLabel}</FieldLabel>
+            <input
+              type="number"
+              min={1}
+              name="headcount"
+              defaultValue={headcount ?? ""}
+              placeholder="-"
+              className="w-full rounded-xl border border-transparent bg-surface px-3.5 py-3 text-sm outline-none focus:border-accent"
+            />
+          </div>
+        </div>
+
         <GlassCard className="bg-white p-4">
           <FieldLabel>{dict.mealPlan.pickRecipesLabel}</FieldLabel>
           {recipes.length === 0 ? (
@@ -101,7 +148,32 @@ export function EditMealPlanForm({
         </GlassCard>
 
         {state?.error && <p className="text-sm text-warn-ink">{state.error}</p>}
+
+        <button
+          type="button"
+          onClick={() => setConfirmingDelete(true)}
+          className="mt-2 w-full rounded-xl border border-transparent py-2.5 text-xs font-bold text-warn-ink"
+        >
+          {dict.mealPlan.deleteMealPlanButton}
+        </button>
       </form>
+
+      <ConfirmModal
+        open={confirmingDelete}
+        onClose={() => setConfirmingDelete(false)}
+        title={dict.mealPlan.deleteTitle}
+        description={dict.mealPlan.deleteDescription}
+        confirmSlot={
+          <button
+            type="button"
+            onClick={doDelete}
+            disabled={deletePending}
+            className="rounded-lg bg-warn px-3.5 py-2 text-xs font-bold text-white disabled:opacity-60"
+          >
+            {deletePending ? dict.recipes.deleting : dict.common.delete}
+          </button>
+        }
+      />
 
       <StickyFormBar
         formId="edit-meal-plan-form"

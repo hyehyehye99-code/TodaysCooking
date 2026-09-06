@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { switchHousehold } from "@/lib/actions/household";
 import { useDict } from "@/lib/i18n/client";
 import type { Dictionary } from "@/lib/i18n/dictionaries/ko";
+import { isExploreDetailPath } from "@/lib/explorePath";
 
 type HouseholdOption = { id: string; name: string };
 
@@ -29,12 +30,16 @@ export function AppHeader({
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
 
-  if (pathname.startsWith("/mypage") || pathname.startsWith("/recipes/") || pathname.startsWith("/explore/"))
+  if (
+    pathname.startsWith("/mypage") ||
+    pathname.startsWith("/recipes/") ||
+    (pathname.startsWith("/explore/") && !isExploreDetailPath(pathname))
+  )
     return null;
 
   const isRecipesTab = pathname === "/recipes";
-  const isExploreTab = pathname === "/explore";
-  const tabTitleKey = TAB_TITLE_KEYS[pathname];
+  const isExploreTab = pathname === "/explore" || isExploreDetailPath(pathname);
+  const tabTitleKey = isExploreTab ? "explore" : TAB_TITLE_KEYS[pathname];
   const tabTitle = tabTitleKey ? dict.tabBar[tabTitleKey] : "";
 
   const nameClassName = isRecipesTab
@@ -122,9 +127,14 @@ export function AppHeader({
       <div className="flex items-baseline justify-between gap-3">
         <h1 className="text-[26px] font-bold tracking-tight">{tabTitle}</h1>
         {isExploreTab && (
-          <Link href="/explore/new" className="shrink-0 text-sm font-bold text-accent">
-            {dict.components.newMealPlanLink}
-          </Link>
+          <div className="flex shrink-0 items-center gap-3">
+            <Link href="/explore/list" className="text-sm font-bold text-ink-soft">
+              {dict.mealPlan.listSheetTitle}
+            </Link>
+            <Link href="/explore/new" className="text-sm font-bold text-accent">
+              {dict.components.newMealPlanLink}
+            </Link>
+          </div>
         )}
       </div>
     </div>

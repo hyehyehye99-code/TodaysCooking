@@ -354,6 +354,15 @@ const ja: Dictionary = {
     headcountSuffix: "人",
     generateCardButton: "メニュー表を作る",
     shareCardButton: "共有する",
+    listSheetTitle: "メニュー表一覧",
+    hideAction: "非表示にする",
+    unhideAction: "表示する",
+    eventDateLineTemplate: "日付: {date}",
+    headcountLineTemplate: "人数: {count}人",
+    editMealPlanButton: "編集する",
+    deleteMealPlanButton: "メニュー表を削除",
+    prevPlan: "前のメニュー表",
+    nextPlan: "次のメニュー表",
   },
 };
 

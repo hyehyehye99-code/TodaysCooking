@@ -358,6 +358,15 @@ const en: Dictionary = {
     headcountSuffix: " people",
     generateCardButton: "Create menu card",
     shareCardButton: "Share",
+    listSheetTitle: "Meal plans",
+    hideAction: "Hide",
+    unhideAction: "Unhide",
+    eventDateLineTemplate: "Date: {date}",
+    headcountLineTemplate: "Headcount: {count}",
+    editMealPlanButton: "Edit",
+    deleteMealPlanButton: "Delete meal plan",
+    prevPlan: "Previous meal plan",
+    nextPlan: "Next meal plan",
   },
 };
 

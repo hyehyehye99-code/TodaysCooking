@@ -73,6 +73,27 @@ export function NewMealPlanForm({ recipes }: { recipes: PickableRecipe[] }) {
           />
         </div>
 
+        <div className="flex gap-3">
+          <div className="flex-1">
+            <FieldLabel>{dict.mealPlan.eventDateLabel}</FieldLabel>
+            <input
+              type="datetime-local"
+              name="eventDate"
+              className="w-full rounded-xl border border-transparent bg-surface px-3.5 py-3 text-sm outline-none focus:border-accent"
+            />
+          </div>
+          <div className="w-24">
+            <FieldLabel>{dict.mealPlan.headcountLabel}</FieldLabel>
+            <input
+              type="number"
+              min={1}
+              name="headcount"
+              placeholder="-"
+              className="w-full rounded-xl border border-transparent bg-surface px-3.5 py-3 text-sm outline-none focus:border-accent"
+            />
+          </div>
+        </div>
+
         <GlassCard className="bg-white p-4">
           <FieldLabel>{dict.mealPlan.pickRecipesLabel}</FieldLabel>
           {recipes.length === 0 ? (

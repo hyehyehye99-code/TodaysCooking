@@ -1,12 +1,23 @@
 "use client";
 
-import { useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
+import { useState } from "react";
+import Link from "next/link";
 import { GlassCard } from "@/components/ui";
 import { Modal } from "@/components/Modal";
-import { updateMealPlanDetails } from "@/lib/actions/meal-plans";
 import { renderMealPlanCard, type MealPlanCardRecipe } from "./meal-plan-card-image";
-import { useDict } from "@/lib/i18n/client";
+import { useDict, useLocale } from "@/lib/i18n/client";
+import type { Locale } from "@/lib/i18n/locales";
+
+const LOCALE_TAGS: Record<Locale, string> = { ko: "ko-KR", en: "en-US", ja: "ja-JP" };
+
+function formatEventDateTime(iso: string, locale: Locale) {
+  return new Intl.DateTimeFormat(LOCALE_TAGS[locale], {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    hour: "numeric",
+  }).format(new Date(iso));
+}
 
 export function MealPlanInfoBox({
   mealPlanId,
@@ -14,41 +25,33 @@ export function MealPlanInfoBox({
   eventDate,
   headcount,
   cardRecipes,
+  onPrev,
+  onNext,
+  hasPrev,
+  hasNext,
 }: {
   mealPlanId: string;
   title: string;
   eventDate: string | null;
   headcount: number | null;
   cardRecipes: MealPlanCardRecipe[];
+  onPrev: () => void;
+  onNext: () => void;
+  hasPrev: boolean;
+  hasNext: boolean;
 }) {
   const dict = useDict();
-  const router = useRouter();
-  const [, startTransition] = useTransition();
+  const locale = useLocale();
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [blob, setBlob] = useState<Blob | null>(null);
   const [generating, setGenerating] = useState(false);
   const [sharing, setSharing] = useState(false);
 
-  function saveDate(value: string) {
-    startTransition(async () => {
-      await updateMealPlanDetails(mealPlanId, { eventDate: value || null });
-      router.refresh();
-    });
-  }
-
-  function saveHeadcount(value: string) {
-    const n = value.trim() ? Number(value) : null;
-    startTransition(async () => {
-      await updateMealPlanDetails(mealPlanId, { headcount: n });
-      router.refresh();
-    });
-  }
-
-  async function generate() {
+  async function generateAndShare() {
     setGenerating(true);
     const result = await renderMealPlanCard({
       title,
-      eventDateLabel: eventDate ? eventDate.replace(/-/g, ".") : null,
+      eventDateLabel: eventDate ? formatEventDateTime(eventDate, locale) : null,
       headcountLabel: headcount ? `${headcount}${dict.mealPlan.headcountSuffix}` : null,
       recipes: cardRecipes,
     });
@@ -82,38 +85,69 @@ export function MealPlanInfoBox({
   }
 
   return (
-    <GlassCard className="mb-4 bg-white p-4">
-      <div className="flex flex-wrap items-end gap-3">
-        <label className="flex flex-col gap-1 text-xs font-semibold text-ink-soft">
-          {dict.mealPlan.eventDateLabel}
-          <input
-            type="date"
-            defaultValue={eventDate ?? ""}
-            onChange={(e) => saveDate(e.target.value)}
-            className="rounded-lg bg-surface px-2.5 py-1.5 text-sm text-ink outline-none"
-          />
-        </label>
-        <label className="flex flex-col gap-1 text-xs font-semibold text-ink-soft">
-          {dict.mealPlan.headcountLabel}
-          <input
-            type="number"
-            min={1}
-            defaultValue={headcount ?? ""}
-            onChange={(e) => saveHeadcount(e.target.value)}
-            placeholder="-"
-            className="w-20 rounded-lg bg-surface px-2.5 py-1.5 text-sm text-ink outline-none"
-          />
-        </label>
+    <GlassCard className="mb-4 bg-accent/8 p-4">
+      <div className="flex items-center gap-1.5">
+        <h2 className="min-w-0 flex-1 truncate text-lg font-bold">{title}</h2>
+        <Link
+          href={`/explore/${mealPlanId}/edit`}
+          aria-label={dict.mealPlan.editMealPlanButton}
+          className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white/70 text-ink-soft"
+        >
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z" />
+          </svg>
+        </Link>
       </div>
 
-      <button
-        type="button"
-        onClick={generate}
-        disabled={generating || cardRecipes.length === 0}
-        className="mt-3 w-full rounded-xl border border-accent bg-white py-2.5 text-xs font-bold text-accent-ink disabled:opacity-60"
-      >
-        {generating ? dict.mealPlan.creatingEllipsis : dict.mealPlan.generateCardButton}
-      </button>
+      <div className="mt-2 flex items-center justify-between gap-2">
+        <button
+          type="button"
+          onClick={onPrev}
+          disabled={!hasPrev}
+          aria-label={dict.mealPlan.prevPlan}
+          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-ink-soft disabled:opacity-30"
+        >
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M15 5l-7 7 7 7" />
+          </svg>
+        </button>
+        <div className="min-w-0 flex-1 text-center text-xs text-ink-soft">
+          {eventDate && (
+            <p>{dict.mealPlan.eventDateLineTemplate.replace("{date}", formatEventDateTime(eventDate, locale))}</p>
+          )}
+          {headcount != null && (
+            <p>{dict.mealPlan.headcountLineTemplate.replace("{count}", String(headcount))}</p>
+          )}
+        </div>
+        <button
+          type="button"
+          onClick={onNext}
+          disabled={!hasNext}
+          aria-label={dict.mealPlan.nextPlan}
+          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-ink-soft disabled:opacity-30"
+        >
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M9 5l7 7-7 7" />
+          </svg>
+        </button>
+      </div>
+
+      <div className="mt-3 flex gap-2">
+        <Link
+          href={`/explore/${mealPlanId}/edit`}
+          className="flex-1 rounded-xl bg-white py-2.5 text-center text-xs font-bold text-ink"
+        >
+          {dict.mealPlan.editMealPlanButton}
+        </Link>
+        <button
+          type="button"
+          onClick={generateAndShare}
+          disabled={generating || cardRecipes.length === 0}
+          className="flex-1 rounded-xl bg-white py-2.5 text-xs font-bold text-accent-ink disabled:opacity-60"
+        >
+          {generating ? dict.mealPlan.creatingEllipsis : dict.mealPlan.shareCardButton}
+        </button>
+      </div>
 
       <Modal open={!!previewUrl} onClose={closePreview} variant="sheet">
         <div className="mx-auto w-full max-w-[420px] rounded-t-3xl bg-white p-5 pb-[max(env(safe-area-inset-bottom),20px)]">

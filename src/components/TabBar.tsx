@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useDict } from "@/lib/i18n/client";
 import type { Dictionary } from "@/lib/i18n/dictionaries/ko";
+import { isExploreDetailPath } from "@/lib/explorePath";
 
 // Each icon is hand-drawn to a different bounding box within the shared
 // 24x24 viewBox, so at a fixed container size they render at visibly
@@ -95,7 +96,9 @@ export function TabBar() {
   const dict = useDict();
 
   const isSubpage =
-    pathname.startsWith("/recipes/") || pathname.startsWith("/mypage/") || pathname.startsWith("/explore/");
+    pathname.startsWith("/recipes/") ||
+    pathname.startsWith("/mypage/") ||
+    (pathname.startsWith("/explore/") && !isExploreDetailPath(pathname));
 
   if (isSubpage) return null;
 

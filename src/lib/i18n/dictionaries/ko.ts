@@ -357,6 +357,15 @@ const ko = {
     headcountSuffix: "명",
     generateCardButton: "메뉴판 만들기",
     shareCardButton: "공유하기",
+    listSheetTitle: "메뉴판 목록",
+    hideAction: "숨기기",
+    unhideAction: "보이기",
+    eventDateLineTemplate: "날짜: {date}",
+    headcountLineTemplate: "인원 수: {count}명",
+    editMealPlanButton: "수정하기",
+    deleteMealPlanButton: "메뉴판 삭제",
+    prevPlan: "이전 메뉴판",
+    nextPlan: "다음 메뉴판",
   },
 } as const;
 

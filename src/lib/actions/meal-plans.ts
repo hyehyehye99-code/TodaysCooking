@@ -27,6 +27,8 @@ async function replaceMealPlanRecipes(
 export async function createMealPlan(_prevState: unknown, formData: FormData) {
   const title = String(formData.get("title") ?? "").trim();
   const recipeIds = parseRecipeIds(String(formData.get("recipeIds") ?? ""));
+  const eventDateRaw = String(formData.get("eventDate") ?? "").trim();
+  const headcountRaw = String(formData.get("headcount") ?? "").trim();
   if (!title) return { error: "메뉴판 이름을 입력해주세요." };
   if (recipeIds.length === 0) return { error: "레시피를 1개 이상 골라주세요." };
 
@@ -36,7 +38,13 @@ export async function createMealPlan(_prevState: unknown, formData: FormData) {
   const supabase = await createClient();
   const { data: mealPlan, error } = await supabase
     .from("meal_plans")
-    .insert({ household_id: household.id, title, created_by: user.id })
+    .insert({
+      household_id: household.id,
+      title,
+      event_date: eventDateRaw ? new Date(eventDateRaw).toISOString() : null,
+      headcount: headcountRaw ? Number(headcountRaw) : null,
+      created_by: user.id,
+    })
     .select("id")
     .single();
   if (error || !mealPlan) return { error: "메뉴판을 만들지 못했어요." };
@@ -51,12 +59,21 @@ export async function updateMealPlan(_prevState: unknown, formData: FormData) {
   const id = String(formData.get("id") ?? "");
   const title = String(formData.get("title") ?? "").trim();
   const recipeIds = parseRecipeIds(String(formData.get("recipeIds") ?? ""));
+  const eventDateRaw = String(formData.get("eventDate") ?? "").trim();
+  const headcountRaw = String(formData.get("headcount") ?? "").trim();
   if (!id) return { error: "메뉴판을 찾지 못했어요." };
   if (!title) return { error: "메뉴판 이름을 입력해주세요." };
   if (recipeIds.length === 0) return { error: "레시피를 1개 이상 골라주세요." };
 
   const supabase = await createClient();
-  const { error } = await supabase.from("meal_plans").update({ title }).eq("id", id);
+  const { error } = await supabase
+    .from("meal_plans")
+    .update({
+      title,
+      event_date: eventDateRaw ? new Date(eventDateRaw).toISOString() : null,
+      headcount: headcountRaw ? Number(headcountRaw) : null,
+    })
+    .eq("id", id);
   if (error) return { error: "메뉴판을 수정하지 못했어요." };
 
   await replaceMealPlanRecipes(supabase, id, recipeIds);
@@ -122,20 +139,14 @@ export async function createMealPlanWithRecipe(
 // The info box's inline date/headcount fields — both optional and
 // display-only (headcount is just shown, never used to scale any recipe's
 // ingredient amounts).
-export async function updateMealPlanDetails(
-  id: string,
-  fields: { eventDate?: string | null; headcount?: number | null }
-) {
+// Hides (or restores) a meal plan without deleting it — managed from the
+// carousel's "메뉴판 목록" sheet, not from the per-plan "⋮" menu, since
+// this is about which plans show up in the swipeable set, not the plan's
+// own content.
+export async function setMealPlanHidden(id: string, hidden: boolean) {
   const supabase = await createClient();
-  const update: Record<string, string | number | null> = {};
-  if ("eventDate" in fields) update.event_date = fields.eventDate || null;
-  if ("headcount" in fields) update.headcount = fields.headcount ?? null;
-
-  const { error } = await supabase.from("meal_plans").update(update).eq("id", id);
-  if (error) return { error: "저장하지 못했어요." };
-
-  revalidatePath(`/explore/${id}`);
-  return { ok: true as const };
+  await supabase.from("meal_plans").update({ hidden }).eq("id", id);
+  revalidatePath("/explore");
 }
 
 export async function deleteMealPlan(id: string) {

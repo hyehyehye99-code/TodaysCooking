@@ -11,7 +11,12 @@ export default async function EditMealPlanPage({ params }: { params: Promise<{ i
   const supabase = await createClient();
 
   const [{ data: mealPlan }, { data: mealPlanRecipes }, { data: recipes }] = await Promise.all([
-    supabase.from("meal_plans").select("id, title").eq("id", id).eq("household_id", household!.id).maybeSingle(),
+    supabase
+      .from("meal_plans")
+      .select("id, title, event_date, headcount")
+      .eq("id", id)
+      .eq("household_id", household!.id)
+      .maybeSingle(),
     supabase.from("meal_plan_recipes").select("recipe_id").eq("meal_plan_id", id).order("position"),
     supabase
       .from("recipes")
@@ -25,5 +30,14 @@ export default async function EditMealPlanPage({ params }: { params: Promise<{ i
 
   const defaultSelected = ((mealPlanRecipes as MealPlanRecipeRow[] | null) ?? []).map((r) => r.recipe_id);
 
-  return <EditMealPlanForm mealPlanId={mealPlan.id} title={mealPlan.title} recipes={recipes ?? []} defaultSelected={defaultSelected} />;
+  return (
+    <EditMealPlanForm
+      mealPlanId={mealPlan.id}
+      title={mealPlan.title}
+      eventDateIso={mealPlan.event_date}
+      headcount={mealPlan.headcount}
+      recipes={recipes ?? []}
+      defaultSelected={defaultSelected}
+    />
+  );
 }
