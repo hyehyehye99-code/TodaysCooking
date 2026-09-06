@@ -14,7 +14,7 @@ const en: Dictionary = {
     recipes: "Recipes",
     fridge: "Fridge",
     shopping: "Shopping",
-    explore: "Explore",
+    explore: "Meal Plans",
     mypage: "My Page",
   },
   landing: {
@@ -225,8 +225,9 @@ const en: Dictionary = {
     notifTurnOn: "Turn on",
     aiInfoTitle: "About AI auto-fill",
     aiInfoItem1: "· AI auto-fill works with YouTube and Instagram links.",
-    aiInfoItem2: "· Free plan: up to 5 times a week.",
-    aiInfoItem3: "· Subscribers: up to 100 times a month.",
+    aiInfoItem2: "· Free: up to 20 times a week.",
+    aiInfoItem3:
+      "· If the video's description/comments or the post's caption has the ingredients and instructions written out, we pull them more accurately.",
     aiInfoItem4:
       "· Not happy with a result? Use the “Not happy with the result? Let us know” link — we'll review it and may refund your usage.",
     reportTitle: "Not happy with the result?",
@@ -338,6 +339,26 @@ const en: Dictionary = {
     deleteCheckedTitleTemplate: "Delete the {count} checked items?",
     cannotUndo: "This can't be undone.",
     buyButton: "Buy",
+  },
+  mealPlan: {
+    newButton: "New meal plan",
+    emptyState: "No meal plans yet. Group the dishes you're making for an occasion into one.",
+    recipeCountTemplate: "{count} recipes",
+    newHeading: "New meal plan",
+    editHeading: "Edit meal plan",
+    titleLabel: "Meal plan name",
+    titlePlaceholder: "e.g. Home party menu",
+    pickRecipesLabel: "Pick recipes",
+    noRecipesYet: "No recipes yet — add some in the Recipes tab first.",
+    saveButton: "Create meal plan",
+    deleteTitle: "Delete this meal plan?",
+    deleteDescription: "Only the meal plan is deleted — the recipes in it stay untouched.",
+    ingredientsHeading: "Ingredients needed",
+    noIngredients: "None of the recipes have ingredients listed.",
+    onShoppingListBadge: "On shopping list",
+    allReadyMessage: "You already have everything, or it's on your shopping list.",
+    addMissingButtonTemplate: "Add {count} missing to shopping list",
+    addedToShoppingMessage: "Added to shopping list",
   },
 };
 

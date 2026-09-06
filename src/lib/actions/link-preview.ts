@@ -83,7 +83,11 @@ function extractDescription(html: string) {
   const raw = candidates.find((c) => c);
   if (!raw) return null;
   const decoded = decodeHtmlEntities(raw).trim().replace(/\s+/g, " ");
-  return decoded.length > 500 ? decoded.slice(0, 500).trim() + "…" : decoded;
+  // Matches the cap on a YouTube video's own description (youtube.ts) — an
+  // Instagram caption is this function's only source of recipe content
+  // (no comments/API fallback the way YouTube gets one), so it shouldn't be
+  // cut any tighter than that.
+  return decoded.length > 2500 ? decoded.slice(0, 2500).trim() + "…" : decoded;
 }
 
 const YOUTUBE_HOSTS = new Set(["youtube.com", "www.youtube.com", "m.youtube.com", "youtu.be"]);

@@ -33,8 +33,6 @@ export function AppHeader({
     return null;
 
   const isRecipesTab = pathname === "/recipes";
-  const isExploreTab = pathname === "/explore";
-  if (isExploreTab) return null;
   const tabTitleKey = TAB_TITLE_KEYS[pathname];
   const tabTitle = tabTitleKey ? dict.tabBar[tabTitleKey] : "";
 

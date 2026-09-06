@@ -1,0 +1,128 @@
+"use server";
+
+import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
+import { createClient } from "@/lib/supabase/server";
+import { getCurrentHousehold } from "@/lib/household";
+
+function parseRecipeIds(raw: string) {
+  return raw
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+}
+
+async function replaceMealPlanRecipes(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  mealPlanId: string,
+  recipeIds: string[]
+) {
+  await supabase.from("meal_plan_recipes").delete().eq("meal_plan_id", mealPlanId);
+  if (recipeIds.length === 0) return;
+  await supabase.from("meal_plan_recipes").insert(
+    recipeIds.map((recipeId, i) => ({ meal_plan_id: mealPlanId, recipe_id: recipeId, position: i }))
+  );
+}
+
+export async function createMealPlan(_prevState: unknown, formData: FormData) {
+  const title = String(formData.get("title") ?? "").trim();
+  const recipeIds = parseRecipeIds(String(formData.get("recipeIds") ?? ""));
+  if (!title) return { error: "메뉴판 이름을 입력해주세요." };
+  if (recipeIds.length === 0) return { error: "레시피를 1개 이상 골라주세요." };
+
+  const { user, household } = await getCurrentHousehold();
+  if (!user || !household) return { error: "우리집을 먼저 만들어주세요." };
+
+  const supabase = await createClient();
+  const { data: mealPlan, error } = await supabase
+    .from("meal_plans")
+    .insert({ household_id: household.id, title, created_by: user.id })
+    .select("id")
+    .single();
+  if (error || !mealPlan) return { error: "메뉴판을 만들지 못했어요." };
+
+  await replaceMealPlanRecipes(supabase, mealPlan.id, recipeIds);
+
+  revalidatePath("/explore");
+  redirect(`/explore/${mealPlan.id}`);
+}
+
+export async function updateMealPlan(_prevState: unknown, formData: FormData) {
+  const id = String(formData.get("id") ?? "");
+  const title = String(formData.get("title") ?? "").trim();
+  const recipeIds = parseRecipeIds(String(formData.get("recipeIds") ?? ""));
+  if (!id) return { error: "메뉴판을 찾지 못했어요." };
+  if (!title) return { error: "메뉴판 이름을 입력해주세요." };
+  if (recipeIds.length === 0) return { error: "레시피를 1개 이상 골라주세요." };
+
+  const supabase = await createClient();
+  const { error } = await supabase.from("meal_plans").update({ title }).eq("id", id);
+  if (error) return { error: "메뉴판을 수정하지 못했어요." };
+
+  await replaceMealPlanRecipes(supabase, id, recipeIds);
+
+  revalidatePath("/explore");
+  revalidatePath(`/explore/${id}`);
+  redirect(`/explore/${id}`);
+}
+
+export async function deleteMealPlan(id: string) {
+  const supabase = await createClient();
+  await supabase.from("meal_plans").delete().eq("id", id);
+  revalidatePath("/explore");
+  redirect("/explore");
+}
+
+// Bulk version of recipes.ts's resolveMissingIngredients, scoped to just the
+// "add to shopping list" half — a meal plan's whole point is collapsing
+// several recipes' missing ingredients into one action instead of visiting
+// each recipe separately, so there's no per-item skip/fridge modal here,
+// just "add everything currently missing".
+export async function addMealPlanIngredientsToShopping(mealPlanId: string, names: string[]) {
+  if (names.length === 0) return;
+
+  const { household } = await getCurrentHousehold();
+  if (!household) return;
+
+  const supabase = await createClient();
+  const [{ data: mealPlan }, { data: existing }] = await Promise.all([
+    supabase.from("meal_plans").select("title").eq("id", mealPlanId).single(),
+    supabase.from("shopping_items").select("id, name, source_recipe_title").eq("household_id", household.id),
+  ]);
+  const planTitle = mealPlan?.title ?? null;
+  const existingByName = new Map((existing ?? []).map((i) => [i.name, i]));
+
+  const toInsert = names.filter((name) => !existingByName.has(name));
+  const toUpdate = planTitle
+    ? names
+        .map((name) => existingByName.get(name))
+        .filter((item): item is NonNullable<typeof item> => !!item)
+        .map((item) => {
+          const titles = (item.source_recipe_title ?? "")
+            .split(",")
+            .map((t: string) => t.trim())
+            .filter(Boolean);
+          if (titles.includes(planTitle)) return null;
+          return { id: item.id, source_recipe_title: [...titles, planTitle].join(", ") };
+        })
+        .filter((u): u is { id: string; source_recipe_title: string } => !!u)
+    : [];
+
+  if (toInsert.length) {
+    await supabase.from("shopping_items").insert(
+      toInsert.map((name) => ({
+        household_id: household.id,
+        name,
+        source_recipe_title: planTitle,
+      }))
+    );
+  }
+  if (toUpdate.length) {
+    await supabase.from("shopping_items").upsert(
+      toUpdate.map((u) => ({ id: u.id, household_id: household.id, source_recipe_title: u.source_recipe_title }))
+    );
+  }
+
+  revalidatePath(`/explore/${mealPlanId}`);
+  revalidatePath("/shopping");
+}

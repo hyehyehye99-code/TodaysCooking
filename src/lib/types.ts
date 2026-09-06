@@ -76,3 +76,11 @@ export type ShoppingItem = {
   checked: boolean;
   created_at: string;
 };
+
+export type MealPlan = {
+  id: string;
+  household_id: string;
+  title: string;
+  created_by: string;
+  created_at: string;
+};

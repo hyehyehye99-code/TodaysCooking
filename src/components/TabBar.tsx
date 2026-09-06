@@ -68,8 +68,10 @@ const TABS: {
     scale: 0.85,
     icon: (
       <>
-        <circle cx="10.5" cy="10.5" r="6.5" />
-        <path d="M20.5 20.5l-5-5" />
+        <rect x="4" y="3" width="16" height="18" rx="2" />
+        <path d="M8 8.5h8" />
+        <path d="M8 12.5h8" />
+        <path d="M8 16.5h5" />
       </>
     ),
   },
