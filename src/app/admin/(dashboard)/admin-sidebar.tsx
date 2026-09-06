@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { adminLogout } from "@/lib/actions/admin";
 
-type BadgeKey = "applications" | "inquiries" | "aiReports";
+type BadgeKey = "inquiries" | "aiReports";
 type NavItem = { label: string; href: string; icon: React.ReactNode; badgeKey?: BadgeKey };
 type NavGroup = { title?: string; items: NavItem[] };
 
@@ -36,37 +36,9 @@ const USERS_ICON = (
     <path d="M15.5 12.2c2.2.2 3.9 1.6 4.8 4.1" />
   </svg>
 );
-const CREATOR_ICON = (
-  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <circle cx="12" cy="8" r="3.5" />
-    <path d="M4.5 20c1.4-3.6 4.4-5.5 7.5-5.5s6.1 1.9 7.5 5.5" />
-  </svg>
-);
-const APPLICATION_ICON = (
-  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <rect x="3.5" y="5.5" width="17" height="13" rx="2" />
-    <path d="M3.5 7 12 13l8.5-6" />
-  </svg>
-);
-const RECIPE_ICON = (
-  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M6 3v18" />
-    <path d="M6 3c0 3-2 3-2 6s2 3 2 6" />
-    <path d="M18 3v18" />
-    <path d="M15 3v7a3 3 0 0 0 3 3" />
-  </svg>
-);
 const EXPENSE_ICON = (
   <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M19 8H8a4 4 0 0 0 0 8h8a4 4 0 0 1 0 4H4" />
-  </svg>
-);
-const COLLECTION_ICON = (
-  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <rect x="3.5" y="4" width="7.5" height="7.5" rx="1.5" />
-    <rect x="13" y="4" width="7.5" height="7.5" rx="1.5" />
-    <rect x="3.5" y="13.5" width="7.5" height="7.5" rx="1.5" />
-    <rect x="13" y="13.5" width="7.5" height="7.5" rx="1.5" />
   </svg>
 );
 const PROMO_ICON = (
@@ -94,15 +66,6 @@ const NAV_GROUPS: NavGroup[] = [
     items: [
       { label: "사용자 리스트", href: "/admin/users", icon: USERS_ICON },
       { label: "프로모션 코드 관리", href: "/admin/promotions", icon: PROMO_ICON },
-    ],
-  },
-  {
-    title: "크리에이터 관리",
-    items: [
-      { label: "크리에이터 관리 리스트", href: "/admin/creators", icon: CREATOR_ICON },
-      { label: "크리에이터 레시피 관리", href: "/admin/creator-recipes", icon: RECIPE_ICON },
-      { label: "탐색 큐레이션 관리", href: "/admin/collections", icon: COLLECTION_ICON },
-      { label: "크리에이터 신청 관리", href: "/admin/applications", icon: APPLICATION_ICON, badgeKey: "applications" },
     ],
   },
   {

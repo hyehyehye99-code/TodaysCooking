@@ -15,14 +15,12 @@ export default async function AdminHomePage() {
     { data: usersData },
     { count: weekAiGenerations },
     { data: monthExpenses },
-    { count: pendingApplications },
     { count: openInquiries },
     { count: aiReports },
   ] = await Promise.all([
     supabase.auth.admin.listUsers({ perPage: 1000 }),
     supabase.from("ai_recipe_generations").select("id", { count: "exact", head: true }).gte("created_at", weekAgoIso),
     supabase.from("expenses").select("amount").gte("spent_at", monthStartIso.slice(0, 10)),
-    supabase.from("creator_applications").select("id", { count: "exact", head: true }).eq("status", "pending"),
     supabase.from("inquiries").select("id", { count: "exact", head: true }).eq("status", "open"),
     supabase.from("ai_recipe_reports").select("id", { count: "exact", head: true }),
   ]);
@@ -58,12 +56,7 @@ export default async function AdminHomePage() {
       </div>
 
       <p className="mb-2 text-xs font-bold text-ink-faint">확인이 필요한 항목</p>
-      <div className="grid grid-cols-3 gap-3">
-        <Link href="/admin/applications" className="rounded-2xl border border-border bg-white p-5">
-          <p className="text-xs font-semibold text-ink-soft">대기중인 지원서</p>
-          <p className="mt-2 text-2xl font-bold">{pendingApplications ?? 0}건</p>
-          <p className="mt-1 text-[11px] font-semibold text-accent-ink">확인하러 가기 →</p>
-        </Link>
+      <div className="grid grid-cols-2 gap-3">
         <Link href="/admin/inquiries" className="rounded-2xl border border-border bg-white p-5">
           <p className="text-xs font-semibold text-ink-soft">확인중인 문의</p>
           <p className="mt-2 text-2xl font-bold">{openInquiries ?? 0}건</p>

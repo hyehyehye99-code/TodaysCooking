@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useOptimistic, useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { GlassCard } from "@/components/ui";
 import { ConfirmModal } from "@/components/ConfirmModal";
@@ -68,7 +68,14 @@ export function RecipeList({
   ownedIngredients: string[];
 }) {
   const dict = useDict();
-  const [query, setQuery] = useState("");
+  const router = useRouter();
+  // The query lives in the URL (?q=...) specifically so that pressing back
+  // after tapping into a recipe lands on the same search instead of a blank
+  // search bar — Next's router cache restores this exact URL's state
+  // instantly, which plain useState across a full route change wouldn't
+  // survive (same pattern used by Explore's search).
+  const searchParams = useSearchParams();
+  const [query, setQuery] = useState(() => searchParams.get("q") ?? "");
   const [activeTag, setActiveTag] = useState<string | null>(null);
   const [favoritesOnly, setFavoritesOnly] = useState(false);
   const [makeableOnly, setMakeableOnly] = useState(false);
@@ -90,7 +97,6 @@ export function RecipeList({
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [confirmingDelete, setConfirmingDelete] = useState(false);
   const [deletePending, startDeleteTransition] = useTransition();
-  const router = useRouter();
 
   const owned = useMemo(() => new Set(ownedIngredients), [ownedIngredients]);
 
@@ -223,7 +229,13 @@ export function RecipeList({
           <div className="min-w-0 flex-1">
             <ClearableInput
               value={query}
-              onChange={(e) => setQuery(e.target.value)}
+              onChange={(e) => {
+                const value = e.target.value;
+                setQuery(value);
+                router.replace(value.trim() ? `/recipes?q=${encodeURIComponent(value.trim())}` : "/recipes", {
+                  scroll: false,
+                });
+              }}
               placeholder={dict.recipes.searchPlaceholder}
               className="w-full rounded-xl border border-transparent bg-surface px-3.5 py-2.5 text-sm outline-none focus:border-accent"
             />

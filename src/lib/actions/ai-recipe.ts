@@ -4,7 +4,6 @@ import { GoogleGenAI, Type } from "@google/genai";
 import { createClient } from "@/lib/supabase/server";
 import { fetchLinkPreview } from "@/lib/actions/link-preview";
 import { extractYoutubeVideoId, fetchYoutubeVideoDetails } from "@/lib/actions/youtube";
-import { isAdminAuthenticated } from "@/lib/admin-auth";
 
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
@@ -186,12 +185,11 @@ type RecipeContentResult =
     }
   | { ok: false; error: string };
 
-// The actual link-scrape + Gemini extraction, shared by both the
-// household-facing generateRecipeFromLink (auth + weekly/monthly quota,
-// above) and adminGenerateRecipeFromLink (admin-cookie gated, below) — kept
-// unexported so it's never reachable without going through one of those two
-// gates. Deliberately not itself charging any per-user quota: that's the
-// caller's job.
+// The actual link-scrape + Gemini extraction, used by the household-facing
+// generateRecipeFromLink (auth + weekly/monthly quota, above) — kept
+// unexported so it's never reachable without going through that gate.
+// Deliberately not itself charging any per-user quota: that's the caller's
+// job.
 async function generateRecipeContent(url: string): Promise<RecipeContentResult> {
   const preview = await fetchLinkPreview(url);
   if (!preview.ok) return { ok: false, error: preview.error };
@@ -297,30 +295,6 @@ async function generateRecipeContent(url: string): Promise<RecipeContentResult> 
   } catch {
     return { ok: false, error: "AI 요청에 실패했어요. 잠시 후 다시 시도해주세요." };
   }
-}
-
-// The admin dashboard's equivalent of generateRecipeFromLink — gated by the
-// /admin cookie session instead of a household login, with no weekly/monthly
-// quota (there's only ever one admin, and it's the app owner's own tool).
-export async function adminGenerateRecipeFromLink(url: string): Promise<
-  | {
-      ok: true;
-      title: string | null;
-      subtitle: string | null;
-      thumbnailUrl: string | null;
-      ingredients: { name: string; amount: string }[];
-      instructions: string;
-      tags: string[];
-    }
-  | { ok: false; error: string }
-> {
-  if (!process.env.GEMINI_API_KEY) {
-    return { ok: false, error: "AI 기능이 아직 설정되지 않았어요." };
-  }
-  if (!(await isAdminAuthenticated())) {
-    return { ok: false, error: "관리자 로그인이 필요해요." };
-  }
-  return generateRecipeContent(url);
 }
 
 // Lets a user flag a specific AI result as unsatisfactory, snapshotting what

@@ -14,10 +14,6 @@ export type Recipe = {
   position: number | null;
   is_favorite: boolean;
   hide_ingredients: boolean;
-  is_public: boolean;
-  explore_add_count: number;
-  source_creator_name: string | null;
-  source_type: "creator" | "personal" | null;
   created_by: string;
   created_at: string;
 };

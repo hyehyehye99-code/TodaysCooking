@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { updateRecipe } from "@/lib/actions/recipes";
 import { GlassCard } from "@/components/ui";
@@ -32,11 +32,30 @@ export function EditRecipeForm({
   const [photoCount, setPhotoCount] = useState(recipe.cover_photo_urls.length);
   const [hideIngredients, setHideIngredients] = useState(recipe.hide_ingredients);
   const router = useRouter();
+  const titleRef = useRef<HTMLInputElement>(null);
+  const ingredientsRef = useRef<HTMLTextAreaElement>(null);
+  const notesRef = useRef<HTMLTextAreaElement>(null);
   const ingredientsText = recipe.recipe_ingredients
     .slice()
     .sort((a, b) => a.position - b.position)
     .map((i) => (i.amount ? `${i.name} ${i.amount}` : i.name))
     .join("\n");
+
+  function handleAiResult(result: { title: string | null; ingredients: string[]; instructions: string }) {
+    if (titleRef.current && !titleRef.current.value.trim() && result.title) {
+      titleRef.current.value = result.title;
+      // ClearableInput's own clear-button visibility tracks the input's
+      // change events, not just its value — without this it wouldn't know
+      // the field just got filled in.
+      titleRef.current.dispatchEvent(new Event("input", { bubbles: true }));
+    }
+    if (ingredientsRef.current && result.ingredients.length > 0) {
+      ingredientsRef.current.value = result.ingredients.join("\n");
+    }
+    if (notesRef.current && result.instructions) {
+      notesRef.current.value = result.instructions;
+    }
+  }
 
   return (
     <div>
@@ -88,6 +107,7 @@ export function EditRecipeForm({
         <div>
           <FieldLabel>{dict.welcome.dishName}</FieldLabel>
           <ClearableInput
+            ref={titleRef}
             name="title"
             defaultValue={recipe.title ?? ""}
             placeholder={dict.recipes.dishNameOptionalPlaceholder}
@@ -98,7 +118,12 @@ export function EditRecipeForm({
         <GlassCard className="bg-white p-4">
           <p className="mb-1 text-[13px] font-bold">{dict.welcome.referenceLink}</p>
           <p className="mb-3 text-xs text-ink-soft">{dict.recipes.referenceLinkHint}</p>
-          <ReferenceLinkField name="referenceUrl" defaultValue={referenceUrl} initialPreview={referencePreview} />
+          <ReferenceLinkField
+            name="referenceUrl"
+            defaultValue={referenceUrl}
+            initialPreview={referencePreview}
+            onAiResult={handleAiResult}
+          />
         </GlassCard>
 
         <GlassCard className="bg-white p-4">
@@ -118,6 +143,7 @@ export function EditRecipeForm({
           <div className={hideIngredients ? "hidden" : ""}>
             <p className="mb-3 text-xs text-ink-soft">{dict.welcome.ingredientsPlaceholder}</p>
             <textarea
+              ref={ingredientsRef}
               name="ingredients"
               rows={12}
               defaultValue={ingredientsText}
@@ -129,6 +155,7 @@ export function EditRecipeForm({
         <GlassCard className="bg-white p-4">
           <FieldLabel>{dict.welcome.instructions}</FieldLabel>
           <textarea
+            ref={notesRef}
             name="notes"
             rows={8}
             defaultValue={recipe.notes ?? ""}

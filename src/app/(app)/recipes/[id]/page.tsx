@@ -8,6 +8,7 @@ import { chefName } from "@/lib/format";
 import { getDictionary } from "@/lib/i18n/server";
 import type { RecipeCookLog, RecipeWithIngredients } from "@/lib/types";
 import { RecipeMenuButton } from "./recipe-menu-button";
+import { FavoriteButton } from "./favorite-button";
 import { MissingIngredientsButton } from "./missing-ingredients-button";
 import { RecipePhotoGallery } from "./recipe-photo-gallery";
 import { ReactionLog } from "./reaction-log";
@@ -103,6 +104,7 @@ export default async function RecipeDetailPage({
           </div>
         </div>
         <div className="flex shrink-0 items-center gap-2">
+          <FavoriteButton recipeId={r.id} isFavorite={r.is_favorite} />
           <ShareRecipeButton recipeId={r.id} title={displayTitle} />
           <RecipeMenuButton recipeId={r.id} />
           <Link
@@ -118,21 +120,12 @@ export default async function RecipeDetailPage({
         </div>
       </div>
 
-      {/* A creator-copied recipe's cover_photo_urls is just the source
-          video's thumbnail, not an actual photo of the dish — shown as the
-          reference-link card below instead (same as explore's recipe
-          detail page for the same reason). */}
-      {r.source_type !== "creator" && <RecipePhotoGallery photos={r.cover_photo_urls} />}
+      <RecipePhotoGallery photos={r.cover_photo_urls} />
 
       <p className="flex items-center gap-1.5 text-xs font-semibold text-accent">
         <ProfileAvatar iconEmoji={creatorProfile?.icon_emoji} nickname={creatorProfile?.nickname ?? ""} size={16} />
         {dict.recipes.registeredByTemplate.replace("{name}", chefName(creatorProfile?.nickname, dict))}
       </p>
-      {r.source_creator_name && (
-        <p className="mt-1 text-[11px] text-ink-faint">
-          {dict.recipes.sourceTemplate.replace("{name}", r.source_creator_name)}
-        </p>
-      )}
       {r.tags.length > 0 && (
         <div className="mt-2 flex flex-wrap gap-1.5">
           {r.tags.map((tag) => (

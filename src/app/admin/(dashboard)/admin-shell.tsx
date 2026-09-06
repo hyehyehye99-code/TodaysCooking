@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { AdminSidebar } from "./admin-sidebar";
 
-type Badges = Partial<Record<"applications" | "inquiries" | "aiReports", number>>;
+type Badges = Partial<Record<"inquiries" | "aiReports", number>>;
 
 // The sidebar (admin-sidebar.tsx) assumes it's always visible, which is fine
 // on desktop but leaves nothing for a real phone width — this wraps it in a

@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentHousehold } from "@/lib/household";
 import { RecipeList } from "./recipe-list";
@@ -22,7 +23,9 @@ export default async function RecipesPage() {
 
   return (
     <div>
-      <RecipeList recipes={items} ownedIngredients={owned} />
+      <Suspense>
+        <RecipeList recipes={items} ownedIngredients={owned} />
+      </Suspense>
     </div>
   );
 }
