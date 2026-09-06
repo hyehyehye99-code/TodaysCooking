@@ -95,6 +95,7 @@ export default async function RecipeDetailPage({
     name: ing.name,
     skipped: ing.skipped,
     owned: owned.has(ing.name),
+    onShoppingList: onShoppingList.has(ing.name),
   }));
 
   return (

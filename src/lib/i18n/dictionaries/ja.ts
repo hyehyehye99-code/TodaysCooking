@@ -122,8 +122,6 @@ const ja: Dictionary = {
     accountManagement: "アカウント管理",
     tagManagement: "タグ管理",
     tagManagementDesc: "レシピとブックマークで使っているタグの名前を一括で変更できます。",
-    fridgeIngredientManagement: "冷蔵庫の材料管理",
-    fridgeIngredientManagementDesc: "選択した材料だけが冷蔵庫タブの各カテゴリに表示されます。よく使う材料をタップして追加しましょう。",
     tagRename: "名前を変更",
     tagRenameSave: "保存",
     noTagsYet: "まだ作成したタグがありません。",
@@ -291,7 +289,7 @@ const ja: Dictionary = {
     missingIngredientsDescDetailed:
       "すでにある材料は「在庫あり」に、買い物リストに入れたい材料は「買い物に追加」に、不要な材料は「省略」にしてください。選択しなかった材料はそのままにして、次回また確認します。",
     addingEllipsis: "保存中...",
-    editOwnedIngredients: "持っている材料を編集する",
+    editOwnedIngredients: "材料を保存する",
     applyAllPrefix: "全て：",
     reactionCountTemplate: "{count}人が食べたいと言っています〜！",
     resetReactions: "リセット",

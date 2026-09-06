@@ -33,6 +33,21 @@ const TABS: {
     ),
   },
   {
+    href: "/explore",
+    labelKey: "explore",
+    cx: 12,
+    cy: 12,
+    scale: 0.85,
+    icon: (
+      <>
+        <rect x="4" y="3" width="16" height="18" rx="2" />
+        <path d="M8 8.5h8" />
+        <path d="M8 12.5h8" />
+        <path d="M8 16.5h5" />
+      </>
+    ),
+  },
+  {
     href: "/shopping",
     labelKey: "shopping",
     cx: 12.25,
@@ -58,21 +73,6 @@ const TABS: {
         <path d="M5 9h14" />
         <path d="M8 5v2" />
         <path d="M8 12v2" />
-      </>
-    ),
-  },
-  {
-    href: "/explore",
-    labelKey: "explore",
-    cx: 12,
-    cy: 12,
-    scale: 0.85,
-    icon: (
-      <>
-        <rect x="4" y="3" width="16" height="18" rx="2" />
-        <path d="M8 8.5h8" />
-        <path d="M8 12.5h8" />
-        <path d="M8 16.5h5" />
       </>
     ),
   },

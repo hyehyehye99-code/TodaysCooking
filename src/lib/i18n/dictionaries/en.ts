@@ -125,8 +125,6 @@ const en: Dictionary = {
     accountManagement: "Account",
     tagManagement: "Manage tags",
     tagManagementDesc: "Rename a tag used on your recipes and bookmarks everywhere at once.",
-    fridgeIngredientManagement: "Manage fridge ingredients",
-    fridgeIngredientManagementDesc: "Only selected ingredients show up in each fridge tab category. Tap ones you use often to add them.",
     tagRename: "Rename",
     tagRenameSave: "Save",
     noTagsYet: "No tags yet.",
@@ -295,7 +293,7 @@ const en: Dictionary = {
     missingIngredientsDescDetailed:
       "Mark what you already have as In fridge, what you want on your shopping list as Add to list, and what you don't need as Skip. Anything left unmarked stays as is and we'll ask again next time.",
     addingEllipsis: "Saving...",
-    editOwnedIngredients: "Edit ingredients you have",
+    editOwnedIngredients: "Save ingredients",
     applyAllPrefix: "All: ",
     reactionCountTemplate: "{count} people want to make this~!",
     resetReactions: "Reset",

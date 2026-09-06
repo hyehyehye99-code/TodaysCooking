@@ -44,7 +44,7 @@ const AMOUNT_UNIT_SUFFIXES = [
 
 // Splits a manually-typed line like "돼지고기 200g" into name + amount, so
 // the name alone can still match fridge/shopping items by exact string (see
-// resolveMissingIngredients) while the amount isn't lost — it's just kept
+// setIngredientState) while the amount isn't lost — it's just kept
 // alongside instead of baked into the name. Only the trailing whitespace-
 // delimited token is treated as a candidate amount; if it doesn't look like
 // one (no digit, not a known quantity word), the whole line stays the name
@@ -312,129 +312,11 @@ export async function deleteRecipes(ids: string[]) {
   revalidatePath("/recipes");
 }
 
-export async function resolveMissingIngredients(payload: {
-  recipeId: string;
-  shopping: string[];
-  fridge: string[];
-  skip: string[];
-  // Ingredients that were in the fridge but got deselected/reassigned away
-  // from "fridge" in the edit modal — needs an explicit write, since
-  // leaving something out of every other list is otherwise indistinguishable
-  // from "never touched, wasn't owned to begin with".
-  unown?: string[];
-}) {
-  const { recipeId, shopping, fridge, skip, unown = [] } = payload;
-  if (!recipeId) return;
-
-  const { household } = await getCurrentHousehold();
-  if (!household) return;
-
-  const supabase = await createClient();
-
-  const unskipped = [...shopping, ...fridge];
-  await Promise.all([
-    unskipped.length
-      ? supabase
-          .from("recipe_ingredients")
-          .update({ skipped: false })
-          .eq("recipe_id", recipeId)
-          .in("name", unskipped)
-      : Promise.resolve(),
-    skip.length
-      ? supabase
-          .from("recipe_ingredients")
-          .update({ skipped: true })
-          .eq("recipe_id", recipeId)
-          .in("name", skip)
-      : Promise.resolve(),
-  ]);
-
-  if (shopping.length) {
-    const [{ data: recipe }, { data: existing }] = await Promise.all([
-      supabase.from("recipes").select("title").eq("id", recipeId).single(),
-      supabase
-        .from("shopping_items")
-        .select("id, name, source_recipe_title")
-        .eq("household_id", household.id),
-    ]);
-    const recipeTitle = recipe?.title ?? null;
-    const existingByName = new Map((existing ?? []).map((i) => [i.name, i]));
-
-    const toInsert = shopping.filter((name) => !existingByName.has(name));
-    const toUpdate = recipeTitle
-      ? shopping
-          .map((name) => existingByName.get(name))
-          .filter((item): item is NonNullable<typeof item> => !!item)
-          .map((item) => {
-            const titles = (item.source_recipe_title ?? "")
-              .split(",")
-              .map((t: string) => t.trim())
-              .filter(Boolean);
-            if (titles.includes(recipeTitle)) return null;
-            return { id: item.id, source_recipe_title: [...titles, recipeTitle].join(", ") };
-          })
-          .filter((u): u is { id: string; source_recipe_title: string } => !!u)
-      : [];
-
-    if (toInsert.length) {
-      await supabase.from("shopping_items").insert(
-        toInsert.map((name) => ({
-          household_id: household.id,
-          name,
-          source_recipe_id: recipeId,
-          source_recipe_title: recipeTitle,
-        }))
-      );
-    }
-
-    if (toUpdate.length) {
-      // household_id is included so the upsert's INSERT-path RLS check
-      // (which requires it) is satisfied — every id here already exists, so
-      // the insert branch never actually runs, only the update does.
-      await supabase.from("shopping_items").upsert(
-        toUpdate.map((u) => ({
-          id: u.id,
-          household_id: household.id,
-          source_recipe_title: u.source_recipe_title,
-        }))
-      );
-    }
-  }
-
-  if (fridge.length) {
-    await supabase.from("fridge_items").upsert(
-      fridge.map((name) => ({
-        household_id: household.id,
-        name,
-        category: CATEGORY_BY_INGREDIENT_NAME.get(name) ?? "미분류",
-        in_stock: true,
-        updated_at: new Date().toISOString(),
-      })),
-      { onConflict: "household_id,name" }
-    );
-  }
-
-  if (unown.length) {
-    await supabase.from("fridge_items").upsert(
-      unown.map((name) => ({
-        household_id: household.id,
-        name,
-        in_stock: false,
-        updated_at: new Date().toISOString(),
-      })),
-      { onConflict: "household_id,name" }
-    );
-  }
-
-  revalidatePath(`/recipes/${recipeId}`);
-  revalidatePath("/shopping");
-  revalidatePath("/fridge");
-}
-
-// A single ingredient's tap-to-cycle state (recipe detail page, and a meal
-// plan's per-recipe ingredient chips) — "none"/"fridge"/"shopping"/"skip".
-// Unlike resolveMissingIngredients above (a batch submit from a whole
-// modal's worth of choices), this is one chip, one tap, applied immediately.
+// A single ingredient's state — "none"/"fridge"/"shopping"/"skip" — used by
+// the recipe detail page's tap-to-cycle chips, a meal plan's per-recipe
+// ingredient chips, and the bulk 재료 저장하기 modal's per-item buttons.
+// Every caller applies one ingredient's change immediately; nothing here
+// batches several ingredients behind a single submit.
 export type IngredientChipState = "none" | "fridge" | "shopping" | "skip";
 
 export async function setIngredientState(recipeId: string, name: string, state: IngredientChipState) {

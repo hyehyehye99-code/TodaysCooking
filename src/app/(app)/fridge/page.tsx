@@ -12,19 +12,10 @@ export default async function FridgePage() {
   const { household } = await getCurrentHousehold();
   const supabase = await createClient();
 
-  const [{ data }, { data: visibleRows }] = await Promise.all([
-    supabase.from("fridge_items").select("*").eq("household_id", household!.id),
-    supabase.from("fridge_visible_ingredients").select("name").eq("household_id", household!.id),
-  ]);
+  const { data } = await supabase.from("fridge_items").select("*").eq("household_id", household!.id);
 
   const fridgeItems = (data as FridgeItem[] | null) ?? [];
   const stock = new Map(fridgeItems.map((i) => [i.name, i.in_stock]));
-
-  // Opt-in via 마이페이지 > 냉장고 재료 관리 — a preset stays out of the
-  // catalog below until the household turns it on there, unless it's
-  // already in stock, so turning a preset off never makes something you
-  // actually own disappear.
-  const visible = new Set((visibleRows ?? []).map((r) => r.name as string));
 
   const customItems = fridgeItems.filter((i) => !ALL_KNOWN_INGREDIENTS.has(i.name));
   const staticNames = new Set(INGREDIENT_CATEGORIES.map((c) => c.name));
@@ -32,9 +23,7 @@ export default async function FridgePage() {
   const staticCategories = INGREDIENT_CATEGORIES.map((cat) => ({
     name: cat.name,
     items: bySelectedFirst([
-      ...cat.items
-        .filter((name) => visible.has(name) || stock.get(name))
-        .map((name) => ({ name, selected: !!stock.get(name), custom: false })),
+      ...cat.items.map((name) => ({ name, selected: !!stock.get(name), custom: false })),
       ...customItems
         .filter((i) => (i.category ?? "미분류") === cat.name)
         .map((i) => ({ name: i.name, selected: i.in_stock, custom: true })),

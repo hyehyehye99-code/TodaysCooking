@@ -125,8 +125,6 @@ const ko = {
     accountManagement: "계정 관리",
     tagManagement: "태그 관리",
     tagManagementDesc: "레시피와 북마크에 쓴 태그 이름을 한 번에 바꿀 수 있어요.",
-    fridgeIngredientManagement: "냉장고 재료 관리",
-    fridgeIngredientManagementDesc: "선택한 재료만 냉장고 탭의 각 칸에 나타나요. 자주 쓰는 재료를 눌러서 추가해보세요.",
     tagRename: "이름 바꾸기",
     tagRenameSave: "저장",
     noTagsYet: "아직 만든 태그가 없어요.",
@@ -294,7 +292,7 @@ const ko = {
     missingIngredientsDescDetailed:
       "가지고 있는 재료는 보유 중으로, 장보기 목록에 담고 싶은 재료는 장보기 담기로, 필요 없는 재료는 생략으로 표시해주세요. 선택하지 않은 재료는 이번엔 그대로 두고 다음에 다시 물어볼게요.",
     addingEllipsis: "저장하는 중...",
-    editOwnedIngredients: "보유하고 있는 재료 수정하기",
+    editOwnedIngredients: "재료 저장하기",
     applyAllPrefix: "전체 ",
     reactionCountTemplate: "{count}명이 먹고 싶다고 표현했어요~!",
     resetReactions: "초기화",
