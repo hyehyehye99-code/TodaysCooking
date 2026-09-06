@@ -125,6 +125,9 @@ export function RecipePicker({
                   <div
                     className={`flex items-center gap-2 rounded-xl bg-surface p-2.5 ${dragging ? "shadow-lg" : ""}`}
                   >
+                    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-white text-xs font-bold text-ink-soft">
+                      {index + 1}
+                    </span>
                     <RecipeThumb
                       coverPhotoUrl={r.cover_photo_urls[0]}
                       iconEmoji={r.icon_emoji}

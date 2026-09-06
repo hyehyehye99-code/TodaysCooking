@@ -12,13 +12,21 @@ import { FavoriteButton } from "./favorite-button";
 import { MissingIngredientsButton } from "./missing-ingredients-button";
 import { RecipePhotoGallery } from "./recipe-photo-gallery";
 import { ReactionLog } from "./reaction-log";
+import { IngredientChip } from "@/components/IngredientChip";
 
 export default async function RecipeDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ from?: string }>;
 }) {
   const { id } = await params;
+  const { from } = await searchParams;
+  // Only ever set by an in-app link that wants "close" to return somewhere
+  // other than the recipes tab (e.g. a meal plan) — must be a same-app
+  // relative path, never an absolute/external URL.
+  const closeHref = from && from.startsWith("/") && !from.startsWith("//") ? from : "/recipes";
   const { household } = await getCurrentHousehold();
   const supabase = await createClient();
   const { dict } = await getDictionary();
@@ -112,7 +120,7 @@ export default async function RecipeDetailPage({
             memberMealPlanIds={(mealPlanMemberships ?? []).map((m) => m.meal_plan_id)}
           />
           <Link
-            href="/recipes"
+            href={closeHref}
             aria-label={dict.common.close}
             className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-surface text-ink"
           >
@@ -182,25 +190,15 @@ export default async function RecipeDetailPage({
             </span>
           </p>
           <div className="flex flex-wrap gap-2">
-            {ingredients.map((ing) => {
-              const stateClass = ing.skipped
-                ? "border-ink-faint bg-surface text-ink-faint"
-                : owned.has(ing.name)
-                  ? "border-accent bg-surface text-accent-ink"
-                  : onShoppingList.has(ing.name)
-                    ? "border-positive bg-surface text-positive-ink"
-                    : "border-transparent bg-surface text-ink-soft";
-              return (
-                <span
-                  key={ing.id}
-                  className={`rounded-full border px-3.5 py-2 text-[13px] font-semibold ${stateClass}`}
-                >
-                  {ing.name}
-                  {ing.amount && <span className="ml-1 font-normal opacity-70">{ing.amount}</span>}
-                  {ing.skipped && <span className="ml-1 text-[10px] font-normal">{dict.recipes.skippedSuffix}</span>}
-                </span>
-              );
-            })}
+            {ingredients.map((ing) => (
+              <IngredientChip
+                key={ing.id}
+                recipeId={r.id}
+                name={ing.name}
+                amount={ing.amount}
+                initialState={ing.skipped ? "skip" : owned.has(ing.name) ? "fridge" : onShoppingList.has(ing.name) ? "shopping" : "none"}
+              />
+            ))}
           </div>
         </div>
       )}

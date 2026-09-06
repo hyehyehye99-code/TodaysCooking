@@ -1,16 +1,14 @@
-"use client";
-
-import { useOptimistic, useTransition } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { GlassCard } from "@/components/ui";
 import { RecipeThumb } from "@/components/RecipeThumb";
-import { toggleFridgeStock } from "@/lib/actions/fridge";
+import { IngredientChip, type IngredientChipState } from "@/components/IngredientChip";
 
-type Ingredient = { name: string; amount: string | null; owned: boolean; onShoppingList: boolean };
+type Ingredient = { name: string; amount: string | null; initialState: IngredientChipState };
 
 export function MealPlanRecipeCard({
+  index,
   recipeId,
+  mealPlanId,
   title,
   untitledLabel,
   coverPhotoUrl,
@@ -18,7 +16,9 @@ export function MealPlanRecipeCard({
   linkThumbnailUrl,
   ingredients,
 }: {
+  index: number;
   recipeId: string;
+  mealPlanId: string;
   title: string | null;
   untitledLabel: string;
   coverPhotoUrl?: string;
@@ -26,29 +26,15 @@ export function MealPlanRecipeCard({
   linkThumbnailUrl?: string | null;
   ingredients: Ingredient[];
 }) {
-  const router = useRouter();
-  const [, startTransition] = useTransition();
-  // Owned state is really the household's fridge stock, computed server-side
-  // — this local override just makes a tap feel instant while the real
-  // write lands and router.refresh() reconciles it (and any other card
-  // showing the same ingredient name).
-  const [optimisticOwned, setOptimisticOwned] = useOptimistic(
-    Object.fromEntries(ingredients.map((i) => [i.name, i.owned])) as Record<string, boolean>,
-    (state, update: { name: string; owned: boolean }) => ({ ...state, [update.name]: update.owned })
-  );
-
-  function toggle(name: string, current: boolean) {
-    const next = !current;
-    startTransition(async () => {
-      setOptimisticOwned({ name, owned: next });
-      await toggleFridgeStock(name, next);
-      router.refresh();
-    });
-  }
-
   return (
     <GlassCard className="bg-white p-3.5">
-      <Link href={`/recipes/${recipeId}`} className="mb-2.5 flex items-center gap-2.5">
+      <Link
+        href={`/recipes/${recipeId}?from=${encodeURIComponent(`/explore/${mealPlanId}`)}`}
+        className="mb-2.5 flex items-center gap-2.5"
+      >
+        <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-surface text-xs font-bold text-ink-soft">
+          {index + 1}
+        </span>
         <RecipeThumb
           coverPhotoUrl={coverPhotoUrl}
           iconEmoji={iconEmoji}
@@ -60,25 +46,15 @@ export function MealPlanRecipeCard({
       </Link>
       {ingredients.length > 0 && (
         <div className="flex flex-wrap gap-1.5">
-          {ingredients.map((ing) => {
-            const isOwned = optimisticOwned[ing.name];
-            const stateClass = isOwned
-              ? "border-accent bg-surface text-accent-ink"
-              : ing.onShoppingList
-                ? "border-positive bg-surface text-positive-ink"
-                : "border-transparent bg-surface text-ink-soft";
-            return (
-              <button
-                key={ing.name}
-                type="button"
-                onClick={() => toggle(ing.name, isOwned)}
-                className={`rounded-full border px-3 py-1.5 text-[12px] font-semibold ${stateClass}`}
-              >
-                {ing.name}
-                {ing.amount && <span className="ml-1 font-normal opacity-70">{ing.amount}</span>}
-              </button>
-            );
-          })}
+          {ingredients.map((ing) => (
+            <IngredientChip
+              key={ing.name}
+              recipeId={recipeId}
+              name={ing.name}
+              amount={ing.amount}
+              initialState={ing.initialState}
+            />
+          ))}
         </div>
       )}
     </GlassCard>

@@ -352,6 +352,11 @@ const ko = {
     noMealPlansYet: "아직 메뉴판이 없어요.",
     newMealPlanInputPlaceholder: "새 메뉴판 이름",
     creatingEllipsis: "만드는 중...",
+    eventDateLabel: "날짜",
+    headcountLabel: "인원수",
+    headcountSuffix: "명",
+    generateCardButton: "메뉴판 만들기",
+    shareCardButton: "공유하기",
   },
 } as const;
 

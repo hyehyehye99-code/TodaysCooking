@@ -431,6 +431,80 @@ export async function resolveMissingIngredients(payload: {
   revalidatePath("/fridge");
 }
 
+// A single ingredient's tap-to-cycle state (recipe detail page, and a meal
+// plan's per-recipe ingredient chips) — "none"/"fridge"/"shopping"/"skip".
+// Unlike resolveMissingIngredients above (a batch submit from a whole
+// modal's worth of choices), this is one chip, one tap, applied immediately.
+export type IngredientChipState = "none" | "fridge" | "shopping" | "skip";
+
+export async function setIngredientState(recipeId: string, name: string, state: IngredientChipState) {
+  const { household } = await getCurrentHousehold();
+  if (!household) return;
+
+  const supabase = await createClient();
+
+  await supabase
+    .from("recipe_ingredients")
+    .update({ skipped: state === "skip" })
+    .eq("recipe_id", recipeId)
+    .eq("name", name);
+
+  // Fridge stock is a household-wide fact, not this one recipe's — "skip"
+  // only means this recipe doesn't need it, so it leaves stock untouched.
+  // Every other state has a definite stock value.
+  if (state !== "skip") {
+    await supabase.from("fridge_items").upsert(
+      {
+        household_id: household.id,
+        name,
+        category: CATEGORY_BY_INGREDIENT_NAME.get(name) ?? "미분류",
+        in_stock: state === "fridge",
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: "household_id,name" }
+    );
+  }
+
+  if (state === "shopping") {
+    const [{ data: recipe }, { data: existing }] = await Promise.all([
+      supabase.from("recipes").select("title").eq("id", recipeId).single(),
+      supabase
+        .from("shopping_items")
+        .select("id, source_recipe_title")
+        .eq("household_id", household.id)
+        .eq("name", name)
+        .maybeSingle(),
+    ]);
+    const recipeTitle = recipe?.title ?? null;
+
+    if (!existing) {
+      await supabase.from("shopping_items").insert({
+        household_id: household.id,
+        name,
+        source_recipe_id: recipeId,
+        source_recipe_title: recipeTitle,
+      });
+    } else if (recipeTitle) {
+      const titles = (existing.source_recipe_title ?? "")
+        .split(",")
+        .map((t: string) => t.trim())
+        .filter(Boolean);
+      if (!titles.includes(recipeTitle)) {
+        await supabase.from("shopping_items").upsert({
+          id: existing.id,
+          household_id: household.id,
+          source_recipe_title: [...titles, recipeTitle].join(", "),
+        });
+      }
+    }
+  }
+
+  revalidatePath(`/recipes/${recipeId}`);
+  revalidatePath("/explore");
+  revalidatePath("/shopping");
+  revalidatePath("/fridge");
+}
+
 export async function reorderRecipes(order: string[]) {
   const { household } = await getCurrentHousehold();
   if (!household) return;

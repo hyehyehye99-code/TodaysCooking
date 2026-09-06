@@ -353,6 +353,11 @@ const en: Dictionary = {
     noMealPlansYet: "No meal plans yet.",
     newMealPlanInputPlaceholder: "New meal plan name",
     creatingEllipsis: "Creating...",
+    eventDateLabel: "Date",
+    headcountLabel: "Headcount",
+    headcountSuffix: " people",
+    generateCardButton: "Create menu card",
+    shareCardButton: "Share",
   },
 };
 

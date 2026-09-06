@@ -349,6 +349,11 @@ const ja: Dictionary = {
     noMealPlansYet: "まだメニュー表がありません。",
     newMealPlanInputPlaceholder: "新しいメニュー表の名前",
     creatingEllipsis: "作成中...",
+    eventDateLabel: "日付",
+    headcountLabel: "人数",
+    headcountSuffix: "人",
+    generateCardButton: "メニュー表を作る",
+    shareCardButton: "共有する",
   },
 };
 

@@ -119,6 +119,25 @@ export async function createMealPlanWithRecipe(
   return { ok: true, id: mealPlan.id };
 }
 
+// The info box's inline date/headcount fields — both optional and
+// display-only (headcount is just shown, never used to scale any recipe's
+// ingredient amounts).
+export async function updateMealPlanDetails(
+  id: string,
+  fields: { eventDate?: string | null; headcount?: number | null }
+) {
+  const supabase = await createClient();
+  const update: Record<string, string | number | null> = {};
+  if ("eventDate" in fields) update.event_date = fields.eventDate || null;
+  if ("headcount" in fields) update.headcount = fields.headcount ?? null;
+
+  const { error } = await supabase.from("meal_plans").update(update).eq("id", id);
+  if (error) return { error: "저장하지 못했어요." };
+
+  revalidatePath(`/explore/${id}`);
+  return { ok: true as const };
+}
+
 export async function deleteMealPlan(id: string) {
   const supabase = await createClient();
   await supabase.from("meal_plans").delete().eq("id", id);

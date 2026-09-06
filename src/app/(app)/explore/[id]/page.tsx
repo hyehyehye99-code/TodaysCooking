@@ -6,6 +6,7 @@ import { getDictionary } from "@/lib/i18n/server";
 import { MealPlanMenuButton } from "./meal-plan-menu-button";
 import { AddMissingButton } from "./add-missing-button";
 import { MealPlanRecipeCard } from "./meal-plan-recipe-card";
+import { MealPlanInfoBox } from "./meal-plan-info-box";
 
 type RecipeRow = {
   id: string;
@@ -30,7 +31,12 @@ export default async function MealPlanDetailPage({ params }: { params: Promise<{
 
   const [{ data: mealPlan }, { data: mealPlanRecipes }, { data: fridgeItems }, { data: shoppingItems }] =
     await Promise.all([
-      supabase.from("meal_plans").select("id, title").eq("id", id).eq("household_id", household!.id).maybeSingle(),
+      supabase
+        .from("meal_plans")
+        .select("id, title, event_date, headcount")
+        .eq("id", id)
+        .eq("household_id", household!.id)
+        .maybeSingle(),
       supabase
         .from("meal_plan_recipes")
         .select(
@@ -84,24 +90,42 @@ export default async function MealPlanDetailPage({ params }: { params: Promise<{
         </div>
       </div>
 
+      <MealPlanInfoBox
+        mealPlanId={mealPlan.id}
+        title={mealPlan.title}
+        eventDate={mealPlan.event_date}
+        headcount={mealPlan.headcount}
+        cardRecipes={recipes.map((r) => ({
+          title: r.title || dict.recipes.untitledLink,
+          ingredientNames: r.recipe_ingredients
+            .filter((ing) => !ing.skipped)
+            .map((ing) => (ing.amount ? `${ing.name} ${ing.amount}` : ing.name)),
+        }))}
+      />
+
       <div className="flex flex-col gap-3">
-        {recipes.map((r) => (
+        {recipes.map((r, index) => (
           <MealPlanRecipeCard
             key={r.id}
+            index={index}
             recipeId={r.id}
+            mealPlanId={mealPlan.id}
             title={r.title}
             untitledLabel={dict.recipes.untitledLink}
             coverPhotoUrl={r.cover_photo_urls[0]}
             iconEmoji={r.icon_emoji}
             linkThumbnailUrl={r.bookmarks?.[0]?.thumbnail_url}
-            ingredients={r.recipe_ingredients
-              .filter((ing) => !ing.skipped)
-              .map((ing) => ({
-                name: ing.name,
-                amount: ing.amount,
-                owned: owned.has(ing.name),
-                onShoppingList: onShoppingList.has(ing.name),
-              }))}
+            ingredients={r.recipe_ingredients.map((ing) => ({
+              name: ing.name,
+              amount: ing.amount,
+              initialState: ing.skipped
+                ? ("skip" as const)
+                : owned.has(ing.name)
+                  ? ("fridge" as const)
+                  : onShoppingList.has(ing.name)
+                    ? ("shopping" as const)
+                    : ("none" as const),
+            }))}
           />
         ))}
       </div>
