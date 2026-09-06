@@ -67,22 +67,11 @@ export default async function MealPlanDetailPage({ params }: { params: Promise<{
       })
       .filter((e): e is { recipe: RecipeRow; displayName: string | null } => e !== null);
 
-    const missingNames = [
-      ...new Set(
-        entries
-          .flatMap((e) => e.recipe.recipe_ingredients)
-          .filter((ing) => !ing.skipped)
-          .map((ing) => ing.name)
-          .filter((name) => !owned.has(name) && !onShoppingList.has(name))
-      ),
-    ];
-
     return {
       id: plan.id,
       title: plan.title,
       eventDate: plan.event_date,
       headcount: plan.headcount,
-      missingNames,
       cardRecipes: entries.map((e) => ({
         title: e.displayName || e.recipe.title || dict.recipes.untitledLink,
         // Just names on the shared card — a course-style menu reads better
@@ -111,5 +100,12 @@ export default async function MealPlanDetailPage({ params }: { params: Promise<{
     };
   });
 
-  return <ExploreCarousel initialPlanId={id} plans={carouselPlans} untitledLabel={dict.recipes.untitledLink} />;
+  return (
+    <ExploreCarousel
+      initialPlanId={id}
+      householdName={household!.name}
+      plans={carouselPlans}
+      untitledLabel={dict.recipes.untitledLink}
+    />
+  );
 }

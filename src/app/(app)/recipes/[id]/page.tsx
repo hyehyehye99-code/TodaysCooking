@@ -12,7 +12,7 @@ import { FavoriteButton } from "./favorite-button";
 import { MissingIngredientsButton } from "./missing-ingredients-button";
 import { RecipePhotoGallery } from "./recipe-photo-gallery";
 import { ReactionLog } from "./reaction-log";
-import { IngredientChip } from "@/components/IngredientChip";
+import { InstantIngredientChip } from "./instant-ingredient-chip";
 
 export default async function RecipeDetailPage({
   params,
@@ -191,7 +191,7 @@ export default async function RecipeDetailPage({
           </p>
           <div className="flex flex-wrap gap-2">
             {ingredients.map((ing) => (
-              <IngredientChip
+              <InstantIngredientChip
                 key={ing.id}
                 recipeId={r.id}
                 name={ing.name}

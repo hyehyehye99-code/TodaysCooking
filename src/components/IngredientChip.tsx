@@ -1,13 +1,11 @@
 "use client";
 
-import { useOptimistic, useTransition } from "react";
-import { useRouter } from "next/navigation";
-import { setIngredientState, type IngredientChipState } from "@/lib/actions/recipes";
 import { useDict } from "@/lib/i18n/client";
+import type { IngredientChipState } from "@/lib/actions/recipes";
 
 export type { IngredientChipState };
 
-function nextState(state: IngredientChipState): IngredientChipState {
+export function nextIngredientState(state: IngredientChipState): IngredientChipState {
   if (state === "none") return "fridge";
   if (state === "fridge") return "shopping";
   if (state === "shopping") return "skip";
@@ -17,33 +15,21 @@ function nextState(state: IngredientChipState): IngredientChipState {
 // One tap cycles 없음 → 보유 → 장보기 → 생략 → 없음 — used both on the
 // recipe detail page and on a meal plan's per-recipe ingredient list, so a
 // single tap always means the same thing everywhere ingredients show up.
+// Purely controlled: the caller owns the state and decides when (or
+// whether) a tap gets persisted — the recipe detail page saves instantly,
+// while a meal plan panel buffers taps behind its own "저장" button.
 export function IngredientChip({
-  recipeId,
   name,
   amount,
-  initialState,
+  state,
+  onChange,
 }: {
-  recipeId: string;
   name: string;
   amount: string | null;
-  initialState: IngredientChipState;
+  state: IngredientChipState;
+  onChange: (next: IngredientChipState) => void;
 }) {
   const dict = useDict();
-  const router = useRouter();
-  const [, startTransition] = useTransition();
-  const [state, setState] = useOptimistic<IngredientChipState, IngredientChipState>(
-    initialState,
-    (_prev, next) => next
-  );
-
-  function handleClick() {
-    const next = nextState(state);
-    startTransition(async () => {
-      setState(next);
-      await setIngredientState(recipeId, name, next);
-      router.refresh();
-    });
-  }
 
   const stateClass =
     state === "skip"
@@ -57,7 +43,7 @@ export function IngredientChip({
   return (
     <button
       type="button"
-      onClick={handleClick}
+      onClick={() => onChange(nextIngredientState(state))}
       className={`rounded-full border px-3.5 py-2 text-[13px] font-semibold ${stateClass}`}
     >
       {name}

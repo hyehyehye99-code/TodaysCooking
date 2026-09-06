@@ -4,16 +4,13 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { IngredientChipState } from "@/lib/actions/recipes";
 import type { MealPlanCardRecipe } from "./meal-plan-card-image";
-import { MealPlanInfoBox } from "./meal-plan-info-box";
-import { MealPlanRecipeCard } from "./meal-plan-recipe-card";
-import { AddMissingButton } from "./add-missing-button";
+import { MealPlanPanel } from "./meal-plan-panel";
 
 export type CarouselPlan = {
   id: string;
   title: string;
   eventDate: string | null;
   headcount: number | null;
-  missingNames: string[];
   cardRecipes: MealPlanCardRecipe[];
   recipes: {
     id: string;
@@ -28,10 +25,12 @@ export type CarouselPlan = {
 
 export function ExploreCarousel({
   initialPlanId,
+  householdName,
   plans,
   untitledLabel,
 }: {
   initialPlanId: string;
+  householdName: string;
   plans: CarouselPlan[];
   untitledLabel: string;
 }) {
@@ -89,41 +88,20 @@ export function ExploreCarousel({
             }}
             className="w-full shrink-0 snap-start px-5"
           >
-            <div className="animate-fade-in-up pt-2">
-              <MealPlanInfoBox
-                mealPlanId={plan.id}
-                title={plan.title}
-                eventDate={plan.eventDate}
-                headcount={plan.headcount}
-                cardRecipes={plan.cardRecipes}
-                onPrev={() => scrollToPlan(plans[i - 1]?.id)}
-                onNext={() => scrollToPlan(plans[i + 1]?.id)}
-                hasPrev={i > 0}
-                hasNext={i < plans.length - 1}
-              />
-
-              <div className="flex flex-col gap-3">
-                {plan.recipes.map((r, index) => (
-                  <MealPlanRecipeCard
-                    key={r.id}
-                    index={index}
-                    recipeId={r.id}
-                    mealPlanId={plan.id}
-                    title={r.title}
-                    displayName={r.displayName}
-                    untitledLabel={untitledLabel}
-                    coverPhotoUrl={r.coverPhotoUrl}
-                    iconEmoji={r.iconEmoji}
-                    linkThumbnailUrl={r.linkThumbnailUrl}
-                    ingredients={r.ingredients}
-                  />
-                ))}
-              </div>
-
-              <div className="mt-4">
-                <AddMissingButton mealPlanId={plan.id} missingNames={plan.missingNames} />
-              </div>
-            </div>
+            <MealPlanPanel
+              mealPlanId={plan.id}
+              householdName={householdName}
+              title={plan.title}
+              eventDate={plan.eventDate}
+              headcount={plan.headcount}
+              cardRecipes={plan.cardRecipes}
+              recipes={plan.recipes}
+              untitledLabel={untitledLabel}
+              onPrev={() => scrollToPlan(plans[i - 1]?.id)}
+              onNext={() => scrollToPlan(plans[i + 1]?.id)}
+              hasPrev={i > 0}
+              hasNext={i < plans.length - 1}
+            />
           </div>
         ))}
       </div>

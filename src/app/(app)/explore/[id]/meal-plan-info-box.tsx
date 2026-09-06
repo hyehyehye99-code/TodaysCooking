@@ -21,6 +21,7 @@ function formatEventDateTime(iso: string, locale: Locale) {
 
 export function MealPlanInfoBox({
   mealPlanId,
+  householdName,
   title,
   eventDate,
   headcount,
@@ -31,6 +32,7 @@ export function MealPlanInfoBox({
   hasNext,
 }: {
   mealPlanId: string;
+  householdName: string;
   title: string;
   eventDate: string | null;
   headcount: number | null;
@@ -109,9 +111,8 @@ export function MealPlanInfoBox({
         onClose={() => setPickerOpen(false)}
         shareTitle={title}
         cardData={{
+          householdName,
           title,
-          eventDateLabel: eventDate ? formatEventDateTime(eventDate, locale) : null,
-          headcountLabel: headcount ? `${headcount}${dict.mealPlan.headcountSuffix}` : null,
           recipes: cardRecipes,
         }}
       />

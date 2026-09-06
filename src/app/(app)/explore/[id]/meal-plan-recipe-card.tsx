@@ -9,7 +9,7 @@ import { IngredientChip, type IngredientChipState } from "@/components/Ingredien
 import { setMealPlanRecipeDisplayName } from "@/lib/actions/meal-plans";
 import { useDict } from "@/lib/i18n/client";
 
-type Ingredient = { name: string; amount: string | null; initialState: IngredientChipState };
+type Ingredient = { name: string; amount: string | null; state: IngredientChipState };
 
 export function MealPlanRecipeCard({
   index,
@@ -22,6 +22,7 @@ export function MealPlanRecipeCard({
   iconEmoji,
   linkThumbnailUrl,
   ingredients,
+  onIngredientChange,
 }: {
   index: number;
   recipeId: string;
@@ -33,6 +34,7 @@ export function MealPlanRecipeCard({
   iconEmoji: string | null;
   linkThumbnailUrl?: string | null;
   ingredients: Ingredient[];
+  onIngredientChange: (name: string, next: IngredientChipState) => void;
 }) {
   const dict = useDict();
   const router = useRouter();
@@ -107,10 +109,10 @@ export function MealPlanRecipeCard({
           {ingredients.map((ing) => (
             <IngredientChip
               key={ing.name}
-              recipeId={recipeId}
               name={ing.name}
               amount={ing.amount}
-              initialState={ing.initialState}
+              state={ing.state}
+              onChange={(next) => onIngredientChange(ing.name, next)}
             />
           ))}
         </div>
