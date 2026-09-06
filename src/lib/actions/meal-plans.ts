@@ -30,7 +30,6 @@ export async function createMealPlan(_prevState: unknown, formData: FormData) {
   const eventDateRaw = String(formData.get("eventDate") ?? "").trim();
   const headcountRaw = String(formData.get("headcount") ?? "").trim();
   if (!title) return { error: "메뉴판 이름을 입력해주세요." };
-  if (recipeIds.length === 0) return { error: "레시피를 1개 이상 골라주세요." };
 
   const { user, household } = await getCurrentHousehold();
   if (!user || !household) return { error: "우리집을 먼저 만들어주세요." };
@@ -63,7 +62,6 @@ export async function updateMealPlan(_prevState: unknown, formData: FormData) {
   const headcountRaw = String(formData.get("headcount") ?? "").trim();
   if (!id) return { error: "메뉴판을 찾지 못했어요." };
   if (!title) return { error: "메뉴판 이름을 입력해주세요." };
-  if (recipeIds.length === 0) return { error: "레시피를 1개 이상 골라주세요." };
 
   const supabase = await createClient();
   const { error } = await supabase
