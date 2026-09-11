@@ -9,6 +9,7 @@ const en: Dictionary = {
     delete: "Delete",
     edit: "Edit",
     loading: "Loading...",
+    savedMessage: "Saved",
   },
   tabBar: {
     recipes: "Recipes",
@@ -347,7 +348,6 @@ const en: Dictionary = {
     addToMealPlan: "Add to meal plan",
     addToMealPlanTitle: "Add to which meal plan?",
     noMealPlansYet: "No meal plans yet.",
-    newMealPlanInputPlaceholder: "New meal plan name",
     creatingEllipsis: "Creating...",
     eventDateLabel: "Date",
     headcountLabel: "Headcount",

@@ -126,34 +126,6 @@ export async function toggleRecipeInMealPlan(mealPlanId: string, recipeId: strin
   revalidatePath("/explore");
 }
 
-// Quick-create a meal plan seeded with just this one recipe — the inline
-// "+ 새 메뉴판" option in AddToMealPlanButton, so starting a plan doesn't
-// require leaving the recipe you're already looking at.
-export async function createMealPlanWithRecipe(
-  title: string,
-  recipeId: string
-): Promise<{ error: string } | { ok: true; id: string }> {
-  const trimmed = title.trim();
-  if (!trimmed) return { error: "메뉴판 이름을 입력해주세요." };
-
-  const { user, household } = await getCurrentHousehold();
-  if (!user || !household) return { error: "우리집을 먼저 만들어주세요." };
-
-  const supabase = await createClient();
-  const { data: mealPlan, error } = await supabase
-    .from("meal_plans")
-    .insert({ household_id: household.id, title: trimmed, created_by: user.id })
-    .select("id")
-    .single();
-  if (error || !mealPlan) return { error: "메뉴판을 만들지 못했어요." };
-
-  await supabase.from("meal_plan_recipes").insert({ meal_plan_id: mealPlan.id, recipe_id: recipeId, position: 0 });
-
-  revalidatePath(`/recipes/${recipeId}`);
-  revalidatePath("/explore");
-  return { ok: true, id: mealPlan.id };
-}
-
 export async function deleteMealPlan(id: string) {
   const supabase = await createClient();
   await supabase.from("meal_plans").delete().eq("id", id);

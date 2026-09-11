@@ -7,6 +7,7 @@ const ko = {
     delete: "삭제",
     edit: "편집",
     loading: "불러오는 중...",
+    savedMessage: "저장했어요",
   },
   tabBar: {
     recipes: "레시피",
@@ -346,7 +347,6 @@ const ko = {
     addToMealPlan: "메뉴판에 추가",
     addToMealPlanTitle: "어느 메뉴판에 추가할까요?",
     noMealPlansYet: "아직 메뉴판이 없어요.",
-    newMealPlanInputPlaceholder: "새 메뉴판 이름",
     creatingEllipsis: "만드는 중...",
     eventDateLabel: "날짜",
     headcountLabel: "인원수",

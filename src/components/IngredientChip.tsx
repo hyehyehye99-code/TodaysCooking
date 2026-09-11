@@ -72,7 +72,7 @@ export function IngredientChip({
       : state === "fridge"
         ? "border border-transparent bg-accent text-white"
         : state === "shopping"
-          ? "border border-transparent bg-positive text-positive-ink"
+          ? "border border-transparent bg-positive text-white"
           : "border border-border bg-white text-ink-soft";
 
   return (
