@@ -137,9 +137,26 @@ export function ShareDesignPicker({
     };
   }, [open, data]);
 
-  function saveImage() {
+  async function saveImage() {
     const preview = previews?.[selectedIndex];
     if (!preview) return;
+
+    // iOS WKWebView (the native app shell) ignores <a download> entirely —
+    // there's no way for a web page to write straight to Photos without it.
+    // The App Store-sanctioned path is the native share sheet's own "이미지
+    // 저장" action, so that's the primary route everywhere Web Share
+    // supports files; <a download> stays as the desktop-browser fallback,
+    // where it already works and a share sheet would be a worse fit.
+    const file = new File([preview.blob], "meal-plan.png", { type: "image/png" });
+    if (navigator.canShare?.({ files: [file] })) {
+      try {
+        await navigator.share({ files: [file] });
+      } catch {
+        // Includes the user dismissing the share sheet — nothing to show.
+      }
+      return;
+    }
+
     const a = document.createElement("a");
     a.href = preview.url;
     a.download = "meal-plan.png";
