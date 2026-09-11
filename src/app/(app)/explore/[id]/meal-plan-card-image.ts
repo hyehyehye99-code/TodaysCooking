@@ -17,13 +17,10 @@ import localFont from "next/font/local";
 
 const suit = localFont({ src: "../../../../fonts/SUIT-Variable.woff2", weight: "100 900" });
 const noltotaenggu = localFont({ src: "../../../../fonts/griun-noltotaenggu.ttf" });
-const bombaram = localFont({ src: "../../../../fonts/hs-bombaram.ttf" });
 const hwalkongserif = localFont({ src: "../../../../fonts/hs-hwalkongserif.ttf" });
-const santokki = localFont({ src: "../../../../fonts/hs-santokki.ttf" });
 const memoment = localFont({ src: "../../../../fonts/memoment-kkukkukk.ttf" });
 const chosunGs = localFont({ src: "../../../../fonts/chosun-gs.ttf" });
 const chosunSm = localFont({ src: "../../../../fonts/chosun-sm.ttf" });
-const gowunBatang = localFont({ src: "../../../../fonts/gowun-batang.ttf" });
 
 export type MealPlanCardRecipe = { title: string; ingredientNames: string[] };
 export type MealPlanCardData = {
@@ -74,7 +71,22 @@ function layoutRecipe(recipe: MealPlanCardRecipe, scale: number): RecipeLayout {
   return { text, blockHeight };
 }
 
-async function renderTemplate(data: MealPlanCardData, font: string): Promise<Blob | null> {
+// Per-template tweaks on top of the shared layout — a few fonts need a
+// different recipe-name size (too close to the title at the shared size)
+// or an un-bolded title (canvas fakes/synthesizes bold on a font with no
+// real bold face of its own, which looks bad on some of these).
+type TemplateStyle = {
+  recipeNameSize?: number;
+  titleWeight?: number;
+};
+
+async function renderTemplate(
+  data: MealPlanCardData,
+  font: string,
+  style: TemplateStyle = {}
+): Promise<Blob | null> {
+  const recipeNameSize = style.recipeNameSize ?? BASE_NAME_SIZE;
+  const titleWeight = style.titleWeight ?? 700;
   const availableForRecipes = HEIGHT - RECIPES_START_Y - FOOTER_HEIGHT - PADDING;
 
   const naturalHeight = data.recipes.reduce((sum, r) => sum + layoutRecipe(r, 1).blockHeight, 0);
@@ -111,7 +123,7 @@ async function renderTemplate(data: MealPlanCardData, font: string): Promise<Blo
   ctx.fillStyle = INK;
   ctx.font = `400 26px ${font}`;
   ctx.fillText(data.householdName, centerX, HOUSEHOLD_NAME_Y);
-  ctx.font = `700 46px ${font}`;
+  ctx.font = `${titleWeight} 46px ${font}`;
   ctx.fillText(data.title, centerX, TITLE_Y + 60);
 
   // Recipes
@@ -119,7 +131,7 @@ async function renderTemplate(data: MealPlanCardData, font: string): Promise<Blo
   data.recipes.forEach((recipe, i) => {
     const { text, blockHeight } = layouts[i];
     ctx.fillStyle = INK;
-    ctx.font = `500 ${BASE_NAME_SIZE * scale}px ${font}`;
+    ctx.font = `500 ${recipeNameSize * scale}px ${font}`;
     ctx.fillText(recipe.title, centerX, y);
     ctx.fillStyle = INK_SOFT;
     ctx.font = `400 ${BASE_INGREDIENTS_SIZE * scale}px ${font}`;
@@ -153,31 +165,24 @@ export const MEAL_PLAN_CARD_TEMPLATES: MealPlanCardTemplate[] = [
     id: "sans",
     label: "기본",
     className: suit.className,
-    render: (data) => renderTemplate(data, `${suit.style.fontFamily}, ${FALLBACK}`),
+    // Recipe names read too close in size to the title at the shared
+    // BASE_NAME_SIZE — pulled down so the title stays the clear anchor.
+    render: (data) => renderTemplate(data, `${suit.style.fontFamily}, ${FALLBACK}`, { recipeNameSize: 26 }),
   },
   {
     id: "noltotaenggu",
     label: "노을탱구",
     className: noltotaenggu.className,
-    render: (data) => renderTemplate(data, `${noltotaenggu.style.fontFamily}, ${FALLBACK}`),
-  },
-  {
-    id: "bombaram",
-    label: "봄바람",
-    className: bombaram.className,
-    render: (data) => renderTemplate(data, `${bombaram.style.fontFamily}, ${FALLBACK}`),
+    // Single-weight font — requesting 700 makes canvas fake/synthesize a
+    // bold that looks rough on this one, so the title stays at its natural
+    // weight instead.
+    render: (data) => renderTemplate(data, `${noltotaenggu.style.fontFamily}, ${FALLBACK}`, { titleWeight: 400 }),
   },
   {
     id: "hwalkongserif",
     label: "활공세리프",
     className: hwalkongserif.className,
     render: (data) => renderTemplate(data, `${hwalkongserif.style.fontFamily}, serif`),
-  },
-  {
-    id: "santokki",
-    label: "산토끼",
-    className: santokki.className,
-    render: (data) => renderTemplate(data, `${santokki.style.fontFamily}, ${FALLBACK}`),
   },
   {
     id: "memoment",
@@ -195,12 +200,6 @@ export const MEAL_PLAN_CARD_TEMPLATES: MealPlanCardTemplate[] = [
     id: "chosun-sm",
     label: "조선얇은",
     className: chosunSm.className,
-    render: (data) => renderTemplate(data, `${chosunSm.style.fontFamily}, ${FALLBACK}`),
-  },
-  {
-    id: "gowun-batang",
-    label: "고운바탕",
-    className: gowunBatang.className,
-    render: (data) => renderTemplate(data, `${gowunBatang.style.fontFamily}, serif`),
+    render: (data) => renderTemplate(data, `${chosunSm.style.fontFamily}, ${FALLBACK}`, { recipeNameSize: 26 }),
   },
 ];
