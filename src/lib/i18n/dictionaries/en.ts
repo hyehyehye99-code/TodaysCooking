@@ -9,6 +9,7 @@ const en: Dictionary = {
     delete: "Delete",
     edit: "Edit",
     loading: "Loading...",
+    savedMessage: "Saved",
   },
   tabBar: {
     recipes: "Recipes",
@@ -362,15 +363,10 @@ const en: Dictionary = {
     editCardContentTitle: "What shows on the card",
     cardHouseholdNameLabel: "Household name",
     cardIngredientsPlaceholder: "ingredient1, ingredient2, ingredient3",
-    listSheetTitle: "Manage meal plans",
-    hideAction: "Hide",
-    unhideAction: "Unhide",
     eventDateLineTemplate: "Date: {date}",
     headcountLineTemplate: "Headcount: {count}",
     editMealPlanButton: "Edit",
     deleteMealPlanButton: "Delete meal plan",
-    prevPlan: "Previous meal plan",
-    nextPlan: "Next meal plan",
     renameRecipeButton: "Rename",
   },
 };

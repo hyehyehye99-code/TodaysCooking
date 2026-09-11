@@ -9,6 +9,7 @@ const ja: Dictionary = {
     delete: "削除",
     edit: "編集",
     loading: "読み込み中...",
+    savedMessage: "保存しました",
   },
   tabBar: {
     recipes: "レシピ",
@@ -358,15 +359,10 @@ const ja: Dictionary = {
     editCardContentTitle: "メニュー表に表示される内容",
     cardHouseholdNameLabel: "我が家の名前",
     cardIngredientsPlaceholder: "材料1、材料2、材料3",
-    listSheetTitle: "メニュー表を管理",
-    hideAction: "非表示にする",
-    unhideAction: "表示する",
     eventDateLineTemplate: "日付: {date}",
     headcountLineTemplate: "人数: {count}人",
     editMealPlanButton: "編集する",
     deleteMealPlanButton: "メニュー表を削除",
-    prevPlan: "前のメニュー表",
-    nextPlan: "次のメニュー表",
     renameRecipeButton: "名前を編集",
   },
 };

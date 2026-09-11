@@ -3,7 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getCurrentHousehold } from "@/lib/household";
 import { getDictionary } from "@/lib/i18n/server";
 import type { IngredientChipState } from "@/lib/actions/recipes";
-import { ExploreCarousel, type CarouselPlan } from "./explore-carousel";
+import { MealPlanPanel } from "./meal-plan-panel";
 
 type RecipeRow = {
   id: string;
@@ -17,9 +17,9 @@ type RecipeRow = {
 type MealPlanRow = {
   id: string;
   title: string;
+  icon_emoji: string | null;
   event_date: string | null;
   headcount: number | null;
-  hidden: boolean;
   meal_plan_recipes: {
     position: number;
     display_name: string | null;
@@ -37,48 +37,49 @@ export default async function MealPlanDetailPage({ params }: { params: Promise<{
   const supabase = await createClient();
   const { dict } = await getDictionary();
 
-  const [{ data: mealPlans }, { data: fridgeItems }, { data: shoppingItems }] = await Promise.all([
+  const [{ data: mealPlan }, { data: fridgeItems }, { data: shoppingItems }] = await Promise.all([
     supabase
       .from("meal_plans")
       .select(
-        "id, title, event_date, headcount, hidden, meal_plan_recipes(position, display_name, recipes(id, title, cover_photo_urls, icon_emoji, recipe_ingredients(name, amount, skipped), bookmarks(thumbnail_url)))"
+        "id, title, icon_emoji, event_date, headcount, meal_plan_recipes(position, display_name, recipes(id, title, cover_photo_urls, icon_emoji, recipe_ingredients(name, amount, skipped), bookmarks(thumbnail_url)))"
       )
+      .eq("id", id)
       .eq("household_id", household!.id)
-      .order("created_at", { ascending: false }),
+      .maybeSingle(),
     supabase.from("fridge_items").select("name, in_stock").eq("household_id", household!.id),
     supabase.from("shopping_items").select("name").eq("household_id", household!.id),
   ]);
 
-  const allPlans = (mealPlans as MealPlanRow[] | null) ?? [];
-  if (!allPlans.some((p) => p.id === id)) notFound();
+  const plan = mealPlan as MealPlanRow | null;
+  if (!plan) notFound();
 
   const owned = new Set((fridgeItems ?? []).filter((i) => i.in_stock).map((i) => i.name));
   const onShoppingList = new Set((shoppingItems ?? []).map((i) => i.name));
 
-  const visiblePlans = allPlans.filter((p) => !p.hidden || p.id === id);
+  const entries = plan.meal_plan_recipes
+    .slice()
+    .sort((a, b) => a.position - b.position)
+    .map((mpr) => {
+      const recipe = unwrapRecipe(mpr.recipes);
+      return recipe ? { recipe, displayName: mpr.display_name } : null;
+    })
+    .filter((e): e is { recipe: RecipeRow; displayName: string | null } => e !== null);
 
-  const carouselPlans: CarouselPlan[] = visiblePlans.map((plan) => {
-    const entries = plan.meal_plan_recipes
-      .slice()
-      .sort((a, b) => a.position - b.position)
-      .map((mpr) => {
-        const recipe = unwrapRecipe(mpr.recipes);
-        return recipe ? { recipe, displayName: mpr.display_name } : null;
-      })
-      .filter((e): e is { recipe: RecipeRow; displayName: string | null } => e !== null);
-
-    return {
-      id: plan.id,
-      title: plan.title,
-      eventDate: plan.event_date,
-      headcount: plan.headcount,
-      cardRecipes: entries.map((e) => ({
+  return (
+    <MealPlanPanel
+      mealPlanId={plan.id}
+      householdName={household!.name}
+      title={plan.title}
+      iconEmoji={plan.icon_emoji}
+      eventDate={plan.event_date}
+      headcount={plan.headcount}
+      cardRecipes={entries.map((e) => ({
         title: e.displayName || e.recipe.title || dict.recipes.untitledLink,
         // Just names on the shared card — a course-style menu reads better
         // without "된장 2큰술"-style amounts cluttering it.
         ingredientNames: e.recipe.recipe_ingredients.filter((ing) => !ing.skipped).map((ing) => ing.name),
-      })),
-      recipes: entries.map((e) => ({
+      }))}
+      recipes={entries.map((e) => ({
         id: e.recipe.id,
         title: e.recipe.title,
         displayName: e.displayName,
@@ -96,15 +97,7 @@ export default async function MealPlanDetailPage({ params }: { params: Promise<{
                 ? "shopping"
                 : "none") as IngredientChipState,
         })),
-      })),
-    };
-  });
-
-  return (
-    <ExploreCarousel
-      initialPlanId={id}
-      householdName={household!.name}
-      plans={carouselPlans}
+      }))}
       untitledLabel={dict.recipes.untitledLink}
     />
   );

@@ -7,6 +7,7 @@ const ko = {
     delete: "삭제",
     edit: "편집",
     loading: "불러오는 중...",
+    savedMessage: "저장했어요",
   },
   tabBar: {
     recipes: "레시피",
@@ -361,15 +362,10 @@ const ko = {
     editCardContentTitle: "메뉴판에 보여질 내용",
     cardHouseholdNameLabel: "우리집 이름",
     cardIngredientsPlaceholder: "재료1, 재료2, 재료3",
-    listSheetTitle: "메뉴판 관리하기",
-    hideAction: "숨기기",
-    unhideAction: "보이기",
     eventDateLineTemplate: "날짜: {date}",
     headcountLineTemplate: "인원 수: {count}명",
     editMealPlanButton: "수정하기",
     deleteMealPlanButton: "메뉴판 삭제",
-    prevPlan: "이전 메뉴판",
-    nextPlan: "다음 메뉴판",
     renameRecipeButton: "이름 수정",
   },
 } as const;

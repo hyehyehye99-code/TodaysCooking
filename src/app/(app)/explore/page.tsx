@@ -9,5 +9,5 @@ export default async function ExploreIndexPage() {
 
   const plans = await fetchMealPlanListItems(supabase, household!.id);
 
-  return <MealPlanList plans={plans} showCloseButton={false} />;
+  return <MealPlanList plans={plans} />;
 }

@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { setIngredientState, type IngredientChipState } from "@/lib/actions/recipes";
+import { SavedToast } from "@/components/SavedToast";
 import { MealPlanInfoBox } from "./meal-plan-info-box";
 import { MealPlanRecipeCard } from "./meal-plan-recipe-card";
 import type { MealPlanCardRecipe } from "./meal-plan-card-image";
@@ -31,40 +32,34 @@ function parsePendingKey(key: string): [recipeId: string, name: string] {
 
 // One plan's whole panel: info box, recipe list, and the ingredient chips'
 // pending changes — taps just update local state here, and "저장" is what
-// actually persists them (recipe detail's chips still save instantly; see
-// InstantIngredientChip — a meal plan buffers because there's no longer a
-// bulk "장보기에 담기" action forcing an immediate write).
+// actually persists them (same buffered pattern as the recipe detail page's
+// own ingredient chips — see recipes/[id]/ingredients-section.tsx).
 export function MealPlanPanel({
   mealPlanId,
   householdName,
   title,
+  iconEmoji,
   eventDate,
   headcount,
   cardRecipes,
   recipes,
   untitledLabel,
-  onPrev,
-  onNext,
-  hasPrev,
-  hasNext,
 }: {
   mealPlanId: string;
   householdName: string;
   title: string;
+  iconEmoji: string | null;
   eventDate: string | null;
   headcount: number | null;
   cardRecipes: MealPlanCardRecipe[];
   recipes: PlanRecipe[];
   untitledLabel: string;
-  onPrev: () => void;
-  onNext: () => void;
-  hasPrev: boolean;
-  hasNext: boolean;
 }) {
   const dict = useDict();
   const router = useRouter();
   const [pending, setPending] = useState<Record<string, IngredientChipState>>({});
   const [saving, startSaving] = useTransition();
+  const [savedTrigger, setSavedTrigger] = useState(0);
 
   function handleIngredientChange(recipeId: string, name: string, next: IngredientChipState) {
     setPending((prev) => ({ ...prev, [pendingKey(recipeId, name)]: next }));
@@ -81,6 +76,7 @@ export function MealPlanPanel({
         })
       );
       setPending({});
+      setSavedTrigger((t) => t + 1);
       router.refresh();
     });
   }
@@ -89,17 +85,17 @@ export function MealPlanPanel({
 
   return (
     <div className="animate-fade-in-up pt-2">
+      <SavedToast message={dict.common.savedMessage} trigger={savedTrigger} />
+
       <MealPlanInfoBox
         mealPlanId={mealPlanId}
         householdName={householdName}
         title={title}
+        iconEmoji={iconEmoji}
         eventDate={eventDate}
         headcount={headcount}
         cardRecipes={cardRecipes}
-        onPrev={onPrev}
-        onNext={onNext}
-        hasPrev={hasPrev}
-        hasNext={hasNext}
+        recipeCount={recipes.length}
       />
 
       <div className="flex flex-col gap-3">

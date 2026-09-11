@@ -154,19 +154,6 @@ export async function createMealPlanWithRecipe(
   return { ok: true, id: mealPlan.id };
 }
 
-// The info box's inline date/headcount fields — both optional and
-// display-only (headcount is just shown, never used to scale any recipe's
-// ingredient amounts).
-// Hides (or restores) a meal plan without deleting it — managed from the
-// carousel's "메뉴판 목록" sheet, not from the per-plan "⋮" menu, since
-// this is about which plans show up in the swipeable set, not the plan's
-// own content.
-export async function setMealPlanHidden(id: string, hidden: boolean) {
-  const supabase = await createClient();
-  await supabase.from("meal_plans").update({ hidden }).eq("id", id);
-  revalidatePath("/explore");
-}
-
 export async function deleteMealPlan(id: string) {
   const supabase = await createClient();
   await supabase.from("meal_plans").delete().eq("id", id);

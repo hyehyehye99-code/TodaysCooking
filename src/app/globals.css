@@ -82,6 +82,28 @@ a:active {
   animation: fade-in-up 260ms ease-out;
 }
 
+@keyframes toast-life {
+  0% {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  12% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  85% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+}
+.animate-toast {
+  animation: toast-life 1800ms ease-out forwards;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;

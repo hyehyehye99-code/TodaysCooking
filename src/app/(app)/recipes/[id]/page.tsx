@@ -12,7 +12,7 @@ import { FavoriteButton } from "./favorite-button";
 import { MissingIngredientsButton } from "./missing-ingredients-button";
 import { RecipePhotoGallery } from "./recipe-photo-gallery";
 import { ReactionLog } from "./reaction-log";
-import { InstantIngredientChip } from "./instant-ingredient-chip";
+import { IngredientsSection } from "./ingredients-section";
 
 export default async function RecipeDetailPage({
   params,
@@ -135,10 +135,10 @@ export default async function RecipeDetailPage({
 
       <RecipePhotoGallery photos={r.cover_photo_urls} />
 
-      <p className="flex items-center gap-1.5 text-xs font-semibold text-accent">
+      <div className="flex items-center gap-1.5 text-xs font-semibold text-accent">
         <ProfileAvatar iconEmoji={creatorProfile?.icon_emoji} nickname={creatorProfile?.nickname ?? ""} size={16} />
         {dict.recipes.registeredByTemplate.replace("{name}", chefName(creatorProfile?.nickname, dict))}
-      </p>
+      </div>
       {r.tags.length > 0 && (
         <div className="mt-2 flex flex-wrap gap-1.5">
           {r.tags.map((tag) => (
@@ -181,27 +181,17 @@ export default async function RecipeDetailPage({
       )}
 
       {!r.hide_ingredients && ingredients.length > 0 && (
-        <div className="mt-5">
-          <p className="mb-2 flex items-center gap-1.5">
-            <span className="text-[15px] font-bold">{dict.welcome.ingredients}</span>
-            <span className="text-xs text-ink-faint">
-              {dict.recipes.ownedCountTemplate
-                .replace("{owned}", String(activeIngredients.length - missing.length))
-                .replace("{total}", String(activeIngredients.length))}
-            </span>
-          </p>
-          <div className="flex flex-wrap gap-2">
-            {ingredients.map((ing) => (
-              <InstantIngredientChip
-                key={ing.id}
-                recipeId={r.id}
-                name={ing.name}
-                amount={ing.amount}
-                initialState={ing.skipped ? "skip" : owned.has(ing.name) ? "fridge" : onShoppingList.has(ing.name) ? "shopping" : "none"}
-              />
-            ))}
-          </div>
-        </div>
+        <IngredientsSection
+          recipeId={r.id}
+          ownedCount={activeIngredients.length - missing.length}
+          totalCount={activeIngredients.length}
+          ingredients={ingredients.map((ing) => ({
+            id: ing.id,
+            name: ing.name,
+            amount: ing.amount,
+            initialState: ing.skipped ? "skip" : owned.has(ing.name) ? "fridge" : onShoppingList.has(ing.name) ? "shopping" : "none",
+          }))}
+        />
       )}
 
       {!r.hide_ingredients && activeIngredients.length > 0 && (

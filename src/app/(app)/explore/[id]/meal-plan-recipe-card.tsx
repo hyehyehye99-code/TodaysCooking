@@ -58,20 +58,20 @@ export function MealPlanRecipeCard({
 
   return (
     <GlassCard className="bg-white p-3.5">
-      <div className="mb-2.5 flex items-center gap-2.5">
+      <div className="mb-2.5 flex items-center gap-3">
         <Link
           href={`/recipes/${recipeId}?from=${encodeURIComponent(`/explore/${mealPlanId}`)}`}
           className="flex items-center gap-2.5"
         >
-          <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-surface text-xs font-bold text-ink-soft">
+          <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-accent/10 text-xs font-bold text-accent-ink">
             {index + 1}
           </span>
           <RecipeThumb
             coverPhotoUrl={coverPhotoUrl}
             iconEmoji={iconEmoji}
             linkThumbnailUrl={linkThumbnailUrl}
-            size={36}
-            rounded="rounded-lg"
+            size={40}
+            rounded="rounded-xl"
           />
         </Link>
         {editing ? (
