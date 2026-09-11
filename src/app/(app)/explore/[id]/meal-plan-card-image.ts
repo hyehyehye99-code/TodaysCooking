@@ -10,16 +10,20 @@
 // preview buttons render it — same mechanism that makes it usable here on
 // <canvas>, which can only draw a font that's actually loaded.
 //
-// Fixed A4 portrait ratio (1 : √2), sized well below actual A4 print
-// resolution — this is for sharing on a phone screen, not printing.
+// A tall portrait ratio (taller than A4's 1:√2), sized well below actual
+// print resolution — this is for sharing on a phone screen, not printing.
 
 import localFont from "next/font/local";
-import { Noto_Serif_KR, Gaegu, Black_Han_Sans } from "next/font/google";
 
 const suit = localFont({ src: "../../../../fonts/SUIT-Variable.woff2", weight: "100 900" });
-const notoSerifKr = Noto_Serif_KR({ subsets: ["latin"], weight: ["500", "700"] });
-const gaegu = Gaegu({ subsets: ["latin"], weight: ["700"] });
-const blackHanSans = Black_Han_Sans({ subsets: ["latin"], weight: "400" });
+const noltotaenggu = localFont({ src: "../../../../fonts/griun-noltotaenggu.ttf" });
+const bombaram = localFont({ src: "../../../../fonts/hs-bombaram.ttf" });
+const hwalkongserif = localFont({ src: "../../../../fonts/hs-hwalkongserif.ttf" });
+const santokki = localFont({ src: "../../../../fonts/hs-santokki.ttf" });
+const memoment = localFont({ src: "../../../../fonts/memoment-kkukkukk.ttf" });
+const chosunGs = localFont({ src: "../../../../fonts/chosun-gs.ttf" });
+const chosunSm = localFont({ src: "../../../../fonts/chosun-sm.ttf" });
+const gowunBatang = localFont({ src: "../../../../fonts/gowun-batang.ttf" });
 
 export type MealPlanCardRecipe = { title: string; ingredientNames: string[] };
 export type MealPlanCardData = {
@@ -29,7 +33,7 @@ export type MealPlanCardData = {
 };
 
 const WIDTH = 1000;
-const HEIGHT = Math.round(WIDTH * Math.SQRT2); // ~1414, A4's ratio
+const HEIGHT = Math.round(WIDTH * 1.85); // taller than A4's ~1.414 ratio
 const PADDING = 90;
 const INK = "#1c1c1c";
 const INK_SOFT = "#6b6b6b";
@@ -37,16 +41,32 @@ const INK_SOFT = "#6b6b6b";
 // Base sizes at scale 1 — shrunk together (see fit-to-height below) when a
 // plan has enough recipes that they wouldn't fit the fixed canvas height
 // otherwise.
-const BASE_NAME_SIZE = 40;
-const BASE_INGREDIENTS_SIZE = 26;
-const BASE_NAME_GAP = 44;
-const BASE_BLOCK_GAP = 70;
+const BASE_NAME_SIZE = 34;
+const BASE_INGREDIENTS_SIZE = 22;
+const BASE_NAME_GAP = 40;
+const BASE_BLOCK_GAP = 85;
 const HOUSEHOLD_NAME_Y = 200;
-const TITLE_Y = 250;
-const RECIPES_START_Y = 420;
+const TITLE_Y = 200;
+const RECIPES_START_Y = 410;
 const FOOTER_HEIGHT = 100;
 
 type RecipeLayout = { text: string; blockHeight: number };
+
+// Same-origin (served from /public), so drawing it onto the canvas doesn't
+// taint it the way a hotlinked cross-origin image would — cached across
+// renders since every template draws the same mark.
+let logoImagePromise: Promise<HTMLImageElement> | null = null;
+function loadLogoImage(): Promise<HTMLImageElement> {
+  if (!logoImagePromise) {
+    logoImagePromise = new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => resolve(img);
+      img.onerror = reject;
+      img.src = "/logo-mark.svg";
+    });
+  }
+  return logoImagePromise;
+}
 
 function layoutRecipe(recipe: MealPlanCardRecipe, scale: number): RecipeLayout {
   const text = recipe.ingredientNames.length > 0 ? recipe.ingredientNames.join(", ") : "-";
@@ -69,6 +89,17 @@ async function renderTemplate(data: MealPlanCardData, font: string): Promise<Blo
   const ctx = canvas.getContext("2d");
   if (!ctx) return null;
 
+  // A couple of the picker's local fonts are large (multi-MB) TTFs — every
+  // template's canvas draws in parallel as soon as the picker opens (see
+  // ShareDesignPicker), so without this a large font can still be mid-
+  // download when its fillText runs and silently falls back to the system
+  // font instead of waiting for it.
+  try {
+    await document.fonts.load(`16px ${font}`);
+  } catch {
+    // Load failure just means the fallback already in `font` draws instead.
+  }
+
   ctx.fillStyle = "#ffffff";
   ctx.fillRect(0, 0, WIDTH, HEIGHT);
   ctx.textAlign = "center";
@@ -78,9 +109,9 @@ async function renderTemplate(data: MealPlanCardData, font: string): Promise<Blo
 
   // Household name + meal plan title, both centered
   ctx.fillStyle = INK;
-  ctx.font = `700 30px ${font}`;
+  ctx.font = `400 26px ${font}`;
   ctx.fillText(data.householdName, centerX, HOUSEHOLD_NAME_Y);
-  ctx.font = `800 54px ${font}`;
+  ctx.font = `700 46px ${font}`;
   ctx.fillText(data.title, centerX, TITLE_Y + 60);
 
   // Recipes
@@ -88,7 +119,7 @@ async function renderTemplate(data: MealPlanCardData, font: string): Promise<Blo
   data.recipes.forEach((recipe, i) => {
     const { text, blockHeight } = layouts[i];
     ctx.fillStyle = INK;
-    ctx.font = `700 ${BASE_NAME_SIZE * scale}px ${font}`;
+    ctx.font = `500 ${BASE_NAME_SIZE * scale}px ${font}`;
     ctx.fillText(recipe.title, centerX, y);
     ctx.fillStyle = INK_SOFT;
     ctx.font = `400 ${BASE_INGREDIENTS_SIZE * scale}px ${font}`;
@@ -96,10 +127,10 @@ async function renderTemplate(data: MealPlanCardData, font: string): Promise<Blo
     y += blockHeight;
   });
 
-  // Footer wordmark, pinned near the bottom regardless of content length
-  ctx.fillStyle = INK_SOFT;
-  ctx.font = `700 26px ${font}`;
-  ctx.fillText("우리집 레시피", centerX, HEIGHT - FOOTER_HEIGHT / 2);
+  // Footer mark, pinned near the bottom regardless of content length
+  const logo = await loadLogoImage();
+  const logoSize = 44;
+  ctx.drawImage(logo, centerX - logoSize / 2, HEIGHT - FOOTER_HEIGHT / 2 - logoSize / 2, logoSize, logoSize);
 
   ctx.textAlign = "left";
 
@@ -125,21 +156,51 @@ export const MEAL_PLAN_CARD_TEMPLATES: MealPlanCardTemplate[] = [
     render: (data) => renderTemplate(data, `${suit.style.fontFamily}, ${FALLBACK}`),
   },
   {
-    id: "serif",
-    label: "명조",
-    className: notoSerifKr.className,
-    render: (data) => renderTemplate(data, `${notoSerifKr.style.fontFamily}, serif`),
+    id: "noltotaenggu",
+    label: "노을탱구",
+    className: noltotaenggu.className,
+    render: (data) => renderTemplate(data, `${noltotaenggu.style.fontFamily}, ${FALLBACK}`),
   },
   {
-    id: "handwriting",
-    label: "손글씨",
-    className: gaegu.className,
-    render: (data) => renderTemplate(data, `${gaegu.style.fontFamily}, ${FALLBACK}`),
+    id: "bombaram",
+    label: "봄바람",
+    className: bombaram.className,
+    render: (data) => renderTemplate(data, `${bombaram.style.fontFamily}, ${FALLBACK}`),
   },
   {
-    id: "impact",
-    label: "임팩트",
-    className: blackHanSans.className,
-    render: (data) => renderTemplate(data, `${blackHanSans.style.fontFamily}, ${FALLBACK}`),
+    id: "hwalkongserif",
+    label: "활공세리프",
+    className: hwalkongserif.className,
+    render: (data) => renderTemplate(data, `${hwalkongserif.style.fontFamily}, serif`),
+  },
+  {
+    id: "santokki",
+    label: "산토끼",
+    className: santokki.className,
+    render: (data) => renderTemplate(data, `${santokki.style.fontFamily}, ${FALLBACK}`),
+  },
+  {
+    id: "memoment",
+    label: "꾸끄꾹",
+    className: memoment.className,
+    render: (data) => renderTemplate(data, `${memoment.style.fontFamily}, ${FALLBACK}`),
+  },
+  {
+    id: "chosun-gs",
+    label: "조선굵은",
+    className: chosunGs.className,
+    render: (data) => renderTemplate(data, `${chosunGs.style.fontFamily}, ${FALLBACK}`),
+  },
+  {
+    id: "chosun-sm",
+    label: "조선얇은",
+    className: chosunSm.className,
+    render: (data) => renderTemplate(data, `${chosunSm.style.fontFamily}, ${FALLBACK}`),
+  },
+  {
+    id: "gowun-batang",
+    label: "고운바탕",
+    className: gowunBatang.className,
+    render: (data) => renderTemplate(data, `${gowunBatang.style.fontFamily}, serif`),
   },
 ];
