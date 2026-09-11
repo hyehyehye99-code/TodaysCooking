@@ -131,9 +131,11 @@ export function AppHeader({
             <Link href="/explore/new" className="text-sm font-bold text-accent">
               {dict.components.newMealPlanLink}
             </Link>
-            <Link href="/explore/list" className="text-sm font-bold text-ink-soft">
-              {dict.mealPlan.listSheetTitle}
-            </Link>
+            {pathname !== "/explore" && (
+              <Link href="/explore/list" className="text-sm font-bold text-ink-soft">
+                {dict.mealPlan.listSheetTitle}
+              </Link>
+            )}
           </div>
         )}
       </div>

@@ -13,7 +13,7 @@ export default async function EditMealPlanPage({ params }: { params: Promise<{ i
   const [{ data: mealPlan }, { data: mealPlanRecipes }, { data: recipes }] = await Promise.all([
     supabase
       .from("meal_plans")
-      .select("id, title, event_date, headcount")
+      .select("id, title, icon_emoji, event_date, headcount")
       .eq("id", id)
       .eq("household_id", household!.id)
       .maybeSingle(),
@@ -34,6 +34,7 @@ export default async function EditMealPlanPage({ params }: { params: Promise<{ i
     <EditMealPlanForm
       mealPlanId={mealPlan.id}
       title={mealPlan.title}
+      iconEmoji={mealPlan.icon_emoji}
       eventDateIso={mealPlan.event_date}
       headcount={mealPlan.headcount}
       recipes={recipes ?? []}

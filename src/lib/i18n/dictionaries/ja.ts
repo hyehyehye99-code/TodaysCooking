@@ -334,6 +334,7 @@ const ja: Dictionary = {
     editHeading: "メニュー表を編集",
     titleLabel: "メニュー表の名前",
     titlePlaceholder: "例：ホームパーティーメニュー",
+    iconLabel: "アイコン",
     pickRecipesLabel: "レシピを選ぶ",
     addRecipeButton: "+ レシピを追加",
     closeRecipePicker: "閉じる",

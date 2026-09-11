@@ -9,6 +9,7 @@ import { FieldLabel } from "@/components/FieldLabel";
 import { StickyFormBar } from "@/components/StickyFormBar";
 import { Modal } from "@/components/Modal";
 import { ClearableInput } from "@/components/ClearableInput";
+import { EmojiPicker } from "@/components/EmojiPicker";
 import { useDict } from "@/lib/i18n/client";
 
 type PickableRecipe = { id: string; title: string | null; cover_photo_urls: string[]; icon_emoji: string | null };
@@ -71,6 +72,11 @@ export function NewMealPlanForm({ recipes }: { recipes: PickableRecipe[] }) {
             placeholder={dict.mealPlan.titlePlaceholder}
             className="w-full rounded-xl border border-transparent bg-surface px-3.5 py-3 text-base font-bold outline-none focus:border-accent"
           />
+        </div>
+
+        <div>
+          <FieldLabel>{dict.mealPlan.iconLabel}</FieldLabel>
+          <EmojiPicker name="iconEmoji" />
         </div>
 
         <div className="flex gap-3">

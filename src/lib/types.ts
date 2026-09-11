@@ -71,6 +71,7 @@ export type MealPlan = {
   id: string;
   household_id: string;
   title: string;
+  icon_emoji: string | null;
   event_date: string | null;
   headcount: number | null;
   hidden: boolean;

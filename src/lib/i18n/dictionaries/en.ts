@@ -338,6 +338,7 @@ const en: Dictionary = {
     editHeading: "Edit meal plan",
     titleLabel: "Meal plan name",
     titlePlaceholder: "e.g. Home party menu",
+    iconLabel: "Icon",
     pickRecipesLabel: "Pick recipes",
     addRecipeButton: "+ Add recipe",
     closeRecipePicker: "Close",

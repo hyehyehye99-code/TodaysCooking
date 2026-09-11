@@ -1,23 +1,13 @@
-import { redirect } from "next/navigation";
 import { getCurrentHousehold } from "@/lib/household";
 import { createClient } from "@/lib/supabase/server";
-import { getDictionary } from "@/lib/i18n/server";
+import { fetchMealPlanListItems } from "./list/meal-plan-list-data";
+import { MealPlanList } from "./list/meal-plan-list";
 
 export default async function ExploreIndexPage() {
   const { household } = await getCurrentHousehold();
   const supabase = await createClient();
-  const { dict } = await getDictionary();
 
-  const { data: firstPlan } = await supabase
-    .from("meal_plans")
-    .select("id")
-    .eq("household_id", household!.id)
-    .eq("hidden", false)
-    .order("created_at", { ascending: false })
-    .limit(1)
-    .maybeSingle();
+  const plans = await fetchMealPlanListItems(supabase, household!.id);
 
-  if (firstPlan) redirect(`/explore/${firstPlan.id}`);
-
-  return <p className="mt-10 text-center text-sm text-ink-faint">{dict.mealPlan.emptyState}</p>;
+  return <MealPlanList plans={plans} showCloseButton={false} />;
 }

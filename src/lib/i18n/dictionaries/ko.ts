@@ -337,6 +337,7 @@ const ko = {
     editHeading: "메뉴판 수정",
     titleLabel: "메뉴판 이름",
     titlePlaceholder: "예: 홈파티 메뉴",
+    iconLabel: "아이콘",
     pickRecipesLabel: "레시피 고르기",
     addRecipeButton: "+ 레시피 추가하기",
     closeRecipePicker: "닫기",

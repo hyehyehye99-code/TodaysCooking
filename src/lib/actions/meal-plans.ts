@@ -26,6 +26,7 @@ async function replaceMealPlanRecipes(
 
 export async function createMealPlan(_prevState: unknown, formData: FormData) {
   const title = String(formData.get("title") ?? "").trim();
+  const iconEmoji = String(formData.get("iconEmoji") ?? "").trim();
   const recipeIds = parseRecipeIds(String(formData.get("recipeIds") ?? ""));
   const eventDateRaw = String(formData.get("eventDate") ?? "").trim();
   const headcountRaw = String(formData.get("headcount") ?? "").trim();
@@ -40,6 +41,7 @@ export async function createMealPlan(_prevState: unknown, formData: FormData) {
     .insert({
       household_id: household.id,
       title,
+      icon_emoji: iconEmoji || null,
       event_date: eventDateRaw ? new Date(eventDateRaw).toISOString() : null,
       headcount: headcountRaw ? Number(headcountRaw) : null,
       created_by: user.id,
@@ -57,6 +59,7 @@ export async function createMealPlan(_prevState: unknown, formData: FormData) {
 export async function updateMealPlan(_prevState: unknown, formData: FormData) {
   const id = String(formData.get("id") ?? "");
   const title = String(formData.get("title") ?? "").trim();
+  const iconEmoji = String(formData.get("iconEmoji") ?? "").trim();
   const recipeIds = parseRecipeIds(String(formData.get("recipeIds") ?? ""));
   const eventDateRaw = String(formData.get("eventDate") ?? "").trim();
   const headcountRaw = String(formData.get("headcount") ?? "").trim();
@@ -68,6 +71,7 @@ export async function updateMealPlan(_prevState: unknown, formData: FormData) {
     .from("meal_plans")
     .update({
       title,
+      icon_emoji: iconEmoji || null,
       event_date: eventDateRaw ? new Date(eventDateRaw).toISOString() : null,
       headcount: headcountRaw ? Number(headcountRaw) : null,
     })
