@@ -7,7 +7,6 @@ const ko = {
     delete: "삭제",
     edit: "편집",
     loading: "불러오는 중...",
-    savedMessage: "저장했어요",
   },
   tabBar: {
     recipes: "레시피",
@@ -267,6 +266,7 @@ const ko = {
     deleting: "삭제 중...",
     registeredByTemplate: "{name} 등록",
     ownedCountTemplate: "{owned}/{total} 보유 중",
+    ingredientsSavedMessage: "재료 현황을 저장했어요",
     skippedSuffix: "(생략됨)",
     editButton: "수정하기",
     deleteMenu: "메뉴 삭제",
@@ -290,11 +290,7 @@ const ko = {
     subtitlePlaceholder: "한 줄 설명",
     tagsLabel: "태그",
     saveButton: "저장하기",
-    missingIngredientsDescDetailed:
-      "가지고 있는 재료는 보유 중으로, 장보기 목록에 담고 싶은 재료는 장보기 담기로, 필요 없는 재료는 생략으로 표시해주세요. 선택하지 않은 재료는 이번엔 그대로 두고 다음에 다시 물어볼게요.",
     addingEllipsis: "저장하는 중...",
-    editOwnedIngredients: "재료 저장하기",
-    applyAllPrefix: "전체 ",
     reactionCountTemplate: "{count}명이 먹고 싶다고 표현했어요~!",
     resetReactions: "초기화",
     share: "공유",

@@ -49,7 +49,7 @@ export function IngredientsSection({
 
   return (
     <div className="mt-5">
-      <SavedToast message={dict.common.savedMessage} trigger={savedTrigger} />
+      <SavedToast message={dict.recipes.ingredientsSavedMessage} trigger={savedTrigger} />
 
       <p className="mb-2 flex items-center gap-1.5">
         <span className="text-[15px] font-bold">{dict.welcome.ingredients}</span>

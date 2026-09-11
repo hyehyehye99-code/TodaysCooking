@@ -9,7 +9,6 @@ const en: Dictionary = {
     delete: "Delete",
     edit: "Edit",
     loading: "Loading...",
-    savedMessage: "Saved",
   },
   tabBar: {
     recipes: "Recipes",
@@ -268,6 +267,7 @@ const en: Dictionary = {
     deleting: "Deleting...",
     registeredByTemplate: "Added by {name}",
     ownedCountTemplate: "{owned}/{total} in fridge",
+    ingredientsSavedMessage: "Ingredient status saved",
     skippedSuffix: "(skipped)",
     editButton: "Edit",
     deleteMenu: "Delete menu",
@@ -291,11 +291,7 @@ const en: Dictionary = {
     subtitlePlaceholder: "A short description",
     tagsLabel: "Tags",
     saveButton: "Save",
-    missingIngredientsDescDetailed:
-      "Mark what you already have as In fridge, what you want on your shopping list as Add to list, and what you don't need as Skip. Anything left unmarked stays as is and we'll ask again next time.",
     addingEllipsis: "Saving...",
-    editOwnedIngredients: "Save ingredients",
-    applyAllPrefix: "All: ",
     reactionCountTemplate: "{count} people want to make this~!",
     resetReactions: "Reset",
     share: "Share",

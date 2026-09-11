@@ -85,7 +85,7 @@ export function MealPlanPanel({
 
   return (
     <div className="animate-fade-in-up pt-2">
-      <SavedToast message={dict.common.savedMessage} trigger={savedTrigger} />
+      <SavedToast message={dict.recipes.ingredientsSavedMessage} trigger={savedTrigger} />
 
       <MealPlanInfoBox
         mealPlanId={mealPlanId}

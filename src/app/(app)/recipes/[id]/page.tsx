@@ -9,7 +9,6 @@ import { getDictionary } from "@/lib/i18n/server";
 import type { RecipeWithIngredients } from "@/lib/types";
 import { RecipeMenuButton } from "./recipe-menu-button";
 import { FavoriteButton } from "./favorite-button";
-import { MissingIngredientsButton } from "./missing-ingredients-button";
 import { RecipePhotoGallery } from "./recipe-photo-gallery";
 import { ReactionLog } from "./reaction-log";
 import { IngredientsSection } from "./ingredients-section";
@@ -88,15 +87,6 @@ export default async function RecipeDetailPage({
   const missing = activeIngredients.filter((ing) => !owned.has(ing.name));
   const makeable = missing.length === 0;
   const allAdded = missing.length > 0 && missing.every((m) => onShoppingList.has(m.name));
-  // The full list (not just what's missing) — makeable/allAdded recipes
-  // still need a way to correct a wrongly-owned ingredient, not just ones
-  // with something outstanding.
-  const editableIngredients = ingredients.map((ing) => ({
-    name: ing.name,
-    skipped: ing.skipped,
-    owned: owned.has(ing.name),
-    onShoppingList: onShoppingList.has(ing.name),
-  }));
 
   return (
     <div className="animate-fade-in-up pt-2">
@@ -194,25 +184,19 @@ export default async function RecipeDetailPage({
         />
       )}
 
-      {!r.hide_ingredients && activeIngredients.length > 0 && (
+      {!r.hide_ingredients && activeIngredients.length > 0 && (makeable || allAdded) && (
         <div className="mt-4">
           {makeable ? (
-            <div className="flex items-center justify-between gap-2 rounded-xl border border-transparent bg-positive/10 px-3 py-2.5">
-              <span className="flex items-center gap-2">
-                <svg viewBox="0 0 14 14" width="14" height="14" fill="none" stroke="var(--color-positive-ink)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M2.5 7.5l3 3 6-7" />
-                </svg>
-                <span className="text-[13px] font-bold text-positive-ink">{dict.recipes.makeableBadge}</span>
-              </span>
-              <MissingIngredientsButton recipeId={r.id} ingredients={editableIngredients} variant="link" />
-            </div>
-          ) : allAdded ? (
-            <div className="flex items-center justify-between gap-2 rounded-xl border border-transparent bg-surface px-3 py-2.5">
-              <span className="text-[13px] font-bold text-ink-faint">{dict.welcome.addedToShoppingList}</span>
-              <MissingIngredientsButton recipeId={r.id} ingredients={editableIngredients} variant="link" />
+            <div className="flex items-center gap-2 rounded-xl border border-transparent bg-positive/10 px-3 py-2.5">
+              <svg viewBox="0 0 14 14" width="14" height="14" fill="none" stroke="var(--color-positive-ink)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M2.5 7.5l3 3 6-7" />
+              </svg>
+              <span className="text-[13px] font-bold text-positive-ink">{dict.recipes.makeableBadge}</span>
             </div>
           ) : (
-            <MissingIngredientsButton recipeId={r.id} ingredients={editableIngredients} />
+            <div className="flex items-center gap-2 rounded-xl border border-transparent bg-surface px-3 py-2.5">
+              <span className="text-[13px] font-bold text-ink-faint">{dict.welcome.addedToShoppingList}</span>
+            </div>
           )}
         </div>
       )}

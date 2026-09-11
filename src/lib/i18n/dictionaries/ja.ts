@@ -9,7 +9,6 @@ const ja: Dictionary = {
     delete: "削除",
     edit: "編集",
     loading: "読み込み中...",
-    savedMessage: "保存しました",
   },
   tabBar: {
     recipes: "レシピ",
@@ -264,6 +263,7 @@ const ja: Dictionary = {
     deleting: "削除中...",
     registeredByTemplate: "{name}が登録",
     ownedCountTemplate: "{owned}/{total} 在庫あり",
+    ingredientsSavedMessage: "材料の在庫状況を保存しました",
     skippedSuffix: "（省略）",
     editButton: "編集する",
     deleteMenu: "メニューを削除",
@@ -287,11 +287,7 @@ const ja: Dictionary = {
     subtitlePlaceholder: "一行説明",
     tagsLabel: "タグ",
     saveButton: "保存する",
-    missingIngredientsDescDetailed:
-      "すでにある材料は「在庫あり」に、買い物リストに入れたい材料は「買い物に追加」に、不要な材料は「省略」にしてください。選択しなかった材料はそのままにして、次回また確認します。",
     addingEllipsis: "保存中...",
-    editOwnedIngredients: "材料を保存する",
-    applyAllPrefix: "全て：",
     reactionCountTemplate: "{count}人が食べたいと言っています〜！",
     resetReactions: "リセット",
     share: "共有",
