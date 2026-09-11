@@ -224,6 +224,29 @@ export function ReferenceLinkField({
     };
   }, []);
 
+  // A stored thumbnail (initialPreview, from the bookmarks row) can go
+  // stale — Instagram's og:image is a signed CDN URL that expires after a
+  // while, so a card saved a few days ago can end up broken. Re-scraping
+  // once on mount — silently, without touching `loading` — refreshes it
+  // whenever this field's page (the recipe edit form) is opened again; a
+  // failed refetch (rate-limited, link now dead, etc.) just leaves the
+  // existing preview alone rather than replacing a working thumbnail with
+  // nothing.
+  useEffect(() => {
+    if (!defaultValue.trim()) return;
+    let cancelled = false;
+    fetchLinkPreview(defaultValue).then((result) => {
+      if (cancelled) return;
+      if (result.ok && (result.title || result.thumbnailUrl)) {
+        setPreview({ title: result.title, thumbnailUrl: result.thumbnailUrl, domain: result.domain });
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   return (
     <div>
       {suggestion && (

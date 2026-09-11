@@ -116,8 +116,7 @@ export function EditRecipeForm({
         </div>
 
         <GlassCard className="bg-white p-4">
-          <p className="mb-1 text-[13px] font-bold">{dict.welcome.referenceLink}</p>
-          <p className="mb-3 text-xs text-ink-soft">{dict.recipes.referenceLinkHint}</p>
+          <p className="mb-3 text-[13px] font-bold">{dict.welcome.referenceLink}</p>
           <ReferenceLinkField
             name="referenceUrl"
             defaultValue={referenceUrl}
