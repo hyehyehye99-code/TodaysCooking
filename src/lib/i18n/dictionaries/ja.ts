@@ -326,7 +326,7 @@ const ja: Dictionary = {
     buyButton: "購入する",
   },
   mealPlan: {
-    emptyState: "まだメニュー表がありません。パーティーなどで作る料理をまとめてメニュー表を作ってみましょう。",
+    emptyState: "まだメニュー表がありません。\nパーティーなどで作る料理をまとめてメニュー表を作ってみましょう。",
     recipeCountTemplate: "レシピ{count}件",
     newHeading: "新しいメニュー表",
     editHeading: "メニュー表を編集",

@@ -330,7 +330,7 @@ const en: Dictionary = {
     buyButton: "Buy",
   },
   mealPlan: {
-    emptyState: "No meal plans yet. Group the dishes you're making for an occasion into one.",
+    emptyState: "No meal plans yet.\nGroup the dishes you're making for an occasion into one.",
     recipeCountTemplate: "{count} recipes",
     newHeading: "New meal plan",
     editHeading: "Edit meal plan",

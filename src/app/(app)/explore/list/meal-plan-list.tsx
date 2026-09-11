@@ -18,7 +18,7 @@ export function MealPlanList({ plans }: { plans: MealPlanListItem[] }) {
   const locale = useLocale();
 
   if (plans.length === 0) {
-    return <p className="mt-10 text-center text-sm text-ink-faint">{dict.mealPlan.emptyState}</p>;
+    return <p className="mt-10 whitespace-pre-line text-center text-sm text-ink-faint">{dict.mealPlan.emptyState}</p>;
   }
 
   return (

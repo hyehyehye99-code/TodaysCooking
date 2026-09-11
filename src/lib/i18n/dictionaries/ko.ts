@@ -329,7 +329,7 @@ const ko = {
     buyButton: "구매하러가기",
   },
   mealPlan: {
-    emptyState: "아직 메뉴판이 없어요. 모임이나 파티 때 만들 요리를 모아 메뉴판을 만들어보세요.",
+    emptyState: "아직 메뉴판이 없어요.\n모임이나 파티 때 만들 요리를 모아 메뉴판을 만들어보세요.",
     recipeCountTemplate: "레시피 {count}개",
     newHeading: "새 메뉴판",
     editHeading: "메뉴판 수정",
