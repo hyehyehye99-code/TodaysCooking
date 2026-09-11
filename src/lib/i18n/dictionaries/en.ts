@@ -363,7 +363,6 @@ const en: Dictionary = {
     headcountLineTemplate: "Headcount: {count}",
     editMealPlanButton: "Edit",
     deleteMealPlanButton: "Delete meal plan",
-    renameRecipeButton: "Rename",
   },
 };
 

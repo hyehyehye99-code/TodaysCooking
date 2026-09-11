@@ -359,7 +359,6 @@ const ja: Dictionary = {
     headcountLineTemplate: "人数: {count}人",
     editMealPlanButton: "編集する",
     deleteMealPlanButton: "メニュー表を削除",
-    renameRecipeButton: "名前を編集",
   },
 };
 

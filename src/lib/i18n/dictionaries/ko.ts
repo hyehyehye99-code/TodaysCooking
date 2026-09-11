@@ -362,7 +362,6 @@ const ko = {
     headcountLineTemplate: "인원 수: {count}명",
     editMealPlanButton: "수정하기",
     deleteMealPlanButton: "메뉴판 삭제",
-    renameRecipeButton: "이름 수정",
   },
 } as const;
 
