@@ -326,6 +326,8 @@ const ko = {
     deleteCheckedTitleTemplate: "체크한 {count}개 항목을 삭제할까요?",
     cannotUndo: "되돌릴 수 없어요.",
     buyButton: "구매하러가기",
+    coupangPartnersDisclosure:
+      "구매하기를 누르면 해당 재료의 쿠팡 페이지로 이동되며, 쿠팡 파트너스 활동의 일환으로 이에 따른 일정액의 수수료를 제공받습니다.",
   },
   mealPlan: {
     emptyState: "아직 메뉴판이 없어요.\n모임이나 파티 때 만들 요리를 모아 메뉴판을 만들어보세요.",

@@ -323,6 +323,8 @@ const ja: Dictionary = {
     deleteCheckedTitleTemplate: "チェックした{count}件を削除しますか？",
     cannotUndo: "元に戻せません。",
     buyButton: "購入する",
+    coupangPartnersDisclosure:
+      "「購入する」を押すとその材料のクーパンページに移動します。クーパンパートナーズ活動の一環として、これに伴う一定額の手数料を受け取ります。",
   },
   mealPlan: {
     emptyState: "まだメニュー表がありません。\nパーティーなどで作る料理をまとめてメニュー表を作ってみましょう。",

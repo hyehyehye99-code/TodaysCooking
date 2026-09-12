@@ -66,11 +66,14 @@ export default async function ShoppingPage() {
       ) : (
         <>
           <ShoppingBulkActions doneCount={doneCount} allChecked={allChecked} />
-          <div className="mb-6 flex flex-col">
+          <div className="mb-3 flex flex-col">
             {items.map((item) => (
               <ShoppingItemRow key={item.id} item={item} />
             ))}
           </div>
+          <p className="mb-6 text-[11px] leading-relaxed text-ink-faint">
+            {dict.shopping.coupangPartnersDisclosure}
+          </p>
         </>
       )}
 

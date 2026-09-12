@@ -327,6 +327,8 @@ const en: Dictionary = {
     deleteCheckedTitleTemplate: "Delete the {count} checked items?",
     cannotUndo: "This can't be undone.",
     buyButton: "Buy",
+    coupangPartnersDisclosure:
+      "Tapping Buy takes you to that ingredient's Coupang page. As a Coupang Partners affiliate, we may earn a commission from qualifying purchases made through these links.",
   },
   mealPlan: {
     emptyState: "No meal plans yet.\nGroup the dishes you're making for an occasion into one.",
