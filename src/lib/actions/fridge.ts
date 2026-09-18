@@ -36,7 +36,7 @@ export async function saveFridge(items: FridgeSaveItem[], toDelete: string[] = [
     if (error) return { error: "저장하지 못했어요." };
   }
 
-  revalidatePath("/fridge");
+  revalidatePath("/mypage/fridge");
   revalidatePath("/recipes");
   return { success: true as const };
 }

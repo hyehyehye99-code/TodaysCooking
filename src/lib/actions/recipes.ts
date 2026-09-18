@@ -391,7 +391,7 @@ export async function setIngredientState(recipeId: string, name: string, state: 
   revalidatePath(`/recipes/${recipeId}`);
   revalidatePath("/explore");
   revalidatePath("/shopping");
-  revalidatePath("/fridge");
+  revalidatePath("/mypage/fridge");
 }
 
 export async function reorderRecipes(order: string[]) {
@@ -408,6 +408,13 @@ export async function toggleFavoriteRecipe(id: string, next: boolean) {
   const supabase = await createClient();
   await supabase.from("recipes").update({ is_favorite: next }).eq("id", id);
   revalidatePath("/recipes");
+}
+
+export async function toggleCookingRecipe(id: string, next: boolean) {
+  const supabase = await createClient();
+  await supabase.from("recipes").update({ is_cooking: next }).eq("id", id);
+  revalidatePath("/recipes");
+  revalidatePath(`/recipes/${id}`);
 }
 
 // Renames a tag across every recipe in the household at once (see

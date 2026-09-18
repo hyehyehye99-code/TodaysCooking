@@ -20,8 +20,9 @@ export default async function EditMealPlanPage({ params }: { params: Promise<{ i
     supabase.from("meal_plan_recipes").select("recipe_id").eq("meal_plan_id", id).order("position"),
     supabase
       .from("recipes")
-      .select("id, title, cover_photo_urls, icon_emoji, bookmarks(thumbnail_url)")
+      .select("id, title, cover_photo_urls, icon_emoji, is_cooking, bookmarks(thumbnail_url)")
       .eq("household_id", household!.id)
+      .order("is_cooking", { ascending: false })
       .order("position", { ascending: true, nullsFirst: false })
       .order("created_at", { ascending: false }),
   ]);

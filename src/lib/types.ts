@@ -13,6 +13,7 @@ export type Recipe = {
   notes: string | null;
   position: number | null;
   is_favorite: boolean;
+  is_cooking: boolean;
   hide_ingredients: boolean;
   created_by: string;
   created_at: string;
@@ -65,6 +66,34 @@ export type ShoppingItem = {
   source_recipe_title: string | null;
   checked: boolean;
   created_at: string;
+};
+
+export type Timer = {
+  id: string;
+  household_id: string;
+  recipe_id: string | null;
+  name: string;
+  color: string;
+  icon_emoji: string | null;
+  duration_seconds: number;
+  remaining_seconds: number;
+  is_running: boolean;
+  started_at: string | null;
+  position: number | null;
+  created_by: string;
+  created_at: string;
+};
+
+export type TimerAlert = {
+  id: string;
+  timer_id: string;
+  remaining_seconds: number;
+  message: string;
+};
+
+export type TimerWithRecipe = Timer & {
+  recipes: { title: string | null } | null;
+  timer_alerts: TimerAlert[];
 };
 
 export type MealPlan = {

@@ -11,6 +11,7 @@ type PickableRecipe = {
   title: string | null;
   cover_photo_urls: string[];
   icon_emoji: string | null;
+  is_cooking?: boolean;
   bookmarks?: { thumbnail_url: string | null }[] | null;
 };
 
@@ -27,7 +28,6 @@ export function RecipePicker({
 }) {
   const dict = useDict();
   const [query, setQuery] = useState("");
-  const [pickerOpen, setPickerOpen] = useState(false);
   const byId = useMemo(() => new Map(recipes.map((r) => [r.id, r])), [recipes]);
   // Only used as useDragReorder's initial value (below) — the picker's own
   // recipes/defaultSelected props come from the server and don't change
@@ -68,27 +68,17 @@ export function RecipePicker({
     <div>
       <input type="hidden" name={name} value={order.map((r) => r.id).join(",")} />
 
-      <button
-        type="button"
-        onClick={() => setPickerOpen((v) => !v)}
-        className="mb-3 w-full rounded-xl border border-dashed border-accent bg-white py-2.5 text-xs font-bold text-accent-ink"
-      >
-        {pickerOpen ? dict.mealPlan.closeRecipePicker : dict.mealPlan.addRecipeButton}
-      </button>
-
-      {pickerOpen && (
-        <>
-          <ClearableInput
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder={dict.recipes.searchPlaceholder}
-            className="mb-3 w-full rounded-xl border border-transparent bg-surface px-3.5 py-2.5 text-sm outline-none focus:border-accent"
-          />
-          <div className="flex max-h-[280px] flex-col gap-1.5 overflow-y-auto">
-            {filtered.length === 0 && (
-              <p className="py-6 text-center text-xs text-ink-faint">{dict.recipes.emptySearch}</p>
-            )}
-            {filtered.map((r) => {
+      <ClearableInput
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
+        placeholder={dict.recipes.searchPlaceholder}
+        className="mb-3 w-full rounded-xl border border-transparent bg-surface px-3.5 py-2.5 text-sm outline-none focus:border-accent"
+      />
+      <div className="flex max-h-[280px] flex-col gap-1.5 overflow-y-auto">
+        {filtered.length === 0 && (
+          <p className="py-6 text-center text-xs text-ink-faint">{dict.recipes.emptySearch}</p>
+        )}
+        {filtered.map((r) => {
               const active = selectedIds.has(r.id);
               return (
                 <button
@@ -107,6 +97,7 @@ export function RecipePicker({
                     rounded="rounded-lg"
                   />
                   <span className="min-w-0 flex-1 truncate text-sm font-semibold">{r.title || untitledLabel}</span>
+                  {r.is_cooking && <span className="shrink-0 text-sm">🍳</span>}
                   <span
                     className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 ${
                       active ? "border-accent bg-accent" : "border-border bg-white"
@@ -121,9 +112,7 @@ export function RecipePicker({
                 </button>
               );
             })}
-          </div>
-        </>
-      )}
+      </div>
 
       {order.length > 0 && (
         <div className="mt-4">

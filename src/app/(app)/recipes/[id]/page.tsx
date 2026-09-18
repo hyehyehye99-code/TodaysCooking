@@ -9,6 +9,7 @@ import { getDictionary } from "@/lib/i18n/server";
 import type { RecipeWithIngredients } from "@/lib/types";
 import { RecipeMenuButton } from "./recipe-menu-button";
 import { FavoriteButton } from "./favorite-button";
+import { CookingToggleButton } from "./cooking-toggle-button";
 import { RecipePhotoGallery } from "./recipe-photo-gallery";
 import { ReactionLog } from "./reaction-log";
 import { IngredientsSection } from "./ingredients-section";
@@ -211,6 +212,10 @@ export default async function RecipeDetailPage({
       )}
 
       <ReactionLog recipeId={r.id} reactions={reactions ?? []} />
+
+      <div className="mt-6">
+        <CookingToggleButton recipeId={r.id} isCooking={r.is_cooking} />
+      </div>
     </div>
   );
 }

@@ -15,7 +15,7 @@ export function CoupangRedirect() {
     if (!name) return;
     let cancelled = false;
     let redirected = false;
-    getCoupangSearchLink(name).then(({ url }) => {
+    getCoupangSearchLink().then(({ url }) => {
       if (cancelled) return;
       redirected = true;
       // The native app opens the result in Capacitor's in-app browser and

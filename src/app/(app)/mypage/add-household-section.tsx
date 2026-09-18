@@ -16,7 +16,7 @@ export function AddHouseholdSection() {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="flex w-full items-center justify-center gap-1.5 rounded-xl border border-dashed border-border py-3 text-sm font-bold text-accent"
+        className="flex items-center gap-1 text-xs font-semibold text-ink-faint"
       >
         + {dict.mypage.addHousehold}
       </button>

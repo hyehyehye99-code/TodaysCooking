@@ -150,18 +150,22 @@ export async function generateRecipeFromLink(
   // attempt never eats into someone's limited weekly free count. The
   // inserted row's id lets the client later reference this exact
   // generation if the user reports the result as unsatisfactory.
+  // A conditional UPDATE (remaining_count - 1 where remaining_count > 0),
+  // not a read-then-write — two concurrent requests can't both decrement off
+  // the same stale count, so this is what actually charges the bonus (the
+  // recorded via_bonus reflects whether that charge succeeded, in case a
+  // race won this unit out from under us between the earlier check and now).
+  let charged = false;
+  if (usingBonus) {
+    const { data: newCount } = await supabase.rpc("decrement_promo_bonus");
+    charged = newCount !== null;
+  }
+
   const { data: usageRow } = await supabase
     .from("ai_recipe_generations")
-    .insert({ user_id: user.id, via_bonus: usingBonus })
+    .insert({ user_id: user.id, via_bonus: charged })
     .select("id")
     .single();
-
-  if (usingBonus && promoGrant) {
-    await supabase
-      .from("promo_code_redemptions")
-      .update({ remaining_count: promoGrant.remaining_count - 1 })
-      .eq("user_id", user.id);
-  }
 
   return {
     ok: true,

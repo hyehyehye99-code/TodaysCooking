@@ -431,7 +431,11 @@ export function RecipeList({
               key={recipe.id}
               href={`/recipes/${recipe.id}?from=${encodeURIComponent(buildListUrl(query, activeTag))}`}
             >
-              <GlassCard className="flex items-center gap-3 bg-white p-3.5">
+              <GlassCard
+                className={`flex items-center gap-3 bg-white p-3.5 ${
+                  recipe.is_cooking ? "ring-2 ring-accent" : ""
+                }`}
+              >
                 <RecipeThumb
                   coverPhotoUrl={recipe.cover_photo_urls[0]}
                   iconEmoji={recipe.icon_emoji}
@@ -447,8 +451,13 @@ export function RecipeList({
                   {!isLinkOnly && recipe.subtitle && (
                     <p className="mt-0.5 truncate text-xs text-ink-soft">{recipe.subtitle}</p>
                   )}
-                  {(makeable || recipe.tags.length > 0) && (
+                  {(recipe.is_cooking || makeable || recipe.tags.length > 0) && (
                     <div className="mt-1 flex flex-wrap items-center gap-1.5">
+                      {recipe.is_cooking && (
+                        <span className="inline-flex items-center gap-0.5 rounded-full bg-accent px-1.5 py-0.5 text-[10px] font-bold text-white">
+                          🍳 {dict.recipes.cookingBadge}
+                        </span>
+                      )}
                       {makeable && (
                         <span className="inline-flex items-center gap-0.5 rounded-full bg-positive/10 px-1.5 py-0.5 text-[10px] font-bold text-positive-ink">
                           <svg viewBox="0 0 14 14" width="9" height="9" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">

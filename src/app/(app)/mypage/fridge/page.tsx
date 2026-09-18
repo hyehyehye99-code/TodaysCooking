@@ -3,6 +3,8 @@ import { getCurrentHousehold } from "@/lib/household";
 import { INGREDIENT_CATEGORIES, ALL_KNOWN_INGREDIENTS } from "@/lib/ingredients";
 import { FridgeEditor } from "./fridge-editor";
 import type { FridgeItem } from "@/lib/types";
+import { BackButton } from "@/components/ui";
+import { getDictionary } from "@/lib/i18n/server";
 
 function bySelectedFirst<T extends { selected: boolean }>(items: T[]) {
   return [...items].sort((a, b) => Number(b.selected) - Number(a.selected));
@@ -10,6 +12,7 @@ function bySelectedFirst<T extends { selected: boolean }>(items: T[]) {
 
 export default async function FridgePage() {
   const { household } = await getCurrentHousehold();
+  const { dict } = await getDictionary();
   const supabase = await createClient();
 
   const { data } = await supabase.from("fridge_items").select("*").eq("household_id", household!.id);
@@ -53,7 +56,11 @@ export default async function FridgePage() {
   ];
 
   return (
-    <div>
+    <div className="pt-2">
+      <div className="mb-5 flex items-center gap-3">
+        <BackButton href="/mypage" />
+        <h1 className="text-[22px] font-bold">{dict.mypage.fridge}</h1>
+      </div>
       <FridgeEditor categories={categories} />
     </div>
   );

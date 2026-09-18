@@ -1,8 +1,9 @@
-import { getCurrentHousehold } from "@/lib/household";
 import { createClient } from "@/lib/supabase/server";
-import { NewMealPlanForm } from "./new-meal-plan-form";
+import { getCurrentHousehold } from "@/lib/household";
+import { TimerForm } from "../timer-form";
+import type { RecipeOption } from "../timer-form";
 
-export default async function NewMealPlanPage() {
+export default async function NewTimerPage() {
   const { household } = await getCurrentHousehold();
   const supabase = await createClient();
 
@@ -10,9 +11,9 @@ export default async function NewMealPlanPage() {
     .from("recipes")
     .select("id, title, cover_photo_urls, icon_emoji, is_cooking, bookmarks(thumbnail_url)")
     .eq("household_id", household!.id)
+    .not("title", "is", null)
     .order("is_cooking", { ascending: false })
-    .order("position", { ascending: true, nullsFirst: false })
-    .order("created_at", { ascending: false });
+    .order("title", { ascending: true });
 
-  return <NewMealPlanForm recipes={recipes ?? []} />;
+  return <TimerForm recipes={(recipes as RecipeOption[] | null) ?? []} />;
 }

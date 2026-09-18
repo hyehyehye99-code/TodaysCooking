@@ -1,6 +1,6 @@
 export default function Loading() {
   return (
-    <div className="animate-pulse">
+    <div className="animate-pulse pt-2">
       <div className="mb-5 h-7 w-20 rounded-lg bg-surface" />
       <div className="flex flex-col gap-4">
         {Array.from({ length: 3 }).map((_, i) => (

@@ -62,17 +62,16 @@ const TABS: {
     ),
   },
   {
-    href: "/fridge",
-    labelKey: "fridge",
+    href: "/timer",
+    labelKey: "timer",
     cx: 12,
-    cy: 12,
-    scale: 0.8,
+    cy: 12.5,
+    scale: 0.85,
     icon: (
       <>
-        <rect x="5" y="2" width="14" height="20" rx="2" />
-        <path d="M5 9h14" />
-        <path d="M8 5v2" />
-        <path d="M8 12v2" />
+        <path d="M10 2h4" />
+        <circle cx="12" cy="13" r="8" />
+        <path d="M12 9v4l3 2" />
       </>
     ),
   },
@@ -98,6 +97,7 @@ export function TabBar() {
   const isSubpage =
     pathname.startsWith("/recipes/") ||
     pathname.startsWith("/mypage/") ||
+    pathname.startsWith("/timer/") ||
     (pathname.startsWith("/explore/") && !isExploreDetailPath(pathname));
 
   if (isSubpage) return null;

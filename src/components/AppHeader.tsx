@@ -6,13 +6,12 @@ import { usePathname } from "next/navigation";
 import { switchHousehold } from "@/lib/actions/household";
 import { useDict } from "@/lib/i18n/client";
 import type { Dictionary } from "@/lib/i18n/dictionaries/ko";
-import { isExploreDetailPath } from "@/lib/explorePath";
 
 type HouseholdOption = { id: string; name: string };
 
 const TAB_TITLE_KEYS: Record<string, keyof Dictionary["tabBar"]> = {
   "/recipes": "recipes",
-  "/fridge": "fridge",
+  "/timer": "timer",
   "/explore": "explore",
   "/shopping": "shopping",
 };
@@ -33,12 +32,13 @@ export function AppHeader({
   if (
     pathname.startsWith("/mypage") ||
     pathname.startsWith("/recipes/") ||
-    (pathname.startsWith("/explore/") && !isExploreDetailPath(pathname))
+    pathname.startsWith("/timer/") ||
+    pathname.startsWith("/explore/")
   )
     return null;
 
   const isRecipesTab = pathname === "/recipes";
-  const isExploreTab = pathname === "/explore" || isExploreDetailPath(pathname);
+  const isExploreTab = pathname === "/explore";
   const tabTitleKey = isExploreTab ? "explore" : TAB_TITLE_KEYS[pathname];
   const tabTitle = tabTitleKey ? dict.tabBar[tabTitleKey] : "";
 

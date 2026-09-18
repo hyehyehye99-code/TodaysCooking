@@ -13,6 +13,7 @@ export default async function RecipesPage() {
       .from("recipes")
       .select("*, recipe_ingredients(*), bookmarks(url, title, domain, thumbnail_url)")
       .eq("household_id", household!.id)
+      .order("is_cooking", { ascending: false })
       .order("position", { ascending: true, nullsFirst: false })
       .order("created_at", { ascending: false }),
     supabase.from("fridge_items").select("name, in_stock").eq("household_id", household!.id),

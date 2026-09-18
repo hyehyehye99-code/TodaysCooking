@@ -110,13 +110,13 @@ export async function finishShoppingTrip() {
     .in("id", checked.map((item) => item.id));
 
   revalidatePath("/shopping");
-  revalidatePath("/fridge");
+  revalidatePath("/mypage/fridge");
   revalidatePath("/recipes");
 
   const nickname = await getNickname(supabase, user.id);
   notifyHousehold(household.id, user.id, {
     title: "장보기 완료",
     body: `${nickname}님이 장보기를 완료하고 재료 ${checked.length}개를 냉장고에 추가했어요`,
-    url: "/fridge",
+    url: "/mypage/fridge",
   }).catch(() => {});
 }
