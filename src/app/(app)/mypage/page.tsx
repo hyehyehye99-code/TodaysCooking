@@ -25,15 +25,33 @@ export default async function MyPage() {
     getDictionary(),
   ]);
   const supabase = await createClient();
+  const planLimit = FREE_WEEKLY_LIMIT;
+  const planSince = daysAgoIso(7);
 
-  const entries = await Promise.all(
-    households.map(async ({ household, role }) => {
-      const { data: members } = await supabase.rpc("get_household_members", {
-        target_household_id: household.id,
-      });
-      return { household, role, members: (members as Member[] | null) ?? [] };
-    })
-  );
+  // None of these three depend on each other (only on user/households,
+  // already resolved above) — they used to run one after another, adding
+  // two full round trips to every mypage load for no reason.
+  const [entries, { data: promoGrant }, { count: planUsageCount }] = await Promise.all([
+    Promise.all(
+      households.map(async ({ household, role }) => {
+        const { data: members } = await supabase.rpc("get_household_members", {
+          target_household_id: household.id,
+        });
+        return { household, role, members: (members as Member[] | null) ?? [] };
+      })
+    ),
+    user
+      ? supabase.from("promo_code_redemptions").select("remaining_count").eq("user_id", user.id).maybeSingle()
+      : Promise.resolve({ data: null }),
+    user
+      ? supabase
+          .from("ai_recipe_generations")
+          .select("id", { count: "exact", head: true })
+          .eq("user_id", user.id)
+          .eq("via_bonus", false)
+          .gte("created_at", planSince)
+      : Promise.resolve({ count: 0 }),
+  ]);
 
   const me = entries
     .find((e) => e.household.id === current?.id)
@@ -41,21 +59,7 @@ export default async function MyPage() {
   const myNickname = me?.nickname ?? "";
   const myIconEmoji = me?.icon_emoji ?? null;
 
-  const { data: promoGrant } = user
-    ? await supabase.from("promo_code_redemptions").select("remaining_count").eq("user_id", user.id).maybeSingle()
-    : { data: null };
   const bonusRemaining = promoGrant?.remaining_count ?? 0;
-
-  const planLimit = FREE_WEEKLY_LIMIT;
-  const planSince = daysAgoIso(7);
-  const { count: planUsageCount } = user
-    ? await supabase
-        .from("ai_recipe_generations")
-        .select("id", { count: "exact", head: true })
-        .eq("user_id", user.id)
-        .eq("via_bonus", false)
-        .gte("created_at", planSince)
-    : { count: 0 };
   const planUsed = Math.min(planUsageCount ?? 0, planLimit);
 
   return (

@@ -184,7 +184,6 @@
 				0C3B4C7C9799A26517FD6BF2 /* Info.plist */,
 				0E66022AB41B3CA11AACD99A /* ShareViewController.swift */,
 			);
-			name = ShareExtension;
 			path = ShareExtension;
 			sourceTree = "<group>";
 		};
@@ -195,7 +194,6 @@
 				DA6F462E6C3B3A59EA86DBCF /* TimerWidgetBundle.swift */,
 				D39659F2D0665BCF8852791D /* Info.plist */,
 			);
-			name = TimerWidgetExtension;
 			path = TimerWidgetExtension;
 			sourceTree = "<group>";
 		};
@@ -453,6 +451,7 @@
 				CLANG_ENABLE_OBJC_WEAK = NO;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 6NTUXY85FS;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = TimerWidgetExtension/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 16.2;
@@ -634,6 +633,7 @@
 				CLANG_ENABLE_OBJC_WEAK = NO;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 6NTUXY85FS;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = TimerWidgetExtension/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 16.2;
