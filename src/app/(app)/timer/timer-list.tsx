@@ -13,6 +13,7 @@ import {
   scheduleTimerAlerts,
   cancelTimerAlerts,
 } from "@/lib/timerNotifications";
+import { startTimerActivity, endTimerActivity } from "@/lib/timerActivity";
 import { useDragReorder } from "@/lib/useDragReorder";
 import { useDict } from "@/lib/i18n/client";
 import type { TimerWithRecipe } from "@/lib/types";
@@ -93,7 +94,7 @@ export function TimerList({
         // Notification API not available in this context — beep already fired.
       }
       startActionTransition(async () => {
-        await setTimerRunning(t.id, false);
+        await Promise.all([setTimerRunning(t.id, false), endTimerActivity(t.id)]);
         router.refresh();
       });
     }
@@ -166,6 +167,7 @@ export function TimerList({
         deleteTimers([...selectedIds]),
         ...selected.map((t) => cancelTimerAlarm(t.id)),
         ...selected.map((t) => cancelTimerAlerts(t.timer_alerts.map((a) => a.id))),
+        ...selected.map((t) => endTimerActivity(t.id)),
       ]);
       setConfirmingDelete(false);
       setEditing(false);
@@ -410,14 +412,17 @@ export function TimerList({
                       startActionTransition(async () => {
                         await setTimerRunning(timer.id, next);
                         if (next) {
+                          const endEpochMs = Date.now() + startFrom * 1000;
                           await Promise.all([
-                            scheduleTimerAlarm(timer.id, timer.name, new Date(Date.now() + startFrom * 1000)),
+                            scheduleTimerAlarm(timer.id, timer.name, new Date(endEpochMs)),
                             scheduleTimerAlerts(timer.name, startFrom, timer.timer_alerts),
+                            startTimerActivity({ id: timer.id, name: timer.name, iconEmoji: timer.icon_emoji, endEpochMs }),
                           ]);
                         } else {
                           await Promise.all([
                             cancelTimerAlarm(timer.id),
                             cancelTimerAlerts(timer.timer_alerts.map((a) => a.id)),
+                            endTimerActivity(timer.id),
                           ]);
                         }
                         router.refresh();
@@ -446,6 +451,7 @@ export function TimerList({
                           resetTimer(timer.id),
                           cancelTimerAlarm(timer.id),
                           cancelTimerAlerts(timer.timer_alerts.map((a) => a.id)),
+                          endTimerActivity(timer.id),
                         ]);
                         router.refresh();
                       });

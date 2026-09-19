@@ -12,6 +12,7 @@ import {
   scheduleTimerAlerts,
   cancelTimerAlerts,
 } from "@/lib/timerNotifications";
+import { startTimerActivity, endTimerActivity } from "@/lib/timerActivity";
 import { useDict } from "@/lib/i18n/client";
 import type { Timer } from "@/lib/types";
 import { formatTime, liveRemaining, playBeep } from "../timer-utils";
@@ -60,7 +61,7 @@ export function TimerDetail({ timer }: { timer: TimerDetailData }) {
       // Notification API not available in this context — beep already fired.
     }
     startTransition(async () => {
-      await setTimerRunning(timer.id, false);
+      await Promise.all([setTimerRunning(timer.id, false), endTimerActivity(timer.id)]);
       router.refresh();
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -96,14 +97,17 @@ export function TimerDetail({ timer }: { timer: TimerDetailData }) {
     startTransition(async () => {
       await setTimerRunning(timer.id, next);
       if (next) {
+        const endEpochMs = Date.now() + startFrom * 1000;
         await Promise.all([
-          scheduleTimerAlarm(timer.id, timer.name, new Date(Date.now() + startFrom * 1000)),
+          scheduleTimerAlarm(timer.id, timer.name, new Date(endEpochMs)),
           scheduleTimerAlerts(timer.name, startFrom, timer.timer_alerts),
+          startTimerActivity({ id: timer.id, name: timer.name, iconEmoji: timer.icon_emoji, endEpochMs }),
         ]);
       } else {
         await Promise.all([
           cancelTimerAlarm(timer.id),
           cancelTimerAlerts(timer.timer_alerts.map((a) => a.id)),
+          endTimerActivity(timer.id),
         ]);
       }
       router.refresh();
@@ -116,6 +120,7 @@ export function TimerDetail({ timer }: { timer: TimerDetailData }) {
         resetTimer(timer.id),
         cancelTimerAlarm(timer.id),
         cancelTimerAlerts(timer.timer_alerts.map((a) => a.id)),
+        endTimerActivity(timer.id),
       ]);
       router.refresh();
     });

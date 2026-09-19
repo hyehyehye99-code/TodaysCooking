@@ -16,6 +16,7 @@ import {
   scheduleTimerAlerts,
   cancelTimerAlerts,
 } from "@/lib/timerNotifications";
+import { startTimerActivity, endTimerActivity } from "@/lib/timerActivity";
 import { useDict } from "@/lib/i18n/client";
 
 export type RecipeOption = {
@@ -169,11 +170,14 @@ export function TimerForm({ recipes, timer }: { recipes: RecipeOption[]; timer?:
         await Promise.all([
           cancelTimerAlarm(timer.id),
           cancelTimerAlerts(timer.timer_alerts.map((a) => a.id)),
+          endTimerActivity(timer.id),
         ]);
         if (timer.is_running) {
+          const endEpochMs = Date.now() + durationSeconds * 1000;
           await Promise.all([
-            scheduleTimerAlarm(timer.id, finalName, new Date(Date.now() + durationSeconds * 1000)),
+            scheduleTimerAlarm(timer.id, finalName, new Date(endEpochMs)),
             scheduleTimerAlerts(finalName, durationSeconds, result.alerts),
+            startTimerActivity({ id: timer.id, name: finalName, iconEmoji, endEpochMs }),
           ]);
         }
         router.push("/timer");
@@ -206,6 +210,7 @@ export function TimerForm({ recipes, timer }: { recipes: RecipeOption[]; timer?:
         deleteTimers([timer.id]),
         cancelTimerAlarm(timer.id),
         cancelTimerAlerts(timer.timer_alerts.map((a) => a.id)),
+        endTimerActivity(timer.id),
       ]);
       router.push("/timer");
     });
