@@ -38,17 +38,40 @@ const MULTI_WORD_QUANTITY_PHRASES = ["큰 것"];
 // would falsely look like an amount as the second word of a compound name.
 const AMOUNT_UNIT_SUFFIXES = [
   "g", "kg", "ml", "l", "cc", "개", "컵", "큰술", "작은술", "스푼", "티스푼",
-  "조각", "쪽", "알", "마리", "모", "봉지", "팩", "단", "줌", "꼬집", "병",
-  "캔", "통", "인분",
+  "조각", "쪽", "알", "마리", "모", "봉지", "팩", "단", "줌", "주먹", "꼬집",
+  "병", "캔", "통", "인분",
 ];
+
+// A count word immediately before a unit ("두 주먹", "반 스푼", "두 꼬집") —
+// written with a space, so like MULTI_WORD_QUANTITY_PHRASES it can't be
+// caught by a single trailing token. Checked as a live "count + unit" pair
+// rather than a fixed phrase list, since count words freely combine with
+// any unit below.
+const COUNT_WORDS = new Set([
+  "한", "두", "세", "네", "다섯", "여섯", "일곱", "여덟", "아홉", "열",
+  "반", "두어", "몇", "여러",
+]);
+
+function isCountWord(token: string) {
+  return COUNT_WORDS.has(token) || /^\d+$/.test(token);
+}
+
+function looksLikeAmountWord(token: string) {
+  return (
+    /\d/.test(token) ||
+    QUANTITY_ONLY_WORDS.has(token) ||
+    AMOUNT_UNIT_SUFFIXES.some((suffix) => token.toLowerCase().endsWith(suffix))
+  );
+}
 
 // Splits a manually-typed line like "돼지고기 200g" into name + amount, so
 // the name alone can still match fridge/shopping items by exact string (see
 // setIngredientState) while the amount isn't lost — it's just kept
 // alongside instead of baked into the name. Only the trailing whitespace-
-// delimited token is treated as a candidate amount; if it doesn't look like
-// one (no digit, not a known quantity word), the whole line stays the name
-// unchanged — the common single-word-ingredient case is never touched.
+// delimited token (or, for a count-word pair like "두 주먹", the trailing
+// two tokens) is treated as a candidate amount; if neither looks like one,
+// the whole line stays the name unchanged — the common single-word-
+// ingredient case is never touched.
 function splitIngredientLine(raw: string): { name: string; amount: string | null } {
   const trimmed = raw.trim();
   for (const phrase of MULTI_WORD_QUANTITY_PHRASES) {
@@ -57,20 +80,25 @@ function splitIngredientLine(raw: string): { name: string; amount: string | null
       return { name: trimmed.slice(0, -suffix.length).trim(), amount: phrase };
     }
   }
+
+  const twoTokenMatch = trimmed.match(/^(.+?)\s+(\S+)\s+(\S+)$/);
+  if (twoTokenMatch) {
+    const [, namePart, countWord, unitWord] = twoTokenMatch;
+    if (isCountWord(countWord) && looksLikeAmountWord(unitWord)) {
+      return { name: namePart.trim(), amount: `${countWord} ${unitWord}` };
+    }
+  }
+
   const match = trimmed.match(/^(.+?)\s+(\S+)$/);
   if (!match) return { name: trimmed, amount: null };
   const [, namePart, lastToken] = match;
-  const looksLikeAmount =
-    /\d/.test(lastToken) ||
-    QUANTITY_ONLY_WORDS.has(lastToken) ||
-    AMOUNT_UNIT_SUFFIXES.some((suffix) => lastToken.toLowerCase().endsWith(suffix));
-  if (!looksLikeAmount) return { name: trimmed, amount: null };
+  if (!looksLikeAmountWord(lastToken)) return { name: trimmed, amount: null };
   return { name: namePart.trim(), amount: lastToken };
 }
 
 function parseIngredients(raw: string) {
   return raw
-    .split(/[\n,]/)
+    .split(/[\n,]|또는/)
     .map((s) => s.trim())
     .filter(Boolean)
     .map(splitIngredientLine)
