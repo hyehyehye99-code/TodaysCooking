@@ -9,4 +9,13 @@ class MainViewController: CAPBridgeViewController {
         super.viewDidLoad()
         webView?.allowsBackForwardNavigationGestures = true
     }
+
+    // TimerActivityPlugin lives in this target (not an npm package), so it
+    // never lands in the auto-generated capacitor.config.json packageClassList
+    // that `npx cap sync` writes from node_modules — auto-registration skips
+    // it entirely. registerPluginInstance is the one registration path that
+    // isn't gated behind that list, so it's the actual way to plug this in.
+    override func capacitorDidLoad() {
+        bridge?.registerPluginInstance(TimerActivityPlugin())
+    }
 }
