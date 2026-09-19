@@ -48,6 +48,14 @@ const PROMO_ICON = (
     <path d="M9 15h4" />
   </svg>
 );
+const INGREDIENT_RULES_ICON = (
+  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M4 5.5h16" />
+    <path d="M4 12h10" />
+    <path d="M4 18.5h7" />
+    <path d="M17 15.5l3 3-3 3" />
+  </svg>
+);
 
 // Add new groups/items here as more admin tools get built — every page
 // under (dashboard) shares this sidebar via the group layout. `badgeKey`
@@ -71,6 +79,10 @@ const NAV_GROUPS: NavGroup[] = [
   {
     title: "비용관리",
     items: [{ label: "지출 관리", href: "/admin/expenses", icon: EXPENSE_ICON }],
+  },
+  {
+    title: "레시피 관리",
+    items: [{ label: "재료 분리 예외 관리", href: "/admin/ingredient-rules", icon: INGREDIENT_RULES_ICON }],
   },
 ];
 

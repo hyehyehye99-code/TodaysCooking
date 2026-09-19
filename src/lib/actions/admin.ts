@@ -278,3 +278,32 @@ export async function logRecurringExpenseOccurrence(id: string): Promise<{ error
   revalidatePath("/admin/expenses");
   return { ok: true };
 }
+
+const INGREDIENT_RULE_TYPES = ["unit_suffix", "quantity_word", "count_word", "phrase"] as const;
+type IngredientRuleType = (typeof INGREDIENT_RULE_TYPES)[number];
+
+export async function addIngredientParseRule(
+  type: IngredientRuleType,
+  value: string
+): Promise<{ error: string } | { success: true }> {
+  await requireAdmin();
+  if (!INGREDIENT_RULE_TYPES.includes(type)) return { error: "잘못된 종류예요." };
+  const trimmed = value.trim();
+  if (!trimmed) return { error: "값을 입력해주세요." };
+
+  const supabase = createAdminClient();
+  const { error } = await supabase
+    .from("ingredient_parse_rules")
+    .upsert({ type, value: trimmed }, { onConflict: "type,value" });
+  if (error) return { error: "추가하지 못했어요." };
+
+  revalidatePath("/admin/ingredient-rules");
+  return { success: true as const };
+}
+
+export async function deleteIngredientParseRule(id: string) {
+  await requireAdmin();
+  const supabase = createAdminClient();
+  await supabase.from("ingredient_parse_rules").delete().eq("id", id);
+  revalidatePath("/admin/ingredient-rules");
+}
