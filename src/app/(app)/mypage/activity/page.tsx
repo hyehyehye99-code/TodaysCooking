@@ -1,11 +1,13 @@
 import Link from "next/link";
 import { getCurrentHousehold } from "@/lib/household";
+import { LoginPrompt } from "@/components/LoginPrompt";
 import { getHouseholdActivity } from "@/lib/actions/activity";
 import { getDictionary } from "@/lib/i18n/server";
 import { ActivityList } from "./activity-list";
 
 export default async function ActivityPage() {
-  const { household } = await getCurrentHousehold();
+  const { user, household } = await getCurrentHousehold();
+  if (!user) return <LoginPrompt kind="account" />;
   const { dict } = await getDictionary();
   const activity = household ? await getHouseholdActivity(household.id) : [];
 

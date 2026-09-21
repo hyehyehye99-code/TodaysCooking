@@ -2,6 +2,7 @@ import { BackButton, GlassCard } from "@/components/ui";
 import { signOut } from "@/lib/actions/auth";
 import { createClient } from "@/lib/supabase/server";
 import { getDictionary } from "@/lib/i18n/server";
+import { LoginPrompt } from "@/components/LoginPrompt";
 import { DeleteAccountButton } from "../delete-account-button";
 import { PushNotificationToggle } from "@/components/PushNotificationToggle";
 
@@ -10,6 +11,7 @@ export default async function AccountPage() {
   const {
     data: { user },
   } = await supabase.auth.getUser();
+  if (!user) return <LoginPrompt kind="account" />;
   const { dict } = await getDictionary();
 
   const PROVIDER_LABELS: Record<string, string> = {

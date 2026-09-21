@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import { fetchLinkPreview } from "@/lib/actions/link-preview";
 import { generateRecipeFromLink, reportAiRecipeResult } from "@/lib/actions/ai-recipe";
 import { ClearableInput } from "@/components/ClearableInput";
@@ -132,11 +133,15 @@ export function ReferenceLinkField({
   defaultValue = "",
   initialPreview = null,
   onAiResult,
+  guest = false,
 }: {
   name: string;
   defaultValue?: string;
   initialPreview?: Preview | null;
   onAiResult?: (result: AiResult) => void;
+  // A visitor who isn't logged in: AI extraction is account-only (the server
+  // rejects it too), so the button just explains that instead of calling it.
+  guest?: boolean;
 }) {
   const dict = useDict();
   const [url, setUrl] = useState(defaultValue);
@@ -196,6 +201,10 @@ export function ReferenceLinkField({
   async function handleAiFill() {
     const trimmed = url.trim();
     if (!trimmed) return;
+    if (guest) {
+      setAiError(dict.guest.aiLoginHint);
+      return;
+    }
     setAiLoading(true);
     setAiError(null);
     setLastGeneration(null);
@@ -330,6 +339,11 @@ export function ReferenceLinkField({
           {aiError && (
             <div className="mt-2 flex items-center gap-2">
               <p className="text-xs text-warn-ink">{aiError}</p>
+              {guest && (
+                <Link href="/login" className="shrink-0 text-xs font-bold text-accent">
+                  {dict.guest.loginButton}
+                </Link>
+              )}
             </div>
           )}
           {lastGeneration && !reportSent && (

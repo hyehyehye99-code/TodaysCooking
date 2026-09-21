@@ -5,10 +5,12 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { GlassCard } from "@/components/ui";
 import { ConfirmModal } from "@/components/ConfirmModal";
+import { EmptyState } from "@/components/EmptyState";
 import { RecipeThumb } from "@/components/RecipeThumb";
 import { ClearableInput } from "@/components/ClearableInput";
 import { reorderRecipes, toggleFavoriteRecipe, deleteRecipes } from "@/lib/actions/recipes";
 import { useDragReorder } from "@/lib/useDragReorder";
+import * as guestStore from "@/lib/guest/store";
 import { useDict } from "@/lib/i18n/client";
 import type { RecipeWithIngredients } from "@/lib/types";
 
@@ -30,7 +32,7 @@ function buildListUrl(query: string, tag: string | null) {
   return qs ? `/recipes?${qs}` : "/recipes";
 }
 
-function FavoriteButton({ recipe }: { recipe: RecipeWithIngredients }) {
+function FavoriteButton({ recipe, guest }: { recipe: RecipeWithIngredients; guest?: boolean }) {
   const dict = useDict();
   const [optimisticFavorite, setOptimisticFavorite] = useOptimistic(recipe.is_favorite);
   const [, startTransition] = useTransition();
@@ -43,6 +45,12 @@ function FavoriteButton({ recipe }: { recipe: RecipeWithIngredients }) {
         e.preventDefault();
         e.stopPropagation();
         const next = !optimisticFavorite;
+        // A guest's recipes live in localStorage — the store update itself
+        // re-renders the list, so there's no server round trip to wait on.
+        if (guest) {
+          guestStore.toggleFavorite(recipe.id, next);
+          return;
+        }
         startTransition(async () => {
           setOptimisticFavorite(next);
           await toggleFavoriteRecipe(recipe.id, next);
@@ -71,9 +79,11 @@ function FavoriteButton({ recipe }: { recipe: RecipeWithIngredients }) {
 export function RecipeList({
   recipes,
   ownedIngredients,
+  guest = false,
 }: {
   recipes: RecipeWithIngredients[];
   ownedIngredients: string[];
+  guest?: boolean;
 }) {
   const dict = useDict();
   const router = useRouter();
@@ -166,6 +176,11 @@ export function RecipeList({
   }
 
   function saveOrder() {
+    if (guest) {
+      guestStore.reorderRecipes(order.map((r) => r.id));
+      setEditing(false);
+      return;
+    }
     startTransition(async () => {
       await reorderRecipes(order.map((r) => r.id));
       setEditing(false);
@@ -174,6 +189,13 @@ export function RecipeList({
   }
 
   function confirmDelete() {
+    if (guest) {
+      guestStore.deleteRecipes([...selectedIds]);
+      setConfirmingDelete(false);
+      setEditing(false);
+      setSelectedIds(new Set());
+      return;
+    }
     startDeleteTransition(async () => {
       await deleteRecipes([...selectedIds]);
       setConfirmingDelete(false);
@@ -346,9 +368,9 @@ export function RecipeList({
       )}
 
       {!editing && filtered.length === 0 && (
-        <p className="mt-10 text-center text-sm text-ink-soft">
+        <EmptyState mascot={recipes.length === 0 ? "recipe" : "confused"}>
           {recipes.length === 0 ? dict.recipes.emptyNoRecipes : dict.recipes.emptySearch}
-        </p>
+        </EmptyState>
       )}
 
       {editing ? (
@@ -474,7 +496,7 @@ export function RecipeList({
                     </div>
                   )}
                 </div>
-                <FavoriteButton recipe={recipe} />
+                <FavoriteButton recipe={recipe} guest={guest} />
               </GlassCard>
             </Link>
             );

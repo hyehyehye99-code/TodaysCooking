@@ -1,12 +1,8 @@
 import { redirect } from "next/navigation";
-import { getCurrentHousehold } from "@/lib/household";
-import { OnboardingWizard } from "./onboarding-wizard";
 
-export default async function OnboardingPage() {
-  const { user, household, previousHouseholdMissing } = await getCurrentHousehold();
-
-  if (!user) redirect("/login");
-  if (household) redirect("/recipes");
-
-  return <OnboardingWizard householdMissingNotice={previousHouseholdMissing} />;
+// Household setup no longer has its own screen: signed-in users without a
+// household get one created automatically (see /auth/setup). Kept as a
+// redirect for old links and installed builds that still point here.
+export default function OnboardingPage() {
+  redirect("/recipes");
 }

@@ -3,15 +3,18 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { clearAllShoppingItems, clearCheckedItems, setAllShoppingItemsChecked } from "@/lib/actions/shopping";
+import { clearAllShopping, clearCheckedShopping, setAllShoppingChecked } from "@/lib/guest/store";
 import { Modal } from "@/components/Modal";
 import { useDict } from "@/lib/i18n/client";
 
 export function ShoppingBulkActions({
   doneCount,
   allChecked,
+  guest = false,
 }: {
   doneCount: number;
   allChecked: boolean;
+  guest?: boolean;
 }) {
   const dict = useDict();
   const [confirmingAll, setConfirmingAll] = useState(false);
@@ -20,6 +23,11 @@ export function ShoppingBulkActions({
   const router = useRouter();
 
   function doDeleteAll() {
+    if (guest) {
+      clearAllShopping();
+      setConfirmingAll(false);
+      return;
+    }
     startTransition(async () => {
       await clearAllShoppingItems();
       setConfirmingAll(false);
@@ -28,6 +36,11 @@ export function ShoppingBulkActions({
   }
 
   function doDeleteChecked() {
+    if (guest) {
+      clearCheckedShopping();
+      setConfirmingChecked(false);
+      return;
+    }
     startTransition(async () => {
       await clearCheckedItems();
       setConfirmingChecked(false);
@@ -56,12 +69,22 @@ export function ShoppingBulkActions({
             </button>
           )}
         </div>
-        <form action={setAllShoppingItemsChecked}>
-          <input type="hidden" name="checked" value={(!allChecked).toString()} />
-          <button type="submit" className="px-4 py-2 text-xs font-bold text-ink-soft">
+        {guest ? (
+          <button
+            type="button"
+            onClick={() => setAllShoppingChecked(!allChecked)}
+            className="px-4 py-2 text-xs font-bold text-ink-soft"
+          >
             {allChecked ? dict.shopping.deselectAll : dict.shopping.selectAll}
           </button>
-        </form>
+        ) : (
+          <form action={setAllShoppingItemsChecked}>
+            <input type="hidden" name="checked" value={(!allChecked).toString()} />
+            <button type="submit" className="px-4 py-2 text-xs font-bold text-ink-soft">
+              {allChecked ? dict.shopping.deselectAll : dict.shopping.selectAll}
+            </button>
+          </form>
+        )}
       </div>
 
       <Modal open={confirmingAll} onClose={() => setConfirmingAll(false)} variant="center">

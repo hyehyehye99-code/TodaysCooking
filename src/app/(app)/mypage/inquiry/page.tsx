@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { getMyInquiries } from "@/lib/actions/inquiries";
+import { getCurrentHousehold } from "@/lib/household";
+import { LoginPrompt } from "@/components/LoginPrompt";
 import { InquiryForm } from "./inquiry-form";
 
 function formatDate(iso: string) {
@@ -8,6 +10,8 @@ function formatDate(iso: string) {
 }
 
 export default async function InquiryPage() {
+  const { user } = await getCurrentHousehold();
+  if (!user) return <LoginPrompt kind="account" />;
   const inquiries = await getMyInquiries();
 
   return (

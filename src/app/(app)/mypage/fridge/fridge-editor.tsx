@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { saveFridge } from "@/lib/actions/fridge";
+import { saveFridge, type FridgeSaveItem } from "@/lib/actions/fridge";
+import { saveFridge as saveGuestFridge } from "@/lib/guest/store";
 import { GlassCard } from "@/components/ui";
 import { ClearableInput } from "@/components/ClearableInput";
 import { useDict } from "@/lib/i18n/client";
@@ -33,8 +34,13 @@ const MOVE_CANCEL_PX = 10;
 const AUTO_SCROLL_EDGE = 70;
 const AUTO_SCROLL_MAX_SPEED = 16;
 
-export function FridgeEditor({ categories }: { categories: Category[] }) {
+export function FridgeEditor({ categories, guest = false }: { categories: Category[]; guest?: boolean }) {
   const dict = useDict();
+  // Signed-in: server action. Guest: this device's local store.
+  const persist = async (items: FridgeSaveItem[], toDelete: string[] = []) => {
+    if (guest) saveGuestFridge(items, toDelete);
+    else await saveFridge(items, toDelete);
+  };
   const [local, setLocal] = useState<Category[]>(categories);
   const [customInputs, setCustomInputs] = useState<Record<string, string>>({});
   const [search, setSearch] = useState("");
@@ -178,7 +184,7 @@ export function FridgeEditor({ categories }: { categories: Category[] }) {
         return c;
       })
     );
-    void saveFridge([{ name: itemName, category: toCat, inStock: item.selected }]);
+    void persist([{ name: itemName, category: toCat, inStock: item.selected }]);
   }
 
   const ownedCount = local.reduce((n, c) => n + c.items.filter((i) => i.selected).length, 0);
@@ -202,7 +208,7 @@ export function FridgeEditor({ categories }: { categories: Category[] }) {
             }
       )
     );
-    void saveFridge([{ name: itemName, category: catName, inStock: nextSelected }]);
+    void persist([{ name: itemName, category: catName, inStock: nextSelected }]);
   }
 
   function removeCustom(catName: string, itemName: string) {
@@ -211,7 +217,7 @@ export function FridgeEditor({ categories }: { categories: Category[] }) {
         c.name !== catName ? c : { ...c, items: c.items.filter((i) => i.name !== itemName) }
       )
     );
-    void saveFridge([], [itemName]);
+    void persist([], [itemName]);
   }
 
   function addCustomNamed(catName: string, rawValue: string) {
@@ -227,7 +233,7 @@ export function FridgeEditor({ categories }: { categories: Category[] }) {
           : { ...c, items: [...c.items, { name: value, selected: true, custom: true }] }
       )
     );
-    void saveFridge([{ name: value, category: catName, inStock: true }]);
+    void persist([{ name: value, category: catName, inStock: true }]);
   }
 
   function addCustom(catName: string) {

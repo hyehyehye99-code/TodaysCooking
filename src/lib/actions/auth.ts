@@ -19,5 +19,5 @@ export async function signOut() {
   const cookieStore = await cookies();
   cookieStore.delete(ACTIVE_HOUSEHOLD_COOKIE);
 
-  redirect("/login");
+  redirect("/recipes");
 }

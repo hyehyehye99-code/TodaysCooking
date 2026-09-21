@@ -3,9 +3,18 @@
 import { useOptimistic, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toggleCookingRecipe } from "@/lib/actions/recipes";
+import * as guestStore from "@/lib/guest/store";
 import { useDict } from "@/lib/i18n/client";
 
-export function CookingToggleButton({ recipeId, isCooking }: { recipeId: string; isCooking: boolean }) {
+export function CookingToggleButton({
+  recipeId,
+  isCooking,
+  guest = false,
+}: {
+  recipeId: string;
+  isCooking: boolean;
+  guest?: boolean;
+}) {
   const dict = useDict();
   const [optimisticCooking, setOptimisticCooking] = useOptimistic(isCooking);
   const [, startTransition] = useTransition();
@@ -16,6 +25,10 @@ export function CookingToggleButton({ recipeId, isCooking }: { recipeId: string;
       type="button"
       onClick={() => {
         const next = !optimisticCooking;
+        if (guest) {
+          guestStore.toggleCooking(recipeId, next);
+          return;
+        }
         startTransition(async () => {
           setOptimisticCooking(next);
           await toggleCookingRecipe(recipeId, next);

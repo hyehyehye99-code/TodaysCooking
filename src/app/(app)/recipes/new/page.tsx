@@ -1,9 +1,11 @@
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentHousehold } from "@/lib/household";
 import { NewRecipeForm } from "./new-recipe-form";
+import { GuestNewRecipe } from "../guest-recipes";
 
 export default async function NewRecipePage() {
-  const { household } = await getCurrentHousehold();
+  const { user, household } = await getCurrentHousehold();
+  if (!user) return <GuestNewRecipe />;
   const supabase = await createClient();
 
   const { data } = await supabase

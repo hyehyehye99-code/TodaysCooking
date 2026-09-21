@@ -31,7 +31,7 @@ export async function GET(request: NextRequest) {
         return response;
       }
 
-      return NextResponse.redirect(`${origin}/`);
+      return NextResponse.redirect(`${origin}/recipes`);
     }
   }
 

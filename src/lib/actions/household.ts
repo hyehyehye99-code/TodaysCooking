@@ -132,7 +132,7 @@ export async function leaveHousehold(formData: FormData) {
   if (error) return;
 
   await clearActiveHouseholdCookieIfMatches(householdId);
-  redirect("/");
+  redirect("/recipes");
 }
 
 // Hands off ownership (to whoever joined each owned household earliest) or
@@ -148,5 +148,5 @@ export async function deleteMyAccount(): Promise<{ error: string } | never> {
   // against — this path signs out directly instead of going through it.
   const cookieStore = await cookies();
   cookieStore.delete(ACTIVE_HOUSEHOLD_COOKIE);
-  redirect("/login");
+  redirect("/recipes");
 }

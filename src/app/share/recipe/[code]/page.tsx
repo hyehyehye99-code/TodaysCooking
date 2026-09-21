@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentHousehold } from "@/lib/household";
 import { GlassCard } from "@/components/ui";
+import { Mascot } from "@/components/Mascot";
 import { RecipePhotoGallery } from "@/app/(app)/recipes/[id]/recipe-photo-gallery";
 import { AddSharedRecipeButton } from "./add-to-household-button";
 
@@ -46,7 +47,7 @@ export default async function SharedRecipePage({ params }: { params: Promise<{ c
   if (!recipe) {
     return shell(
       <div className="flex h-[70dvh] flex-col items-center justify-center text-center">
-        <span className="text-[48px] leading-none">🍳</span>
+        <Mascot name="confused" size={96} />
         <p className="mt-4 text-lg font-bold">유효하지 않은 공유 링크예요</p>
         <p className="mt-2 text-sm text-ink-soft">링크가 꺼져 있거나 잘못된 주소예요.</p>
         <Link href="/welcome" className="mt-4 text-sm font-bold text-accent underline">
@@ -59,8 +60,7 @@ export default async function SharedRecipePage({ params }: { params: Promise<{ c
   return shell(
     <div>
       <div className="flex items-center justify-center gap-1.5 pb-4 pt-1">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/logo-mark.svg" alt="" width={16} height={16} />
+        <Mascot name="logo" size={20} className="rounded-[5px]" />
         <span className="text-xs font-bold text-ink-faint">우리집 레시피</span>
       </div>
 

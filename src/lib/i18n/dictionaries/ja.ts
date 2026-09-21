@@ -9,6 +9,8 @@ const ja: Dictionary = {
     delete: "削除",
     edit: "編集",
     loading: "読み込み中...",
+    notFoundTitle: "ページが見つかりません",
+    notFoundBack: "ホームへ戻る",
     savedMessage: "保存しました",
   },
   tabBar: {
@@ -365,8 +367,6 @@ const ja: Dictionary = {
     deleteCheckedTitleTemplate: "チェックした{count}件を削除しますか？",
     cannotUndo: "元に戻せません。",
     buyButton: "購入する",
-    coupangPartnersDisclosure:
-      "「購入する」を押すとその材料のクーパンページに移動します。クーパンパートナーズ活動の一環として、これに伴う一定額の手数料を受け取ります。",
   },
   mealPlan: {
     emptyState: "まだメニュー表がありません。\nパーティーなどで作る料理をまとめてメニュー表を作ってみましょう。",
@@ -404,6 +404,24 @@ const ja: Dictionary = {
     headcountLineTemplate: "人数: {count}人",
     editMealPlanButton: "編集する",
     deleteMealPlanButton: "メニュー表を削除",
+  },
+  guest: {
+    homeName: "わたしのキッチン",
+    loginButton: "ログインする",
+    loginRequiredTitle: "ログインが必要です",
+    timerDesc: "タイマーはログインすると使えます。",
+    mealPlanDesc: "献立表はログインすると使えます。",
+    accountDesc: "このメニューはログインすると使えます。",
+    syncNote: "この端末に保存したレシピもアカウントに引き継がれます。",
+    mypageTitle: "ログインしてもっと便利に",
+    mypageDesc: "家族とレシピを共有したり、AIでレシピを整理できます。",
+    localNotice: "ログインしないと、レシピはこの端末にのみ保存されます。",
+    aiLoginHint: "AIレシピ整理はログインすると使えます。",
+    setupFailedTitle: "おうちを準備できませんでした",
+    storageFull: "この端末の保存容量が足りません。写真を減らしてからもう一度お試しください。",
+    setupRetry: "もう一度試す",
+    migrating: "この端末に保存したレシピを移行しています...",
+    migratedTemplate: "レシピ{count}件をアカウントに移行しました",
   },
 };
 

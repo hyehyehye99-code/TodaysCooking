@@ -2,6 +2,7 @@ import Link from "next/link";
 import { getCurrentHousehold } from "@/lib/household";
 import { getDictionary } from "@/lib/i18n/server";
 import { BackButton } from "@/components/ui";
+import { Mascot } from "@/components/Mascot";
 
 const FEATURE_ICONS = [
   <svg key="ai" width="22" height="22" viewBox="0 0 22 22" fill="none" aria-hidden="true">
@@ -43,8 +44,9 @@ export default async function LandingPage() {
   // render for a logged-in visitor too, not just bounce them into the app.
   // /login still redirects an already-authenticated visitor onward on its
   // own, so the CTA below works correctly either way.
-  const [{ user, household }, { dict }] = await Promise.all([getCurrentHousehold(), getDictionary()]);
-  const appHref = !user ? "/login" : household ? "/recipes" : "/onboarding";
+  const [{ user }, { dict }] = await Promise.all([getCurrentHousehold(), getDictionary()]);
+  // No login wall: a visitor goes straight into the app as a guest.
+  const appHref = "/recipes";
 
   const highlightFeatures = [
     { title: dict.landing.feature1Title, description: dict.landing.feature1Desc },
@@ -63,18 +65,18 @@ export default async function LandingPage() {
         <div className="flex items-center gap-3">
           {user && <BackButton href="/mypage" />}
           <div className="flex items-center gap-2">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/logo-mark.svg" alt="" width={28} height={28} />
+            <Mascot name="logo" size={28} className="rounded-lg" />
             <span className="text-sm font-bold tracking-wide text-ink">우리집 레시피</span>
           </div>
         </div>
         <Link href={appHref} className="text-sm font-bold text-ink-soft">
-          {user ? dict.landing.goToApp : dict.landing.login}
+          {dict.landing.goToApp}
         </Link>
       </header>
 
       <section className="mx-auto grid w-full max-w-5xl gap-12 px-6 pb-20 pt-8 md:grid-cols-2 md:items-center md:pb-32 md:pt-16">
         <div>
+          <Mascot name="main" size={144} className="mb-5 -ml-2" />
           <p className="mb-5 text-xs font-bold tracking-wide text-ink-faint">우리집 레시피</p>
           <h1 className="text-[36px] font-bold leading-tight text-ink md:text-[48px]">
             {dict.landing.headline1}
@@ -108,6 +110,7 @@ export default async function LandingPage() {
 
       <section className="border-t border-border bg-surface py-20">
         <div className="mx-auto w-full max-w-3xl px-6 text-center">
+          <Mascot name="confused" size={72} className="mx-auto mb-3" />
           <h2 className="text-2xl font-bold text-ink md:text-3xl">{dict.landing.painHeading}</h2>
           <div className="mt-8 flex flex-col gap-3">
             {painPoints.map((point) => (
@@ -164,6 +167,7 @@ export default async function LandingPage() {
 
       <section className="border-t border-border bg-surface py-20">
         <div className="mx-auto w-full max-w-5xl px-6 text-center">
+          <Mascot name="happy" size={88} className="mx-auto mb-3" />
           <h2 className="text-2xl font-bold text-ink md:text-3xl">{dict.landing.finalCtaHeading}</h2>
           <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed text-ink-soft">{dict.landing.finalCtaSubtitle}</p>
           <div className="mt-7 flex flex-wrap items-center justify-center gap-3">

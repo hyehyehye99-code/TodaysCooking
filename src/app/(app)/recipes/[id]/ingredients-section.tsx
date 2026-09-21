@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { setIngredientState, type IngredientChipState } from "@/lib/actions/recipes";
+import * as guestStore from "@/lib/guest/store";
 import { IngredientChip } from "@/components/IngredientChip";
 import { SavedToast } from "@/components/SavedToast";
 import { useDict } from "@/lib/i18n/client";
@@ -18,11 +19,13 @@ export function IngredientsSection({
   ingredients,
   ownedCount,
   totalCount,
+  guest = false,
 }: {
   recipeId: string;
   ingredients: Ingredient[];
   ownedCount: number;
   totalCount: number;
+  guest?: boolean;
 }) {
   const dict = useDict();
   const router = useRouter();
@@ -37,6 +40,13 @@ export function IngredientsSection({
   function save() {
     const entries = Object.entries(pending);
     if (entries.length === 0) return;
+    if (guest) {
+      // Local store: the update re-renders the parent with fresh chip states.
+      guestStore.setIngredientStates(recipeId, entries);
+      setPending({});
+      setSavedTrigger((t) => t + 1);
+      return;
+    }
     startSaving(async () => {
       await Promise.all(entries.map(([name, state]) => setIngredientState(recipeId, name, state)));
       setPending({});

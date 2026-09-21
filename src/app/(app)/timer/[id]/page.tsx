@@ -1,10 +1,14 @@
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { getCurrentHousehold } from "@/lib/household";
+import { LoginPrompt } from "@/components/LoginPrompt";
 import { TimerDetail } from "./timer-detail";
 import type { TimerDetailData } from "./timer-detail";
 
 export default async function TimerDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
+  const { user } = await getCurrentHousehold();
+  if (!user) return <LoginPrompt kind="timer" />;
   const supabase = await createClient();
 
   const { data: timer } = await supabase

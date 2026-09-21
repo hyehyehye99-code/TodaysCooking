@@ -1,10 +1,12 @@
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentHousehold } from "@/lib/household";
+import { LoginPrompt } from "@/components/LoginPrompt";
 import { TimerForm } from "../timer-form";
 import type { RecipeOption } from "../timer-form";
 
 export default async function NewTimerPage() {
-  const { household } = await getCurrentHousehold();
+  const { user, household } = await getCurrentHousehold();
+  if (!user) return <LoginPrompt kind="timer" />;
   const supabase = await createClient();
 
   const { data: recipes } = await supabase

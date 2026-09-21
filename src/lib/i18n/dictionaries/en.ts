@@ -10,6 +10,8 @@ const en: Dictionary = {
     edit: "Edit",
     loading: "Loading...",
     savedMessage: "Saved",
+    notFoundTitle: "We couldn't find that page",
+    notFoundBack: "Go home",
   },
   tabBar: {
     recipes: "Recipes",
@@ -369,8 +371,6 @@ const en: Dictionary = {
     deleteCheckedTitleTemplate: "Delete the {count} checked items?",
     cannotUndo: "This can't be undone.",
     buyButton: "Buy",
-    coupangPartnersDisclosure:
-      "Tapping Buy takes you to that ingredient's Coupang page. As a Coupang Partners affiliate, we may earn a commission from qualifying purchases made through these links.",
   },
   mealPlan: {
     emptyState: "No meal plans yet.\nGroup the dishes you're making for an occasion into one.",
@@ -408,6 +408,24 @@ const en: Dictionary = {
     headcountLineTemplate: "Headcount: {count}",
     editMealPlanButton: "Edit",
     deleteMealPlanButton: "Delete meal plan",
+  },
+  guest: {
+    homeName: "My kitchen",
+    loginButton: "Log in",
+    loginRequiredTitle: "Log in to use this",
+    timerDesc: "Timers are available once you log in.",
+    mealPlanDesc: "Menu boards are available once you log in.",
+    accountDesc: "This is available once you log in.",
+    syncNote: "Recipes saved on this device will move to your account too.",
+    mypageTitle: "Log in to get more out of it",
+    mypageDesc: "Share recipes with your family and let AI organize them for you.",
+    localNotice: "Without logging in, recipes are saved on this device only.",
+    aiLoginHint: "AI recipe extraction is available once you log in.",
+    setupFailedTitle: "We couldn't set up your home",
+    storageFull: "Not enough storage on this device. Remove some photos and try again.",
+    setupRetry: "Try again",
+    migrating: "Moving the recipes saved on this device...",
+    migratedTemplate: "Moved {count} recipes to your account",
   },
 };
 

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { GlassCard } from "@/components/ui";
+import { EmptyState } from "@/components/EmptyState";
 import { ProfileAvatar } from "@/components/ProfileAvatar";
 import { useDict, useLocale } from "@/lib/i18n/client";
 import type { Locale } from "@/lib/i18n/locales";
@@ -18,7 +19,7 @@ export function MealPlanList({ plans }: { plans: MealPlanListItem[] }) {
   const locale = useLocale();
 
   if (plans.length === 0) {
-    return <p className="mt-10 whitespace-pre-line text-center text-sm text-ink-faint">{dict.mealPlan.emptyState}</p>;
+    return <EmptyState mascot="idea">{dict.mealPlan.emptyState}</EmptyState>;
   }
 
   return (

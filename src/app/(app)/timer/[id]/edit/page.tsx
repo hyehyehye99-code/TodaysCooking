@@ -1,12 +1,14 @@
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentHousehold } from "@/lib/household";
+import { LoginPrompt } from "@/components/LoginPrompt";
 import { TimerForm } from "../../timer-form";
 import type { RecipeOption, EditableTimer } from "../../timer-form";
 
 export default async function EditTimerPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const { household } = await getCurrentHousehold();
+  const { user, household } = await getCurrentHousehold();
+  if (!user) return <LoginPrompt kind="timer" />;
   const supabase = await createClient();
 
   const [{ data: timer }, { data: recipes }] = await Promise.all([

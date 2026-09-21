@@ -2,6 +2,8 @@ import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import type { RecipeWithIngredients } from "@/lib/types";
 import { EditRecipeForm } from "./edit-recipe-form";
+import { GuestEditRecipe } from "../../guest-recipes";
+import { getCurrentHousehold } from "@/lib/household";
 
 export default async function EditRecipePage({
   params,
@@ -9,6 +11,8 @@ export default async function EditRecipePage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
+  const { user } = await getCurrentHousehold();
+  if (!user) return <GuestEditRecipe id={id} />;
   const supabase = await createClient();
 
   const { data: recipe } = await supabase

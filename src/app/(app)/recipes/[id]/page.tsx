@@ -13,6 +13,7 @@ import { CookingToggleButton } from "./cooking-toggle-button";
 import { RecipePhotoGallery } from "./recipe-photo-gallery";
 import { ReactionLog } from "./reaction-log";
 import { IngredientsSection } from "./ingredients-section";
+import { GuestRecipeDetail } from "../guest-recipes";
 
 export default async function RecipeDetailPage({
   params,
@@ -27,7 +28,8 @@ export default async function RecipeDetailPage({
   // other than the recipes tab (e.g. a meal plan) — must be a same-app
   // relative path, never an absolute/external URL.
   const closeHref = from && from.startsWith("/") && !from.startsWith("//") ? from : "/recipes";
-  const { household } = await getCurrentHousehold();
+  const { user, household } = await getCurrentHousehold();
+  if (!user) return <GuestRecipeDetail id={id} closeHref={closeHref} />;
   const supabase = await createClient();
   const { dict } = await getDictionary();
 

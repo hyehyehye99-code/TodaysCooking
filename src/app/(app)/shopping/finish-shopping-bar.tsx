@@ -3,10 +3,11 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { finishShoppingTrip } from "@/lib/actions/shopping";
+import { finishShoppingTrip as finishGuestShoppingTrip } from "@/lib/guest/store";
 import { FixedBottomBar } from "@/components/FixedBottomBar";
 import { useDict } from "@/lib/i18n/client";
 
-export function FinishShoppingBar({ doneCount }: { doneCount: number }) {
+export function FinishShoppingBar({ doneCount, guest = false }: { doneCount: number; guest?: boolean }) {
   const dict = useDict();
   const [pending, startTransition] = useTransition();
   const [showToast, setShowToast] = useState(false);
@@ -15,6 +16,12 @@ export function FinishShoppingBar({ doneCount }: { doneCount: number }) {
   if (doneCount === 0) return null;
 
   function handleFinish() {
+    if (guest) {
+      finishGuestShoppingTrip();
+      setShowToast(true);
+      setTimeout(() => setShowToast(false), 2000);
+      return;
+    }
     startTransition(async () => {
       await finishShoppingTrip();
       router.refresh();

@@ -3,16 +3,21 @@
 import { useOptimistic, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toggleShoppingItem } from "@/lib/actions/shopping";
+import { setShoppingChecked } from "@/lib/guest/store";
 import { ShoppingItemLink } from "./shopping-item-link";
 import type { ShoppingItem } from "@/lib/types";
 
-export function ShoppingItemRow({ item }: { item: ShoppingItem }) {
+export function ShoppingItemRow({ item, guest = false }: { item: ShoppingItem; guest?: boolean }) {
   const [optimisticChecked, setOptimisticChecked] = useOptimistic(item.checked);
   const [, startToggleTransition] = useTransition();
   const router = useRouter();
 
   function toggleChecked() {
     const nextChecked = !optimisticChecked;
+    if (guest) {
+      setShoppingChecked(item.id, nextChecked);
+      return;
+    }
     startToggleTransition(async () => {
       setOptimisticChecked(nextChecked);
       const formData = new FormData();
@@ -51,7 +56,7 @@ export function ShoppingItemRow({ item }: { item: ShoppingItem }) {
         </span>
       </button>
 
-      <ShoppingItemLink id={item.id} name={item.name} checked={optimisticChecked} />
+      <ShoppingItemLink id={item.id} name={item.name} checked={optimisticChecked} guest={guest} />
     </div>
   );
 }

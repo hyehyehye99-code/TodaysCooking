@@ -3,6 +3,8 @@
 import { useActionState, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createRecipe } from "@/lib/actions/recipes";
+import { addRecipe } from "@/lib/guest/store";
+import { buildGuestRecipeInput } from "@/lib/guest/recipe-input";
 import { GlassCard } from "@/components/ui";
 import { EmojiPicker } from "@/components/EmojiPicker";
 import { TagPicker } from "@/components/TagPicker";
@@ -14,13 +16,29 @@ import { Modal } from "@/components/Modal";
 import { ClearableInput } from "@/components/ClearableInput";
 import { useDict } from "@/lib/i18n/client";
 
-export function NewRecipeForm({ existingTags }: { existingTags: string[] }) {
+type FormState = { error?: string } | undefined;
+
+export function NewRecipeForm({ existingTags, guest = false }: { existingTags: string[]; guest?: boolean }) {
   const dict = useDict();
-  const [state, formAction, pending] = useActionState(createRecipe, undefined);
+  const router = useRouter();
+
+  // Guest: the recipe is saved to this device instead of the account.
+  async function guestCreate(_prev: FormState, formData: FormData): Promise<FormState> {
+    const built = await buildGuestRecipeInput(formData);
+    if ("error" in built) return { error: built.error };
+    const result = addRecipe(built.input);
+    if (!result.ok) return { error: dict.guest.storageFull };
+    router.push(`/recipes/${result.id}`);
+    return undefined;
+  }
+
+  const [state, formAction, pending] = useActionState<FormState, FormData>(
+    guest ? guestCreate : (createRecipe as (prev: FormState, fd: FormData) => Promise<FormState>),
+    undefined
+  );
   const [confirmingClose, setConfirmingClose] = useState(false);
   const [photoCount, setPhotoCount] = useState(0);
   const [hideIngredients, setHideIngredients] = useState(false);
-  const router = useRouter();
   const titleRef = useRef<HTMLInputElement>(null);
   const ingredientsRef = useRef<HTMLTextAreaElement>(null);
   const notesRef = useRef<HTMLTextAreaElement>(null);
@@ -99,7 +117,7 @@ export function NewRecipeForm({ existingTags }: { existingTags: string[] }) {
         <GlassCard className="bg-white p-4">
           <p className="mb-1 text-[13px] font-bold">{dict.welcome.referenceLink}</p>
           <p className="mb-3 text-[11px] text-ink-faint">{dict.recipes.aiYoutubeOnlyHint}</p>
-          <ReferenceLinkField name="referenceUrl" onAiResult={handleAiResult} />
+          <ReferenceLinkField name="referenceUrl" onAiResult={handleAiResult} guest={guest} />
         </GlassCard>
 
         <GlassCard className="bg-white p-4">

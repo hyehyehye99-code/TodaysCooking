@@ -1,10 +1,12 @@
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentHousehold } from "@/lib/household";
+import { LoginPrompt } from "@/components/LoginPrompt";
 import { TimerList } from "./timer-list";
 import type { TimerWithRecipe } from "@/lib/types";
 
 export default async function TimerPage() {
-  const { household } = await getCurrentHousehold();
+  const { user, household } = await getCurrentHousehold();
+  if (!user) return <LoginPrompt kind="timer" />;
   const supabase = await createClient();
 
   const { data: timers } = await supabase

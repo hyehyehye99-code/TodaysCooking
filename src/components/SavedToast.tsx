@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Mascot } from "@/components/Mascot";
 
 // A brief self-dismissing confirmation for the viewer's own save action —
 // distinct from ActivityToaster, which only surfaces other members' activity
@@ -22,8 +23,9 @@ export function SavedToast({ message, trigger }: { message: string; trigger: num
       <div
         key={trigger}
         onAnimationEnd={() => setDismissedTrigger(trigger)}
-        className="animate-toast rounded-full bg-ink px-4 py-2 text-xs font-bold text-white shadow-lg"
+        className="animate-toast flex items-center gap-2 rounded-full bg-ink py-1.5 pl-2.5 pr-4 text-xs font-bold text-white shadow-lg"
       >
+        <Mascot name="happy" size={26} />
         {message}
       </div>
     </div>

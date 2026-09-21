@@ -1,9 +1,11 @@
 import { getCurrentHousehold } from "@/lib/household";
+import { LoginPrompt } from "@/components/LoginPrompt";
 import { createClient } from "@/lib/supabase/server";
 import { NewMealPlanForm } from "./new-meal-plan-form";
 
 export default async function NewMealPlanPage() {
-  const { household } = await getCurrentHousehold();
+  const { user, household } = await getCurrentHousehold();
+  if (!user) return <LoginPrompt kind="mealPlan" />;
   const supabase = await createClient();
 
   const { data: recipes } = await supabase

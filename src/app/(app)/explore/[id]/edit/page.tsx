@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { getCurrentHousehold } from "@/lib/household";
+import { LoginPrompt } from "@/components/LoginPrompt";
 import { createClient } from "@/lib/supabase/server";
 import { EditMealPlanForm } from "./edit-meal-plan-form";
 
@@ -7,7 +8,8 @@ type MealPlanRecipeRow = { recipe_id: string };
 
 export default async function EditMealPlanPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const { household } = await getCurrentHousehold();
+  const { user, household } = await getCurrentHousehold();
+  if (!user) return <LoginPrompt kind="mealPlan" />;
   const supabase = await createClient();
 
   const [{ data: mealPlan }, { data: mealPlanRecipes }, { data: recipes }] = await Promise.all([

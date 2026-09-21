@@ -1,11 +1,13 @@
 import { BackButton, GlassCard } from "@/components/ui";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentHousehold } from "@/lib/household";
+import { LoginPrompt } from "@/components/LoginPrompt";
 import { getDictionary } from "@/lib/i18n/server";
 import { TagManagementList } from "./tag-management-list";
 
 export default async function TagManagementPage() {
-  const { household } = await getCurrentHousehold();
+  const { user, household } = await getCurrentHousehold();
+  if (!user) return <LoginPrompt kind="account" />;
   const { dict } = await getDictionary();
   const supabase = await createClient();
 

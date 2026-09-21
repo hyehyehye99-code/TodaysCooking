@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { BackButton, GlassCard } from "@/components/ui";
+import { Mascot } from "@/components/Mascot";
 import { getDictionary } from "@/lib/i18n/server";
 
 const FEATURE_EMOJIS = ["✨", "🧊", "🔄", "👨‍👩‍👧", "🔔"];
@@ -16,8 +17,7 @@ export default async function AboutPage() {
       </div>
 
       <div className="mb-8 flex flex-col items-center text-center">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/logo-mark.svg" alt="" width={64} height={64} className="mb-4" />
+        <Mascot name="main" size={132} className="mb-3" />
         <h2 className="mb-2 text-lg font-bold leading-snug text-ink">
           {dict.mypage.aboutHeadlineLine1}
           <br />

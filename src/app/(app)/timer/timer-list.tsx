@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { GlassCard } from "@/components/ui";
 import { ConfirmModal } from "@/components/ConfirmModal";
+import { EmptyState } from "@/components/EmptyState";
 import { createClient } from "@/lib/supabase/client";
 import { setTimerRunning, resetTimer, deleteTimers, reorderTimers } from "@/lib/actions/timers";
 import {
@@ -260,7 +261,7 @@ export function TimerList({
       )}
 
       {filtered.length === 0 && (
-        <p className="mt-10 text-center text-sm text-ink-soft">{dict.timer.emptyState}</p>
+        <EmptyState mascot="cooking">{dict.timer.emptyState}</EmptyState>
       )}
 
       {editing ? (

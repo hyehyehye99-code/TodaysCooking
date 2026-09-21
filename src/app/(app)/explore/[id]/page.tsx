@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentHousehold } from "@/lib/household";
+import { LoginPrompt } from "@/components/LoginPrompt";
 import { getDictionary } from "@/lib/i18n/server";
 import type { IngredientChipState } from "@/lib/actions/recipes";
 import { MealPlanPanel } from "./meal-plan-panel";
@@ -33,7 +34,8 @@ function unwrapRecipe(value: RecipeRow | RecipeRow[] | null): RecipeRow | null {
 
 export default async function MealPlanDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const { household } = await getCurrentHousehold();
+  const { user, household } = await getCurrentHousehold();
+  if (!user) return <LoginPrompt kind="mealPlan" />;
   const supabase = await createClient();
   const { dict } = await getDictionary();
 

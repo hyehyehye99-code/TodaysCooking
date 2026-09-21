@@ -7,10 +7,13 @@ import { FinishShoppingBar } from "./finish-shopping-bar";
 import { ShoppingItemRow } from "./shopping-item-row";
 import { ShoppingBulkActions } from "./shopping-bulk-actions";
 import { ClearableInput } from "@/components/ClearableInput";
+import { EmptyState } from "@/components/EmptyState";
 import { getDictionary } from "@/lib/i18n/server";
+import { GuestShopping } from "./guest-shopping";
 
 export default async function ShoppingPage() {
-  const { household } = await getCurrentHousehold();
+  const { user, household } = await getCurrentHousehold();
+  if (!user) return <GuestShopping />;
   const supabase = await createClient();
   const { dict } = await getDictionary();
 
@@ -62,18 +65,15 @@ export default async function ShoppingPage() {
       </form>
 
       {items.length === 0 ? (
-        <p className="mt-10 text-center text-sm text-ink-soft">{dict.shopping.emptyList}</p>
+        <EmptyState mascot="shopping">{dict.shopping.emptyList}</EmptyState>
       ) : (
         <>
           <ShoppingBulkActions doneCount={doneCount} allChecked={allChecked} />
-          <div className="mb-3 flex flex-col">
+          <div className="mb-6 flex flex-col">
             {items.map((item) => (
               <ShoppingItemRow key={item.id} item={item} />
             ))}
           </div>
-          <p className="mb-6 text-[11px] leading-relaxed text-ink-faint">
-            {dict.shopping.coupangPartnersDisclosure}
-          </p>
         </>
       )}
 

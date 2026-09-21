@@ -8,6 +8,8 @@ const ko = {
     edit: "편집",
     loading: "불러오는 중...",
     savedMessage: "저장했어요",
+    notFoundTitle: "페이지를 찾을 수 없어요",
+    notFoundBack: "홈으로 가기",
   },
   tabBar: {
     recipes: "레시피",
@@ -368,8 +370,6 @@ const ko = {
     deleteCheckedTitleTemplate: "체크한 {count}개 항목을 삭제할까요?",
     cannotUndo: "되돌릴 수 없어요.",
     buyButton: "구매하러가기",
-    coupangPartnersDisclosure:
-      "구매하기를 누르면 해당 재료의 쿠팡 페이지로 이동되며, 쿠팡 파트너스 활동의 일환으로 이에 따른 일정액의 수수료를 제공받습니다.",
   },
   mealPlan: {
     emptyState: "아직 메뉴판이 없어요.\n모임이나 파티 때 만들 요리를 모아 메뉴판을 만들어보세요.",
@@ -407,6 +407,24 @@ const ko = {
     headcountLineTemplate: "인원 수: {count}명",
     editMealPlanButton: "수정하기",
     deleteMealPlanButton: "메뉴판 삭제",
+  },
+  guest: {
+    homeName: "나의 주방",
+    loginButton: "로그인하기",
+    loginRequiredTitle: "로그인이 필요해요",
+    timerDesc: "타이머는 로그인하면 쓸 수 있어요.",
+    mealPlanDesc: "메뉴판은 로그인하면 쓸 수 있어요.",
+    accountDesc: "이 메뉴는 로그인하면 쓸 수 있어요.",
+    syncNote: "이 기기에 저장한 레시피도 내 계정으로 함께 옮겨져요.",
+    mypageTitle: "로그인하고 더 편하게 써요",
+    mypageDesc: "가족과 레시피를 함께 쓰고, AI로 레시피를 정리할 수 있어요.",
+    localNotice: "로그인하지 않으면 레시피가 이 기기에만 저장돼요.",
+    aiLoginHint: "AI 레시피 정리는 로그인하면 쓸 수 있어요.",
+    setupFailedTitle: "우리집을 준비하지 못했어요",
+    storageFull: "저장 공간이 부족해요. 사진을 줄이거나 일부를 지우고 다시 시도해주세요.",
+    setupRetry: "다시 시도",
+    migrating: "기기에 저장한 레시피를 옮기는 중이에요...",
+    migratedTemplate: "레시피 {count}개를 내 계정으로 옮겼어요",
   },
 } as const;
 

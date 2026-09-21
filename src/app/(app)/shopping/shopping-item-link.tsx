@@ -4,16 +4,19 @@ import { useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Capacitor } from "@capacitor/core";
 import { toggleShoppingItem } from "@/lib/actions/shopping";
+import { setShoppingChecked } from "@/lib/guest/store";
 import { useDict } from "@/lib/i18n/client";
 
 export function ShoppingItemLink({
   id,
   name,
   checked,
+  guest = false,
 }: {
   id: string;
   name: string;
   checked: boolean;
+  guest?: boolean;
 }) {
   const dict = useDict();
   const [, startTransition] = useTransition();
@@ -25,6 +28,10 @@ export function ShoppingItemLink({
   // that push is still resolving raced the two Router Cache updates against
   // each other, which is what made this button need several taps to work.
   function toggleChecked() {
+    if (guest) {
+      setShoppingChecked(id, !checked);
+      return;
+    }
     startTransition(async () => {
       const formData = new FormData();
       formData.set("id", id);

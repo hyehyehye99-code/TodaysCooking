@@ -3,6 +3,8 @@
 import { useActionState, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { updateRecipe } from "@/lib/actions/recipes";
+import { getGuestData, updateRecipe as updateGuestRecipe } from "@/lib/guest/store";
+import { buildGuestRecipeInput } from "@/lib/guest/recipe-input";
 import { GlassCard } from "@/components/ui";
 import { EmojiPicker } from "@/components/EmojiPicker";
 import { TagPicker } from "@/components/TagPicker";
@@ -15,23 +17,40 @@ import { ClearableInput } from "@/components/ClearableInput";
 import { useDict } from "@/lib/i18n/client";
 import type { RecipeWithIngredients } from "@/lib/types";
 
+type FormState = { error?: string } | undefined;
+
 export function EditRecipeForm({
   recipe,
   referenceUrl,
   referencePreview,
   existingTags,
+  guest = false,
 }: {
   recipe: RecipeWithIngredients;
   referenceUrl: string;
   referencePreview: { title: string | null; thumbnailUrl: string | null; domain: string | null } | null;
   existingTags: string[];
+  guest?: boolean;
 }) {
   const dict = useDict();
-  const [state, formAction, pending] = useActionState(updateRecipe, undefined);
+  const router = useRouter();
+
+  async function guestUpdate(_prev: FormState, formData: FormData): Promise<FormState> {
+    const existing = getGuestData().recipes.find((r) => r.id === recipe.id);
+    const built = await buildGuestRecipeInput(formData, existing?.reference ?? null);
+    if ("error" in built) return { error: built.error };
+    if (!updateGuestRecipe(recipe.id, built.input)) return { error: dict.guest.storageFull };
+    router.push(`/recipes/${recipe.id}`);
+    return undefined;
+  }
+
+  const [state, formAction, pending] = useActionState<FormState, FormData>(
+    guest ? guestUpdate : (updateRecipe as (prev: FormState, fd: FormData) => Promise<FormState>),
+    undefined
+  );
   const [confirmingClose, setConfirmingClose] = useState(false);
   const [photoCount, setPhotoCount] = useState(recipe.cover_photo_urls.length);
   const [hideIngredients, setHideIngredients] = useState(recipe.hide_ingredients);
-  const router = useRouter();
   const titleRef = useRef<HTMLInputElement>(null);
   const ingredientsRef = useRef<HTMLTextAreaElement>(null);
   const notesRef = useRef<HTMLTextAreaElement>(null);
@@ -122,6 +141,7 @@ export function EditRecipeForm({
             defaultValue={referenceUrl}
             initialPreview={referencePreview}
             onAiResult={handleAiResult}
+            guest={guest}
           />
         </GlassCard>
 

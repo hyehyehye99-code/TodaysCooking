@@ -3,9 +3,18 @@
 import { useOptimistic, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toggleFavoriteRecipe } from "@/lib/actions/recipes";
+import * as guestStore from "@/lib/guest/store";
 import { useDict } from "@/lib/i18n/client";
 
-export function FavoriteButton({ recipeId, isFavorite }: { recipeId: string; isFavorite: boolean }) {
+export function FavoriteButton({
+  recipeId,
+  isFavorite,
+  guest = false,
+}: {
+  recipeId: string;
+  isFavorite: boolean;
+  guest?: boolean;
+}) {
   const dict = useDict();
   const [optimisticFavorite, setOptimisticFavorite] = useOptimistic(isFavorite);
   const [, startTransition] = useTransition();
@@ -16,6 +25,10 @@ export function FavoriteButton({ recipeId, isFavorite }: { recipeId: string; isF
       type="button"
       onClick={() => {
         const next = !optimisticFavorite;
+        if (guest) {
+          guestStore.toggleFavorite(recipeId, next);
+          return;
+        }
         startTransition(async () => {
           setOptimisticFavorite(next);
           await toggleFavoriteRecipe(recipeId, next);

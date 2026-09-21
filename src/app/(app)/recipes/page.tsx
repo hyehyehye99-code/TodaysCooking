@@ -2,10 +2,21 @@ import { Suspense } from "react";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentHousehold } from "@/lib/household";
 import { RecipeList } from "./recipe-list";
+import { GuestRecipeList } from "./guest-recipes";
 import type { RecipeWithIngredients } from "@/lib/types";
 
 export default async function RecipesPage() {
-  const { household } = await getCurrentHousehold();
+  const { user, household } = await getCurrentHousehold();
+  // Guests (no login) get their on-device recipes instead of the household's.
+  if (!user) {
+    return (
+      <div>
+        <Suspense>
+          <GuestRecipeList />
+        </Suspense>
+      </div>
+    );
+  }
   const supabase = await createClient();
 
   const [{ data: recipes }, { data: fridgeItems }] = await Promise.all([
