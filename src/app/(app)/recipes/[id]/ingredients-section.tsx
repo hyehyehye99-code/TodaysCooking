@@ -6,6 +6,7 @@ import { setIngredientState, type IngredientChipState } from "@/lib/actions/reci
 import * as guestStore from "@/lib/guest/store";
 import { IngredientChip } from "@/components/IngredientChip";
 import { SavedToast } from "@/components/SavedToast";
+import { Mascot } from "@/components/Mascot";
 import { useDict } from "@/lib/i18n/client";
 
 type Ingredient = { id: string; name: string; amount: string | null; initialState: IngredientChipState };
@@ -84,8 +85,9 @@ export function IngredientsSection({
           type="button"
           onClick={save}
           disabled={saving}
-          className="mt-3 w-full rounded-xl bg-accent py-3 text-sm font-bold text-white disabled:opacity-60"
+          className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl bg-accent py-3 text-sm font-bold text-white disabled:opacity-60"
         >
+          {saving && <Mascot name="cooking" size={18} className="animate-icon-pulse" />}
           {saving ? dict.recipes.addingEllipsis : dict.mealPlan.saveChangesButton}
         </button>
       )}

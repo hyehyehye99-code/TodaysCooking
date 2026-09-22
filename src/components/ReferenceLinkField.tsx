@@ -7,6 +7,7 @@ import { generateRecipeFromLink, reportAiRecipeResult } from "@/lib/actions/ai-r
 import { ClearableInput } from "@/components/ClearableInput";
 import { useClipboardLinkSuggestion } from "@/lib/useClipboardLinkSuggestion";
 import { Modal } from "@/components/Modal";
+import { AiWritingIndicator } from "@/components/AiWritingIndicator";
 import { useDict } from "@/lib/i18n/client";
 import type { Dictionary } from "@/lib/i18n/dictionaries/ko";
 
@@ -325,14 +326,17 @@ export function ReferenceLinkField({
       {!loading && preview && onAiResult && (
         <>
           {isAiSupportedUrl(url) ? (
-            <button
-              type="button"
-              onClick={handleAiFill}
-              disabled={aiLoading}
-              className="mt-3 w-full rounded-xl border border-accent bg-white py-2.5 text-xs font-bold text-accent-ink disabled:opacity-60"
-            >
-              {aiLoading ? dict.welcome.aiFillLoading : dict.welcome.aiFillButton}
-            </button>
+            aiLoading ? (
+              <AiWritingIndicator label={dict.welcome.aiFillLoading} />
+            ) : (
+              <button
+                type="button"
+                onClick={handleAiFill}
+                className="mt-3 w-full rounded-xl border border-accent bg-white py-2.5 text-xs font-bold text-accent-ink"
+              >
+                {dict.welcome.aiFillButton}
+              </button>
+            )
           ) : (
             <p className="mt-3 text-center text-[11px] text-ink-faint">{dict.components.aiYoutubeOnly}</p>
           )}

@@ -5,6 +5,7 @@ import { updateProfile } from "@/lib/actions/profile";
 import { EmojiPicker } from "@/components/EmojiPicker";
 import { ProfileAvatar } from "@/components/ProfileAvatar";
 import { ClearableInput } from "@/components/ClearableInput";
+import { Mascot } from "@/components/Mascot";
 
 export function ProfileForm({
   currentNickname,
@@ -54,8 +55,9 @@ export function ProfileForm({
       <button
         type="submit"
         disabled={pending}
-        className="rounded-xl bg-accent py-3 text-sm font-bold text-white disabled:opacity-60"
+        className="flex items-center justify-center gap-2 rounded-xl bg-accent py-3 text-sm font-bold text-white disabled:opacity-60"
       >
+        {pending && <Mascot name="sparkle" size={18} className="animate-icon-pulse" />}
         {pending ? "저장 중..." : "저장"}
       </button>
     </form>

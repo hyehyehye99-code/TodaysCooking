@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { finishShoppingTrip } from "@/lib/actions/shopping";
 import { finishShoppingTrip as finishGuestShoppingTrip } from "@/lib/guest/store";
 import { FixedBottomBar } from "@/components/FixedBottomBar";
+import { Mascot } from "@/components/Mascot";
 import { useDict } from "@/lib/i18n/client";
 
 export function FinishShoppingBar({ doneCount, guest = false }: { doneCount: number; guest?: boolean }) {
@@ -37,8 +38,9 @@ export function FinishShoppingBar({ doneCount, guest = false }: { doneCount: num
           type="button"
           onClick={handleFinish}
           disabled={pending}
-          className="w-full rounded-xl bg-accent py-3.5 text-sm font-bold text-white disabled:opacity-60"
+          className="flex w-full items-center justify-center gap-2 rounded-xl bg-accent py-3.5 text-sm font-bold text-white disabled:opacity-60"
         >
+          {pending && <Mascot name="shopping" size={20} className="animate-icon-pulse" />}
           {pending ? dict.components.processing : dict.shopping.finishTrip}
         </button>
         <p className="mt-2 text-center text-xs text-ink-faint">
