@@ -17,7 +17,7 @@ import { startTimerActivity, endTimerActivity } from "@/lib/timerActivity";
 import { DefaultMascot } from "@/components/Mascot";
 import { useDict } from "@/lib/i18n/client";
 import type { Timer } from "@/lib/types";
-import { formatTime, liveRemaining, playBeep } from "../timer-utils";
+import { formatElapsedLabel, formatTime, liveRemaining, playBeep } from "../timer-utils";
 
 export type TimerDetailData = Timer & {
   recipes: {
@@ -231,7 +231,7 @@ export function TimerDetail({ timer }: { timer: TimerDetailData }) {
                   }`}
                 >
                   <span className="shrink-0 text-xs font-bold tabular-nums text-accent-ink">
-                    {formatTime(a.remaining_seconds)} {dict.timer.midAlertRemainingSuffix}
+                    {formatElapsedLabel(timer.duration_seconds - a.remaining_seconds, dict)}
                   </span>
                   <span className="min-w-0 flex-1 truncate text-xs text-ink">{a.message}</span>
                   {firedNowId === a.id && (

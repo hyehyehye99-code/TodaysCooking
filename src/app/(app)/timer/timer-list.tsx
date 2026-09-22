@@ -20,7 +20,7 @@ import { startTimerActivity, endTimerActivity } from "@/lib/timerActivity";
 import { useDragReorder } from "@/lib/useDragReorder";
 import { useDict } from "@/lib/i18n/client";
 import type { TimerWithRecipe } from "@/lib/types";
-import { formatTime, liveRemaining, playBeep } from "./timer-utils";
+import { formatElapsedLabel, formatTime, liveRemaining, playBeep } from "./timer-utils";
 
 export function TimerList({
   householdId,
@@ -392,7 +392,7 @@ export function TimerList({
                                 }`}
                               >
                                 <span className="shrink-0 font-bold tabular-nums text-accent-ink">
-                                  {formatTime(a.remaining_seconds)}
+                                  {formatElapsedLabel(timer.duration_seconds - a.remaining_seconds, dict)}
                                 </span>
                                 <span className="min-w-0 flex-1 truncate text-ink-faint">{a.message}</span>
                                 {isNow && (

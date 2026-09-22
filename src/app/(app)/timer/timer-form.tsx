@@ -19,6 +19,9 @@ import {
 } from "@/lib/timerNotifications";
 import { startTimerActivity, endTimerActivity } from "@/lib/timerActivity";
 import { useDict } from "@/lib/i18n/client";
+import { formatElapsedLabel, secondsToHms } from "./timer-utils";
+
+const DURATION_PRESETS_MINUTES = [1, 3, 5, 10, 15, 20, 30, 60];
 
 export type RecipeOption = {
   id: string;
@@ -39,6 +42,13 @@ export type EditableTimer = {
   timer_alerts: { id: string; remaining_seconds: number; message: string }[];
 };
 
+// hours/minutes/seconds here are elapsed time SINCE THE TIMER STARTED — the
+// way a recipe actually describes it ("10분 지나면 뒤집어주세요"), not time
+// remaining until the end. Storage/scheduling still runs on remaining_seconds
+// (that's what a live countdown compares against), so the two conversions —
+// elapsed → remaining when saving, remaining → elapsed when loading an
+// existing timer — both happen right at this component's edges; nothing
+// downstream needs to know elapsed time exists.
 type DraftAlert = { key: string; hours: number; minutes: number; seconds: number; message: string };
 
 function NumberField({
@@ -91,9 +101,8 @@ export function TimerForm({ recipes, timer }: { recipes: RecipeOption[]; timer?:
   const [alerts, setAlerts] = useState<DraftAlert[]>(() =>
     (timer?.timer_alerts ?? []).map((a) => ({
       key: a.id,
-      hours: Math.floor(a.remaining_seconds / 3600),
-      minutes: Math.floor((a.remaining_seconds % 3600) / 60),
-      seconds: a.remaining_seconds % 60,
+      // DB stores remaining-at-fire; convert to elapsed-since-start for display/editing here.
+      ...secondsToHms(timer!.duration_seconds - a.remaining_seconds),
       message: a.message,
     }))
   );
@@ -116,6 +125,14 @@ export function TimerForm({ recipes, timer }: { recipes: RecipeOption[]; timer?:
   function addAlert() {
     const message = draftMessage.trim();
     const draftTotalSeconds = draftHours * 3600 + draftMinutes * 60 + draftSeconds;
+    const totalDuration = hours * 3600 + minutes * 60 + seconds;
+    // Elapsed time only means something relative to a total — without one
+    // there's nothing to check draftTotalSeconds against below, and no
+    // remaining_seconds to convert it to when this actually gets saved.
+    if (totalDuration <= 0) {
+      setAlertError(dict.timer.midAlertNeedDurationFirst);
+      return;
+    }
     if (draftTotalSeconds <= 0) {
       setAlertError(dict.timer.midAlertMissingTime);
       return;
@@ -124,8 +141,7 @@ export function TimerForm({ recipes, timer }: { recipes: RecipeOption[]; timer?:
       setAlertError(dict.timer.midAlertMissingMessage);
       return;
     }
-    const totalDuration = hours * 3600 + minutes * 60 + seconds;
-    if (totalDuration > 0 && draftTotalSeconds >= totalDuration) {
+    if (draftTotalSeconds >= totalDuration) {
       setAlertError(dict.timer.midAlertTooLate);
       return;
     }
@@ -150,8 +166,20 @@ export function TimerForm({ recipes, timer }: { recipes: RecipeOption[]; timer?:
     setError("");
     const durationSeconds = hours * 3600 + minutes * 60 + seconds;
     const finalName = name.trim() || selectedRecipe?.title || "";
+
+    // An alert saved earlier can outlive a later edit to the total duration
+    // above it — if the timer got shorter, that alert's elapsed time might
+    // no longer fit inside it. Catch that here rather than silently saving
+    // a negative/nonsensical remaining_seconds.
+    if (alerts.some((a) => a.hours * 3600 + a.minutes * 60 + a.seconds >= durationSeconds)) {
+      setError(dict.timer.midAlertTooLate);
+      return;
+    }
+
     const alertInputs: AlertInput[] = alerts.map((a) => ({
-      remainingSeconds: a.hours * 3600 + a.minutes * 60 + a.seconds,
+      // Convert elapsed-since-start (what the form collects) to remaining-
+      // at-fire (what the countdown/notification scheduling compares against).
+      remainingSeconds: durationSeconds - (a.hours * 3600 + a.minutes * 60 + a.seconds),
       message: a.message,
     }));
 
@@ -271,6 +299,32 @@ export function TimerForm({ recipes, timer }: { recipes: RecipeOption[]; timer?:
             <NumberField value={seconds} onChange={setSeconds} max={59} unit={dict.timer.secondsUnit} />
           </div>
 
+          {/* One tap sets the whole duration instead of typing into three
+              separate number boxes — those stay for fine-tuning afterward
+              (e.g. "10분" then nudge seconds), not as the only way in. */}
+          <div className="mt-2 flex flex-wrap gap-1.5">
+            {DURATION_PRESETS_MINUTES.map((m) => {
+              const active = hours === 0 && minutes === m && seconds === 0;
+              return (
+                <button
+                  key={m}
+                  type="button"
+                  onClick={() => {
+                    setHours(0);
+                    setMinutes(m);
+                    setSeconds(0);
+                  }}
+                  className={`rounded-full px-3 py-1.5 text-xs font-bold ${
+                    active ? "bg-accent text-white" : "bg-surface text-ink-soft"
+                  }`}
+                >
+                  {m}
+                  {dict.timer.minutesUnit}
+                </button>
+              );
+            })}
+          </div>
+
           {/* Nested inside the duration section (smaller type, inset white-on-surface
               fields) so it reads as "a sub-setting of the time above", not a second,
               equally-weighted time picker next to it. */}
@@ -282,10 +336,7 @@ export function TimerForm({ recipes, timer }: { recipes: RecipeOption[]; timer?:
                 {alerts.map((a) => (
                   <div key={a.key} className="flex items-center gap-2 rounded-lg bg-white px-2.5 py-2">
                     <span className="shrink-0 text-[11px] font-bold tabular-nums text-accent-ink">
-                      {[a.hours, a.minutes, a.seconds]
-                        .map((n) => String(n).padStart(2, "0"))
-                        .join(":")}{" "}
-                      {dict.timer.midAlertRemainingSuffix}
+                      {formatElapsedLabel(a.hours * 3600 + a.minutes * 60 + a.seconds, dict)}
                     </span>
                     <span className="min-w-0 flex-1 truncate text-xs text-ink">{a.message}</span>
                     <button
@@ -304,6 +355,11 @@ export function TimerForm({ recipes, timer }: { recipes: RecipeOption[]; timer?:
               </div>
             )}
 
+            <p className="mb-1.5 text-[11px] text-ink-faint">
+              {hours * 3600 + minutes * 60 + seconds <= 0
+                ? dict.timer.midAlertNeedDurationFirst
+                : dict.timer.midAlertHint}
+            </p>
             <div className="flex items-center gap-1.5">
               <NumberField value={draftHours} onChange={setDraftHours} max={23} unit={dict.timer.hoursUnit} small />
               <NumberField value={draftMinutes} onChange={setDraftMinutes} max={59} unit={dict.timer.minutesUnit} small />

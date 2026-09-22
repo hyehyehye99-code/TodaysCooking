@@ -1,3 +1,38 @@
+import type { Dictionary } from "@/lib/i18n/dictionaries/ko";
+
+export function secondsToHms(totalSeconds: number) {
+  const s = Math.max(0, totalSeconds);
+  return { hours: Math.floor(s / 3600), minutes: Math.floor((s % 3600) / 60), seconds: s % 60 };
+}
+
+// "1시간 10분" / "5분" / "30초" style — skips zero-valued units instead of
+// always spelling out h/m/s, and uses this dictionary's own unit words so it
+// reads naturally per locale (see timer.hoursUnit/minutesUnit/secondsUnit).
+export function formatDurationParts(
+  hours: number,
+  minutes: number,
+  seconds: number,
+  units: { hoursUnit: string; minutesUnit: string; secondsUnit: string }
+) {
+  const parts: string[] = [];
+  if (hours > 0) parts.push(`${hours}${units.hoursUnit}`);
+  if (minutes > 0) parts.push(`${minutes}${units.minutesUnit}`);
+  if (seconds > 0 || parts.length === 0) parts.push(`${seconds}${units.secondsUnit}`);
+  return parts.join(" ");
+}
+
+// A mid-timer alert's full label — "10분 후" / "in 10 min" / "10分後" — from
+// how long after the timer starts it fires. Used everywhere a mid-alert is
+// shown (the edit form's added-alerts list, the running timer's detail and
+// list views) so the three stay in sync.
+export function formatElapsedLabel(elapsedSeconds: number, dict: Dictionary) {
+  const { hours, minutes, seconds } = secondsToHms(elapsedSeconds);
+  return dict.timer.midAlertElapsedTemplate.replace(
+    "{time}",
+    formatDurationParts(hours, minutes, seconds, dict.timer)
+  );
+}
+
 export function formatTime(totalSeconds: number) {
   const s = Math.max(0, Math.round(totalSeconds));
   const h = Math.floor(s / 3600);
