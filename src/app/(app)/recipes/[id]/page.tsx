@@ -1,3 +1,4 @@
+import { IconGlyph } from "@/components/IconGlyph";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
@@ -98,7 +99,7 @@ export default async function RecipeDetailPage({
         <div className={`flex min-w-0 flex-1 gap-3 ${r.subtitle ? "items-start" : "items-center"}`}>
           {r.cover_photo_urls.length === 0 && r.icon_emoji && (
             <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-surface text-2xl">
-              {r.icon_emoji}
+              <IconGlyph value={r.icon_emoji} box={56} />
             </div>
           )}
           {r.cover_photo_urls.length === 0 && !r.icon_emoji && (

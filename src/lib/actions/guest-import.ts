@@ -41,7 +41,7 @@ function sanitizeRecipe(raw: unknown): ImportedRecipe | null {
   return {
     title: str(r.title, 200),
     subtitle: str(r.subtitle, 300),
-    icon_emoji: str(r.icon_emoji, 16),
+    icon_emoji: str(r.icon_emoji, 40),
     tags: (Array.isArray(r.tags) ? r.tags : []).map((t) => str(t, 40)).filter((t): t is string => !!t).slice(0, 30),
     notes: str(r.notes, 20000),
     hide_ingredients: r.hide_ingredients === true,

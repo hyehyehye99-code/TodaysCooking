@@ -212,6 +212,8 @@ const ja: Dictionary = {
     newRecipeLink: "+ 新しいメニュー",
     newMealPlanLink: "+ 新しいメニュー表",
     emojiInputPlaceholder: "絵文字を入力",
+    pickerEmojiTab: "絵文字",
+    pickerMascotTab: "キャラクター",
     more: "もっと見る",
     photoMaxTemplate: "写真は最大{max}枚まで登録できます。",
     photoProcessError: "写真を処理できませんでした。別の写真でお試しください。",

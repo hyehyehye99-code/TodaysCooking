@@ -1,5 +1,6 @@
 "use client";
 
+import { IconGlyph } from "@/components/IconGlyph";
 import { useState } from "react";
 import { DefaultMascot } from "@/components/Mascot";
 
@@ -45,7 +46,7 @@ export function RecipeThumb({
         style={{ ...style, fontSize: size * 0.42 }}
         className={`flex shrink-0 items-center justify-center ${rounded} bg-surface`}
       >
-        {iconEmoji}
+        <IconGlyph value={iconEmoji} box={size} />
       </div>
     );
   }

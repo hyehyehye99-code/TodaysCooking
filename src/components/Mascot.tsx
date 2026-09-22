@@ -36,6 +36,11 @@ const SPRITES = {
 } as const;
 
 export type MascotName = keyof typeof SPRITES;
+export const MASCOT_NAMES = Object.keys(SPRITES) as MascotName[];
+
+export function isMascotName(value: string): value is MascotName {
+  return Object.prototype.hasOwnProperty.call(SPRITES, value);
+}
 
 // `size` is the rendered width in px; height follows the sprite's aspect
 // ratio. Decorative by default (alt="") — pass `alt` only when the mascot
@@ -104,8 +109,16 @@ export function pickMascot(pool: MascotPool, seed: string): MascotName {
   return list[hashSeed(seed) % list.length];
 }
 
-// A pooled mascot fitted inside a square `box` (px), wide or tall sprites
-// included, so it drops into any avatar/thumbnail slot without distorting.
+// A mascot fitted inside a square `box` (px), wide or tall sprites included,
+// so it drops into any avatar/thumbnail slot without distorting.
+export function FittedMascot({ name, box, className = "" }: { name: MascotName; box: number; className?: string }) {
+  const [w, h] = SPRITES[name];
+  const fit = box * 0.86;
+  const width = w >= h ? fit : fit * (w / h);
+  return <Mascot name={name} size={Math.max(8, Math.round(width))} className={className} />;
+}
+
+// A pooled mascot for a slot that has nothing of its own to show.
 export function DefaultMascot({
   pool,
   seed,
@@ -117,9 +130,5 @@ export function DefaultMascot({
   box: number;
   className?: string;
 }) {
-  const name = pickMascot(pool, seed);
-  const [w, h] = SPRITES[name];
-  const fit = box * 0.86;
-  const width = w >= h ? fit : fit * (w / h);
-  return <Mascot name={name} size={Math.max(8, Math.round(width))} className={className} />;
+  return <FittedMascot name={pickMascot(pool, seed)} box={box} className={className} />;
 }

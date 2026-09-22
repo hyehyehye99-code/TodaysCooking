@@ -215,6 +215,8 @@ const en: Dictionary = {
     newRecipeLink: "+ New menu",
     newMealPlanLink: "+ New meal plan",
     emojiInputPlaceholder: "Type an emoji",
+    pickerEmojiTab: "Emoji",
+    pickerMascotTab: "Characters",
     more: "More",
     photoMaxTemplate: "You can add up to {max} photos.",
     photoProcessError: "Couldn't process that photo. Try a different one.",

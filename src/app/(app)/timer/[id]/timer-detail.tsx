@@ -1,5 +1,6 @@
 "use client";
 
+import { IconGlyph } from "@/components/IconGlyph";
 import { useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -132,7 +133,7 @@ export function TimerDetail({ timer }: { timer: TimerDetailData }) {
       <div className="mb-2 flex items-start justify-between gap-3">
         <div className="flex min-w-0 flex-1 items-center gap-3">
           <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-surface text-2xl">
-            {timer.icon_emoji || <DefaultMascot pool="timer" seed={timer.id} box={48} />}
+            {timer.icon_emoji ? <IconGlyph value={timer.icon_emoji} box={48} /> : <DefaultMascot pool="timer" seed={timer.id} box={48} />}
           </div>
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-1.5">

@@ -1,3 +1,4 @@
+import { IconGlyph } from "@/components/IconGlyph";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
@@ -68,7 +69,7 @@ export default async function SharedRecipePage({ params }: { params: Promise<{ c
         <RecipePhotoGallery photos={recipe.cover_photo_urls} />
       ) : recipe.icon_emoji ? (
         <div className="mb-4 flex aspect-square w-full items-center justify-center rounded-2xl bg-surface text-[64px]">
-          {recipe.icon_emoji}
+          <IconGlyph value={recipe.icon_emoji} box={260} />
         </div>
       ) : (
         <div className="mb-4 flex h-52 w-full items-center justify-center rounded-2xl bg-surface">

@@ -1,5 +1,6 @@
 "use client";
 
+import { IconGlyph } from "@/components/IconGlyph";
 import { useMemo, useState } from "react";
 
 type UserRow = {
@@ -47,7 +48,7 @@ export function UsersTable({ users }: { users: UserRow[] }) {
             <tbody>
               {filtered.map((u) => (
                 <tr key={u.id} className="border-b border-border last:border-0 hover:bg-surface">
-                  <td className="px-3 py-2 text-lg">{u.icon_emoji ?? "👤"}</td>
+                  <td className="px-3 py-2 text-lg">{u.icon_emoji ? <IconGlyph value={u.icon_emoji} box={28} /> : "👤"}</td>
                   <td className="px-3 py-2 font-bold">{u.nickname ?? "-"}</td>
                   <td className="px-3 py-2 text-ink-soft">{u.email ?? "-"}</td>
                   <td className="px-3 py-2 text-ink-soft">{new Date(u.created_at).toLocaleDateString("ko-KR")}</td>

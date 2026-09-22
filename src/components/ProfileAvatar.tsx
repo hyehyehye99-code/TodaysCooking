@@ -1,3 +1,4 @@
+import { IconGlyph } from "@/components/IconGlyph";
 import { DefaultMascot, type MascotPool } from "@/components/Mascot";
 
 // `kind` picks which mascots fill the slot when there's no emoji: "avatar" for
@@ -20,7 +21,7 @@ export function ProfileAvatar({
       style={{ width: size, height: size, fontSize: size * 0.55 }}
       className={`flex shrink-0 items-center justify-center overflow-hidden rounded-full bg-surface font-bold text-ink-soft ${className}`}
     >
-      {iconEmoji || <DefaultMascot pool={kind} seed={nickname.trim() || "?"} box={size} />}
+      {iconEmoji ? <IconGlyph value={iconEmoji} box={size} /> : <DefaultMascot pool={kind} seed={nickname.trim() || "?"} box={size} />}
     </div>
   );
 }

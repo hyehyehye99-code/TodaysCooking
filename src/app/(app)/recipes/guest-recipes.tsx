@@ -4,6 +4,7 @@
 // pages, fed from this device's localStorage (lib/guest/store.ts) instead of
 // Supabase.
 
+import { IconGlyph } from "@/components/IconGlyph";
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { notFound, useRouter } from "next/navigation";
@@ -191,7 +192,7 @@ export function GuestRecipeDetail({ id, closeHref }: { id: string; closeHref: st
         <div className={`flex min-w-0 flex-1 gap-3 ${r.subtitle ? "items-start" : "items-center"}`}>
           {r.cover_photo_urls.length === 0 && r.icon_emoji && (
             <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-surface text-2xl">
-              {r.icon_emoji}
+              <IconGlyph value={r.icon_emoji} box={56} />
             </div>
           )}
           {r.cover_photo_urls.length === 0 && !r.icon_emoji && (

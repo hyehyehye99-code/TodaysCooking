@@ -1,3 +1,4 @@
+import { toPlainEmoji } from "@/lib/mascotIcon";
 import { Capacitor, registerPlugin } from "@capacitor/core";
 
 interface TimerActivityPlugin {
@@ -32,7 +33,7 @@ export async function startTimerActivity(input: {
     await TimerActivity.start({
       id: input.id,
       name: input.name,
-      iconEmoji: input.iconEmoji ?? "",
+      iconEmoji: toPlainEmoji(input.iconEmoji),
       endEpochMs: input.endEpochMs,
       isPaused: input.isPaused ?? false,
     });

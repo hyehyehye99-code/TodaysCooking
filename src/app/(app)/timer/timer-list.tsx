@@ -1,5 +1,6 @@
 "use client";
 
+import { IconGlyph } from "@/components/IconGlyph";
 import { useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -283,7 +284,7 @@ export function TimerList({
                     className="flex min-w-0 flex-1 items-center gap-3 text-left"
                   >
                     <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-surface text-base">
-                      {timer.icon_emoji || <DefaultMascot pool="timer" seed={timer.id} box={36} />}
+                      {timer.icon_emoji ? <IconGlyph value={timer.icon_emoji} box={36} /> : <DefaultMascot pool="timer" seed={timer.id} box={36} />}
                     </span>
                     <span className="min-w-0 flex-1 truncate text-[15px] font-bold">{timer.name}</span>
                     <span className="shrink-0 text-xs tabular-nums text-ink-faint">
@@ -347,7 +348,7 @@ export function TimerList({
               >
                 <GlassCard className="flex items-center gap-3 bg-white p-3.5">
                   <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-surface text-lg">
-                    {timer.icon_emoji || <DefaultMascot pool="timer" seed={timer.id} box={40} />}
+                    {timer.icon_emoji ? <IconGlyph value={timer.icon_emoji} box={40} /> : <DefaultMascot pool="timer" seed={timer.id} box={40} />}
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-1.5">

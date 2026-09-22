@@ -215,6 +215,8 @@ const ko = {
     newRecipeLink: "+ 새 메뉴",
     newMealPlanLink: "+ 새 메뉴판",
     emojiInputPlaceholder: "이모지 입력",
+    pickerEmojiTab: "이모지",
+    pickerMascotTab: "캐릭터",
     more: "더보기",
     photoMaxTemplate: "최대 {max}장까지 등록할 수 있어요.",
     photoProcessError: "사진을 처리하지 못했어요. 다른 사진으로 시도해주세요.",
