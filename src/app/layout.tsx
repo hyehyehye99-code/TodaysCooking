@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import { NativeAuthBridge } from "@/components/NativeAuthBridge";
+import { SplashScreenBridge } from "@/components/SplashScreenBridge";
 import { getDictionary } from "@/lib/i18n/server";
 import { LocaleProvider } from "@/lib/i18n/client";
 import "./globals.css";
@@ -41,6 +42,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
     >
       <body className="min-h-full flex flex-col">
         <NativeAuthBridge />
+        <SplashScreenBridge />
         <LocaleProvider locale={locale} dict={dict}>
           {children}
         </LocaleProvider>

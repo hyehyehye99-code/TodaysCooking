@@ -20,6 +20,24 @@ const config: CapacitorConfig = {
     // gets treated as "external" and kicked out to Safari.
     allowNavigation: ["ourhomemenu.vercel.app"],
   },
+  plugins: {
+    // launchAutoHide stays true (the default) specifically so the OS/native
+    // side guarantees the splash comes down on its own after
+    // launchShowDuration — with no dependency on the WKWebView finishing
+    // its load or any of our own JS ever running. SplashScreenBridge calls
+    // .hide() as soon as the app actually has something to show, which
+    // normally beats this timer easily; the timer only matters as the
+    // fallback for a slow or totally failed load, where it guarantees the
+    // splash can never get stuck up forever (a previous version relied on
+    // JS to hide it with no such native-side backstop, and got pulled after
+    // exactly that got stuck).
+    SplashScreen: {
+      launchAutoHide: true,
+      launchShowDuration: 2500,
+      backgroundColor: "#FD502A",
+      showSpinner: false,
+    },
+  },
 };
 
 export default config;

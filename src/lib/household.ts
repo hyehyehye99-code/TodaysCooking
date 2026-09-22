@@ -15,6 +15,15 @@ function unwrapHousehold(value: unknown) {
 // getMyHouseholds() needs the same user — cache() makes repeats free instead
 // of re-hitting Supabase Auth/DB for each caller in the same render.
 const getAuthUser = cache(async () => {
+  // A guest (no login, the default now) has no Supabase auth cookie at all,
+  // so supabase.auth.getUser() below can only ever come back empty for
+  // them — skip that network round trip to Supabase's Auth server entirely
+  // instead of paying for it on every guest page load (see the matching
+  // guard in lib/supabase/proxy.ts, the middleware's own copy of this check).
+  const cookieStore = await cookies();
+  const hasAuthCookie = cookieStore.getAll().some((c) => c.name.startsWith("sb-"));
+  if (!hasAuthCookie) return null;
+
   const supabase = await createClient();
   const {
     data: { user },
