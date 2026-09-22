@@ -65,3 +65,61 @@ export function Mascot({
     />
   );
 }
+
+// Where a slot has nothing of its own to show (no profile emoji, no recipe
+// photo, no meal-plan icon...), it gets one of these instead. Picked from the
+// seed, so the same person/recipe always gets the same character while a list
+// of them shows a lively mix.
+const POOLS = {
+  avatar: ["basic", "excited", "happy", "tasty", "laugh", "love", "shy", "sparkle", "surprised", "rest", "idea", "confused"],
+  recipe: [
+    "cooking", "recipe", "tasty", "idea", "love", "sparkle", "excited", "happy",
+    "laugh", "shopping", "fridge", "rest", "basic", "surprised",
+    "item-pot", "item-tomato", "item-carrot", "item-egg",
+  ],
+  mealPlan: ["recipe", "idea", "happy", "shopping", "fridge", "love", "sparkle", "rest", "tasty", "cooking", "item-bag", "item-pot"],
+  timer: ["cooking", "item-pot", "item-egg", "rest", "idea", "item-spoon", "excited", "item-tomato"],
+} as const satisfies Record<string, readonly MascotName[]>;
+
+export type MascotPool = keyof typeof POOLS;
+
+// FNV-1a plus a final avalanche: seeds that differ by a character or two (ids
+// or titles created together) still land on different mascots.
+function hashSeed(seed: string) {
+  let h = 2166136261;
+  for (let i = 0; i < seed.length; i++) {
+    h ^= seed.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  h ^= h >>> 16;
+  h = Math.imul(h, 2246822507);
+  h ^= h >>> 13;
+  h = Math.imul(h, 3266489909);
+  h ^= h >>> 16;
+  return h >>> 0;
+}
+
+export function pickMascot(pool: MascotPool, seed: string): MascotName {
+  const list = POOLS[pool];
+  return list[hashSeed(seed) % list.length];
+}
+
+// A pooled mascot fitted inside a square `box` (px), wide or tall sprites
+// included, so it drops into any avatar/thumbnail slot without distorting.
+export function DefaultMascot({
+  pool,
+  seed,
+  box,
+  className = "",
+}: {
+  pool: MascotPool;
+  seed: string;
+  box: number;
+  className?: string;
+}) {
+  const name = pickMascot(pool, seed);
+  const [w, h] = SPRITES[name];
+  const fit = box * 0.86;
+  const width = w >= h ? fit : fit * (w / h);
+  return <Mascot name={name} size={Math.max(8, Math.round(width))} className={className} />;
+}

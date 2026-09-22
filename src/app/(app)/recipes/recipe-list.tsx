@@ -395,6 +395,7 @@ export function RecipeList({
                     className="flex min-w-0 flex-1 items-center gap-3 text-left"
                   >
                     <RecipeThumb
+                      seed={recipe.id}
                       coverPhotoUrl={recipe.cover_photo_urls[0]}
                       iconEmoji={recipe.icon_emoji}
                       linkThumbnailUrl={recipe.bookmarks?.[0]?.thumbnail_url}
@@ -459,6 +460,7 @@ export function RecipeList({
                 }`}
               >
                 <RecipeThumb
+                  seed={recipe.id}
                   coverPhotoUrl={recipe.cover_photo_urls[0]}
                   iconEmoji={recipe.icon_emoji}
                   linkThumbnailUrl={bookmark?.thumbnail_url}

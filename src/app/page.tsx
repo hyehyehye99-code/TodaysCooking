@@ -2,35 +2,9 @@ import Link from "next/link";
 import { getCurrentHousehold } from "@/lib/household";
 import { getDictionary } from "@/lib/i18n/server";
 import { BackButton } from "@/components/ui";
-import { Mascot } from "@/components/Mascot";
+import { Mascot, type MascotName } from "@/components/Mascot";
 
-const FEATURE_ICONS = [
-  <svg key="ai" width="22" height="22" viewBox="0 0 22 22" fill="none" aria-hidden="true">
-    <path
-      d="M5 4.5C5 3.67 5.67 3 6.5 3H16v15H6.5A1.5 1.5 0 015 16.5v-12z"
-      stroke="currentColor"
-      strokeWidth="1.75"
-      strokeLinejoin="round"
-    />
-    <path d="M5 16.5A1.5 1.5 0 016.5 15H16" stroke="currentColor" strokeWidth="1.75" />
-    <path d="M8.5 7h4.5M8.5 10h4.5" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" />
-  </svg>,
-  <svg key="shopping" width="22" height="22" viewBox="0 0 22 22" fill="none" aria-hidden="true">
-    <path
-      d="M4.5 6.5h13l-1.2 9.4a1.5 1.5 0 01-1.49 1.3H7.19a1.5 1.5 0 01-1.49-1.3L4.5 6.5z"
-      stroke="currentColor"
-      strokeWidth="1.75"
-      strokeLinejoin="round"
-    />
-    <path d="M7.5 6.5a3.5 3.5 0 017 0" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" />
-  </svg>,
-  <svg key="family" width="22" height="22" viewBox="0 0 22 22" fill="none" aria-hidden="true">
-    <circle cx="8" cy="7" r="3" stroke="currentColor" strokeWidth="1.75" />
-    <path d="M3 19c0-3 2.5-5.5 5-5.5S13 16 13 19" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" />
-    <circle cx="16" cy="8" r="2.5" stroke="currentColor" strokeWidth="1.75" />
-    <path d="M14.5 13.5c2.5 0 4.5 2 4.5 5" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" />
-  </svg>,
-];
+const FEATURE_MASCOTS: MascotName[] = ["idea", "shopping", "love"];
 
 const FEATURE_SCREENSHOTS = [
   "/screenshots/recipe-add-ai.png",
@@ -52,7 +26,7 @@ export default async function LandingPage() {
     { title: dict.landing.feature1Title, description: dict.landing.feature1Desc },
     { title: dict.landing.feature2Title, description: dict.landing.feature2Desc },
     { title: dict.landing.feature3Title, description: dict.landing.feature3Desc },
-  ].map((f, i) => ({ ...f, icon: FEATURE_ICONS[i], screenshot: FEATURE_SCREENSHOTS[i] }));
+  ].map((f, i) => ({ ...f, mascot: FEATURE_MASCOTS[i], screenshot: FEATURE_SCREENSHOTS[i] }));
 
   const painPoints = [dict.landing.pain1, dict.landing.pain2, dict.landing.pain3];
 
@@ -143,9 +117,7 @@ export default async function LandingPage() {
                 }`}
               >
                 <div className="w-full md:flex-1">
-                  <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-full bg-accent/10 text-accent">
-                    {f.icon}
-                  </div>
+                  <Mascot name={f.mascot} size={84} className="mb-3" />
                   <h3 className="text-lg font-bold text-ink md:text-xl">{f.title}</h3>
                   <p className="mt-3 max-w-sm text-sm leading-relaxed text-ink-soft md:text-base">
                     {f.description}

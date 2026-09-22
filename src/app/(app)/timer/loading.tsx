@@ -1,5 +1,9 @@
+import { LoadingMascot } from "@/components/LoadingMascot";
+
 export default function Loading() {
   return (
+    <>
+      <LoadingMascot name="cooking" />
     <div className="animate-pulse">
       <div className="mb-4 flex items-center justify-between gap-2">
         <div className="h-9 w-28 rounded-full bg-surface" />
@@ -21,5 +25,6 @@ export default function Loading() {
         ))}
       </div>
     </div>
+    </>
   );
 }

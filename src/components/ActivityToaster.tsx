@@ -1,5 +1,6 @@
 "use client";
 
+import { DefaultMascot } from "@/components/Mascot";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
@@ -66,6 +67,7 @@ export function ActivityToaster({ userId, householdId }: { userId: string; house
           className="animate-fade-in-up pointer-events-auto w-full max-w-[420px] cursor-pointer rounded-2xl border border-border bg-white/95 px-4 py-3 shadow-lg backdrop-blur"
         >
           <div className="flex items-start justify-between gap-3">
+            <DefaultMascot pool="avatar" seed={toast.title} box={40} className="shrink-0" />
             <div className="min-w-0 flex-1">
               <p className="truncate text-sm font-bold text-ink">{toast.title}</p>
               <p className="mt-0.5 line-clamp-2 text-xs text-ink-soft">{toast.body}</p>

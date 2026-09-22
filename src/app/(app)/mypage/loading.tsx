@@ -1,5 +1,9 @@
+import { LoadingMascot } from "@/components/LoadingMascot";
+
 export default function Loading() {
   return (
+    <>
+      <LoadingMascot name="happy" />
     <div className="animate-pulse">
       <div className="mb-6 h-7 w-28 rounded-lg bg-surface" />
       <div className="mb-6 h-24 rounded-2xl bg-surface" />
@@ -10,5 +14,6 @@ export default function Loading() {
         ))}
       </div>
     </div>
+    </>
   );
 }

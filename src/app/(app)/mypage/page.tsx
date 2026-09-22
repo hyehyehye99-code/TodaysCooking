@@ -7,6 +7,7 @@ import { AddHouseholdSection } from "./add-household-section";
 import { HouseholdList } from "./household-list";
 import { getDictionary } from "@/lib/i18n/server";
 import { GuestMyPage } from "./guest-mypage";
+import { Mascot } from "@/components/Mascot";
 
 // Kept in sync with FREE_WEEKLY_LIMIT in src/lib/actions/ai-recipe.ts — this
 // page only displays the count, the actual enforcement lives server-side in
@@ -72,7 +73,10 @@ export default async function MyPage() {
         <ProfileEditButton nickname={myNickname} iconEmoji={myIconEmoji} />
 
         <div className="mt-4 border-t border-border pt-4">
-          <p className="text-sm font-semibold text-ink">{dict.mypage.aiUsageLabel}</p>
+          <p className="flex items-center gap-2 text-sm font-semibold text-ink">
+            <Mascot name="sparkle" size={38} />
+            {dict.mypage.aiUsageLabel}
+          </p>
           {bonusRemaining > 0 ? (
             // While a bonus grant is active, every generation draws from it
             // first (see ai-recipe.ts) — the weekly free count stays frozen

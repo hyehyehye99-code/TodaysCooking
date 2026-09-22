@@ -47,7 +47,7 @@ export function MealPlanInfoBox({
     <GlassCard className="mb-4 bg-surface p-4">
       <div className="flex items-center justify-between gap-3">
         <div className="flex min-w-0 items-center gap-3">
-          <ProfileAvatar iconEmoji={iconEmoji} nickname={title} size={44} />
+          <ProfileAvatar iconEmoji={iconEmoji} nickname={title} size={44} kind="mealPlan" />
           <div className="min-w-0">
             <h1 className="truncate text-lg font-bold">{title}</h1>
             <p className="text-xs text-ink-soft">

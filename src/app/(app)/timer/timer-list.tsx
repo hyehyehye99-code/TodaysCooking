@@ -6,6 +6,7 @@ import Link from "next/link";
 import { GlassCard } from "@/components/ui";
 import { ConfirmModal } from "@/components/ConfirmModal";
 import { EmptyState } from "@/components/EmptyState";
+import { DefaultMascot } from "@/components/Mascot";
 import { createClient } from "@/lib/supabase/client";
 import { setTimerRunning, resetTimer, deleteTimers, reorderTimers } from "@/lib/actions/timers";
 import {
@@ -282,7 +283,7 @@ export function TimerList({
                     className="flex min-w-0 flex-1 items-center gap-3 text-left"
                   >
                     <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-surface text-base">
-                      {timer.icon_emoji || "⏱️"}
+                      {timer.icon_emoji || <DefaultMascot pool="timer" seed={timer.id} box={36} />}
                     </span>
                     <span className="min-w-0 flex-1 truncate text-[15px] font-bold">{timer.name}</span>
                     <span className="shrink-0 text-xs tabular-nums text-ink-faint">
@@ -346,7 +347,7 @@ export function TimerList({
               >
                 <GlassCard className="flex items-center gap-3 bg-white p-3.5">
                   <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-surface text-lg">
-                    {timer.icon_emoji || "⏱️"}
+                    {timer.icon_emoji || <DefaultMascot pool="timer" seed={timer.id} box={40} />}
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-1.5">

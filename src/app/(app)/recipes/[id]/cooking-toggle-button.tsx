@@ -4,6 +4,7 @@ import { useOptimistic, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toggleCookingRecipe } from "@/lib/actions/recipes";
 import * as guestStore from "@/lib/guest/store";
+import { Mascot } from "@/components/Mascot";
 import { useDict } from "@/lib/i18n/client";
 
 export function CookingToggleButton({
@@ -44,7 +45,7 @@ export function CookingToggleButton({
           <path d="M2.5 7.5l3 3 6-7" />
         </svg>
       ) : (
-        "🍳"
+        <Mascot name="cooking" size={24} />
       )}
       {optimisticCooking ? dict.recipes.stopCooking : dict.recipes.startCooking}
     </button>

@@ -1,5 +1,9 @@
+import { LoadingMascot } from "@/components/LoadingMascot";
+
 export default function Loading() {
   return (
+    <>
+      <LoadingMascot name="idea" />
     <div className="animate-pulse">
       <div className="flex flex-col gap-2.5">
         {Array.from({ length: 4 }).map((_, i) => (
@@ -13,5 +17,6 @@ export default function Loading() {
         ))}
       </div>
     </div>
+    </>
   );
 }

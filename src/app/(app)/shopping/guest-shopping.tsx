@@ -8,6 +8,7 @@ import { useMemo } from "react";
 import { GlassCard, ProgressBar } from "@/components/ui";
 import { ClearableInput } from "@/components/ClearableInput";
 import { EmptyState } from "@/components/EmptyState";
+import { Mascot } from "@/components/Mascot";
 import { useDict } from "@/lib/i18n/client";
 import { addShoppingItem, useGuestData } from "@/lib/guest/store";
 import type { ShoppingItem } from "@/lib/types";
@@ -56,7 +57,10 @@ export function GuestShopping() {
     <div className="pb-[calc(11.5rem+env(safe-area-inset-bottom))]">
       <GlassCard className="mb-[18px] bg-white p-4">
         <div className="mb-2.5 flex items-center justify-between">
-          <span className="text-[13px] font-bold">{dict.shopping.currentTrip}</span>
+          <span className="flex items-center gap-2 text-[13px] font-bold">
+            <Mascot name={allChecked ? "happy" : "shopping"} size={34} />
+            {dict.shopping.currentTrip}
+          </span>
           <span className="text-xs font-bold text-accent">
             {dict.shopping.doneCountTemplate.replace("{done}", String(doneCount)).replace("{total}", String(items.length))}
           </span>

@@ -8,6 +8,7 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { notFound, useRouter } from "next/navigation";
 import { GlassCard } from "@/components/ui";
+import { DefaultMascot } from "@/components/Mascot";
 import { ConfirmModal } from "@/components/ConfirmModal";
 import { useDict } from "@/lib/i18n/client";
 import { deleteRecipes, sortRecipes, toRecipeWithIngredients, useGuestData } from "@/lib/guest/store";
@@ -191,6 +192,11 @@ export function GuestRecipeDetail({ id, closeHref }: { id: string; closeHref: st
           {r.cover_photo_urls.length === 0 && r.icon_emoji && (
             <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-surface text-2xl">
               {r.icon_emoji}
+            </div>
+          )}
+          {r.cover_photo_urls.length === 0 && !r.icon_emoji && (
+            <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-surface">
+              <DefaultMascot pool="recipe" seed={r.id} box={56} />
             </div>
           )}
           <div className="min-w-0 flex-1">

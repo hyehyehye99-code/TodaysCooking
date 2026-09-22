@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentHousehold } from "@/lib/household";
 import { GlassCard } from "@/components/ui";
+import { DefaultMascot } from "@/components/Mascot";
 import { ProfileAvatar } from "@/components/ProfileAvatar";
 import { chefName } from "@/lib/format";
 import { getDictionary } from "@/lib/i18n/server";
@@ -98,6 +99,11 @@ export default async function RecipeDetailPage({
           {r.cover_photo_urls.length === 0 && r.icon_emoji && (
             <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-surface text-2xl">
               {r.icon_emoji}
+            </div>
+          )}
+          {r.cover_photo_urls.length === 0 && !r.icon_emoji && (
+            <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-surface">
+              <DefaultMascot pool="recipe" seed={r.id} box={56} />
             </div>
           )}
           <div className="min-w-0 flex-1">

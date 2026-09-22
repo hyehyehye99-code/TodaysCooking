@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentHousehold } from "@/lib/household";
 import { GlassCard } from "@/components/ui";
-import { Mascot } from "@/components/Mascot";
+import { DefaultMascot, Mascot } from "@/components/Mascot";
 import { RecipePhotoGallery } from "@/app/(app)/recipes/[id]/recipe-photo-gallery";
 import { AddSharedRecipeButton } from "./add-to-household-button";
 
@@ -70,7 +70,11 @@ export default async function SharedRecipePage({ params }: { params: Promise<{ c
         <div className="mb-4 flex aspect-square w-full items-center justify-center rounded-2xl bg-surface text-[64px]">
           {recipe.icon_emoji}
         </div>
-      ) : null}
+      ) : (
+        <div className="mb-4 flex h-52 w-full items-center justify-center rounded-2xl bg-surface">
+          <DefaultMascot pool="recipe" seed={recipe.title ?? code} box={180} />
+        </div>
+      )}
 
       <h1 className="text-2xl font-bold">{recipe.title || "저장한 링크"}</h1>
       {recipe.subtitle && <p className="mt-1 text-sm text-ink-soft">{recipe.subtitle}</p>}

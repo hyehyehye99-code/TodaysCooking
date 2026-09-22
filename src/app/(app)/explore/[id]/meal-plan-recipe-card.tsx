@@ -42,6 +42,7 @@ export function MealPlanRecipeCard({
           {index + 1}
         </span>
         <RecipeThumb
+          seed={recipeId}
           coverPhotoUrl={coverPhotoUrl}
           iconEmoji={iconEmoji}
           linkThumbnailUrl={linkThumbnailUrl}

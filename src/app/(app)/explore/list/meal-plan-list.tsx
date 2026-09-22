@@ -33,7 +33,7 @@ export function MealPlanList({ plans }: { plans: MealPlanListItem[] }) {
         return (
           <Link key={plan.id} href={`/explore/${plan.id}`}>
             <GlassCard className="flex items-center gap-3 bg-white p-3">
-              <ProfileAvatar iconEmoji={plan.iconEmoji} nickname={plan.title} size={52} />
+              <ProfileAvatar iconEmoji={plan.iconEmoji} nickname={plan.title} size={52} kind="mealPlan" />
               <div className="min-w-0 flex-1">
                 <p className="truncate text-[15px] font-bold text-ink">{plan.title}</p>
                 <p className="mt-0.5 truncate text-xs text-ink-soft">{metaParts.join(" · ")}</p>

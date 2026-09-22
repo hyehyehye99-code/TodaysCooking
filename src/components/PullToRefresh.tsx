@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, useTransition } from "react";
 import { usePathname, useRouter } from "next/navigation";
+import { Mascot } from "@/components/Mascot";
 
 const PULL_THRESHOLD = 64;
 const MAX_PULL = 90;
@@ -77,22 +78,8 @@ export function PullToRefresh({
         // icon looked cut off.
         style={{ top: "env(safe-area-inset-top)", height: shown }}
       >
-        <div className="flex items-end pb-2">
-          <svg
-            viewBox="0 0 24 24"
-            width="20"
-            height="20"
-            fill="none"
-            stroke="var(--color-accent)"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className={pending ? "animate-spin" : ""}
-            style={pending ? undefined : { transform: `rotate(${(shown / PULL_THRESHOLD) * 180}deg)` }}
-          >
-            <path d="M21 12a9 9 0 1 1-3-6.7" />
-            <path d="M21 3v6h-6" />
-          </svg>
+        <div className="flex items-end pb-1" style={{ opacity: Math.min(1, shown / PULL_THRESHOLD + 0.25) }}>
+          <Mascot name={pending ? "cooking" : "excited"} size={42} className={pending ? "animate-bob" : ""} />
         </div>
       </div>
       <div

@@ -1,5 +1,6 @@
 "use client";
 
+import { Mascot } from "@/components/Mascot";
 import { useRef, useState, useTransition, type FormEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -358,6 +359,7 @@ export function TimerForm({ recipes, timer }: { recipes: RecipeOption[]; timer?:
                 >
                   <GlassCard className="flex items-center gap-3 bg-accent/8 px-3 py-2.5">
                     <RecipeThumb
+                      seed={selectedRecipe.id}
                       coverPhotoUrl={selectedRecipe.cover_photo_urls[0]}
                       iconEmoji={selectedRecipe.icon_emoji}
                       linkThumbnailUrl={selectedRecipe.bookmarks?.[0]?.thumbnail_url}
@@ -374,6 +376,7 @@ export function TimerForm({ recipes, timer }: { recipes: RecipeOption[]; timer?:
               ) : (
                 <GlassCard className="flex items-center gap-3 bg-accent/8 px-3 py-2.5">
                   <RecipeThumb
+                    seed={selectedRecipe.id}
                     coverPhotoUrl={selectedRecipe.cover_photo_urls[0]}
                     iconEmoji={selectedRecipe.icon_emoji}
                     linkThumbnailUrl={selectedRecipe.bookmarks?.[0]?.thumbnail_url}
@@ -421,13 +424,14 @@ export function TimerForm({ recipes, timer }: { recipes: RecipeOption[]; timer?:
                           className="flex items-center gap-3 rounded-xl bg-surface px-3 py-2 text-left"
                         >
                           <RecipeThumb
+                            seed={r.id}
                             coverPhotoUrl={r.cover_photo_urls[0]}
                             iconEmoji={r.icon_emoji}
                             linkThumbnailUrl={r.bookmarks?.[0]?.thumbnail_url}
                             size={40}
                           />
                           <span className="min-w-0 flex-1 truncate text-sm font-semibold text-ink">{r.title}</span>
-                          {r.is_cooking && <span className="shrink-0 text-sm">🍳</span>}
+                          {r.is_cooking && <Mascot name="cooking" size={22} className="shrink-0" />}
                         </button>
                       ))
                     )}

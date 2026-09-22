@@ -1,5 +1,6 @@
 "use client";
 
+import { Mascot } from "@/components/Mascot";
 import { useMemo, useState } from "react";
 import { RecipeThumb } from "@/components/RecipeThumb";
 import { ClearableInput } from "@/components/ClearableInput";
@@ -90,6 +91,7 @@ export function RecipePicker({
                   }`}
                 >
                   <RecipeThumb
+                    seed={r.id}
                     coverPhotoUrl={r.cover_photo_urls[0]}
                     iconEmoji={r.icon_emoji}
                     linkThumbnailUrl={r.bookmarks?.[0]?.thumbnail_url}
@@ -97,7 +99,7 @@ export function RecipePicker({
                     rounded="rounded-lg"
                   />
                   <span className="min-w-0 flex-1 truncate text-sm font-semibold">{r.title || untitledLabel}</span>
-                  {r.is_cooking && <span className="shrink-0 text-sm">🍳</span>}
+                  {r.is_cooking && <Mascot name="cooking" size={22} className="shrink-0" />}
                   <span
                     className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 ${
                       active ? "border-accent bg-accent" : "border-border bg-white"
@@ -131,6 +133,7 @@ export function RecipePicker({
                       {index + 1}
                     </span>
                     <RecipeThumb
+                      seed={r.id}
                       coverPhotoUrl={r.cover_photo_urls[0]}
                       iconEmoji={r.icon_emoji}
                       linkThumbnailUrl={r.bookmarks?.[0]?.thumbnail_url}
