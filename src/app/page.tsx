@@ -4,7 +4,7 @@ import { getDictionary } from "@/lib/i18n/server";
 import { BackButton } from "@/components/ui";
 import { Mascot, type MascotName } from "@/components/Mascot";
 
-const FEATURE_MASCOTS: MascotName[] = ["idea", "shopping", "love"];
+const FEATURE_MASCOTS: MascotName[] = ["idea", "checklist-selfie", "love"];
 
 const FEATURE_SCREENSHOTS = [
   "/screenshots/recipe-add-ai.png",

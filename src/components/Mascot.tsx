@@ -118,6 +118,10 @@ const SPRITES = {
   "badge-check": [72, 70],
   "badge-bookmark": [60, 70],
   "badge-chefhat": [83, 71],
+
+
+  // Splash-screen artwork crop: selfie + shopping checklist + full basket.
+  "checklist-selfie": [979, 972],
 } as const;
 
 export type MascotName = keyof typeof SPRITES;

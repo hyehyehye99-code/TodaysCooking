@@ -46,6 +46,7 @@ const NATIVE_EMOJI: Record<MascotName, string> = {
   "food-pepper": "🧂", "food-toast": "🍞",
   "badge-redheart": "❤️", "badge-greenheart": "💚", "badge-star": "⭐", "badge-flower": "🌸",
   "badge-heart": "❤️", "badge-check": "✅", "badge-bookmark": "🔖", "badge-chefhat": "👨‍🍳",
+  "checklist-selfie": "🛒",
 };
 
 export function toPlainEmoji(value: string | null | undefined): string {
