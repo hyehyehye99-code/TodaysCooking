@@ -24,6 +24,28 @@ const NATIVE_EMOJI: Record<MascotName, string> = {
   shy: "😳", sparkle: "✨", confused: "❓", sleep: "😴", logo: "🍳", "logo-soft": "🍳", "logo-face": "🍳",
   "item-spoon": "🥄", "item-pot": "🍲", "item-tomato": "🍅", "item-carrot": "🥕", "item-greens": "🥬",
   "item-meat": "🥩", "item-mushroom": "🍄", "item-egg": "🥚", "item-cheese": "🧀", "item-bag": "🛍️",
+
+  giggle: "😆", "heart-eyes": "😍", "big-hug": "🤗", startled: "😲", crying: "😢", "star-hold": "🌟",
+  sleeping: "😴", puzzled: "❓", annoyed: "😤", singing: "🎵", "holding-produce": "🥦", tasting: "😋",
+  "utensils-pose": "🍽️", loved: "🥰", whisking: "🥣", chopping: "🔪", "stirring-pot": "🍲",
+  "frying-egg": "🍳", "apron-spatula": "🍳", "reading-recipe": "📖", "baking-cookies": "🍪",
+  "fridge-open": "🧊", "plated-dish": "🍽️", "washing-veggies": "🥬", "shopping-basket": "🧺",
+  "grocery-bag": "🛍️", "holding-bread": "🥖", "salad-hold": "🥗", "curry-plate": "🍛",
+  "pancake-hold": "🥞", "pizza-hold": "🍕", "burger-hold": "🍔", "bubbletea-hold": "🧋",
+  "confetti-happy": "🎉", trophy: "🏆",
+  "tool-whisk": "🥣", "tool-spatula": "🍳", "tool-ladle": "🥄", "tool-chefhat": "👨‍🍳",
+  "tool-apron": "🍳", "tool-pan": "🍳", "tool-cuttingboard": "🔪", "tool-knife": "🔪",
+  "tool-rollingpin": "🥖", "tool-ovenmitt": "🧤", "tool-timer": "⏱️", "tool-recipebook": "📖",
+  "tool-measuringcup": "🥤",
+  "food-tomato": "🍅", "food-carrot": "🥕", "food-onion": "🧅", "food-garlic": "🧄",
+  "food-potato": "🥔", "food-bellpepper": "🫑", "food-noodles": "🍜", "food-bread": "🍞",
+  "food-milk": "🥛", "food-soup": "🍲", "food-pizza": "🍕", "food-smoothie": "🥤",
+  "food-salmon": "🐟", "food-shrimp": "🍤", "food-chicken": "🍗", "food-egg2": "🥚",
+  "food-cheese2": "🧀", "food-mushroom2": "🍄", "food-strawberry": "🍓", "food-lemon": "🍋",
+  "food-blueberry": "🫐", "food-spinach": "🥬", "food-butter": "🧈", "food-salt": "🧂",
+  "food-pepper": "🧂", "food-toast": "🍞",
+  "badge-redheart": "❤️", "badge-greenheart": "💚", "badge-star": "⭐", "badge-flower": "🌸",
+  "badge-heart": "❤️", "badge-check": "✅", "badge-bookmark": "🔖", "badge-chefhat": "👨‍🍳",
 };
 
 export function toPlainEmoji(value: string | null | undefined): string {

@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { saveFridge, type FridgeSaveItem } from "@/lib/actions/fridge";
 import { saveFridge as saveGuestFridge } from "@/lib/guest/store";
 import { GlassCard } from "@/components/ui";
+import { Mascot, type MascotName } from "@/components/Mascot";
 import { ClearableInput } from "@/components/ClearableInput";
 import { useDict } from "@/lib/i18n/client";
 
@@ -13,16 +14,21 @@ type Category = { name: string; items: Item[] };
 // Purely a visual scan-aid for the category cards below — not tied to any
 // data, so an unmatched (custom) category name just falls back to a plain
 // box.
+// Mascot icon per category where there's a clean visual match — categories
+// without one (두부·콩류, 김치·젓갈·장아찌, 장류·오일, 미분류) fall back to a
+// plain emoji, same as before.
+const CATEGORY_MASCOT: Record<string, MascotName> = {
+  "채소": "food-carrot",
+  "해산물": "food-salmon",
+  "육류·가공육": "food-chicken",
+  "유제품·계란": "food-egg2",
+  "곡류·면·떡": "food-noodles",
+  "양념·향신료": "food-salt",
+};
 const CATEGORY_EMOJI: Record<string, string> = {
-  "채소": "🥬",
-  "해산물": "🐟",
-  "육류·가공육": "🥩",
-  "유제품·계란": "🥚",
   "두부·콩류": "🫘",
-  "곡류·면·떡": "🍚",
   "김치·젓갈·장아찌": "🫙",
   "장류·오일": "🧴",
-  "양념·향신료": "🧂",
   "미분류": "📦",
 };
 
@@ -291,7 +297,11 @@ export function FridgeEditor({ categories, guest = false }: { categories: Catego
             return (
               <GlassCard key={cat.name} className="bg-white p-4">
                 <p className="flex items-center gap-1.5 text-[13px] font-bold text-ink">
-                  <span>{CATEGORY_EMOJI[cat.name] ?? "🍽️"}</span>
+                  {CATEGORY_MASCOT[cat.name] ? (
+                    <Mascot name={CATEGORY_MASCOT[cat.name]} size={20} />
+                  ) : (
+                    <span>{CATEGORY_EMOJI[cat.name] ?? "🍽️"}</span>
+                  )}
                   {cat.name}
                   {ownedInCat > 0 && (
                     <span className="text-xs font-semibold text-ink-faint">

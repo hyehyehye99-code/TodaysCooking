@@ -7,6 +7,7 @@ import { generateRecipeFromLink, reportAiRecipeResult } from "@/lib/actions/ai-r
 import { ClearableInput } from "@/components/ClearableInput";
 import { useClipboardLinkSuggestion } from "@/lib/useClipboardLinkSuggestion";
 import { Modal } from "@/components/Modal";
+import { Mascot } from "@/components/Mascot";
 import { AiWritingIndicator } from "@/components/AiWritingIndicator";
 import { useDict } from "@/lib/i18n/client";
 import type { Dictionary } from "@/lib/i18n/dictionaries/ko";
@@ -307,9 +308,7 @@ export function ReferenceLinkField({
                 <img src={preview.thumbnailUrl} alt="" className="h-full w-full object-cover" />
               ) : (
                 <div className="flex h-full w-full items-center justify-center">
-                  <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="var(--color-ink-faint)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M6 3.5h12a.5.5 0 0 1 .5.5v17l-6.5-4-6.5 4v-17a.5.5 0 0 1 .5-.5z" />
-                  </svg>
+                  <Mascot name="badge-bookmark" size={24} />
                 </div>
               )}
             </div>

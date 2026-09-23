@@ -9,7 +9,7 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { notFound, useRouter } from "next/navigation";
 import { GlassCard } from "@/components/ui";
-import { DefaultMascot } from "@/components/Mascot";
+import { DefaultMascot, Mascot } from "@/components/Mascot";
 import { ConfirmModal } from "@/components/ConfirmModal";
 import { useDict } from "@/lib/i18n/client";
 import { deleteRecipes, sortRecipes, toRecipeWithIngredients, useGuestData } from "@/lib/guest/store";
@@ -242,9 +242,7 @@ export function GuestRecipeDetail({ id, closeHref }: { id: string; closeHref: st
                 <img src={referenceBookmark.thumbnail_url} alt="" className="h-full w-full object-cover" />
               ) : (
                 <div className="flex h-full w-full items-center justify-center">
-                  <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="var(--color-ink-faint)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M6 3.5h12a.5.5 0 0 1 .5.5v17l-6.5-4-6.5 4v-17a.5.5 0 0 1 .5-.5z" />
-                  </svg>
+                  <Mascot name="badge-bookmark" size={24} />
                 </div>
               )}
             </div>
@@ -277,9 +275,7 @@ export function GuestRecipeDetail({ id, closeHref }: { id: string; closeHref: st
         <div className="mt-4">
           {makeable ? (
             <div className="flex items-center gap-2 rounded-xl border border-transparent bg-positive/10 px-3 py-2.5">
-              <svg viewBox="0 0 14 14" width="14" height="14" fill="none" stroke="var(--color-positive-ink)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M2.5 7.5l3 3 6-7" />
-              </svg>
+              <Mascot name="badge-check" size={20} />
               <span className="text-[13px] font-bold text-positive-ink">{dict.recipes.makeableBadge}</span>
             </div>
           ) : (

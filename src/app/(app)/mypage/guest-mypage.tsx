@@ -39,13 +39,8 @@ export function GuestMyPage({ dict }: { dict: Dictionary }) {
         href="/mypage/fridge"
         className="mb-8 flex items-center gap-3 rounded-2xl border border-border bg-white px-4 py-4"
       >
-        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-surface text-accent">
-          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-            <rect x="5" y="2" width="14" height="20" rx="2" />
-            <path d="M5 9h14" />
-            <path d="M8 5v2" />
-            <path d="M8 12v2" />
-          </svg>
+        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-surface">
+          <Mascot name="fridge-open" size={30} />
         </span>
         <span className="flex-1 text-sm font-bold text-ink">{dict.mypage.fridge}</span>
         <Chevron />
