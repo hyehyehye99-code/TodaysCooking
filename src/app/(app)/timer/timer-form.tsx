@@ -314,7 +314,7 @@ export function TimerForm({ recipes, timer }: { recipes: RecipeOption[]; timer?:
                     setMinutes(m);
                     setSeconds(0);
                   }}
-                  className={`rounded-full px-3 py-1.5 text-xs font-bold ${
+                  className={`rounded-full px-3 py-1.5 text-xs font-bold transition-transform active:scale-90 ${
                     active ? "bg-accent text-white" : "bg-surface text-ink-soft"
                   }`}
                 >
@@ -374,7 +374,7 @@ export function TimerForm({ recipes, timer }: { recipes: RecipeOption[]; timer?:
             <button
               type="button"
               onClick={addAlert}
-              className="mt-2 w-full rounded-lg border border-dashed border-accent/60 py-2 text-[11px] font-bold text-accent-ink"
+              className="mt-2 w-full rounded-lg border border-dashed border-accent/60 py-2 text-[11px] font-bold text-accent-ink transition-transform active:scale-[0.98]"
             >
               + {dict.timer.midAlertAddButton}
             </button>

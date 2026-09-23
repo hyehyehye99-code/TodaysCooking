@@ -37,6 +37,30 @@ export function TimerDetail({ timer }: { timer: TimerDetailData }) {
   const [, startTransition] = useTransition();
   const completedRef = useRef(false);
   const firedAlertsRef = useRef<Set<string>>(new Set());
+  // Same "flip immediately, reconcile once the server catches up" override
+  // as the list view — without it, the button waited on the DB write plus
+  // the native alarm/Live Activity calls before showing anything at all.
+  const [override, setOverride] = useState<
+    { is_running: boolean; started_at: string | null; remaining_seconds: number } | null
+  >(null);
+  // Adjust-during-render (not an effect) reconciliation, same reasoning as
+  // timer-list.tsx: checking both fields (not just is_running) is what
+  // catches a reset fired from an already-paused timer, where is_running
+  // never flips and only remaining_seconds does.
+  const [prunedFor, setPrunedFor] = useState(timer);
+  if (
+    prunedFor !== timer &&
+    override &&
+    override.is_running === timer.is_running &&
+    override.remaining_seconds === timer.remaining_seconds
+  ) {
+    setPrunedFor(timer);
+    setOverride(null);
+  } else if (prunedFor !== timer) {
+    setPrunedFor(timer);
+  }
+
+  const displayTimer = override ? { ...timer, ...override } : timer;
 
   useEffect(() => {
     const id = setInterval(() => setNow(Date.now()), 1000);
@@ -44,7 +68,13 @@ export function TimerDetail({ timer }: { timer: TimerDetailData }) {
   }, []);
 
   const live = liveRemaining(timer, now);
-  const completed = !timer.is_running && live <= 0;
+  // The countdown number and the play/pause icon read from displayTimer (the
+  // real timer with any optimistic override applied) so pressing the button
+  // updates them immediately; the completion/mid-alert effects below stay on
+  // the real, server-confirmed `timer`/`live` so their side effects (ending
+  // the timer, firing an alert) only ever run off confirmed state.
+  const displayLive = liveRemaining(displayTimer, now);
+  const completed = !displayTimer.is_running && displayLive <= 0;
 
   useEffect(() => {
     if (!timer.is_running) {
@@ -94,37 +124,51 @@ export function TimerDetail({ timer }: { timer: TimerDetailData }) {
   }, [live, timer.is_running]);
 
   function toggleRunning() {
-    const next = !timer.is_running;
-    const startFrom = live <= 0 ? timer.duration_seconds : live;
+    const next = !displayTimer.is_running;
+    const startFrom = displayLive <= 0 ? timer.duration_seconds : displayLive;
+    setOverride(
+      next
+        ? { is_running: true, started_at: new Date().toISOString(), remaining_seconds: startFrom }
+        : { is_running: false, started_at: null, remaining_seconds: startFrom }
+    );
     startTransition(async () => {
-      await setTimerRunning(timer.id, next);
-      if (next) {
-        const endEpochMs = Date.now() + startFrom * 1000;
-        await Promise.all([
-          scheduleTimerAlarm(timer.id, timer.name, new Date(endEpochMs)),
-          scheduleTimerAlerts(timer.name, startFrom, timer.timer_alerts),
-          startTimerActivity({ id: timer.id, name: timer.name, iconEmoji: timer.icon_emoji, endEpochMs }),
-        ]);
-      } else {
-        await Promise.all([
-          cancelTimerAlarm(timer.id),
-          cancelTimerAlerts(timer.timer_alerts.map((a) => a.id)),
-          endTimerActivity(timer.id),
-        ]);
+      try {
+        await setTimerRunning(timer.id, next);
+        if (next) {
+          const endEpochMs = Date.now() + startFrom * 1000;
+          await Promise.all([
+            scheduleTimerAlarm(timer.id, timer.name, new Date(endEpochMs)),
+            scheduleTimerAlerts(timer.name, startFrom, timer.timer_alerts),
+            startTimerActivity({ id: timer.id, name: timer.name, iconEmoji: timer.icon_emoji, endEpochMs }),
+          ]);
+        } else {
+          await Promise.all([
+            cancelTimerAlarm(timer.id),
+            cancelTimerAlerts(timer.timer_alerts.map((a) => a.id)),
+            endTimerActivity(timer.id),
+          ]);
+        }
+        router.refresh();
+      } catch {
+        setOverride(null);
       }
-      router.refresh();
     });
   }
 
   function handleReset() {
+    setOverride({ is_running: false, started_at: null, remaining_seconds: timer.duration_seconds });
     startTransition(async () => {
-      await Promise.all([
-        resetTimer(timer.id),
-        cancelTimerAlarm(timer.id),
-        cancelTimerAlerts(timer.timer_alerts.map((a) => a.id)),
-        endTimerActivity(timer.id),
-      ]);
-      router.refresh();
+      try {
+        await Promise.all([
+          resetTimer(timer.id),
+          cancelTimerAlarm(timer.id),
+          cancelTimerAlerts(timer.timer_alerts.map((a) => a.id)),
+          endTimerActivity(timer.id),
+        ]);
+        router.refresh();
+      } catch {
+        setOverride(null);
+      }
     });
   }
 
@@ -159,7 +203,7 @@ export function TimerDetail({ timer }: { timer: TimerDetailData }) {
       </div>
 
       <div className="flex flex-col items-center gap-1 py-8">
-        <p className="text-[56px] font-bold leading-none tabular-nums text-ink">{formatTime(live)}</p>
+        <p className="text-[56px] font-bold leading-none tabular-nums text-ink">{formatTime(displayLive)}</p>
         <p className="text-sm tabular-nums text-ink-faint">{formatTime(timer.duration_seconds)}</p>
       </div>
 
@@ -189,7 +233,7 @@ export function TimerDetail({ timer }: { timer: TimerDetailData }) {
           type="button"
           onClick={handleReset}
           aria-label={dict.timer.resetAria}
-          className="flex h-11 w-11 items-center justify-center rounded-full bg-surface text-ink-soft"
+          className="flex h-11 w-11 items-center justify-center rounded-full bg-surface text-ink-soft transition-transform active:scale-90"
         >
           <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M3 12a9 9 0 1 1 3 6.7" />
@@ -199,10 +243,10 @@ export function TimerDetail({ timer }: { timer: TimerDetailData }) {
         <button
           type="button"
           onClick={toggleRunning}
-          aria-label={timer.is_running ? dict.timer.pauseAria : dict.timer.resumeAria}
-          className="flex h-16 w-16 items-center justify-center rounded-full border-2 border-accent text-accent"
+          aria-label={displayTimer.is_running ? dict.timer.pauseAria : dict.timer.resumeAria}
+          className="flex h-16 w-16 items-center justify-center rounded-full border-2 border-accent text-accent transition-transform active:scale-90"
         >
-          {timer.is_running ? (
+          {displayTimer.is_running ? (
             <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
               <rect x="6" y="5" width="4" height="14" rx="1" />
               <rect x="14" y="5" width="4" height="14" rx="1" />

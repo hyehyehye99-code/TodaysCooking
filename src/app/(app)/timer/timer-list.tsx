@@ -42,6 +42,45 @@ export function TimerList({
   const completedRef = useRef<Set<string>>(new Set());
   const firedAlertsRef = useRef<Set<string>>(new Set());
   const [firedNowKey, setFiredNowKey] = useState<string | null>(null);
+  // Play/pause/reset used to wait on the DB write plus the native alarm and
+  // Live Activity calls before the icon or countdown changed at all — every
+  // tap felt like it hadn't registered. This flips the visible state the
+  // instant a button is pressed; once `timers` catches up with what we
+  // guessed (or the action throws), the override is dropped.
+  const [overrides, setOverrides] = useState<
+    Record<string, { is_running: boolean; started_at: string | null; remaining_seconds: number }>
+  >({});
+  // Tracks which `timers` array reference the overrides above were last
+  // pruned against, so the reconciliation below (React's "adjust state
+  // during render" pattern — see https://react.dev/learn/you-might-not-need-an-effect)
+  // runs at most once per new server payload instead of on every render.
+  const [prunedFor, setPrunedFor] = useState(timers);
+  if (prunedFor !== timers) {
+    setPrunedFor(timers);
+    if (Object.keys(overrides).length > 0) {
+      let changed = false;
+      const next = { ...overrides };
+      for (const t of timers) {
+        const o = next[t.id];
+        // Both fields, not just is_running — a reset fired from an
+        // already-paused timer never flips is_running, only remaining_seconds.
+        if (o && o.is_running === t.is_running && o.remaining_seconds === t.remaining_seconds) {
+          delete next[t.id];
+          changed = true;
+        }
+      }
+      if (changed) setOverrides(next);
+    }
+  }
+
+  function clearOverride(id: string) {
+    setOverrides((prev) => {
+      if (!(id in prev)) return prev;
+      const next = { ...prev };
+      delete next[id];
+      return next;
+    });
+  }
   const {
     order,
     setOrder,
@@ -239,7 +278,7 @@ export function TimerList({
               <button
                 onClick={startEditing}
                 aria-label={dict.timer.editMenu}
-                className="flex h-[38px] w-[38px] items-center justify-center rounded-xl bg-surface text-ink-soft"
+                className="flex h-[38px] w-[38px] items-center justify-center rounded-xl bg-surface text-ink-soft transition-transform active:scale-90"
               >
                 <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M3 6h18" />
@@ -251,7 +290,7 @@ export function TimerList({
             <Link
               href="/timer/new"
               aria-label={dict.timer.addAria}
-              className="flex h-[38px] w-[38px] items-center justify-center rounded-xl bg-accent text-white"
+              className="flex h-[38px] w-[38px] items-center justify-center rounded-xl bg-accent text-white transition-transform active:scale-90"
             >
               <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M12 5v14" />
@@ -330,7 +369,9 @@ export function TimerList({
         </div>
       ) : (
         <div className="flex flex-col gap-3">
-          {filtered.map((timer) => {
+          {filtered.map((baseTimer) => {
+            const override = overrides[baseTimer.id];
+            const timer = override ? { ...baseTimer, ...override } : baseTimer;
             const live = liveRemaining(timer, now);
             const completed = !timer.is_running && live <= 0;
             const recipeTitle = timer.recipes?.title ?? null;
@@ -412,27 +453,37 @@ export function TimerList({
                       e.stopPropagation();
                       const next = !timer.is_running;
                       const startFrom = live <= 0 ? timer.duration_seconds : live;
+                      setOverrides((prev) => ({
+                        ...prev,
+                        [timer.id]: next
+                          ? { is_running: true, started_at: new Date().toISOString(), remaining_seconds: startFrom }
+                          : { is_running: false, started_at: null, remaining_seconds: startFrom },
+                      }));
                       startActionTransition(async () => {
-                        await setTimerRunning(timer.id, next);
-                        if (next) {
-                          const endEpochMs = Date.now() + startFrom * 1000;
-                          await Promise.all([
-                            scheduleTimerAlarm(timer.id, timer.name, new Date(endEpochMs)),
-                            scheduleTimerAlerts(timer.name, startFrom, timer.timer_alerts),
-                            startTimerActivity({ id: timer.id, name: timer.name, iconEmoji: timer.icon_emoji, endEpochMs }),
-                          ]);
-                        } else {
-                          await Promise.all([
-                            cancelTimerAlarm(timer.id),
-                            cancelTimerAlerts(timer.timer_alerts.map((a) => a.id)),
-                            endTimerActivity(timer.id),
-                          ]);
+                        try {
+                          await setTimerRunning(timer.id, next);
+                          if (next) {
+                            const endEpochMs = Date.now() + startFrom * 1000;
+                            await Promise.all([
+                              scheduleTimerAlarm(timer.id, timer.name, new Date(endEpochMs)),
+                              scheduleTimerAlerts(timer.name, startFrom, timer.timer_alerts),
+                              startTimerActivity({ id: timer.id, name: timer.name, iconEmoji: timer.icon_emoji, endEpochMs }),
+                            ]);
+                          } else {
+                            await Promise.all([
+                              cancelTimerAlarm(timer.id),
+                              cancelTimerAlerts(timer.timer_alerts.map((a) => a.id)),
+                              endTimerActivity(timer.id),
+                            ]);
+                          }
+                          router.refresh();
+                        } catch {
+                          clearOverride(timer.id);
                         }
-                        router.refresh();
                       });
                     }}
                     aria-label={timer.is_running ? dict.timer.pauseAria : dict.timer.resumeAria}
-                    className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border-2 border-accent text-accent"
+                    className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border-2 border-accent text-accent transition-transform active:scale-90"
                   >
                     {timer.is_running ? (
                       <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
@@ -449,18 +500,26 @@ export function TimerList({
                     type="button"
                     onClick={(e) => {
                       e.stopPropagation();
+                      setOverrides((prev) => ({
+                        ...prev,
+                        [timer.id]: { is_running: false, started_at: null, remaining_seconds: timer.duration_seconds },
+                      }));
                       startActionTransition(async () => {
-                        await Promise.all([
-                          resetTimer(timer.id),
-                          cancelTimerAlarm(timer.id),
-                          cancelTimerAlerts(timer.timer_alerts.map((a) => a.id)),
-                          endTimerActivity(timer.id),
-                        ]);
-                        router.refresh();
+                        try {
+                          await Promise.all([
+                            resetTimer(timer.id),
+                            cancelTimerAlarm(timer.id),
+                            cancelTimerAlerts(timer.timer_alerts.map((a) => a.id)),
+                            endTimerActivity(timer.id),
+                          ]);
+                          router.refresh();
+                        } catch {
+                          clearOverride(timer.id);
+                        }
                       });
                     }}
                     aria-label={dict.timer.resetAria}
-                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-surface text-ink-soft"
+                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-surface text-ink-soft transition-transform active:scale-90"
                   >
                     <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M3 12a9 9 0 1 1 3 6.7" />
