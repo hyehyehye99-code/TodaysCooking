@@ -122,6 +122,37 @@ const SPRITES = {
   "badge-bookmark": [280, 320],
   "badge-chefhat": [320, 295],
 
+  // Same individually-exported batch as the second sheet above, but these
+  // didn't have a matching old sprite to replace — kept as brand-new poses/
+  // items instead of being dropped.
+  "tongue-out": [269, 320],
+  "thumbs-up": [320, 288],
+  peeking: [274, 320],
+  content: [320, 308],
+  cheerful: [320, 312],
+  floating: [306, 320],
+  cheering: [320, 245],
+  "chef-greeting": [279, 320],
+  "tool-ricescoop": [172, 320],
+  "tool-pot": [320, 266],
+  "tool-fridge": [242, 320],
+  "food-cucumber": [274, 320],
+  "food-broccoli": [295, 320],
+  "food-bellpepper-yellow": [278, 320],
+  "food-chilipepper": [169, 320],
+  "food-corn": [233, 320],
+  "food-ricebowl": [320, 302],
+  "food-peabowl": [320, 254],
+  "food-spaghetti": [320, 233],
+  "food-omurice": [320, 228],
+  "food-curryrice": [320, 243],
+  "food-lemonhalf": [251, 320],
+  "food-pancake": [320, 216],
+  "food-cupcake": [316, 320],
+  "badge-sparkle": [320, 310],
+  "badge-corn": [320, 249],
+  "badge-musicnote": [320, 299],
+  "badge-bubble": [320, 311],
 
   // Splash-screen artwork crop: selfie + shopping checklist + full basket.
   "checklist-selfie": [979, 972],
@@ -171,6 +202,7 @@ const POOLS = {
   avatar: [
     "basic", "excited", "happy", "tasty", "laugh", "love", "shy", "sparkle", "surprised", "rest", "idea",
     "confused", "giggle", "heart-eyes", "big-hug", "star-hold", "puzzled", "singing", "loved", "tasting",
+    "tongue-out", "thumbs-up", "peeking", "content", "cheerful", "floating", "cheering",
   ],
   recipe: [
     "cooking", "recipe", "tasty", "idea", "love", "sparkle", "excited", "happy",
@@ -178,15 +210,17 @@ const POOLS = {
     "item-pot", "item-tomato", "item-carrot", "item-egg",
     "whisking", "chopping", "stirring-pot", "frying-egg", "apron-spatula", "baking-cookies",
     "plated-dish", "curry-plate", "pancake-hold", "pizza-hold", "burger-hold", "bubbletea-hold",
-    "salad-hold", "holding-bread", "holding-produce",
+    "salad-hold", "holding-bread", "holding-produce", "chef-greeting",
+    "food-omurice", "food-spaghetti", "food-curryrice", "food-pancake", "food-cupcake",
   ],
   mealPlan: [
     "recipe", "idea", "happy", "shopping", "fridge", "love", "sparkle", "rest", "tasty", "cooking",
     "item-bag", "item-pot", "reading-recipe", "trophy", "confetti-happy", "grocery-bag", "shopping-basket",
+    "food-ricebowl", "food-curryrice", "food-omurice",
   ],
   timer: [
     "cooking", "item-pot", "item-egg", "rest", "idea", "item-spoon", "excited", "item-tomato",
-    "stirring-pot", "frying-egg", "whisking", "tool-timer",
+    "stirring-pot", "frying-egg", "whisking", "tool-timer", "tool-pot",
   ],
 } as const satisfies Record<string, readonly MascotName[]>;
 

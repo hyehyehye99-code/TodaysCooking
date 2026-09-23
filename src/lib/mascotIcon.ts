@@ -47,6 +47,15 @@ const NATIVE_EMOJI: Record<MascotName, string> = {
   "badge-redheart": "❤️", "badge-greenheart": "💚", "badge-star": "⭐", "badge-flower": "🌸",
   "badge-heart": "❤️", "badge-check": "✅", "badge-bookmark": "🔖", "badge-chefhat": "👨‍🍳",
   "checklist-selfie": "🛒",
+
+  "tongue-out": "😋", "thumbs-up": "👍", peeking: "🙈", content: "😌", cheerful: "😄",
+  floating: "😲", cheering: "📣", "chef-greeting": "👨‍🍳",
+  "tool-ricescoop": "🍚", "tool-pot": "🍲", "tool-fridge": "🧊",
+  "food-cucumber": "🥒", "food-broccoli": "🥦", "food-bellpepper-yellow": "🫑",
+  "food-chilipepper": "🌶️", "food-corn": "🌽", "food-ricebowl": "🍚", "food-peabowl": "🥗",
+  "food-spaghetti": "🍝", "food-omurice": "🍳", "food-curryrice": "🍛", "food-lemonhalf": "🍋",
+  "food-pancake": "🥞", "food-cupcake": "🧁",
+  "badge-sparkle": "✨", "badge-corn": "🌽", "badge-musicnote": "🎵", "badge-bubble": "💬",
 };
 
 export function toPlainEmoji(value: string | null | undefined): string {

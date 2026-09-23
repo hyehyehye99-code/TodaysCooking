@@ -25,6 +25,12 @@ const MASCOT_OPTIONS: MascotName[] = [
   "food-milk", "food-salmon", "food-shrimp", "food-chicken", "food-cheese2", "food-strawberry",
   "food-lemon", "food-blueberry", "food-toast",
   "tool-whisk", "tool-spatula", "tool-chefhat", "tool-apron", "tool-pan", "tool-knife",
+  "tongue-out", "thumbs-up", "peeking", "content", "cheerful", "floating", "cheering", "chef-greeting",
+  "tool-ricescoop", "tool-pot", "tool-fridge",
+  "food-cucumber", "food-broccoli", "food-bellpepper-yellow", "food-chilipepper", "food-corn",
+  "food-ricebowl", "food-peabowl", "food-spaghetti", "food-omurice", "food-curryrice",
+  "food-lemonhalf", "food-pancake", "food-cupcake",
+  "badge-sparkle", "badge-corn", "badge-musicnote", "badge-bubble",
 ];
 
 export function EmojiPicker({
