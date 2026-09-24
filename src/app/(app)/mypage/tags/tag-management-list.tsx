@@ -34,6 +34,7 @@ function TagRow({ tag, onRenamed }: { tag: string; onRenamed: (oldName: string, 
       <div className="flex items-center gap-2 px-4 py-3">
         <div className="min-w-0 flex-1">
           <ClearableInput
+            aria-label={dict.mypage.tagRename}
             value={value}
             onChange={(e) => setValue(e.target.value)}
             onKeyDown={(e) => {
@@ -43,14 +44,14 @@ function TagRow({ tag, onRenamed }: { tag: string; onRenamed: (oldName: string, 
               }
             }}
             autoFocus
-            className="w-full rounded-lg bg-surface px-3 py-2 text-sm outline-none focus:outline-accent"
+            className="min-h-11 w-full rounded-xl bg-surface px-3 py-2 text-base outline-none focus:outline-accent"
           />
         </div>
         <button
           type="button"
           onClick={save}
           disabled={pending}
-          className="shrink-0 rounded-lg bg-accent px-3 py-2 text-xs font-bold text-white disabled:opacity-60"
+          className="min-h-11 shrink-0 rounded-xl bg-accent px-3 py-2 text-xs font-bold text-white disabled:opacity-60"
         >
           {pending ? "..." : dict.mypage.tagRenameSave}
         </button>
@@ -64,7 +65,7 @@ function TagRow({ tag, onRenamed }: { tag: string; onRenamed: (oldName: string, 
       <button
         type="button"
         onClick={() => setEditing(true)}
-        className="shrink-0 text-xs font-bold text-accent-ink"
+        className="min-h-11 shrink-0 px-2 text-xs font-bold text-accent-ink"
       >
         {dict.mypage.tagRename}
       </button>

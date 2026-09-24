@@ -19,7 +19,7 @@ export function BackButton({
       <path d="M15 6l-6 6 6 6" />
     </svg>
   );
-  const classes = `flex h-8 w-8 items-center justify-center rounded-full bg-surface text-ink ${className}`;
+  const classes = `flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-surface text-ink ${className}`;
 
   if (href) {
     return (
@@ -43,7 +43,7 @@ export function GlassCard({
   children: ReactNode;
   className?: string;
 }) {
-  return <div className={`rounded-2xl border border-border ${className}`}>{children}</div>;
+  return <div className={`rounded-[22px] border border-border shadow-[0_2px_10px_rgba(69,40,24,0.025)] ${className}`}>{children}</div>;
 }
 
 export function PageHeader({ title, right }: { title: string; right?: ReactNode }) {

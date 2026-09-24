@@ -258,7 +258,8 @@ export function TimerList({
           <div className="flex gap-1 rounded-full bg-surface p-1">
             <button
               onClick={() => setFilter("all")}
-              className={`rounded-full px-3.5 py-1.5 text-xs font-bold ${
+              aria-pressed={filter === "all"}
+              className={`min-h-11 rounded-full px-3.5 py-1.5 text-xs font-bold ${
                 filter === "all" ? "bg-white text-ink shadow-sm" : "text-ink-soft"
               }`}
             >
@@ -266,7 +267,8 @@ export function TimerList({
             </button>
             <button
               onClick={() => setFilter("active")}
-              className={`rounded-full px-3.5 py-1.5 text-xs font-bold ${
+              aria-pressed={filter === "active"}
+              className={`min-h-11 rounded-full px-3.5 py-1.5 text-xs font-bold ${
                 filter === "active" ? "bg-white text-ink shadow-sm" : "text-ink-soft"
               }`}
             >
@@ -278,7 +280,7 @@ export function TimerList({
               <button
                 onClick={startEditing}
                 aria-label={dict.timer.editMenu}
-                className="flex h-[38px] w-[38px] items-center justify-center rounded-xl bg-surface text-ink-soft transition-transform active:scale-90"
+                className="flex h-11 w-11 items-center justify-center rounded-2xl bg-surface text-ink-soft transition-transform active:scale-90"
               >
                 <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M3 6h18" />
@@ -290,7 +292,7 @@ export function TimerList({
             <Link
               href="/timer/new"
               aria-label={dict.timer.addAria}
-              className="flex h-[38px] w-[38px] items-center justify-center rounded-xl bg-accent text-white transition-transform active:scale-90"
+              className="flex h-11 w-11 items-center justify-center rounded-2xl bg-accent text-white transition-transform active:scale-90"
             >
               <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M12 5v14" />
@@ -301,8 +303,17 @@ export function TimerList({
         </div>
       )}
 
-      {filtered.length === 0 && (
-        <EmptyState mascot="cooking">{dict.timer.emptyState}</EmptyState>
+      {!editing && filtered.length === 0 && (
+        <div className="rounded-3xl border border-dashed border-border bg-surface px-5 pb-8">
+          <EmptyState mascot="cooking">{dict.timer.emptyState}</EmptyState>
+          <div className="mt-6 flex justify-center">
+            {filter === "active" && timers.length > 0 ? (
+              <button type="button" onClick={() => setFilter("all")} className="min-h-11 rounded-2xl bg-white px-5 text-sm font-bold text-accent-ink">{dict.timer.allFilter}</button>
+            ) : (
+              <Link href="/timer/new" className="flex min-h-12 items-center rounded-2xl bg-accent px-5 text-sm font-bold text-white">+ {dict.timer.newTimerHeading}</Link>
+            )}
+          </div>
+        </div>
       )}
 
       {editing ? (
@@ -383,11 +394,15 @@ export function TimerList({
                 tabIndex={0}
                 onClick={() => router.push(`/timer/${timer.id}`)}
                 onKeyDown={(e) => {
-                  if (e.key === "Enter") router.push(`/timer/${timer.id}`);
+                  if (e.target !== e.currentTarget) return;
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    router.push(`/timer/${timer.id}`);
+                  }
                 }}
                 className="cursor-pointer"
               >
-                <GlassCard className="flex items-center gap-3 bg-white p-3.5">
+                <GlassCard className={`flex flex-wrap items-center gap-3 p-4 ${timer.is_running ? "border-accent/30 bg-accent/5" : "bg-white"}`}>
                   <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-surface text-lg">
                     {timer.icon_emoji ? <IconGlyph value={timer.icon_emoji} box={40} /> : <DefaultMascot pool="timer" seed={timer.id} box={40} />}
                   </div>
@@ -400,7 +415,7 @@ export function TimerList({
                         </span>
                       )}
                     </div>
-                    <p className="mt-0.5 text-[28px] font-bold leading-none tabular-nums text-ink">
+                    <p className="mt-1 text-[30px] font-bold leading-none tracking-tight tabular-nums text-ink">
                       {formatTime(live)}
                     </p>
                     <div className="mt-1.5 flex items-center gap-1.5 text-[11px] text-ink-faint">
@@ -519,7 +534,7 @@ export function TimerList({
                       });
                     }}
                     aria-label={dict.timer.resetAria}
-                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-surface text-ink-soft transition-transform active:scale-90"
+                    className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-surface text-ink-soft transition-transform active:scale-90"
                   >
                     <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M3 12a9 9 0 1 1 3 6.7" />

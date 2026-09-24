@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { clearAllShoppingItems, clearCheckedItems, setAllShoppingItemsChecked } from "@/lib/actions/shopping";
 import { clearAllShopping, clearCheckedShopping, setAllShoppingChecked } from "@/lib/guest/store";
 import { Modal } from "@/components/Modal";
+import { DialogActions } from "@/components/DialogActions";
 import { useDict } from "@/lib/i18n/client";
 
 export function ShoppingBulkActions({
@@ -88,10 +89,10 @@ export function ShoppingBulkActions({
       </div>
 
       <Modal open={confirmingAll} onClose={() => setConfirmingAll(false)} variant="center">
-        <div className="mx-auto w-full max-w-[360px] rounded-2xl bg-white p-5 shadow-xl">
-          <p className="text-sm font-bold text-ink">{dict.shopping.deleteAllTitle}</p>
-          <p className="mt-2 text-xs text-ink-soft">{dict.shopping.deleteAllDesc}</p>
-          <div className="mt-4 flex justify-end gap-2">
+        <div className="mx-auto w-full max-w-[380px] rounded-[28px] bg-white p-6 shadow-xl">
+          <p className="text-xl font-bold leading-snug text-ink">{dict.shopping.deleteAllTitle}</p>
+          <p className="mt-3 text-sm leading-relaxed text-ink-soft">{dict.shopping.deleteAllDesc}</p>
+          <DialogActions>
             <button
               type="button"
               onClick={() => setConfirmingAll(false)}
@@ -107,17 +108,17 @@ export function ShoppingBulkActions({
             >
               {pending ? dict.recipes.deleting : dict.shopping.deleteAll}
             </button>
-          </div>
+          </DialogActions>
         </div>
       </Modal>
 
       <Modal open={confirmingChecked} onClose={() => setConfirmingChecked(false)} variant="center">
-        <div className="mx-auto w-full max-w-[360px] rounded-2xl bg-white p-5 shadow-xl">
-          <p className="text-sm font-bold text-ink">
+        <div className="mx-auto w-full max-w-[380px] rounded-[28px] bg-white p-6 shadow-xl">
+          <p className="text-xl font-bold leading-snug text-ink">
             {dict.shopping.deleteCheckedTitleTemplate.replace("{count}", String(doneCount))}
           </p>
-          <p className="mt-2 text-xs text-ink-soft">{dict.shopping.cannotUndo}</p>
-          <div className="mt-4 flex justify-end gap-2">
+          <p className="mt-3 text-sm leading-relaxed text-ink-soft">{dict.shopping.cannotUndo}</p>
+          <DialogActions>
             <button
               type="button"
               onClick={() => setConfirmingChecked(false)}
@@ -133,7 +134,7 @@ export function ShoppingBulkActions({
             >
               {pending ? dict.recipes.deleting : dict.common.delete}
             </button>
-          </div>
+          </DialogActions>
         </div>
       </Modal>
     </>

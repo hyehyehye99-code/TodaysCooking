@@ -2,6 +2,7 @@
 
 import type { ReactNode } from "react";
 import { Modal } from "@/components/Modal";
+import { DialogActions } from "@/components/DialogActions";
 import { useDict } from "@/lib/i18n/client";
 
 // Shared shell for the "are you sure?" modal pattern repeated across the
@@ -31,11 +32,11 @@ export function ConfirmModal({
   const dict = useDict();
   return (
     <Modal open={open} onClose={onClose} variant="center">
-      <div className="mx-auto w-full max-w-[360px] rounded-2xl bg-white p-5 shadow-xl">
-        <p className="text-sm font-bold text-ink">{title}</p>
-        {description && <p className="mt-2 text-xs text-ink-soft">{description}</p>}
+      <div className="mx-auto w-full max-w-[380px] rounded-[28px] bg-white p-6 shadow-xl">
+        <p className="text-xl font-bold leading-snug text-ink">{title}</p>
+        {description && <p className="mt-3 text-sm leading-relaxed text-ink-soft">{description}</p>}
         {children}
-        <div className="mt-4 flex justify-end gap-2">
+        <DialogActions>
           <button
             type="button"
             onClick={onClose}
@@ -44,7 +45,7 @@ export function ConfirmModal({
             {cancelLabel ?? dict.common.cancel}
           </button>
           {confirmSlot}
-        </div>
+        </DialogActions>
       </div>
     </Modal>
   );

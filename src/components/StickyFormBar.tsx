@@ -20,7 +20,7 @@ export function StickyFormBar({
         type="submit"
         form={formId}
         disabled={pending}
-        className="flex w-full items-center justify-center gap-2 rounded-xl bg-accent py-3.5 text-sm font-bold text-white disabled:opacity-60"
+        className="flex min-h-13 w-full items-center justify-center gap-2 rounded-2xl bg-accent px-4 py-3.5 text-base font-bold text-white shadow-sm disabled:opacity-60"
       >
         {pending && <Mascot name="cooking" size={20} className="animate-icon-pulse" />}
         {pending ? pendingLabel : label}

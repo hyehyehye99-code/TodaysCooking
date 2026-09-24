@@ -55,7 +55,7 @@ export function GuestShopping() {
 
   return (
     <div className="pb-[calc(11.5rem+env(safe-area-inset-bottom))]">
-      <GlassCard className="mb-[18px] bg-white p-4">
+      <GlassCard className="mb-5 bg-accent/5 p-5">
         <div className="mb-2.5 flex items-center justify-between">
           <span className="flex items-center gap-2 text-[13px] font-bold">
             <Mascot name={allChecked ? "happy" : "shopping"} size={34} />
@@ -72,8 +72,9 @@ export function GuestShopping() {
         <div className="min-w-0 flex-1">
           <ClearableInput
             name="name"
+            aria-label={dict.shopping.addItemPlaceholder}
             placeholder={dict.shopping.addItemPlaceholder}
-            className="w-full rounded-xl border border-transparent bg-surface px-3.5 py-2.5 text-sm outline-none focus:border-accent"
+            className="min-h-12 w-full rounded-2xl border border-border bg-surface px-4 py-3 text-base outline-none focus:border-accent"
           />
         </div>
         <button type="submit" className="rounded-xl bg-accent px-4 py-2.5 text-sm font-bold text-white">

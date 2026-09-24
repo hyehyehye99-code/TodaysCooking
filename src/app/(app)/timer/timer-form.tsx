@@ -68,6 +68,7 @@ function NumberField({
     <div className="flex-1">
       <input
         type="number"
+        aria-label={unit}
         inputMode="numeric"
         min={0}
         max={max}
@@ -247,7 +248,7 @@ export function TimerForm({ recipes, timer }: { recipes: RecipeOption[]; timer?:
 
   return (
     <>
-    <form id="timer-form" onSubmit={handleSubmit} className="pb-24">
+    <form id="timer-form" onSubmit={handleSubmit} className="app-form pb-24">
       <div className="mb-5 flex items-center justify-between">
         <h1 className="text-[22px] font-bold">
           {timer ? dict.timer.editTimerHeading : dict.timer.newTimerHeading}
@@ -270,7 +271,7 @@ export function TimerForm({ recipes, timer }: { recipes: RecipeOption[]; timer?:
           <Link
             href="/timer"
             aria-label={dict.common.close}
-            className="flex h-8 w-8 items-center justify-center rounded-full bg-surface text-ink"
+            className="flex h-11 w-11 items-center justify-center rounded-full bg-surface text-ink"
           >
             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M18 6L6 18" />
@@ -285,6 +286,7 @@ export function TimerForm({ recipes, timer }: { recipes: RecipeOption[]; timer?:
           <p className="mb-2 text-xs font-bold text-ink-soft">{dict.timer.nameLabel}</p>
           <input
             value={name}
+            aria-label={dict.timer.nameLabel}
             onChange={(e) => setName(e.target.value)}
             placeholder={selectedRecipe?.title || dict.timer.namePlaceholder}
             className="w-full rounded-xl border border-transparent bg-surface px-3.5 py-2.5 text-sm outline-none focus:border-accent"
@@ -314,7 +316,8 @@ export function TimerForm({ recipes, timer }: { recipes: RecipeOption[]; timer?:
                     setMinutes(m);
                     setSeconds(0);
                   }}
-                  className={`rounded-full px-3 py-1.5 text-xs font-bold transition-transform active:scale-90 ${
+                  aria-pressed={active}
+                  className={`min-h-11 rounded-full px-3 py-1.5 text-xs font-bold transition-transform active:scale-90 ${
                     active ? "bg-accent text-white" : "bg-surface text-ink-soft"
                   }`}
                 >
@@ -367,6 +370,7 @@ export function TimerForm({ recipes, timer }: { recipes: RecipeOption[]; timer?:
             </div>
             <input
               value={draftMessage}
+              aria-label={dict.timer.midAlertMessagePlaceholder}
               onChange={(e) => setDraftMessage(e.target.value)}
               placeholder={dict.timer.midAlertMessagePlaceholder}
               className="mt-2 w-full rounded-lg border border-transparent bg-white px-3 py-2 text-xs outline-none focus:border-accent"

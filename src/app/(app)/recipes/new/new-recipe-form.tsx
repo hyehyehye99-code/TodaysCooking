@@ -13,6 +13,7 @@ import { ReferenceLinkField } from "@/components/ReferenceLinkField";
 import { FieldLabel } from "@/components/FieldLabel";
 import { StickyFormBar } from "@/components/StickyFormBar";
 import { Modal } from "@/components/Modal";
+import { DialogActions } from "@/components/DialogActions";
 import { ClearableInput } from "@/components/ClearableInput";
 import { useDict } from "@/lib/i18n/client";
 
@@ -67,7 +68,7 @@ export function NewRecipeForm({ existingTags, guest = false }: { existingTags: s
           type="button"
           onClick={() => setConfirmingClose(true)}
           aria-label={dict.common.close}
-          className="flex h-8 w-8 items-center justify-center rounded-full bg-surface text-ink"
+          className="flex h-11 w-11 items-center justify-center rounded-full bg-surface text-ink"
         >
           <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M18 6L6 18" />
@@ -77,10 +78,10 @@ export function NewRecipeForm({ existingTags, guest = false }: { existingTags: s
       </div>
 
       <Modal open={confirmingClose} onClose={() => setConfirmingClose(false)} variant="center">
-        <div className="mx-auto w-full max-w-[360px] rounded-2xl bg-white p-5 shadow-xl">
+        <div className="mx-auto w-full max-w-[380px] rounded-[28px] bg-white p-6 shadow-xl">
           <p className="text-sm font-bold text-ink">{dict.recipes.unsavedNewTitle}</p>
           <p className="mt-2 text-xs text-ink-soft">{dict.recipes.unsavedNewDesc}</p>
-          <div className="mt-4 flex justify-end gap-2">
+          <DialogActions>
             <button
               type="button"
               onClick={() => setConfirmingClose(false)}
@@ -95,20 +96,21 @@ export function NewRecipeForm({ existingTags, guest = false }: { existingTags: s
             >
               {dict.recipes.leave}
             </button>
-          </div>
+          </DialogActions>
         </div>
       </Modal>
 
       <form
         id="new-recipe-form"
         action={formAction}
-        className="flex flex-col gap-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))]"
+        className="app-form flex flex-col gap-5 pb-[calc(5.5rem+env(safe-area-inset-bottom))]"
       >
         <div>
           <FieldLabel>{dict.welcome.dishName}</FieldLabel>
           <ClearableInput
             ref={titleRef}
             name="title"
+            aria-label={dict.welcome.dishName}
             placeholder={dict.recipes.dishNameOptionalPlaceholder}
             className="w-full rounded-xl border border-transparent bg-surface px-3.5 py-3 text-base font-bold outline-none focus:border-accent"
           />
@@ -121,9 +123,9 @@ export function NewRecipeForm({ existingTags, guest = false }: { existingTags: s
         </GlassCard>
 
         <GlassCard className="bg-white p-4">
-          <div className="mb-1 flex items-center justify-between gap-2">
+          <div className="mb-1 flex flex-wrap items-center justify-between gap-x-2">
             <FieldLabel>{dict.welcome.ingredients}</FieldLabel>
-            <label className="mb-3 flex shrink-0 items-center gap-1.5 text-xs font-semibold text-ink-soft">
+            <label className="mb-3 flex min-h-11 items-center gap-2 text-xs font-semibold leading-relaxed text-ink-soft">
               <input
                 type="checkbox"
                 name="hideIngredients"
@@ -139,7 +141,8 @@ export function NewRecipeForm({ existingTags, guest = false }: { existingTags: s
             <textarea
               ref={ingredientsRef}
               name="ingredients"
-              rows={12}
+              aria-label={dict.welcome.ingredients}
+              rows={6}
               placeholder={dict.recipes.ingredientsExamplePlaceholder}
               className="w-full rounded-xl border border-transparent bg-surface px-3.5 py-3 text-sm outline-none focus:border-accent"
             />
@@ -151,7 +154,8 @@ export function NewRecipeForm({ existingTags, guest = false }: { existingTags: s
           <textarea
             ref={notesRef}
             name="notes"
-            rows={8}
+            aria-label={dict.welcome.instructions}
+            rows={6}
             placeholder={dict.recipes.notesPlaceholder}
             className="w-full rounded-xl border border-transparent bg-surface px-3.5 py-3 text-sm outline-none focus:border-accent"
           />
@@ -165,10 +169,10 @@ export function NewRecipeForm({ existingTags, guest = false }: { existingTags: s
               <PhotoPicker name="photos" onCountChange={setPhotoCount} />
             </div>
             {photoCount === 0 && (
-              <label className="flex flex-col gap-1.5">
+              <div className="flex flex-col gap-1.5">
                 <span className="text-xs text-ink-soft">{dict.recipes.iconEmojiLabel}</span>
                 <EmojiPicker name="iconEmoji" />
-              </label>
+              </div>
             )}
           </div>
         </GlassCard>
@@ -180,6 +184,7 @@ export function NewRecipeForm({ existingTags, guest = false }: { existingTags: s
               <FieldLabel>{dict.recipes.descriptionLabel}</FieldLabel>
               <ClearableInput
                 name="subtitle"
+                aria-label={dict.recipes.descriptionLabel}
                 placeholder={dict.recipes.subtitlePlaceholder}
                 className="w-full rounded-xl border border-transparent bg-surface px-3.5 py-3 text-sm outline-none focus:border-accent"
               />

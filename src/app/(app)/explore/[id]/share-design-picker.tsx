@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Modal } from "@/components/Modal";
+import { DialogActions } from "@/components/DialogActions";
 import { SavedToast } from "@/components/SavedToast";
 import { MEAL_PLAN_CARD_TEMPLATES, type MealPlanCardData } from "./meal-plan-card-image";
 import { useDict } from "@/lib/i18n/client";
@@ -308,7 +309,7 @@ export function ShareDesignPicker({
                     />
                   )}
 
-                  <div className="mt-4 flex gap-2">
+                  <DialogActions>
                     <button
                       type="button"
                       onClick={saveImage}
@@ -324,7 +325,7 @@ export function ShareDesignPicker({
                     >
                       {dict.mealPlan.shareCardButton}
                     </button>
-                  </div>
+                  </DialogActions>
                 </>
               )}
 

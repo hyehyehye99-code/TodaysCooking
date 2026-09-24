@@ -250,6 +250,10 @@ const ko = {
     unnamedChef: "이름 없는 셰프",
   },
   recipes: {
+    libraryHint: "오늘은 어떤 요리를 만들어볼까요?",
+    resultCount: "레시피 {count}개",
+    resetFilters: "필터 초기화",
+    firstRecipeTitle: "우리집 레시피북을 시작해요",
     favorite: "즐겨찾기",
     selectedCountTemplate: "{count}개 선택됨",
     selectHint: "눌러서 선택, 오른쪽 핸들로 순서 변경",

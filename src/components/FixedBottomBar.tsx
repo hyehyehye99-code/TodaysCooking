@@ -3,11 +3,6 @@
 import { useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
 
-// Matches TabBar's own rendered height (pt-3 + icon + gap + label + py-1) so
-// a bar placed above the tab bar doesn't overlap it. TabBar's own bottom
-// safe-area padding is added on top of this.
-const TAB_BAR_CONTENT_HEIGHT = 62;
-
 function subscribeNever() {
   return () => {};
 }
@@ -38,10 +33,10 @@ export function FixedBottomBar({
 
   return createPortal(
     <div
-      className="fixed inset-x-0 z-40 mx-auto w-full max-w-[520px] border-t border-border bg-white px-5 pt-3 pb-[max(env(safe-area-inset-bottom),12px)] shadow-[0_-6px_16px_-8px_rgba(0,0,0,0.15)]"
+      className={`fixed inset-x-0 z-40 mx-auto w-full max-w-[680px] border-t border-border bg-white/95 px-5 pt-3 backdrop-blur-xl ${aboveTabBar ? "pb-3" : "pb-[max(env(safe-area-inset-bottom),12px)]"}`}
       style={
         aboveTabBar
-          ? { bottom: `calc(max(env(safe-area-inset-bottom), 30px) + ${TAB_BAR_CONTENT_HEIGHT}px)` }
+          ? { bottom: "var(--app-tab-bar-height)" }
           : { bottom: 0 }
       }
     >

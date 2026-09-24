@@ -251,6 +251,10 @@ const en: Dictionary = {
     unnamedChef: "Unnamed Chef",
   },
   recipes: {
+    libraryHint: "What would you like to cook today?",
+    resultCount: "{count} recipes",
+    resetFilters: "Reset filters",
+    firstRecipeTitle: "Start your family recipe book",
     favorite: "Favorites",
     selectedCountTemplate: "{count} selected",
     selectHint: "Tap to select, drag the handle on the right to reorder",

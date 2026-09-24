@@ -7,6 +7,7 @@ import { generateRecipeFromLink, reportAiRecipeResult } from "@/lib/actions/ai-r
 import { ClearableInput } from "@/components/ClearableInput";
 import { useClipboardLinkSuggestion } from "@/lib/useClipboardLinkSuggestion";
 import { Modal } from "@/components/Modal";
+import { DialogActions } from "@/components/DialogActions";
 import { Mascot } from "@/components/Mascot";
 import { AiWritingIndicator } from "@/components/AiWritingIndicator";
 import { useDict } from "@/lib/i18n/client";
@@ -108,7 +109,7 @@ function ReportResultModal({
           placeholder={dict.components.reportPlaceholder}
           className="mt-3 w-full rounded-xl border border-transparent bg-surface px-3.5 py-3 text-sm outline-none focus:border-accent"
         />
-        <div className="mt-4 flex gap-2">
+        <DialogActions>
           <button
             type="button"
             onClick={onClose}
@@ -124,7 +125,7 @@ function ReportResultModal({
           >
             {sending ? dict.components.reportSending : dict.components.reportSubmit}
           </button>
-        </div>
+        </DialogActions>
       </div>
     </Modal>
   );

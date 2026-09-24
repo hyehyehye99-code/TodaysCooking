@@ -56,6 +56,10 @@ export function EmojiPicker({
   );
   const [showCustom, setShowCustom] = useState(false);
   const [customInput, setCustomInput] = useState("");
+  const [expanded, setExpanded] = useState(false);
+  const visibleMascots = expanded
+    ? MASCOT_OPTIONS
+    : MASCOT_OPTIONS.filter((mascot, index) => index < 12 || toMascotIcon(mascot) === selected);
 
   function select(value: string) {
     setSelected(value);
@@ -86,8 +90,9 @@ export function EmojiPicker({
             key={key}
             type="button"
             onClick={() => setTab(key)}
-            className={`rounded-full px-3.5 py-1.5 text-xs font-bold ${
-              tab === key ? "bg-white text-ink shadow-sm" : "text-ink-faint"
+            aria-pressed={tab === key}
+            className={`min-h-11 rounded-full px-3.5 py-1.5 text-xs font-bold ${
+              tab === key ? "bg-white text-ink shadow-sm" : "text-ink-soft"
             }`}
           >
             {label}
@@ -97,13 +102,15 @@ export function EmojiPicker({
 
       {tab === "mascot" ? (
         <div className="flex flex-wrap gap-2">
-          {MASCOT_OPTIONS.map((mascot) => {
+          {visibleMascots.map((mascot) => {
             const token = toMascotIcon(mascot);
             return (
               <button
                 key={mascot}
                 type="button"
                 onClick={() => select(selected === token ? "" : token)}
+                aria-label={`${dict.components.pickerMascotTab} ${MASCOT_OPTIONS.indexOf(mascot) + 1}`}
+                aria-pressed={selected === token}
                 className={`flex h-12 w-12 items-center justify-center rounded-2xl ${
                   selected === token ? "bg-accent/14 ring-2 ring-accent" : "bg-surface"
                 }`}
@@ -112,6 +119,9 @@ export function EmojiPicker({
               </button>
             );
           })}
+          <button type="button" onClick={() => setExpanded((value) => !value)} aria-expanded={expanded} className="min-h-11 w-full rounded-xl bg-surface px-3 text-xs font-semibold text-ink-soft">
+            {expanded ? dict.recipes.collapseTags : dict.components.more}
+          </button>
         </div>
       ) : (
         <div className="flex flex-wrap gap-2">
@@ -120,7 +130,9 @@ export function EmojiPicker({
               key={emoji}
               type="button"
               onClick={() => select(selected === emoji ? "" : emoji)}
-              className={`flex h-9 w-9 items-center justify-center rounded-full text-lg ${
+              aria-label={emoji}
+              aria-pressed={selected === emoji}
+              className={`flex h-11 w-11 items-center justify-center rounded-full text-lg ${
                 selected === emoji ? "bg-accent/14 ring-2 ring-accent" : "bg-surface"
               }`}
             >

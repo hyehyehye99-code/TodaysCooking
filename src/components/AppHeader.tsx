@@ -43,7 +43,7 @@ export function AppHeader({
   const tabTitle = tabTitleKey ? dict.tabBar[tabTitleKey] : "";
 
   const nameClassName = isRecipesTab
-    ? "flex items-center gap-1.5 whitespace-nowrap text-[26px] font-bold tracking-tight"
+    ? "flex min-w-0 items-center gap-1.5 text-[26px] font-bold tracking-tight"
     : "flex items-center gap-1 whitespace-nowrap text-sm font-bold text-ink-soft";
 
   const householdSwitcher =
@@ -51,7 +51,7 @@ export function AppHeader({
       <p className={nameClassName}>{currentName}</p>
     ) : (
       <div className="relative inline-block">
-        <button type="button" onClick={() => setOpen((v) => !v)} className={nameClassName}>
+        <button type="button" aria-expanded={open} onClick={() => setOpen((v) => !v)} className={nameClassName}>
           {currentName}
           <svg
             viewBox="0 0 24 24"
@@ -111,9 +111,12 @@ export function AppHeader({
 
   if (isRecipesTab) {
     return (
-      <div className="mb-3 flex items-baseline justify-between gap-3">
-        {householdSwitcher}
-        <Link href="/recipes/new" className="shrink-0 text-sm font-bold text-accent">
+      <div className="mb-6 flex items-center justify-between gap-3">
+        <div className="min-w-0 break-words">
+          <p className="mb-1 text-xs font-semibold tracking-wide text-ink-soft">{dict.tabBar.recipes}</p>
+          {householdSwitcher}
+        </div>
+        <Link href="/recipes/new" className="flex min-h-11 shrink-0 items-center rounded-2xl bg-accent px-4 text-sm font-bold text-white shadow-sm">
           {dict.components.newRecipeLink}
         </Link>
       </div>
@@ -121,13 +124,13 @@ export function AppHeader({
   }
 
   return (
-    <div className="mb-3">
-      <div className="mb-1">{householdSwitcher}</div>
+    <div className="mb-6">
+      <div className="mb-2">{householdSwitcher}</div>
 
-      <div className="flex items-baseline justify-between gap-3">
+      <div className="flex items-center justify-between gap-3">
         <h1 className="text-[26px] font-bold tracking-tight">{tabTitle}</h1>
         {isExploreTab && (
-          <Link href="/explore/new" className="shrink-0 text-sm font-bold text-accent">
+          <Link href="/explore/new" className="flex min-h-11 shrink-0 items-center rounded-2xl bg-accent px-4 text-sm font-bold text-white shadow-sm">
             {dict.components.newMealPlanLink}
           </Link>
         )}

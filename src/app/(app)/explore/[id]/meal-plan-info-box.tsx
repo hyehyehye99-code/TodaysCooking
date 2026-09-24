@@ -49,7 +49,7 @@ export function MealPlanInfoBox({
         <div className="flex min-w-0 items-center gap-3">
           <ProfileAvatar iconEmoji={iconEmoji} nickname={title} size={44} kind="mealPlan" />
           <div className="min-w-0">
-            <h1 className="truncate text-lg font-bold">{title}</h1>
+            <h1 className="line-clamp-2 text-lg font-bold leading-snug">{title}</h1>
             <p className="text-xs text-ink-soft">
               {dict.mealPlan.recipeCountTemplate.replace("{count}", String(recipeCount))}
             </p>
@@ -58,7 +58,7 @@ export function MealPlanInfoBox({
         <Link
           href="/explore"
           aria-label={dict.common.close}
-          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white text-ink"
+          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white text-ink"
         >
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M18 6L6 18" />
@@ -95,7 +95,7 @@ export function MealPlanInfoBox({
       <div className="mt-3 flex gap-2">
         <Link
           href={`/explore/${mealPlanId}/edit`}
-          className="flex-1 rounded-xl bg-white py-2.5 text-center text-xs font-bold text-ink"
+          className="flex min-h-11 flex-1 items-center justify-center rounded-xl bg-white px-2 py-2.5 text-center text-xs font-bold text-ink"
         >
           {dict.mealPlan.editMealPlanButton}
         </Link>
@@ -103,7 +103,7 @@ export function MealPlanInfoBox({
           type="button"
           onClick={() => setPickerOpen(true)}
           disabled={cardRecipes.length === 0}
-          className="flex-1 rounded-xl bg-white py-2.5 text-xs font-bold text-accent-ink disabled:opacity-60"
+          className="min-h-11 flex-1 rounded-xl bg-white px-2 py-2.5 text-xs font-bold text-accent-ink disabled:opacity-60"
         >
           {dict.mealPlan.shareCardButton}
         </button>

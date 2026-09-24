@@ -37,9 +37,9 @@ export function GuestRecipeList() {
 
   return (
     <div>
-      <div className="mb-3 flex items-center justify-between gap-3 rounded-xl bg-surface px-3.5 py-2.5">
-        <p className="text-[11px] leading-snug text-ink-soft">{dict.guest.localNotice}</p>
-        <Link href="/login" className="shrink-0 text-xs font-bold text-accent">
+      <div className="mb-5 flex items-center justify-between gap-3 rounded-2xl border border-border bg-surface px-4 py-2">
+        <p className="text-xs leading-relaxed text-ink-soft">{dict.guest.localNotice}</p>
+        <Link href="/login" className="flex min-h-11 shrink-0 items-center text-xs font-bold text-accent-ink">
           {dict.guest.loginButton}
         </Link>
       </div>

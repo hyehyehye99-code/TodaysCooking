@@ -13,6 +13,7 @@ import { useDragReorder } from "@/lib/useDragReorder";
 import * as guestStore from "@/lib/guest/store";
 import { useDict } from "@/lib/i18n/client";
 import type { RecipeWithIngredients } from "@/lib/types";
+import styles from "./recipe-list.module.css";
 
 // A recipe created with no title (just a reference link, the recipes-tab
 // equivalent of the old standalone bookmark) falls back to the linked
@@ -58,7 +59,8 @@ function FavoriteButton({ recipe, guest }: { recipe: RecipeWithIngredients; gues
         });
       }}
       aria-label={dict.recipes.favorite}
-      className="flex h-8 w-8 shrink-0 items-center justify-center"
+      aria-pressed={optimisticFavorite}
+      className="relative z-10 flex h-11 w-11 shrink-0 items-center justify-center rounded-full hover:bg-surface"
     >
       <svg
         viewBox="0 0 24 24"
@@ -133,6 +135,7 @@ export function RecipeList({
             (r) =>
               r.title &&
               !r.hide_ingredients &&
+              r.recipe_ingredients.some((ing) => !ing.skipped) &&
               r.recipe_ingredients.filter((ing) => !ing.skipped).every((ing) => owned.has(ing.name))
           )
           .map((r) => r.id)
@@ -154,6 +157,17 @@ export function RecipeList({
     const matchesLinkOnly = !linkOnly || !r.title;
     return matchesQuery && matchesTag && matchesFavorite && matchesMakeable && matchesLinkOnly;
   });
+
+  const hasFilters = !!(query || activeTag || favoritesOnly || makeableOnly || linkOnly);
+
+  function resetFilters() {
+    setQuery("");
+    setActiveTag(null);
+    setFavoritesOnly(false);
+    setMakeableOnly(false);
+    setLinkOnly(false);
+    router.replace("/recipes", { scroll: false });
+  }
 
   function startEditing() {
     setOrder(recipes);
@@ -207,6 +221,9 @@ export function RecipeList({
 
   return (
     <div>
+      {!editing && recipes.length > 0 && (
+        <p className="mb-4 text-sm leading-relaxed text-ink-soft">{dict.recipes.libraryHint}</p>
+      )}
       {editing ? (
         <div className="mb-4 flex items-center justify-between gap-2">
           <span className="min-w-0 truncate text-xs font-bold text-ink-soft">
@@ -242,8 +259,13 @@ export function RecipeList({
         </div>
       ) : (
         <div className="mb-4 flex gap-2">
-          <div className="min-w-0 flex-1">
+          <div className="relative min-w-0 flex-1">
+            <svg aria-hidden="true" className="pointer-events-none absolute left-4 top-3.5 z-10 text-ink-soft" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+              <circle cx="10.5" cy="10.5" r="6.5" />
+              <path d="m16 16 4.5 4.5" />
+            </svg>
             <ClearableInput
+              aria-label={dict.recipes.searchPlaceholder}
               value={query}
               onChange={(e) => {
                 const value = e.target.value;
@@ -251,14 +273,14 @@ export function RecipeList({
                 router.replace(buildListUrl(value, activeTag), { scroll: false });
               }}
               placeholder={dict.recipes.searchPlaceholder}
-              className="w-full rounded-xl border border-transparent bg-surface px-3.5 py-2.5 text-sm outline-none focus:border-accent"
+              className="h-12 w-full rounded-2xl border border-border bg-surface pl-11 pr-4 text-base outline-none placeholder:text-ink-soft focus:border-accent focus:ring-2 focus:ring-accent/10"
             />
           </div>
           {recipes.length > 1 && (
             <button
               onClick={startEditing}
               aria-label={dict.recipes.editMenu}
-              className="flex h-[42px] w-[42px] shrink-0 items-center justify-center rounded-xl bg-surface text-ink-soft"
+              className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-border bg-white text-ink-soft"
             >
               <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M3 6h18" />
@@ -271,20 +293,19 @@ export function RecipeList({
       )}
 
       {!editing && (recipes.length > 0 || allTags.length > 0) && (
-        <div className="mb-4 flex flex-wrap gap-1.5">
+        <div className={`${styles.filters} mb-5 flex flex-wrap gap-2`}>
           <button
-            onClick={() => {
-              setActiveTag(null);
-              router.replace(buildListUrl(query, null), { scroll: false });
-            }}
+            onClick={resetFilters}
+            aria-pressed={!hasFilters}
             className={`rounded-full px-3 py-1.5 text-xs font-semibold ${
-              activeTag === null ? "bg-accent text-white" : "bg-surface text-ink-soft"
+              !hasFilters ? "bg-accent text-white" : "bg-surface text-ink-soft"
             }`}
           >
             {dict.recipes.all}
           </button>
           <button
             onClick={() => setFavoritesOnly((prev) => !prev)}
+            aria-pressed={favoritesOnly}
             className={`inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-semibold ${
               favoritesOnly ? "bg-accent text-white" : "bg-surface text-ink-soft"
             }`}
@@ -305,6 +326,7 @@ export function RecipeList({
           </button>
           <button
             onClick={() => setMakeableOnly((prev) => !prev)}
+            aria-pressed={makeableOnly}
             className={`inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-semibold ${
               makeableOnly ? "bg-accent text-white" : "bg-surface text-ink-soft"
             }`}
@@ -325,6 +347,7 @@ export function RecipeList({
           </button>
           <button
             onClick={() => setLinkOnly((prev) => !prev)}
+            aria-pressed={linkOnly}
             className={`inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-semibold ${
               linkOnly ? "bg-accent text-white" : "bg-surface text-ink-soft"
             }`}
@@ -339,6 +362,7 @@ export function RecipeList({
           {visibleTags.map((tag) => (
             <button
               key={tag}
+              aria-pressed={activeTag === tag}
               onClick={() => {
                 const next = activeTag === tag ? null : tag;
                 setActiveTag(next);
@@ -354,6 +378,7 @@ export function RecipeList({
           {allTags.length > TAG_COLLAPSE_LIMIT && (
             <button
               onClick={() => setTagsExpanded((prev) => !prev)}
+              aria-expanded={tagsExpanded}
               className="rounded-full bg-surface px-3 py-1.5 text-xs font-semibold text-ink-faint"
             >
               {tagsExpanded
@@ -367,10 +392,29 @@ export function RecipeList({
         </div>
       )}
 
+      {!editing && recipes.length > 0 && (
+        <div className="mb-3 flex min-h-11 items-center justify-between gap-2 border-t border-border pt-3">
+          <p role="status" className="text-xs font-semibold text-ink-soft">
+            {dict.recipes.resultCount.replace("{count}", String(filtered.length))}
+          </p>
+          {hasFilters && <button type="button" onClick={resetFilters} className="min-h-11 text-xs font-bold text-accent-ink">{dict.recipes.resetFilters}</button>}
+        </div>
+      )}
+
       {!editing && filtered.length === 0 && (
-        <EmptyState mascot={recipes.length === 0 ? "recipe" : "confused"}>
-          {recipes.length === 0 ? dict.recipes.emptyNoRecipes : dict.recipes.emptySearch}
-        </EmptyState>
+        <div className="rounded-3xl border border-dashed border-[#e8d8cb] bg-[#fcf8f4] px-5 pb-8">
+          <EmptyState mascot={recipes.length === 0 ? "recipe" : "confused"}>
+            {recipes.length === 0 && <strong className="mb-2 block text-lg text-ink">{dict.recipes.firstRecipeTitle}</strong>}
+            {recipes.length === 0 ? dict.recipes.emptyNoRecipes : dict.recipes.emptySearch}
+          </EmptyState>
+          <div className="mt-6 flex justify-center">
+            {recipes.length === 0 ? (
+              <Link href="/recipes/new" className="flex min-h-12 items-center rounded-2xl bg-accent px-6 text-sm font-bold text-white">{dict.components.newRecipeLink}</Link>
+            ) : (
+              <button type="button" onClick={resetFilters} className="min-h-11 rounded-xl bg-white px-4 text-sm font-bold text-accent-ink">{dict.recipes.resetFilters}</button>
+            )}
+          </div>
+        </div>
       )}
 
       {editing ? (
@@ -450,12 +494,9 @@ export function RecipeList({
             const isLinkOnly = !recipe.title;
             const bookmark = recipe.bookmarks?.[0];
             return (
-            <Link
-              key={recipe.id}
-              href={`/recipes/${recipe.id}?from=${encodeURIComponent(buildListUrl(query, activeTag))}`}
-            >
-              <GlassCard
-                className={`flex items-center gap-3 bg-white p-3.5 ${
+              <div
+                key={recipe.id}
+                className={`${styles.card} flex items-center gap-3 p-4 ${
                   recipe.is_cooking ? "ring-2 ring-accent" : ""
                 }`}
               >
@@ -464,11 +505,15 @@ export function RecipeList({
                   coverPhotoUrl={recipe.cover_photo_urls[0]}
                   iconEmoji={recipe.icon_emoji}
                   linkThumbnailUrl={bookmark?.thumbnail_url}
+                  size={64}
                 />
                 <div className="min-w-0 flex-1">
-                  <p className={isLinkOnly ? "truncate text-[15px] font-semibold text-ink-soft" : "text-[15px] font-bold"}>
+                  <Link
+                    href={`/recipes/${recipe.id}?from=${encodeURIComponent(buildListUrl(query, activeTag))}`}
+                    className={`block after:absolute after:inset-0 after:rounded-[22px] focus-visible:outline-none ${isLinkOnly ? "line-clamp-2 text-[15px] font-semibold text-ink-soft" : "line-clamp-2 text-base font-bold leading-snug"}`}
+                  >
                     {displayTitle(recipe, dict.recipes.untitledLink)}
-                  </p>
+                  </Link>
                   {isLinkOnly && bookmark?.domain && (
                     <p className="mt-0.5 truncate text-xs text-ink-faint">{bookmark.domain}</p>
                   )}
@@ -476,7 +521,7 @@ export function RecipeList({
                     <p className="mt-0.5 truncate text-xs text-ink-soft">{recipe.subtitle}</p>
                   )}
                   {(recipe.is_cooking || makeable || recipe.tags.length > 0) && (
-                    <div className="mt-1 flex flex-wrap items-center gap-1.5">
+                    <div className="mt-2 flex flex-wrap items-center gap-1.5">
                       {recipe.is_cooking && (
                         <span className="inline-flex items-center gap-0.5 rounded-full bg-accent px-1.5 py-0.5 text-[10px] font-bold text-white">
                           🍳 {dict.recipes.cookingBadge}
@@ -499,8 +544,7 @@ export function RecipeList({
                   )}
                 </div>
                 <FavoriteButton recipe={recipe} guest={guest} />
-              </GlassCard>
-            </Link>
+              </div>
             );
           })}
         </div>

@@ -247,6 +247,10 @@ const ja: Dictionary = {
     unnamedChef: "名前のないシェフ",
   },
   recipes: {
+    libraryHint: "今日は何を作りましょうか？",
+    resultCount: "レシピ {count}件",
+    resetFilters: "絞り込みをリセット",
+    firstRecipeTitle: "わが家のレシピ帳を始めよう",
     favorite: "お気に入り",
     selectedCountTemplate: "{count}件選択中",
     selectHint: "タップで選択、右のハンドルで並び替え",

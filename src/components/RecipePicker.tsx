@@ -70,6 +70,7 @@ export function RecipePicker({
       <input type="hidden" name={name} value={order.map((r) => r.id).join(",")} />
 
       <ClearableInput
+        aria-label={dict.recipes.searchPlaceholder}
         value={query}
         onChange={(e) => setQuery(e.target.value)}
         placeholder={dict.recipes.searchPlaceholder}
@@ -86,6 +87,7 @@ export function RecipePicker({
                   key={r.id}
                   type="button"
                   onClick={() => toggle(r)}
+                  aria-pressed={active}
                   className={`flex items-center gap-3 rounded-xl border px-3 py-2.5 text-left ${
                     active ? "border-accent bg-accent/8" : "border-transparent bg-surface"
                   }`}

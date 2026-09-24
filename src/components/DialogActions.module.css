@@ -1,0 +1,28 @@
+.actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: stretch;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.actions > * {
+  min-width: 0;
+}
+
+.actions > :is(button, a),
+.actions > form > :is(button, a) {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  min-height: 52px;
+  padding: 14px 10px;
+  border-radius: 16px;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.4;
+  text-align: center;
+  overflow-wrap: anywhere;
+}

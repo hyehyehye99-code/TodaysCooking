@@ -3,6 +3,7 @@
 :root {
   --background: #ffffff;
   --foreground: #191f28;
+  --app-tab-bar-height: calc(67px + max(env(safe-area-inset-bottom), 16px));
 }
 
 @theme inline {
@@ -10,11 +11,11 @@
   --color-foreground: var(--foreground);
 
   --color-cream: #ffffff;
-  --color-surface: #f9fafb;
-  --color-border: #f0f1f3;
+  --color-surface: #f8f7f5;
+  --color-border: #ece8e3;
   --color-ink: #191f28;
   --color-ink-soft: #6b7684;
-  --color-ink-faint: #b0b8c1;
+  --color-ink-faint: #78716c;
 
   --color-accent: #e8603c;
   --color-accent-ink: #7a2a12;
@@ -52,6 +53,26 @@ body {
 button,
 a {
   -webkit-touch-callout: none;
+}
+
+:where(button, a, input, textarea, select):focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 3px;
+}
+
+/* Shared by the create/edit flows; 16px fields also avoid iOS focus zoom. */
+.app-form :is(input:not([type="hidden"]):not([type="checkbox"]):not([type="radio"]):not([type="file"]), textarea, select) {
+  min-height: 48px;
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+.app-form textarea {
+  resize: vertical;
+}
+
+.app-form :is(input, textarea, select):focus-visible {
+  outline-offset: 1px;
 }
 
 /* App-wide tactile feedback: every button/link gets a quick press-down

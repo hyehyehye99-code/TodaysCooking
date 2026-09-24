@@ -103,16 +103,16 @@ export function TabBar() {
   if (isSubpage) return null;
 
   return (
-    <nav className="sticky bottom-0 z-10 flex border-t border-border bg-white px-2 pb-[max(env(safe-area-inset-bottom),30px)] pt-3">
+    <nav style={{ height: "var(--app-tab-bar-height)" }} className="sticky bottom-0 z-10 flex shrink-0 gap-1 border-t border-border bg-white/95 px-3 pb-[max(env(safe-area-inset-bottom),16px)] pt-2.5 backdrop-blur-xl">
       {TABS.map((tab) => {
         const active = pathname.startsWith(tab.href);
         return (
           <Link
             key={tab.href}
             href={tab.href}
+            aria-current={active ? "page" : undefined}
             prefetch
-            className="flex flex-1 flex-col items-center gap-1 py-1 outline-none focus-visible:rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
-            style={{ color: active ? "var(--color-accent)" : "var(--color-ink-faint)" }}
+            className={`flex min-h-14 min-w-0 flex-1 flex-col items-center justify-center gap-1 rounded-2xl py-2 outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent ${active ? "bg-accent/8 text-accent-ink" : "text-ink-soft"}`}
           >
             <svg
               viewBox="0 0 24 24"

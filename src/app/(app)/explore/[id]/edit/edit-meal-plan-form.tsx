@@ -8,6 +8,7 @@ import { RecipePicker } from "@/components/RecipePicker";
 import { FieldLabel } from "@/components/FieldLabel";
 import { StickyFormBar } from "@/components/StickyFormBar";
 import { Modal } from "@/components/Modal";
+import { DialogActions } from "@/components/DialogActions";
 import { ConfirmModal } from "@/components/ConfirmModal";
 import { ClearableInput } from "@/components/ClearableInput";
 import { EmojiPicker } from "@/components/EmojiPicker";
@@ -64,7 +65,7 @@ export function EditMealPlanForm({
           type="button"
           onClick={() => setConfirmingClose(true)}
           aria-label={dict.common.close}
-          className="flex h-8 w-8 items-center justify-center rounded-full bg-surface text-ink"
+          className="flex h-11 w-11 items-center justify-center rounded-full bg-surface text-ink"
         >
           <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M18 6L6 18" />
@@ -74,10 +75,10 @@ export function EditMealPlanForm({
       </div>
 
       <Modal open={confirmingClose} onClose={() => setConfirmingClose(false)} variant="center">
-        <div className="mx-auto w-full max-w-[360px] rounded-2xl bg-white p-5 shadow-xl">
+        <div className="mx-auto w-full max-w-[380px] rounded-[28px] bg-white p-6 shadow-xl">
           <p className="text-sm font-bold text-ink">{dict.recipes.unsavedEditTitle}</p>
           <p className="mt-2 text-xs text-ink-soft">{dict.recipes.unsavedEditDesc}</p>
-          <div className="mt-4 flex justify-end gap-2">
+          <DialogActions>
             <button
               type="button"
               onClick={() => setConfirmingClose(false)}
@@ -92,14 +93,14 @@ export function EditMealPlanForm({
             >
               {dict.recipes.leave}
             </button>
-          </div>
+          </DialogActions>
         </div>
       </Modal>
 
       <form
         id="edit-meal-plan-form"
         action={formAction}
-        className="flex flex-col gap-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))]"
+        className="app-form flex flex-col gap-5 pb-[calc(5.5rem+env(safe-area-inset-bottom))]"
       >
         <input type="hidden" name="id" value={mealPlanId} />
 
@@ -107,6 +108,7 @@ export function EditMealPlanForm({
           <FieldLabel>{dict.mealPlan.titleLabel}</FieldLabel>
           <ClearableInput
             name="title"
+            aria-label={dict.mealPlan.titleLabel}
             defaultValue={title}
             placeholder={dict.mealPlan.titlePlaceholder}
             className="w-full rounded-xl border border-transparent bg-surface px-3.5 py-3 text-base font-bold outline-none focus:border-accent"
@@ -118,22 +120,24 @@ export function EditMealPlanForm({
           <EmojiPicker name="iconEmoji" defaultValue={iconEmoji} />
         </div>
 
-        <div className="flex gap-3">
-          <div className="flex-1">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-[minmax(0,1fr)_100px]">
+          <div className="min-w-0">
             <FieldLabel>{dict.mealPlan.eventDateLabel}</FieldLabel>
             <input
               type="datetime-local"
               name="eventDate"
+              aria-label={dict.mealPlan.eventDateLabel}
               defaultValue={toDatetimeLocalValue(eventDateIso)}
               className="w-full rounded-xl border border-transparent bg-surface px-3.5 py-3 text-sm outline-none focus:border-accent"
             />
           </div>
-          <div className="w-24">
+          <div className="min-w-0">
             <FieldLabel>{dict.mealPlan.headcountLabel}</FieldLabel>
             <input
               type="number"
               min={1}
               name="headcount"
+              aria-label={dict.mealPlan.headcountLabel}
               defaultValue={headcount ?? ""}
               placeholder="-"
               className="w-full rounded-xl border border-transparent bg-surface px-3.5 py-3 text-sm outline-none focus:border-accent"

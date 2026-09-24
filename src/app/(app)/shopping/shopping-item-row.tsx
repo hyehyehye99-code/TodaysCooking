@@ -33,7 +33,8 @@ export function ShoppingItemRow({ item, guest = false }: { item: ShoppingItem; g
       <button
         type="button"
         onClick={toggleChecked}
-        className="flex min-w-0 flex-1 items-center gap-3 text-left"
+        aria-pressed={optimisticChecked}
+        className="flex min-h-11 min-w-0 flex-1 items-center gap-3 text-left"
       >
         <span
           className={`flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-[7px] border-[1.5px] transition-colors duration-150 ${
@@ -49,7 +50,7 @@ export function ShoppingItemRow({ item, guest = false }: { item: ShoppingItem; g
 
         <span
           className={`min-w-0 flex-1 truncate text-sm font-semibold transition-colors duration-150 ${
-            optimisticChecked ? "text-ink-faint" : "text-ink"
+            optimisticChecked ? "text-ink-soft line-through decoration-ink-faint" : "text-ink"
           }`}
         >
           {item.name}

@@ -23,12 +23,13 @@ export function InquiryForm() {
   }
 
   return (
-    <form action={formAction} className="flex flex-col gap-4">
+    <form action={formAction} className="app-form flex flex-col gap-4">
       <GlassCard className="bg-white p-4">
         <p className="mb-1 text-[13px] font-bold">문의 내용</p>
         <p className="mb-3 text-xs text-ink-soft">불편했던 점이나 궁금한 점을 편하게 남겨주세요.</p>
         <textarea
           name="message"
+          aria-label="문의 내용"
           value={message}
           onChange={(e) => setMessage(e.target.value)}
           rows={8}
