@@ -6,6 +6,18 @@ import { Capacitor } from "@capacitor/core";
 import { App } from "@capacitor/app";
 import { Browser } from "@capacitor/browser";
 import { createClient } from "@/lib/supabase/client";
+import { joinHousehold } from "@/lib/actions/household";
+
+const PENDING_INVITE_COOKIE = "pending_invite_code";
+
+function readCookie(name: string): string | null {
+  const match = document.cookie.match(new RegExp(`(?:^|; )${name}=([^;]*)`));
+  return match ? decodeURIComponent(match[1]) : null;
+}
+
+function clearPendingInviteCookie() {
+  document.cookie = `${PENDING_INVITE_COOKIE}=; path=/; max-age=0`;
+}
 
 // OAuth in the wrapped native app can't finish through /auth/callback like
 // the web flow does: that route exchanges the code for a session on the
@@ -41,13 +53,40 @@ export function NativeAuthBridge() {
         return;
       }
 
+      // A Universal Link (Associated Domains, apple-app-site-association
+      // scoped to /join*) — iOS hands the real https:// invite URL here
+      // instead of loading it in Safari. Just route the WKWebView to the
+      // same path/query the web page would've gotten.
+      if (url.includes("/join")) {
+        const { pathname, search } = new URL(url);
+        router.replace(`${pathname}${search}`);
+        return;
+      }
+
       if (!url.includes("auth/callback")) return;
       await Browser.close().catch(() => {});
       const code = new URL(url).searchParams.get("code");
       if (!code || code === lastCode) return;
       lastCode = code;
       const { error } = await supabase.auth.exchangeCodeForSession(code);
-      if (!error) router.replace("/recipes");
+      if (error) return;
+
+      // The web flow's equivalent (/auth/callback/route.ts) reads this same
+      // cookie server-side and applies it before redirecting — this path
+      // never hits that route (see the comment above), so it has to do the
+      // same join here instead, client-side, now that the session exists.
+      // joinHousehold redirects on success on its own; the explicit
+      // replace() below is just the fallback for an invalid/expired code
+      // (it returns an error object rather than throwing) so this never
+      // leaves the user stranded on the OAuth handoff screen either way.
+      const pendingInviteCode = readCookie(PENDING_INVITE_COOKIE);
+      if (pendingInviteCode) {
+        clearPendingInviteCookie();
+        const formData = new FormData();
+        formData.set("code", pendingInviteCode);
+        await joinHousehold(undefined, formData).catch(() => {});
+      }
+      router.replace("/recipes");
     });
 
     return () => {

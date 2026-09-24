@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { createClient } from "@/lib/supabase/client";
+import { signInWithProvider } from "@/lib/oauth-signin";
 
 const PENDING_INVITE_COOKIE = "pending_invite_code";
 
@@ -10,14 +10,17 @@ export function JoinWithGoogleButton({ code }: { code: string }) {
 
   async function handleClick() {
     setPending(true);
-    // Read back by the auth callback once Google redirects here, so the
-    // invite can be applied right after the session is created.
+    // Read back once Google redirects here, so the invite can be applied
+    // right after the session is created — by /auth/callback/route.ts on
+    // the web, or by NativeAuthBridge's appUrlOpen handler in the native
+    // app (this /join page can now open inside the app too, via the
+    // apple-app-site-association Universal Link, so both have to work).
     document.cookie = `${PENDING_INVITE_COOKIE}=${encodeURIComponent(code)}; path=/; max-age=600`;
-    const supabase = createClient();
-    await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: { redirectTo: `${window.location.origin}/auth/callback` },
-    });
+    // signInWithProvider already branches on Capacitor.isNativePlatform():
+    // native opens Google's consent screen in the system browser (required —
+    // Google blocks OAuth inside an embedded WKWebView) and comes back via
+    // the custom URL scheme instead of this page's own redirect.
+    await signInWithProvider("google");
   }
 
   return (
