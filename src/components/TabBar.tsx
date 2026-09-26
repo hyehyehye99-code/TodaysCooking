@@ -112,7 +112,7 @@ export function TabBar() {
             href={tab.href}
             aria-current={active ? "page" : undefined}
             prefetch
-            className={`flex min-h-14 min-w-0 flex-1 flex-col items-center justify-center gap-1 rounded-2xl py-2 outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent ${active ? "bg-accent/8 text-accent-ink" : "text-ink-soft"}`}
+            className={`flex min-h-14 min-w-0 flex-1 flex-col items-center justify-center gap-1 py-2 outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent ${active ? "text-accent" : "text-ink-soft"}`}
           >
             <svg
               viewBox="0 0 24 24"
