@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useOptimistic, useState, useTransition } from "react";
+import { useEffect, useMemo, useOptimistic, useRef, useState, useTransition } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { GlassCard } from "@/components/ui";
@@ -122,8 +122,25 @@ export function RecipeList({
     () => [...new Set(recipes.flatMap((r) => r.tags))],
     [recipes]
   );
-  const TAG_COLLAPSE_LIMIT = 6;
-  const visibleTags = tagsExpanded ? allTags : allTags.slice(0, TAG_COLLAPSE_LIMIT);
+
+  // Collapsed, the filter row (전체/즐겨찾기/... + every tag) is clipped to
+  // one line by height, not by how many tags there are — so whether a
+  // "더보기" toggle is even needed depends on actual layout, not a fixed
+  // count. scrollHeight still reflects the row's true wrapped height even
+  // while clipped, so comparing it to one row's height detects overflow
+  // without ever having to render un-clipped just to measure.
+  const ONE_ROW_HEIGHT = 40;
+  const filtersRef = useRef<HTMLDivElement>(null);
+  const [tagsOverflowing, setTagsOverflowing] = useState(false);
+  useEffect(() => {
+    const el = filtersRef.current;
+    if (!el) return;
+    const check = () => setTagsOverflowing(el.scrollHeight > ONE_ROW_HEIGHT + 4);
+    check();
+    const ro = new ResizeObserver(check);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [allTags]);
 
   // A link-only card has nothing to "make" — an empty ingredient list would
   // otherwise vacuously pass the every() check below and wrongly badge it.
@@ -293,7 +310,14 @@ export function RecipeList({
       )}
 
       {!editing && (recipes.length > 0 || allTags.length > 0) && (
-        <div className={`${styles.filters} mb-5 flex flex-nowrap gap-2`}>
+        <div className="relative mb-5">
+          <div
+            ref={filtersRef}
+            style={!tagsExpanded ? { maxHeight: ONE_ROW_HEIGHT, overflow: "hidden" } : undefined}
+            className={`${styles.filters} flex flex-wrap gap-2 ${
+              !tagsExpanded && tagsOverflowing ? "pr-24" : ""
+            }`}
+          >
           <button
             onClick={resetFilters}
             aria-pressed={!hasFilters}
@@ -359,7 +383,7 @@ export function RecipeList({
             </svg>
             {dict.recipes.linkOnlyFilter}
           </button>
-          {visibleTags.map((tag) => (
+          {allTags.map((tag) => (
             <button
               key={tag}
               aria-pressed={activeTag === tag}
@@ -375,19 +399,32 @@ export function RecipeList({
               {tag}
             </button>
           ))}
-          {allTags.length > TAG_COLLAPSE_LIMIT && (
+          {tagsExpanded && tagsOverflowing && (
             <button
-              onClick={() => setTagsExpanded((prev) => !prev)}
-              aria-expanded={tagsExpanded}
+              onClick={() => setTagsExpanded(false)}
+              aria-expanded={true}
               className="rounded-full bg-surface px-3 py-1.5 text-xs font-semibold text-ink-faint"
             >
-              {tagsExpanded
-                ? dict.recipes.collapseTags
-                : dict.recipes.showMoreTagsTemplate.replace(
-                    "{count}",
-                    String(allTags.length - TAG_COLLAPSE_LIMIT)
-                  )}
+              {dict.recipes.collapseTags}
             </button>
+          )}
+          </div>
+
+          {/* Floating, not a flex child — guaranteed to stay on row 1 (the
+              row's own right padding above clears space for it) instead of
+              risking getting wrapped onto a clipped-away second line. The
+              gradient behind it fades whatever chip it overlaps rather than
+              cutting it off with a hard edge. */}
+          {!tagsExpanded && tagsOverflowing && (
+            <div className="pointer-events-none absolute right-0 top-0 flex h-10 items-center bg-gradient-to-r from-transparent via-cream to-cream pl-6">
+              <button
+                onClick={() => setTagsExpanded(true)}
+                aria-expanded={false}
+                className="pointer-events-auto rounded-full bg-surface px-3 py-1.5 text-xs font-semibold text-ink-faint"
+              >
+                {dict.components.more}
+              </button>
+            </div>
           )}
         </div>
       )}
