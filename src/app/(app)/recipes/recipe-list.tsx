@@ -238,9 +238,6 @@ export function RecipeList({
 
   return (
     <div>
-      {!editing && recipes.length > 0 && (
-        <p className="mb-4 text-sm leading-relaxed text-ink-soft">{dict.recipes.libraryHint}</p>
-      )}
       {editing ? (
         <div className="mb-4 flex items-center justify-between gap-2">
           <span className="min-w-0 truncate text-xs font-bold text-ink-soft">
