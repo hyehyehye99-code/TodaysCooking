@@ -11,18 +11,18 @@
   --color-foreground: var(--foreground);
 
   --color-cream: #ffffff;
-  --color-surface: #f8f7f5;
-  --color-border: #ece8e3;
+  --color-surface: #fbfbfb;
+  --color-border: #ebebeb;
   --color-ink: #191f28;
   --color-ink-soft: #6b7684;
-  --color-ink-faint: #78716c;
+  --color-ink-faint: #717171;
 
   --color-accent: #e8603c;
-  --color-accent-ink: #7a2a12;
-  --color-positive: #fbbf24;
-  --color-positive-ink: #92400e;
-  --color-warn: #f59e0b;
-  --color-warn-ink: #78350f;
+  --color-accent-ink: #e8603c;
+  --color-positive: #4f24fb;
+  --color-positive-ink: #4f24fb;
+  --color-warn: #f50b0b;
+  --color-warn-ink: #f50b0b;
 
   --font-sans: var(--font-suit);
   --font-display: var(--font-suit);
