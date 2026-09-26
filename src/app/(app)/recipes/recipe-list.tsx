@@ -78,6 +78,9 @@ function FavoriteButton({ recipe, guest }: { recipe: RecipeWithIngredients; gues
   );
 }
 
+const FILTER_ROW_HEIGHT = 34;
+const FILTER_ROWS_COLLAPSED_HEIGHT = FILTER_ROW_HEIGHT * 2 + 6; // two rows + the one gap between them
+
 export function RecipeList({
   recipes,
   ownedIngredients,
@@ -124,18 +127,19 @@ export function RecipeList({
   );
 
   // Collapsed, the filter row (전체/즐겨찾기/... + every tag) is clipped to
-  // one line by height, not by how many tags there are — so whether a
+  // two lines by height, not by how many tags there are — so whether a
   // "더보기" toggle is even needed depends on actual layout, not a fixed
   // count. scrollHeight still reflects the row's true wrapped height even
-  // while clipped, so comparing it to one row's height detects overflow
-  // without ever having to render un-clipped just to measure.
-  const ONE_ROW_HEIGHT = 40;
+  // while clipped, so comparing it to two rows' height detects overflow
+  // without ever having to render un-clipped just to measure. The base
+  // filters (전체/즐겨찾기/만들 수 있어요/링크만) alone should always fit
+  // within these two lines — only a long tag list should ever push past.
   const filtersRef = useRef<HTMLDivElement>(null);
   const [tagsOverflowing, setTagsOverflowing] = useState(false);
   useEffect(() => {
     const el = filtersRef.current;
     if (!el) return;
-    const check = () => setTagsOverflowing(el.scrollHeight > ONE_ROW_HEIGHT + 4);
+    const check = () => setTagsOverflowing(el.scrollHeight > FILTER_ROWS_COLLAPSED_HEIGHT + 4);
     check();
     const ro = new ResizeObserver(check);
     ro.observe(el);
@@ -310,15 +314,15 @@ export function RecipeList({
         <div className="relative mb-5">
           <div
             ref={filtersRef}
-            style={!tagsExpanded ? { maxHeight: ONE_ROW_HEIGHT, overflow: "hidden" } : undefined}
-            className={`${styles.filters} flex flex-wrap gap-2 ${
-              !tagsExpanded && tagsOverflowing ? "pr-24" : ""
+            style={!tagsExpanded ? { maxHeight: FILTER_ROWS_COLLAPSED_HEIGHT, overflow: "hidden" } : undefined}
+            className={`${styles.filters} flex flex-wrap gap-1.5 ${
+              !tagsExpanded && tagsOverflowing ? "pr-20" : ""
             }`}
           >
           <button
             onClick={resetFilters}
             aria-pressed={!hasFilters}
-            className={`rounded-full px-3 py-1.5 text-xs font-semibold ${
+            className={`rounded-full px-2.5 py-1.5 text-[12px] font-semibold ${
               !hasFilters ? "bg-accent text-white" : "bg-surface text-ink-soft"
             }`}
           >
@@ -327,14 +331,14 @@ export function RecipeList({
           <button
             onClick={() => setFavoritesOnly((prev) => !prev)}
             aria-pressed={favoritesOnly}
-            className={`inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-semibold ${
+            className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1.5 text-[12px] font-semibold ${
               favoritesOnly ? "bg-accent text-white" : "bg-surface text-ink-soft"
             }`}
           >
             <svg
               viewBox="0 0 24 24"
-              width="11"
-              height="11"
+              width="10"
+              height="10"
               fill={favoritesOnly ? "currentColor" : "none"}
               stroke="currentColor"
               strokeWidth="1.8"
@@ -348,14 +352,14 @@ export function RecipeList({
           <button
             onClick={() => setMakeableOnly((prev) => !prev)}
             aria-pressed={makeableOnly}
-            className={`inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-semibold ${
+            className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1.5 text-[12px] font-semibold ${
               makeableOnly ? "bg-accent text-white" : "bg-surface text-ink-soft"
             }`}
           >
             <svg
               viewBox="0 0 14 14"
-              width="11"
-              height="11"
+              width="10"
+              height="10"
               fill="none"
               stroke="currentColor"
               strokeWidth="2.4"
@@ -369,11 +373,11 @@ export function RecipeList({
           <button
             onClick={() => setLinkOnly((prev) => !prev)}
             aria-pressed={linkOnly}
-            className={`inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-semibold ${
+            className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1.5 text-[12px] font-semibold ${
               linkOnly ? "bg-accent text-white" : "bg-surface text-ink-soft"
             }`}
           >
-            <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M9.5 14.5l5-5" />
               <path d="M13 7l1.5-1.5a3 3 0 1 1 4.2 4.2L17.2 11" />
               <path d="M11 17l-1.5 1.5a3 3 0 1 1-4.2-4.2L6.8 13" />
@@ -389,7 +393,7 @@ export function RecipeList({
                 setActiveTag(next);
                 router.replace(buildListUrl(query, next), { scroll: false });
               }}
-              className={`rounded-full px-3 py-1.5 text-xs font-semibold ${
+              className={`rounded-full px-2.5 py-1.5 text-[12px] font-semibold ${
                 activeTag === tag ? "bg-accent text-white" : "bg-surface text-ink-soft"
               }`}
             >
@@ -400,24 +404,25 @@ export function RecipeList({
             <button
               onClick={() => setTagsExpanded(false)}
               aria-expanded={true}
-              className="rounded-full bg-surface px-3 py-1.5 text-xs font-semibold text-ink-faint"
+              className="rounded-full bg-surface px-2.5 py-1.5 text-[12px] font-semibold text-ink-faint"
             >
               {dict.recipes.collapseTags}
             </button>
           )}
           </div>
 
-          {/* Floating, not a flex child — guaranteed to stay on row 1 (the
-              row's own right padding above clears space for it) instead of
-              risking getting wrapped onto a clipped-away second line. The
-              gradient behind it fades whatever chip it overlaps rather than
-              cutting it off with a hard edge. */}
+          {/* Floating, not a flex child — guaranteed to stay clear of the
+              clipped-away line below instead of risking getting wrapped onto
+              it itself. Sits bottom-right of the two visible rows (the row's
+              own bottom padding above clears space for it); the gradient
+              behind it fades whatever chip it overlaps rather than cutting
+              it off with a hard edge. */}
           {!tagsExpanded && tagsOverflowing && (
-            <div className="pointer-events-none absolute right-0 top-0 flex h-10 items-center bg-gradient-to-r from-transparent via-cream to-cream pl-6">
+            <div className="pointer-events-none absolute bottom-0 right-0 flex h-[34px] items-center bg-gradient-to-r from-transparent via-cream to-cream pl-6">
               <button
                 onClick={() => setTagsExpanded(true)}
                 aria-expanded={false}
-                className="pointer-events-auto rounded-full bg-surface px-3 py-1.5 text-xs font-semibold text-ink-faint"
+                className="pointer-events-auto rounded-full bg-surface px-2.5 py-1.5 text-[12px] font-semibold text-ink-faint"
               >
                 {dict.components.more}
               </button>
