@@ -30,7 +30,7 @@ function ActivityRow({ entry, dict }: { entry: ActivityEntry; dict: ReturnType<t
     <div className="px-4 py-3.5">
       <p className="text-sm font-bold text-ink">{entry.title}</p>
       <p className="mt-0.5 text-xs text-ink-soft">{entry.body}</p>
-      <p className="mt-1 text-[11px] text-ink-faint">{relativeTimeFrom(entry.created_at, dict)}</p>
+      <p className="mt-1 text-[13px] text-ink-faint">{relativeTimeFrom(entry.created_at, dict)}</p>
     </div>
   );
 

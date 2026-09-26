@@ -410,7 +410,7 @@ export function TimerList({
                     <div className="flex items-center gap-1.5">
                       <p className="truncate text-xs font-bold text-ink-soft">{timer.name}</p>
                       {completed && (
-                        <span className="shrink-0 rounded-full bg-accent px-1.5 py-0.5 text-[10px] font-bold text-white">
+                        <span className="shrink-0 rounded-full bg-accent px-1.5 py-0.5 text-[12px] font-bold text-white">
                           {dict.timer.completedBadge}
                         </span>
                       )}
@@ -418,7 +418,7 @@ export function TimerList({
                     <p className="mt-1 text-[30px] font-bold leading-none tracking-tight tabular-nums text-ink">
                       {formatTime(live)}
                     </p>
-                    <div className="mt-1.5 flex items-center gap-1.5 text-[11px] text-ink-faint">
+                    <div className="mt-1.5 flex items-center gap-1.5 text-[13px] text-ink-faint">
                       <span className="tabular-nums">{formatTime(timer.duration_seconds)}</span>
                       {recipeTitle && (
                         <>
@@ -443,7 +443,7 @@ export function TimerList({
                             return (
                               <div
                                 key={a.id}
-                                className={`flex items-center gap-1.5 rounded-md px-1.5 py-0.5 text-[10px] ${
+                                className={`flex items-center gap-1.5 rounded-md px-1.5 py-0.5 text-[12px] ${
                                   isNow ? "bg-accent/8" : ""
                                 }`}
                               >
@@ -452,7 +452,7 @@ export function TimerList({
                                 </span>
                                 <span className="min-w-0 flex-1 truncate text-ink-faint">{a.message}</span>
                                 {isNow && (
-                                  <span className="shrink-0 animate-pulse rounded-full bg-accent px-1 py-0.5 text-[9px] font-bold text-white">
+                                  <span className="shrink-0 animate-pulse rounded-full bg-accent px-1 py-0.5 text-[13px] font-bold text-white">
                                     {dict.timer.midAlertNowBadge}
                                   </span>
                                 )}

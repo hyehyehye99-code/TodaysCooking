@@ -12,7 +12,7 @@ function ToggleButton({ code, active }: { code: string; active: boolean }) {
       type="button"
       onClick={() => startTransition(() => togglePromoCodeActive(code, !active))}
       disabled={pending}
-      className={`rounded-full px-2.5 py-1 text-[11px] font-bold disabled:opacity-60 ${
+      className={`rounded-full px-2.5 py-1 text-[13px] font-bold disabled:opacity-60 ${
         active ? "bg-positive/10 text-positive-ink" : "bg-surface text-ink-faint"
       }`}
     >

@@ -71,7 +71,7 @@ export default async function AdminExpensesPage() {
                   <td className="px-3 py-2">
                     <span className="font-bold">{r.category}</span>
                     {r.recurring_expense_id && (
-                      <span className="ml-1.5 rounded-full bg-surface px-1.5 py-0.5 text-[10px] font-bold text-ink-faint">
+                      <span className="ml-1.5 rounded-full bg-surface px-1.5 py-0.5 text-[12px] font-bold text-ink-faint">
                         정기
                       </span>
                     )}

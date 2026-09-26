@@ -83,7 +83,7 @@ function NumberField({
             : "w-full rounded-xl bg-surface px-3 py-2.5 text-center text-lg font-bold text-ink outline-none focus:ring-2 focus:ring-accent"
         }
       />
-      <p className="mt-1 text-center text-[11px] text-ink-faint">{unit}</p>
+      <p className="mt-1 text-center text-[13px] text-ink-faint">{unit}</p>
     </div>
   );
 }
@@ -332,13 +332,13 @@ export function TimerForm({ recipes, timer }: { recipes: RecipeOption[]; timer?:
               fields) so it reads as "a sub-setting of the time above", not a second,
               equally-weighted time picker next to it. */}
           <div className="mt-3 rounded-xl bg-surface p-3">
-            <p className="mb-2 text-[11px] font-semibold text-ink-faint">{dict.timer.midAlertsLabel}</p>
+            <p className="mb-2 text-[13px] font-semibold text-ink-faint">{dict.timer.midAlertsLabel}</p>
 
             {alerts.length > 0 && (
               <div className="mb-2.5 flex flex-col gap-1.5">
                 {alerts.map((a) => (
                   <div key={a.key} className="flex items-center gap-2 rounded-lg bg-white px-2.5 py-2">
-                    <span className="shrink-0 text-[11px] font-bold tabular-nums text-accent-ink">
+                    <span className="shrink-0 text-[13px] font-bold tabular-nums text-accent-ink">
                       {formatElapsedLabel(a.hours * 3600 + a.minutes * 60 + a.seconds, dict)}
                     </span>
                     <span className="min-w-0 flex-1 truncate text-xs text-ink">{a.message}</span>
@@ -358,7 +358,7 @@ export function TimerForm({ recipes, timer }: { recipes: RecipeOption[]; timer?:
               </div>
             )}
 
-            <p className="mb-1.5 text-[11px] text-ink-faint">
+            <p className="mb-1.5 text-[13px] text-ink-faint">
               {hours * 3600 + minutes * 60 + seconds <= 0
                 ? dict.timer.midAlertNeedDurationFirst
                 : dict.timer.midAlertHint}
@@ -378,11 +378,11 @@ export function TimerForm({ recipes, timer }: { recipes: RecipeOption[]; timer?:
             <button
               type="button"
               onClick={addAlert}
-              className="mt-2 w-full rounded-lg border border-dashed border-accent/60 py-2 text-[11px] font-bold text-accent-ink transition-transform active:scale-[0.98]"
+              className="mt-2 w-full rounded-lg border border-dashed border-accent/60 py-2 text-[13px] font-bold text-accent-ink transition-transform active:scale-[0.98]"
             >
               + {dict.timer.midAlertAddButton}
             </button>
-            {alertError && <p className="mt-1.5 text-[11px] font-semibold text-warn-ink">{alertError}</p>}
+            {alertError && <p className="mt-1.5 text-[13px] font-semibold text-warn-ink">{alertError}</p>}
           </div>
         </div>
 

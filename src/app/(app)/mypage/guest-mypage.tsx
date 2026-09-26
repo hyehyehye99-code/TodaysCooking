@@ -32,7 +32,7 @@ export function GuestMyPage({ dict }: { dict: Dictionary }) {
         <Link href="/login" className="mt-4 w-full rounded-xl bg-accent py-3.5 text-sm font-bold text-white">
           {dict.guest.loginButton}
         </Link>
-        <p className="mt-3 text-[11px] text-ink-faint">{dict.guest.localNotice}</p>
+        <p className="mt-3 text-[13px] text-ink-faint">{dict.guest.localNotice}</p>
       </GlassCard>
 
       <Link

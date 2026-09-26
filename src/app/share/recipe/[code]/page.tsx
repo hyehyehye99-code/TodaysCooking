@@ -82,7 +82,7 @@ export default async function SharedRecipePage({ params }: { params: Promise<{ c
       {recipe.tags.length > 0 && (
         <div className="mt-2.5 flex flex-wrap gap-1.5">
           {recipe.tags.map((tag) => (
-            <span key={tag} className="rounded-full bg-surface px-2.5 py-1 text-[11px] font-semibold text-positive-ink">
+            <span key={tag} className="rounded-full bg-surface px-2.5 py-1 text-[13px] font-semibold text-positive-ink">
               #{tag}
             </span>
           ))}
@@ -100,7 +100,7 @@ export default async function SharedRecipePage({ params }: { params: Promise<{ c
               >
                 {ing.name}
                 {ing.amount && <span className="ml-1 font-normal opacity-70">{ing.amount}</span>}
-                {ing.skipped && <span className="ml-1 text-[10px] font-normal">(생략)</span>}
+                {ing.skipped && <span className="ml-1 text-[12px] font-normal">(생략)</span>}
               </span>
             ))}
           </div>
@@ -119,7 +119,7 @@ export default async function SharedRecipePage({ params }: { params: Promise<{ c
       {user && household ? (
         <AddSharedRecipeButton code={code} />
       ) : (
-        <p className="mt-10 text-center text-[11px] text-ink-faint">
+        <p className="mt-10 text-center text-[13px] text-ink-faint">
           <Link href="/welcome" className="underline">
             나도 이런 레시피 만들어볼까?
           </Link>

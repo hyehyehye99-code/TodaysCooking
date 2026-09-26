@@ -1,7 +1,21 @@
+/* Single row that scrolls sideways instead of wrapping to two+ lines on a
+   phone-width screen — the row used to grow tall enough to push the recipe
+   list down whenever there were more than a couple of tags. */
+.filters {
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  overscroll-behavior-x: contain;
+}
+.filters::-webkit-scrollbar {
+  display: none;
+}
+
 .filters > button {
   min-height: 40px;
   border: 1px solid var(--color-border);
   padding-inline: 14px;
+  flex-shrink: 0;
 }
 
 .filters > button[aria-pressed="true"] {

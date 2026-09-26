@@ -74,7 +74,7 @@ export function InviteButton({
               onClick={copyCode}
               className="mt-3 w-full rounded-xl border border-transparent bg-surface px-4 py-3 text-center"
             >
-              <p className="text-[11px] text-ink-soft">
+              <p className="text-[13px] text-ink-soft">
                 {copiedCode ? "복사했어요!" : "눌러서 코드 복사하기"}
               </p>
               <p className="mt-1 text-2xl font-bold tracking-[0.2em]">{inviteCode}</p>

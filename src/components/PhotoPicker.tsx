@@ -204,7 +204,7 @@ export function PhotoPicker({
               <path d="M5 12h14" />
             </svg>
             {processing && (
-              <div className="absolute inset-0 flex items-center justify-center bg-black/40 text-[10px] font-bold text-white">
+              <div className="absolute inset-0 flex items-center justify-center bg-black/40 text-[12px] font-bold text-white">
                 {dict.components.processing}
               </div>
             )}
@@ -224,7 +224,7 @@ export function PhotoPicker({
       />
       <input type="hidden" name="photoOrder" value={JSON.stringify(orderTokens)} readOnly />
 
-      <p className="mt-1.5 text-[11px] text-ink-faint">
+      <p className="mt-1.5 text-[13px] text-ink-faint">
         {dict.components.photoCountHintTemplate
           .replace("{count}", String(items.length))
           .replace("{max}", String(max))}

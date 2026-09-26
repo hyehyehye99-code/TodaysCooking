@@ -50,7 +50,7 @@ export function RuleCategoryEditor({
       <p className="text-sm font-bold">{title}</p>
       <p className="mt-1 text-xs text-ink-soft">{description}</p>
 
-      <p className="mt-3 text-[11px] font-bold text-ink-faint">기본 제공</p>
+      <p className="mt-3 text-[13px] font-bold text-ink-faint">기본 제공</p>
       <div className="mt-1.5 flex flex-wrap gap-1.5">
         {defaults.map((w) => (
           <span key={w} className="rounded-full bg-surface px-2.5 py-1 text-xs text-ink-faint">
@@ -61,7 +61,7 @@ export function RuleCategoryEditor({
 
       {rules.length > 0 && (
         <>
-          <p className="mt-3 text-[11px] font-bold text-ink-faint">추가한 예외</p>
+          <p className="mt-3 text-[13px] font-bold text-ink-faint">추가한 예외</p>
           <div className="mt-1.5 flex flex-wrap gap-1.5">
             {rules.map((r) => (
               <span

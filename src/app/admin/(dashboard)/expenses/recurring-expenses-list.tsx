@@ -24,7 +24,7 @@ function ToggleButton({ id, active }: { id: string; active: boolean }) {
       type="button"
       onClick={() => startTransition(() => toggleRecurringExpenseActive(id, !active))}
       disabled={pending}
-      className={`rounded-full px-2.5 py-1 text-[11px] font-bold disabled:opacity-60 ${
+      className={`rounded-full px-2.5 py-1 text-[13px] font-bold disabled:opacity-60 ${
         active ? "bg-positive/10 text-positive-ink" : "bg-surface text-ink-faint"
       }`}
     >
@@ -49,11 +49,11 @@ function LogButton({ id }: { id: string }) {
           })
         }
         disabled={pending}
-        className="rounded-lg border border-accent bg-white px-2.5 py-1.5 text-[11px] font-bold text-accent-ink disabled:opacity-60"
+        className="rounded-lg border border-accent bg-white px-2.5 py-1.5 text-[13px] font-bold text-accent-ink disabled:opacity-60"
       >
         {pending ? "기록하는 중..." : "이번 주기 기록"}
       </button>
-      {error && <p className="mt-1 text-[11px] text-warn-ink">{error}</p>}
+      {error && <p className="mt-1 text-[13px] text-warn-ink">{error}</p>}
     </div>
   );
 }

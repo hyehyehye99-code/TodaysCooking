@@ -130,7 +130,7 @@ export function TabBar() {
                 {tab.icon}
               </g>
             </svg>
-            <span className={`text-[10.5px] ${active ? "font-bold" : "font-medium"}`}>
+            <span className={`text-[12px] ${active ? "font-bold" : "font-medium"}`}>
               {dict.tabBar[tab.labelKey]}
             </span>
           </Link>

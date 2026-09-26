@@ -70,7 +70,7 @@ export function MealPlanInfoBox({
       {(eventDate || headcount != null) && (
         <div className="mt-3 flex flex-wrap gap-1.5">
           {eventDate && (
-            <span className="inline-flex items-center gap-1 rounded-full bg-white px-2.5 py-1 text-[11px] font-semibold text-ink-soft">
+            <span className="inline-flex items-center gap-1 rounded-full bg-white px-2.5 py-1 text-[13px] font-semibold text-ink-soft">
               <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <rect x="3.5" y="4.5" width="17" height="16" rx="3" />
                 <path d="M8 2.5v4" />
@@ -81,7 +81,7 @@ export function MealPlanInfoBox({
             </span>
           )}
           {headcount != null && (
-            <span className="inline-flex items-center gap-1 rounded-full bg-white px-2.5 py-1 text-[11px] font-semibold text-ink-soft">
+            <span className="inline-flex items-center gap-1 rounded-full bg-white px-2.5 py-1 text-[13px] font-semibold text-ink-soft">
               <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <circle cx="9" cy="8" r="3.2" />
                 <path d="M3.5 20c0-3.3 2.5-6 5.5-6s5.5 2.7 5.5 6" />

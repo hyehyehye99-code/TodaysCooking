@@ -50,7 +50,7 @@ function AiInfoButton({ dict }: { dict: Dictionary }) {
         type="button"
         onClick={() => setOpen(true)}
         aria-label={dict.components.aiInfoTitle}
-        className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full border border-ink-faint text-[10px] font-bold text-ink-faint"
+        className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full border border-ink-faint text-[12px] font-bold text-ink-faint"
       >
         i
       </button>
@@ -317,7 +317,7 @@ export function ReferenceLinkField({
               <p className="line-clamp-2 text-[13px] font-bold leading-snug">
                 {preview.title || dict.welcome.referenceLink}
               </p>
-              {preview.domain && <span className="text-[11px] text-ink-faint">{preview.domain}</span>}
+              {preview.domain && <span className="text-[13px] text-ink-faint">{preview.domain}</span>}
             </div>
           </div>
         </div>
@@ -338,7 +338,7 @@ export function ReferenceLinkField({
               </button>
             )
           ) : (
-            <p className="mt-3 text-center text-[11px] text-ink-faint">{dict.components.aiYoutubeOnly}</p>
+            <p className="mt-3 text-center text-[13px] text-ink-faint">{dict.components.aiYoutubeOnly}</p>
           )}
           {aiError && (
             <div className="mt-2 flex items-center gap-2">
@@ -355,13 +355,13 @@ export function ReferenceLinkField({
               <button
                 type="button"
                 onClick={() => setReportOpen(true)}
-                className="text-[11px] text-ink-faint underline"
+                className="text-[13px] text-ink-faint underline"
               >
                 {dict.components.reportPrompt}
               </button>
             </div>
           )}
-          {reportSent && <p className="mt-2 text-right text-[11px] text-ink-faint">{dict.components.reportReceived}</p>}
+          {reportSent && <p className="mt-2 text-right text-[13px] text-ink-faint">{dict.components.reportReceived}</p>}
           <ReportResultModal
             open={reportOpen}
             onClose={() => setReportOpen(false)}

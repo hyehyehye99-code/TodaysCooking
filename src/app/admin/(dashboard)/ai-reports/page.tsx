@@ -70,7 +70,7 @@ export default async function AdminAiReportsPage() {
                 <p className="mt-1 whitespace-pre-line text-xs text-ink-soft">{r.generated_instructions}</p>
               )}
               {r.generated_tags.length > 0 && (
-                <p className="mt-1 text-[11px] font-semibold text-positive-ink">
+                <p className="mt-1 text-[13px] font-semibold text-positive-ink">
                   {r.generated_tags.map((t) => `#${t}`).join(" ")}
                 </p>
               )}

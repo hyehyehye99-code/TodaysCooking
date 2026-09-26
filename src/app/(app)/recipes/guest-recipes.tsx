@@ -226,7 +226,7 @@ export function GuestRecipeDetail({ id, closeHref }: { id: string; closeHref: st
       {r.tags.length > 0 && (
         <div className="mt-2 flex flex-wrap gap-1.5">
           {r.tags.map((tag) => (
-            <span key={tag} className="rounded-full bg-surface px-2.5 py-1 text-[11px] font-semibold text-positive-ink">
+            <span key={tag} className="rounded-full bg-surface px-2.5 py-1 text-[13px] font-semibold text-positive-ink">
               #{tag}
             </span>
           ))}
@@ -250,7 +250,7 @@ export function GuestRecipeDetail({ id, closeHref }: { id: string; closeHref: st
               <p className="line-clamp-2 text-[13px] font-bold leading-snug">
                 {referenceBookmark.title || dict.welcome.referenceLink}
               </p>
-              <span className="text-[11px] text-ink-faint">{referenceBookmark.domain}</span>
+              <span className="text-[13px] text-ink-faint">{referenceBookmark.domain}</span>
             </div>
           </GlassCard>
         </a>

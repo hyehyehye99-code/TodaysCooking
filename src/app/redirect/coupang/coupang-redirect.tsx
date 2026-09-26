@@ -56,7 +56,7 @@ export function CoupangRedirect() {
       <div className="flex flex-col items-center gap-3">
         <Mascot name="checklist-selfie" size={160} />
         <p className="text-sm font-bold text-ink">쿠팡으로 이동중이에요~</p>
-        <p className="rounded-xl bg-surface px-4 py-3 text-[12px] leading-relaxed text-ink-soft">
+        <p className="rounded-xl bg-surface px-4 py-3 text-[13px] leading-relaxed text-ink-soft">
           쿠팡파트너스 활동의 일환으로 &quot;구매하기&quot; 버튼을 클릭하면 이에 따른 일정 금액의
           수수료를 제공받습니다.
         </p>

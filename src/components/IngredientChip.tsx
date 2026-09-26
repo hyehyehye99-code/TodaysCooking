@@ -84,7 +84,7 @@ export function IngredientChip({
       <StateIcon state={state} />
       {name}
       {amount && <span className="ml-1 font-normal opacity-70">{amount}</span>}
-      {state === "skip" && <span className="ml-1 text-[10px] font-normal no-underline">{dict.recipes.skippedSuffix}</span>}
+      {state === "skip" && <span className="ml-1 text-[12px] font-normal no-underline">{dict.recipes.skippedSuffix}</span>}
     </button>
   );
 }

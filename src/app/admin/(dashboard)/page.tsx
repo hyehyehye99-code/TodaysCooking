@@ -43,7 +43,7 @@ export default async function AdminHomePage() {
         <div className="rounded-2xl border border-border bg-white p-5">
           <p className="text-xs font-semibold text-ink-soft">전체 유저</p>
           <p className="mt-2 text-2xl font-bold">{totalUsers}명</p>
-          <p className="mt-1 text-[11px] font-semibold text-accent-ink">최근 7일 신규 {newUsersThisWeek}명</p>
+          <p className="mt-1 text-[13px] font-semibold text-accent-ink">최근 7일 신규 {newUsersThisWeek}명</p>
         </div>
         <div className="rounded-2xl border border-border bg-white p-5">
           <p className="text-xs font-semibold text-ink-soft">이번 달 지출</p>
@@ -60,12 +60,12 @@ export default async function AdminHomePage() {
         <Link href="/admin/inquiries" className="rounded-2xl border border-border bg-white p-5">
           <p className="text-xs font-semibold text-ink-soft">확인중인 문의</p>
           <p className="mt-2 text-2xl font-bold">{openInquiries ?? 0}건</p>
-          <p className="mt-1 text-[11px] font-semibold text-accent-ink">확인하러 가기 →</p>
+          <p className="mt-1 text-[13px] font-semibold text-accent-ink">확인하러 가기 →</p>
         </Link>
         <Link href="/admin/ai-reports" className="rounded-2xl border border-border bg-white p-5">
           <p className="text-xs font-semibold text-ink-soft">AI 결과 신고</p>
           <p className="mt-2 text-2xl font-bold">{aiReports ?? 0}건</p>
-          <p className="mt-1 text-[11px] font-semibold text-accent-ink">확인하러 가기 →</p>
+          <p className="mt-1 text-[13px] font-semibold text-accent-ink">확인하러 가기 →</p>
         </Link>
       </div>
     </div>

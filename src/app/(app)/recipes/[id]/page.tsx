@@ -144,7 +144,7 @@ export default async function RecipeDetailPage({
           {r.tags.map((tag) => (
             <span
               key={tag}
-              className="rounded-full bg-surface px-2.5 py-1 text-[11px] font-semibold text-positive-ink"
+              className="rounded-full bg-surface px-2.5 py-1 text-[13px] font-semibold text-positive-ink"
             >
               #{tag}
             </span>
@@ -172,7 +172,7 @@ export default async function RecipeDetailPage({
               <p className="line-clamp-2 text-[13px] font-bold leading-snug">
                 {referenceBookmark.title || dict.welcome.referenceLink}
               </p>
-              <span className="text-[11px] text-ink-faint">{referenceBookmark.domain}</span>
+              <span className="text-[13px] text-ink-faint">{referenceBookmark.domain}</span>
             </div>
           </GlassCard>
         </a>

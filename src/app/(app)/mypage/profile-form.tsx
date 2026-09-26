@@ -45,7 +45,7 @@ export function ProfileForm({
         <EmojiPicker name="iconEmoji" defaultValue={currentIconEmoji} onChange={setIconEmoji} />
       </div>
 
-      <p className="text-[11px] text-ink-faint">
+      <p className="text-[13px] text-ink-faint">
         우리집 안에서 &ldquo;{nickname.trim() || "닉네임"}셰프&rdquo;로 불려요
       </p>
 

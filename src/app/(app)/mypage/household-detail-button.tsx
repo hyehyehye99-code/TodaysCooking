@@ -63,7 +63,7 @@ export function HouseholdDetailButton({
                         <span className="ml-1 text-xs font-normal text-ink-faint">(나)</span>
                       )}
                     </p>
-                    {m.role === "owner" && <p className="text-[11px] text-accent">대장</p>}
+                    {m.role === "owner" && <p className="text-[13px] text-accent">대장</p>}
                   </div>
                   {myRole === "owner" && m.user_id !== myUserId && (
                     <RemoveMemberButton

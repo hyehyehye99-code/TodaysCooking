@@ -183,7 +183,7 @@ export function TimerDetail({ timer }: { timer: TimerDetailData }) {
             <div className="flex items-center gap-1.5">
               <h1 className="truncate text-[18px] font-bold">{timer.name}</h1>
               {completed && (
-                <span className="shrink-0 rounded-full bg-accent px-1.5 py-0.5 text-[10px] font-bold text-white">
+                <span className="shrink-0 rounded-full bg-accent px-1.5 py-0.5 text-[12px] font-bold text-white">
                   {dict.timer.completedBadge}
                 </span>
               )}
@@ -279,7 +279,7 @@ export function TimerDetail({ timer }: { timer: TimerDetailData }) {
                   </span>
                   <span className="min-w-0 flex-1 truncate text-xs text-ink">{a.message}</span>
                   {firedNowId === a.id && (
-                    <span className="shrink-0 animate-pulse rounded-full bg-accent px-1.5 py-0.5 text-[10px] font-bold text-white">
+                    <span className="shrink-0 animate-pulse rounded-full bg-accent px-1.5 py-0.5 text-[12px] font-bold text-white">
                       {dict.timer.midAlertNowBadge}
                     </span>
                   )}

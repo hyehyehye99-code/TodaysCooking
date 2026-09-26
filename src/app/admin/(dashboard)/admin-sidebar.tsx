@@ -95,14 +95,14 @@ export function AdminSidebar({ badges = {}, onNavigate }: { badges?: Badges; onN
     <aside className="flex h-dvh w-64 shrink-0 flex-col border-r border-border bg-white px-4 py-6">
       <div className="mb-5 px-2">
         <p className="text-sm font-bold leading-none">우리집 레시피</p>
-        <p className="mt-1 text-[11px] font-semibold leading-none text-ink-faint">Admin</p>
+        <p className="mt-1 text-[13px] font-semibold leading-none text-ink-faint">Admin</p>
       </div>
 
       <nav className="flex flex-1 flex-col gap-4 overflow-y-auto">
         {NAV_GROUPS.map((group, gi) => (
           <div key={gi}>
             {group.title && (
-              <p className="mb-1 px-3 text-[11px] font-bold text-ink-faint">{group.title}</p>
+              <p className="mb-1 px-3 text-[13px] font-bold text-ink-faint">{group.title}</p>
             )}
             <div className="flex flex-col gap-1">
               {group.items.map((item) => {
@@ -121,7 +121,7 @@ export function AdminSidebar({ badges = {}, onNavigate }: { badges?: Badges; onN
                     <span className="flex-1 leading-tight">{item.label}</span>
                     {badgeCount > 0 && (
                       <span
-                        className={`flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full px-1 text-[11px] font-bold ${
+                        className={`flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full px-1 text-[13px] font-bold ${
                           active ? "bg-white text-accent-ink" : "bg-accent text-white"
                         }`}
                       >

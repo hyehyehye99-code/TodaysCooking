@@ -118,7 +118,7 @@ export function NewRecipeForm({ existingTags, guest = false }: { existingTags: s
 
         <GlassCard className="bg-white p-4">
           <p className="mb-1 text-[13px] font-bold">{dict.welcome.referenceLink}</p>
-          <p className="mb-3 text-[11px] text-ink-faint">{dict.recipes.aiYoutubeOnlyHint}</p>
+          <p className="mb-3 text-[13px] text-ink-faint">{dict.recipes.aiYoutubeOnlyHint}</p>
           <ReferenceLinkField name="referenceUrl" onAiResult={handleAiResult} guest={guest} />
         </GlassCard>
 

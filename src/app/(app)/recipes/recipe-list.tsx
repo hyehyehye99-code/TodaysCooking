@@ -293,7 +293,7 @@ export function RecipeList({
       )}
 
       {!editing && (recipes.length > 0 || allTags.length > 0) && (
-        <div className={`${styles.filters} mb-5 flex flex-wrap gap-2`}>
+        <div className={`${styles.filters} mb-5 flex flex-nowrap gap-2`}>
           <button
             onClick={resetFilters}
             aria-pressed={!hasFilters}
@@ -523,12 +523,12 @@ export function RecipeList({
                   {(recipe.is_cooking || makeable || recipe.tags.length > 0) && (
                     <div className="mt-2 flex flex-wrap items-center gap-1.5">
                       {recipe.is_cooking && (
-                        <span className="inline-flex items-center gap-0.5 rounded-full bg-accent px-1.5 py-0.5 text-[10px] font-bold text-white">
+                        <span className="inline-flex items-center gap-0.5 rounded-full bg-accent px-1.5 py-0.5 text-[12px] font-bold text-white">
                           🍳 {dict.recipes.cookingBadge}
                         </span>
                       )}
                       {makeable && (
-                        <span className="inline-flex items-center gap-0.5 rounded-full bg-positive/10 px-1.5 py-0.5 text-[10px] font-bold text-positive-ink">
+                        <span className="inline-flex items-center gap-0.5 rounded-full bg-positive/10 px-1.5 py-0.5 text-[12px] font-bold text-positive-ink">
                           <svg viewBox="0 0 14 14" width="9" height="9" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
                             <path d="M2.5 7.5l3 3 6-7" />
                           </svg>
@@ -536,7 +536,7 @@ export function RecipeList({
                         </span>
                       )}
                       {recipe.tags.map((tag) => (
-                        <span key={tag} className="text-[10px] font-semibold text-positive-ink">
+                        <span key={tag} className="text-[12px] font-semibold text-positive-ink">
                           #{tag}
                         </span>
                       ))}

@@ -41,7 +41,7 @@ export default async function InquiryPage() {
                 <div className="mb-2 flex items-center justify-between gap-2">
                   <span className="text-xs text-ink-faint">{formatDate(q.created_at)}</span>
                   <span
-                    className={`rounded-full px-2.5 py-1 text-[11px] font-bold ${
+                    className={`rounded-full px-2.5 py-1 text-[13px] font-bold ${
                       q.status === "resolved" ? "bg-positive/10 text-positive-ink" : "bg-accent/10 text-accent-ink"
                     }`}
                   >

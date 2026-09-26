@@ -20,7 +20,7 @@ export function RemoveMemberButton({
       <button
         type="button"
         onClick={() => setConfirming(true)}
-        className="text-[11px] text-ink-faint underline"
+        className="text-[13px] text-ink-faint underline"
       >
         내보내기
       </button>

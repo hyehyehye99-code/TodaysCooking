@@ -30,7 +30,7 @@ export function ReactionLog({ recipeId, reactions }: { recipeId: string; reactio
         type="button"
         onClick={handleClear}
         disabled={pending}
-        className="shrink-0 text-[11px] text-ink-faint disabled:opacity-60"
+        className="shrink-0 text-[13px] text-ink-faint disabled:opacity-60"
       >
         {dict.recipes.resetReactions}
       </button>
