@@ -37,7 +37,7 @@ export default async function ShoppingPage() {
 
   return (
     <div className="pb-[calc(11.5rem+env(safe-area-inset-bottom))]">
-      <GlassCard className="mb-5 bg-accent/5 p-5">
+      <GlassCard className="mb-5 bg-cream p-5">
         <div className="mb-2.5 flex items-center justify-between">
           <span className="flex items-center gap-2 text-[13px] font-bold">
             <Mascot name={allChecked ? "happy" : "shopping"} size={34} />
