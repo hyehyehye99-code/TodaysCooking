@@ -2,7 +2,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { switchHousehold } from "@/lib/actions/household";
 import { JoinConfirmForm } from "./join-confirm-form";
-import { JoinWithGoogleButton } from "./join-with-google-button";
+import { JoinOAuthButtons } from "./join-oauth-buttons";
 
 export default async function JoinPage({
   searchParams,
@@ -84,7 +84,7 @@ export default async function JoinPage({
         ) : user ? (
           <JoinConfirmForm code={code} />
         ) : (
-          <JoinWithGoogleButton code={code} />
+          <JoinOAuthButtons code={code} />
         )}
       </div>
     </div>
