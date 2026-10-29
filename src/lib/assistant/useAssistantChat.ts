@@ -6,6 +6,7 @@ import type {
   AssistantIdea,
   AssistantReply,
   AssistantStreamEvent,
+  AssistantUsage,
   ChatMessage,
 } from "@/lib/assistant/types";
 
@@ -27,7 +28,9 @@ function loadSaved(): ChatMessage[] {
   }
 }
 
-export function useAssistantChat() {
+export function useAssistantChat(initialUsage: AssistantUsage) {
+  const [usage, setUsage] = useState(initialUsage);
+  const [limitReached, setLimitReached] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [pending, setPending] = useState<{ isLink: boolean; step: number } | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
@@ -84,6 +87,9 @@ export function useAssistantChat() {
         const handle = (line: string) => {
           if (!line.trim()) return;
           const event = JSON.parse(line) as AssistantStreamEvent;
+          if ("usage" in event && event.usage) setUsage(event.usage);
+          if (event.type === "error") setLimitReached(!!event.limitReached);
+          else if (event.type === "result") setLimitReached(false);
           if (event.type === "step") setPending((p) => (p ? { ...p, step: event.step } : p));
           else if (event.type === "result") {
             settled = true;
@@ -151,5 +157,5 @@ export function useAssistantChat() {
     setNotice(null);
   }, []);
 
-  return { messages, pending, notice, clearNotice: () => setNotice(null), send, addShopping, saveIdea, reset };
+  return { usage, limitReached, messages, pending, notice, clearNotice: () => setNotice(null), send, addShopping, saveIdea, reset };
 }

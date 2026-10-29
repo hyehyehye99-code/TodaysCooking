@@ -88,7 +88,9 @@ export async function saveRecipeForHousehold(
       title: input.title,
       subtitle: input.summary || null,
       cover_photo_urls: [],
-      icon_emoji: input.emoji || null,
+      // Never auto-assign an icon: it outranks the link thumbnail in
+      // RecipeThumb, and a user who wants one picks it themselves.
+      icon_emoji: null,
       tags: input.tags,
       notes: input.instructions || null,
       hide_ingredients: false,

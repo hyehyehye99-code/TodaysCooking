@@ -26,21 +26,21 @@ export function IdeaCard({
   }
 
   return (
-    <div className="rounded-2xl border border-dashed border-stone-300 bg-[#FBFBFA] p-3.5">
+    <div className="rounded-3xl border border-dashed border-accent/40 bg-white p-4 shadow-md shadow-stone-200/50">
       <div className="flex items-start gap-3">
-        <span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-white text-2xl shadow-sm">
+        <span className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-accent/10 text-2xl">
           {idea.emoji}
         </span>
         <div className="min-w-0 flex-1">
           <p className="text-[15px] font-bold text-stone-800">
-            {idea.title} <span className="ml-1 text-[11px] font-semibold text-accent">NEW</span>
+            {idea.title} <span className="ml-1 rounded-full bg-accent/10 px-1.5 py-0.5 text-[10px] font-bold text-accent">NEW</span>
           </p>
           {idea.summary && <p className="mt-0.5 text-xs text-stone-500">{idea.summary}</p>}
         </div>
       </div>
       <IngredientRow names={idea.ingredients.slice(0, 6).map((i) => i.name)} owned={null} total={0} />
       {open && idea.instructions && (
-        <p className="mt-3 whitespace-pre-line rounded-xl bg-white p-3 text-[13px] leading-relaxed text-stone-600">
+        <p className="mt-3 whitespace-pre-line rounded-2xl bg-stone-50 p-3 text-[13px] leading-relaxed text-stone-600">
           {idea.instructions}
         </p>
       )}
@@ -49,7 +49,7 @@ export function IdeaCard({
           <button
             type="button"
             onClick={() => setOpen((v) => !v)}
-            className="rounded-xl border border-stone-200 bg-white px-3.5 py-2.5 text-sm font-semibold text-stone-600"
+            className="rounded-2xl border border-stone-200 bg-white px-4 py-3 text-sm font-semibold text-stone-600"
           >
             {open ? "접기" : "조리법"}
           </button>
@@ -57,7 +57,7 @@ export function IdeaCard({
         {state.status === "saved" ? (
           <Link
             href={`/recipes/${state.id}`}
-            className="flex flex-1 items-center justify-center rounded-xl bg-emerald-50 py-2.5 text-sm font-bold text-emerald-700"
+            className="flex flex-1 items-center justify-center rounded-2xl bg-emerald-50 py-3 text-sm font-bold text-emerald-700"
           >
             저장됐어요 · 보러 가기 →
           </Link>
@@ -66,7 +66,7 @@ export function IdeaCard({
             type="button"
             onClick={save}
             disabled={state.status === "saving"}
-            className="flex-1 rounded-xl bg-accent py-2.5 text-sm font-bold text-white active:scale-[0.98] disabled:opacity-60"
+            className="flex-1 rounded-2xl bg-accent py-3 text-sm font-bold text-white active:scale-[0.98] disabled:opacity-60"
           >
             {state.status === "saving" ? "저장 중..." : "내 레시피로 저장"}
           </button>

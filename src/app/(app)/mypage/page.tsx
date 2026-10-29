@@ -7,12 +7,9 @@ import { AddHouseholdSection } from "./add-household-section";
 import { HouseholdList } from "./household-list";
 import { getDictionary } from "@/lib/i18n/server";
 import { GuestMyPage } from "./guest-mypage";
+import { FeatureLinks } from "./feature-links";
 import { Mascot } from "@/components/Mascot";
-
-// Kept in sync with FREE_WEEKLY_LIMIT in src/lib/actions/ai-recipe.ts — this
-// page only displays the count, the actual enforcement lives server-side in
-// that action.
-const FREE_WEEKLY_LIMIT = 20;
+import { FREE_WEEKLY_LIMIT, quotaPercent } from "@/lib/ai-quota";
 
 function daysAgoIso(days: number) {
   return new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
@@ -64,6 +61,7 @@ export default async function MyPage() {
 
   const bonusRemaining = promoGrant?.remaining_count ?? 0;
   const planUsed = Math.min(planUsageCount ?? 0, planLimit);
+  const planPercent = quotaPercent(planUsed, planLimit);
 
   return (
     <div>
@@ -88,12 +86,10 @@ export default async function MyPage() {
           ) : (
             <>
               <p className="mt-1 text-xs text-ink-soft">
-                {dict.mypage.usageWeeklyTemplate
-                  .replace("{used}", String(planUsed))
-                  .replace("{limit}", String(planLimit))}
+                {dict.mypage.usagePercentTemplate.replace("{percent}", String(planPercent))}
               </p>
               <div className="mt-3">
-                <ProgressBar percent={(planUsed / planLimit) * 100} colorClass="bg-positive" />
+                <ProgressBar percent={planPercent} colorClass={planPercent >= 80 ? "bg-accent" : "bg-positive"} />
               </div>
             </>
           )}
@@ -107,6 +103,8 @@ export default async function MyPage() {
       <div className="mb-3">
         <HouseholdList entries={entries} currentId={current?.id ?? ""} myUserId={user?.id ?? ""} />
       </div>
+
+      <FeatureLinks dict={dict} />
 
       <Link
         href="/mypage/fridge"

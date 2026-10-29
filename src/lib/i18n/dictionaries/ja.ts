@@ -201,6 +201,7 @@ const ja: Dictionary = {
     bonusRemainingTemplate: "プロモーションボーナス残り{count}回",
     aiUsageLabel: "AI自動作成の利用状況",
     usageWeeklyTemplate: "今週のAI自動作成 {used}/{limit}回利用",
+    usagePercentTemplate: "今週のAI利用量 {percent}%",
     checking: "確認中...",
     apply: "適用する",
     householdMovedTemplate: "以前の家がもう利用できないため、「{name}」に移動しました。",

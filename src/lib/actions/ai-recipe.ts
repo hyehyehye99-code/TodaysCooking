@@ -3,24 +3,10 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { createClient } from "@/lib/supabase/server";
 import { fetchLinkPreview } from "@/lib/actions/link-preview";
+import { getAiQuota, spendAiQuota, FREE_WEEKLY_LIMIT } from "@/lib/ai-quota";
 import { extractYoutubeVideoId, fetchYoutubeVideoDetails } from "@/lib/actions/youtube";
 
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
-
-// Resets weekly so a bad week doesn't lock someone out for a month. Flash-tier
-// Gemini pricing keeps a single generation's cost well under a cent, so this
-// is sized for a generous free experience rather than a tight cost cap —
-// revisit against actual Google AI Studio billing if usage patterns change.
-const FREE_WEEKLY_LIMIT = 20;
-
-// Comma-separated emails (e.g. in .env.local) that skip the daily cap
-// entirely — for the developer's own test account.
-const UNLIMITED_EMAILS = new Set(
-  (process.env.AI_RECIPE_UNLIMITED_EMAILS ?? "")
-    .split(",")
-    .map((e) => e.trim().toLowerCase())
-    .filter(Boolean)
-);
 
 const RECIPE_SCHEMA = {
   type: Type.OBJECT,
@@ -103,36 +89,14 @@ export async function generateRecipeFromLink(
   } = await supabase.auth.getUser();
   if (!user) return { ok: false, error: "로그인이 필요해요." };
 
-  const isDevUnlimited = !!user.email && UNLIMITED_EMAILS.has(user.email.toLowerCase());
-
-  // A promo grant is a finite top-up (see 마이페이지 어드민 > 프로모션 코드
-  // 관리), not unlimited — it adds remaining_count extra generations on top
-  // of the normal weekly quota rather than waiving it, so it's checked here
-  // but only actually spent (decremented) below once generation succeeds.
-  const { data: promoGrant } = await supabase
-    .from("promo_code_redemptions")
-    .select("remaining_count")
-    .eq("user_id", user.id)
-    .maybeSingle();
-  const bonusAvailable = (promoGrant?.remaining_count ?? 0) > 0;
-
-  if (!isDevUnlimited && !bonusAvailable) {
-    const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
-    const { count } = await supabase
-      .from("ai_recipe_generations")
-      .select("id", { count: "exact", head: true })
-      .eq("user_id", user.id)
-      .eq("via_bonus", false)
-      .gte("created_at", since);
-    if ((count ?? 0) >= FREE_WEEKLY_LIMIT) {
-      return {
-        ok: false,
-        error: `이번 주 무료 AI 사용 횟수(${FREE_WEEKLY_LIMIT}회)를 다 썼어요.`,
-        limitReached: true,
-      };
-    }
+  const quota = await getAiQuota(supabase, user);
+  if (quota.exhausted) {
+    return {
+      ok: false,
+      error: `이번 주 무료 AI 사용량(${FREE_WEEKLY_LIMIT}회)을 다 썼어요.`,
+      limitReached: true,
+    };
   }
-  const usingBonus = !isDevUnlimited && bonusAvailable;
 
   const content = await generateRecipeContent(url);
   if (!content.ok) return { ok: false, error: content.error };
@@ -145,31 +109,13 @@ export async function generateRecipeFromLink(
   // ingredient chips instead of being folded into the instructions text.
   const ingredients = content.ingredients.map((i) => (i.amount ? `${i.name} ${i.amount}` : i.name));
 
-  // Quota is only ever charged here, on an actual successful generation —
-  // link/parse/API failures above return before this point, so a broken
-  // attempt never eats into someone's limited weekly free count. The
-  // inserted row's id lets the client later reference this exact
-  // generation if the user reports the result as unsatisfactory.
-  // A conditional UPDATE (remaining_count - 1 where remaining_count > 0),
-  // not a read-then-write — two concurrent requests can't both decrement off
-  // the same stale count, so this is what actually charges the bonus (the
-  // recorded via_bonus reflects whether that charge succeeded, in case a
-  // race won this unit out from under us between the earlier check and now).
-  let charged = false;
-  if (usingBonus) {
-    const { data: newCount } = await supabase.rpc("decrement_promo_bonus");
-    charged = newCount !== null;
-  }
-
-  const { data: usageRow } = await supabase
-    .from("ai_recipe_generations")
-    .insert({ user_id: user.id, via_bonus: charged })
-    .select("id")
-    .single();
+  // Quota is only ever charged on an actual successful generation — link/
+  // parse/API failures above return before this point.
+  const generationId = await spendAiQuota(supabase, user.id, quota);
 
   return {
     ok: true,
-    generationId: usageRow?.id ?? "",
+    generationId,
     title: content.title,
     ingredients,
     instructions: content.instructions,

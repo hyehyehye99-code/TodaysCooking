@@ -2,6 +2,7 @@ import type { NextRequest } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentHousehold } from "@/lib/household";
 import { generateRecipeFromLink } from "@/lib/actions/ai-recipe";
+import { getAiQuota, spendAiQuota, type AiQuota } from "@/lib/ai-quota";
 import { runAssistantChat, sanitizeIdeas } from "@/lib/assistant/chat";
 import { pickDishEmoji } from "@/lib/assistant/dish-emoji";
 import {
@@ -17,6 +18,8 @@ import type {
 } from "@/lib/assistant/types";
 
 const URL_PATTERN = /https?:\/\/[^\s<>"']+/i;
+
+const toUsage = (q: AiQuota) => ({ percent: q.percent, bonusRemaining: q.bonusRemaining, unlimited: q.unlimited });
 
 const json = (body: unknown, status = 200) => Response.json(body, { status });
 
@@ -70,7 +73,12 @@ export async function POST(request: NextRequest) {
           send({ type: "step", step: 1 });
           const generated = await generateRecipeFromLink(link);
           if (!generated.ok) {
-            send({ type: "error", error: generated.error, limitReached: generated.limitReached });
+            send({
+              type: "error",
+              error: generated.error,
+              limitReached: generated.limitReached,
+              usage: toUsage(await getAiQuota(supabase, user)),
+            });
             return;
           }
 
@@ -129,13 +137,30 @@ export async function POST(request: NextRequest) {
               { kind: "prompt", label: "🔗 다른 링크 또 등록하기", prompt: "", mode: "fill" },
             ],
           };
-          send({ type: "result", reply });
+          send({ type: "result", reply, usage: toUsage(await getAiQuota(supabase, user)) });
           return;
         }
 
+        // Plain chats draw from the same weekly pool as link imports (which
+        // charge themselves inside generateRecipeFromLink above).
+        const quota = await getAiQuota(supabase, user);
+        if (quota.exhausted) {
+          send({
+            type: "error",
+            error: "이번 주 무료 AI 사용량을 다 썼어요.",
+            limitReached: true,
+            usage: toUsage(quota),
+          });
+          return;
+        }
         const kitchen = await loadKitchenContext(supabase, household.id);
         const result = await runAssistantChat(body.messages, kitchen);
-        send(result.ok ? { type: "result", reply: result.reply } : { type: "error", error: result.error });
+        if (!result.ok) {
+          send({ type: "error", error: result.error, usage: toUsage(quota) });
+          return;
+        }
+        await spendAiQuota(supabase, user.id, quota);
+        send({ type: "result", reply: result.reply, usage: toUsage(await getAiQuota(supabase, user)) });
       } catch {
         send({ type: "error", error: "문제가 생겼어요. 잠시 후 다시 시도해주세요." });
       } finally {

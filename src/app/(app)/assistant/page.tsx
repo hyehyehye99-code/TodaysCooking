@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { createClient } from "@/lib/supabase/server";
+import { getAiQuota } from "@/lib/ai-quota";
 import { getCurrentHousehold } from "@/lib/household";
 import { getDictionary } from "@/lib/i18n/server";
 import { AssistantChat } from "@/components/assistant/AssistantChat";
@@ -21,5 +23,10 @@ export default async function AssistantPage() {
     );
   }
 
-  return <AssistantChat />;
+  const quota = await getAiQuota(await createClient(), user);
+  return (
+    <AssistantChat
+      initialUsage={{ percent: quota.percent, bonusRemaining: quota.bonusRemaining, unlimited: quota.unlimited }}
+    />
+  );
 }

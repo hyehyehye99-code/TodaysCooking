@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { FeatureLinks } from "./feature-links";
 import { GlassCard, PageHeader } from "@/components/ui";
 import { Mascot } from "@/components/Mascot";
 import type { Dictionary } from "@/lib/i18n/dictionaries/ko";
@@ -34,6 +35,8 @@ export function GuestMyPage({ dict }: { dict: Dictionary }) {
         </Link>
         <p className="mt-3 text-[13px] text-ink-faint">{dict.guest.localNotice}</p>
       </GlassCard>
+
+      <FeatureLinks dict={dict} />
 
       <Link
         href="/mypage/fridge"
