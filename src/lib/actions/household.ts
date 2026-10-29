@@ -48,7 +48,12 @@ export async function joinHousehold(_prevState: unknown, formData: FormData) {
   });
 
   if (error) return { error: "초대 코드가 올바르지 않아요." };
-  if (data) await setActiveHouseholdCookie(data as string);
+  if (data) {
+    await setActiveHouseholdCookie(data as string);
+    // Reset-ticket reward for a brand-new account joining via an invite; the
+    // function itself decides eligibility, so a failure here is never fatal.
+    await supabase.rpc("claim_referral_reward", { p_household_id: data as string });
+  }
 
   redirect("/recipes");
 }

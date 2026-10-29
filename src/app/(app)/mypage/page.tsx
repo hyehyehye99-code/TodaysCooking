@@ -31,7 +31,7 @@ export default async function MyPage() {
   // None of these three depend on each other (only on user/households,
   // already resolved above) — they used to run one after another, adding
   // two full round trips to every mypage load for no reason.
-  const [entries, { data: promoGrant }, { count: planUsageCount }] = await Promise.all([
+  const [entries, { data: promoGrant }, { count: planUsageCount }, { count: ticketCount }] = await Promise.all([
     Promise.all(
       households.map(async ({ household, role }) => {
         const { data: members } = await supabase.rpc("get_household_members", {
@@ -49,8 +49,14 @@ export default async function MyPage() {
           .select("id", { count: "exact", head: true })
           .eq("user_id", user.id)
           .eq("via_bonus", false)
+          .eq("forgiven", false)
           .gte("created_at", planSince)
       : Promise.resolve({ count: 0 }),
+    supabase
+      .from("reset_tickets")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", user.id)
+      .is("used_at", null),
   ]);
 
   const me = entries
@@ -78,6 +84,7 @@ export default async function MyPage() {
               {bonusRemaining > 0
                 ? dict.mypage.bonusRemainingTemplate.replace("{count}", String(bonusRemaining))
                 : dict.mypage.usagePercentTemplate.replace("{percent}", String(planPercent))}
+              {(ticketCount ?? 0) > 0 && ` · 🎟️ ${ticketCount}`}
             </p>
             <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--color-ink-faint)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M9 6l6 6-6 6" />

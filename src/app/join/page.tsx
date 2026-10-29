@@ -69,6 +69,9 @@ export default async function JoinPage({
       <p className="mt-2 text-sm text-ink-soft">
         참여하면 이 우리집의 메뉴판·냉장고·장보기 목록을 함께 써요.
       </p>
+      <p className="mx-auto mt-4 w-fit rounded-full bg-accent/10 px-3.5 py-1.5 text-xs font-bold text-accent-ink">
+        🎟️ 새로 가입하면 AI 사용량 초기화 티켓 1장을 드려요
+      </p>
 
       <div className="mt-8 w-full">
         {alreadyMember ? (

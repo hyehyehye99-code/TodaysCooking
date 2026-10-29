@@ -3,7 +3,7 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { createClient } from "@/lib/supabase/server";
 import { fetchLinkPreview } from "@/lib/actions/link-preview";
-import { getAiQuota, spendAiQuota, FREE_WEEKLY_LIMIT } from "@/lib/ai-quota";
+import { resolveAiQuota, spendAiQuota, FREE_WEEKLY_LIMIT } from "@/lib/ai-quota";
 import { extractYoutubeVideoId, fetchYoutubeVideoDetails } from "@/lib/actions/youtube";
 
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
@@ -89,7 +89,7 @@ export async function generateRecipeFromLink(
   } = await supabase.auth.getUser();
   if (!user) return { ok: false, error: "로그인이 필요해요." };
 
-  const quota = await getAiQuota(supabase, user);
+  const quota = await resolveAiQuota(supabase, user);
   if (quota.exhausted) {
     return {
       ok: false,

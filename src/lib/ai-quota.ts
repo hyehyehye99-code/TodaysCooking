@@ -1,4 +1,5 @@
 import type { createClient } from "@/lib/supabase/server";
+import { tryAutoUseTicket } from "@/lib/tickets";
 
 type Supabase = Awaited<ReturnType<typeof createClient>>;
 
@@ -44,6 +45,7 @@ export async function getAiQuota(supabase: Supabase, user: { id: string; email?:
       .select("id", { count: "exact", head: true })
       .eq("user_id", user.id)
       .eq("via_bonus", false)
+      .eq("forgiven", false) // skipped once a reset ticket has wiped them
       .gte("created_at", since),
   ]);
 
@@ -76,4 +78,12 @@ export async function spendAiQuota(supabase: Supabase, userId: string, quota: Ai
     .select("id")
     .single();
   return data?.id ?? "";
+}
+
+// getAiQuota, plus: when the free quota has run out and the user switched on
+// auto-use (usage page), spends a reset ticket first so the request goes through.
+export async function resolveAiQuota(supabase: Supabase, user: { id: string; email?: string }): Promise<AiQuota> {
+  const quota = await getAiQuota(supabase, user);
+  if (!quota.exhausted) return quota;
+  return (await tryAutoUseTicket(supabase, user.id)) ? getAiQuota(supabase, user) : quota;
 }

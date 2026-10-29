@@ -2,7 +2,7 @@ import type { NextRequest } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentHousehold } from "@/lib/household";
 import { generateRecipeFromLink } from "@/lib/actions/ai-recipe";
-import { getAiQuota, spendAiQuota, type AiQuota } from "@/lib/ai-quota";
+import { getAiQuota, resolveAiQuota, spendAiQuota, type AiQuota } from "@/lib/ai-quota";
 import { runAssistantChat, sanitizeIdeas } from "@/lib/assistant/chat";
 import { pickDishEmoji } from "@/lib/assistant/dish-emoji";
 import {
@@ -143,7 +143,7 @@ export async function POST(request: NextRequest) {
 
         // Plain chats draw from the same weekly pool as link imports (which
         // charge themselves inside generateRecipeFromLink above).
-        const quota = await getAiQuota(supabase, user);
+        const quota = await resolveAiQuota(supabase, user);
         if (quota.exhausted) {
           send({
             type: "error",

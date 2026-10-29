@@ -36,10 +36,10 @@ export function UsageNudge({ usage, limitReached }: { usage: AssistantUsage; lim
         </div>
       </div>
       <Link
-        href="/mypage"
+        href="/mypage/usage"
         className="shrink-0 rounded-full bg-accent px-3.5 py-2 text-xs font-bold text-white active:scale-95"
       >
-        친구 초대하기
+        티켓 받기
       </Link>
     </div>
   );

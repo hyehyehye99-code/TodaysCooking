@@ -14,7 +14,10 @@ export async function GET(request: NextRequest) {
     if (!error) {
       const pendingInviteCode = request.cookies.get(PENDING_INVITE_COOKIE)?.value;
       if (pendingInviteCode) {
-        await supabase.rpc("join_household_with_code", { p_invite_code: pendingInviteCode });
+        const { data: joinedId } = await supabase.rpc("join_household_with_code", {
+          p_invite_code: pendingInviteCode,
+        });
+        if (joinedId) await supabase.rpc("claim_referral_reward", { p_household_id: joinedId as string });
         const response = NextResponse.redirect(`${origin}/recipes`);
         response.cookies.delete(PENDING_INVITE_COOKIE);
         return response;

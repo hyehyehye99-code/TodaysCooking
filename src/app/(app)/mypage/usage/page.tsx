@@ -1,5 +1,9 @@
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentHousehold } from "@/lib/household";
+import { getTicketSummary, getUsageSettings, type TicketEvent } from "@/lib/tickets";
+import { TicketCard } from "./ticket-card";
+import { AutoUseSettings } from "./auto-use-settings";
+import { InviteTicketRow } from "./invite-ticket-row";
 import { getAiQuota } from "@/lib/ai-quota";
 import { GlassCard, ProgressBar, SectionLabel, SubPageHeader } from "@/components/ui";
 import { LoginPrompt } from "@/components/LoginPrompt";
@@ -10,10 +14,36 @@ const COUNTED = [
   { mascot: "chef-greeting", title: "AI 셰프와 대화", desc: "재료 추천, 요리 질문, 상황별 추천" },
 ] as const;
 
+const SOURCE_LABELS: Record<TicketEvent["source"], string> = {
+  referral_inviter: "친구가 내 초대 링크로 가입",
+  referral_invitee: "초대 링크로 가입 선물",
+  admin: "우리집 레시피 선물",
+};
+
+function eventTitle(e: TicketEvent) {
+  const kind = e.kind === "full" ? "전체" : "절반";
+  return e.type === "used" ? `${kind} 초기화 티켓 사용` : SOURCE_LABELS[e.source];
+}
+
+function formatDateTime(iso: string) {
+  return new Date(iso).toLocaleString("ko-KR", {
+    timeZone: "Asia/Seoul",
+    month: "numeric",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  });
+}
+
 export default async function UsagePage() {
-  const { user } = await getCurrentHousehold();
+  const { user, household } = await getCurrentHousehold();
   if (!user) return <LoginPrompt kind="account" />;
-  const quota = await getAiQuota(await createClient(), user);
+  const supabase = await createClient();
+  const [quota, tickets, settings] = await Promise.all([
+    getAiQuota(supabase, user),
+    getTicketSummary(supabase, user.id),
+    getUsageSettings(supabase, user.id),
+  ]);
 
   return (
     <div className="pt-2">
@@ -45,6 +75,24 @@ export default async function UsagePage() {
         )}
       </GlassCard>
 
+      <div className="mb-6">
+        <TicketCard counts={{ full: tickets.full, half: tickets.half }} usagePercent={quota.percent} />
+      </div>
+
+      {household && (
+        <>
+          <SectionLabel>초기화 티켓 획득하기</SectionLabel>
+          <div className="mb-6">
+            <InviteTicketRow householdName={household.name} inviteCode={household.invite_code} />
+          </div>
+        </>
+      )}
+
+      <SectionLabel>자동 사용 설정</SectionLabel>
+      <div className="mb-6">
+        <AutoUseSettings initial={settings} />
+      </div>
+
       <SectionLabel>사용량에 포함되는 기능</SectionLabel>
       <GlassCard className="divide-y divide-border bg-white">
         {COUNTED.map((c) => (
@@ -59,6 +107,25 @@ export default async function UsagePage() {
           </div>
         ))}
       </GlassCard>
+
+      {tickets.history.length > 0 && (
+        <div className="mt-6">
+          <SectionLabel>티켓 획득 이력</SectionLabel>
+          <GlassCard className="divide-y divide-border bg-white">
+            {tickets.history.map((e) => (
+              <div key={e.id} className="flex items-center justify-between gap-3 px-5 py-4">
+                <div className="min-w-0">
+                  <p className="text-sm font-bold text-ink">{eventTitle(e)}</p>
+                  <p className="text-xs text-ink-soft">{formatDateTime(e.at)}</p>
+                </div>
+                <span className={`shrink-0 text-sm font-bold ${e.type === "used" ? "text-ink-soft" : "text-ink"}`}>
+                  {e.type === "used" ? "−1" : "+1"}
+                </span>
+              </div>
+            ))}
+          </GlassCard>
+        </div>
+      )}
     </div>
   );
 }
