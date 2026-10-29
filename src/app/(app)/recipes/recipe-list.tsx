@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useOptimistic, useRef, useState, useTransition } from "react";
+import { useMemo, useOptimistic, useState, useTransition } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { GlassCard } from "@/components/ui";
@@ -78,8 +78,6 @@ function FavoriteButton({ recipe, guest }: { recipe: RecipeWithIngredients; gues
   );
 }
 
-const FILTER_ROW_HEIGHT = 34;
-const FILTER_ROWS_COLLAPSED_HEIGHT = FILTER_ROW_HEIGHT * 2 + 6; // two rows + the one gap between them
 
 export function RecipeList({
   recipes,
@@ -125,26 +123,6 @@ export function RecipeList({
     () => [...new Set(recipes.flatMap((r) => r.tags))],
     [recipes]
   );
-
-  // Collapsed, the filter row (전체/즐겨찾기/... + every tag) is clipped to
-  // two lines by height, not by how many tags there are — so whether a
-  // "더보기" toggle is even needed depends on actual layout, not a fixed
-  // count. scrollHeight still reflects the row's true wrapped height even
-  // while clipped, so comparing it to two rows' height detects overflow
-  // without ever having to render un-clipped just to measure. The base
-  // filters (전체/즐겨찾기/만들 수 있어요/링크만) alone should always fit
-  // within these two lines — only a long tag list should ever push past.
-  const filtersRef = useRef<HTMLDivElement>(null);
-  const [tagsOverflowing, setTagsOverflowing] = useState(false);
-  useEffect(() => {
-    const el = filtersRef.current;
-    if (!el) return;
-    const check = () => setTagsOverflowing(el.scrollHeight > FILTER_ROWS_COLLAPSED_HEIGHT + 4);
-    check();
-    const ro = new ResizeObserver(check);
-    ro.observe(el);
-    return () => ro.disconnect();
-  }, [allTags]);
 
   // A link-only card has nothing to "make" — an empty ingredient list would
   // otherwise vacuously pass the every() check below and wrongly badge it.
@@ -311,14 +289,8 @@ export function RecipeList({
       )}
 
       {!editing && (recipes.length > 0 || allTags.length > 0) && (
-        <div className="relative mb-5">
-          <div
-            ref={filtersRef}
-            style={!tagsExpanded ? { maxHeight: FILTER_ROWS_COLLAPSED_HEIGHT, overflow: "hidden" } : undefined}
-            className={`${styles.filters} flex flex-wrap gap-1.5 ${
-              !tagsExpanded && tagsOverflowing ? "pr-20" : ""
-            }`}
-          >
+        <div className="mb-5">
+          <div className={`${styles.filters} flex flex-wrap gap-1.5`}>
           <button
             onClick={resetFilters}
             aria-pressed={!hasFilters}
@@ -384,6 +356,37 @@ export function RecipeList({
             </svg>
             {dict.recipes.linkOnlyFilter}
           </button>
+          {/* User-created tags stay folded away until asked for; an active
+              tag is still named here so the filter never looks like it's off. */}
+          {allTags.length > 0 && (
+            <button
+              onClick={() => setTagsExpanded((prev) => !prev)}
+              aria-expanded={tagsExpanded}
+              aria-pressed={!tagsExpanded && !!activeTag}
+              className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1.5 text-[12px] font-semibold ${
+                !tagsExpanded && activeTag ? "bg-accent text-white" : "bg-surface text-ink-soft"
+              }`}
+            >
+              {!tagsExpanded && activeTag ? `#${activeTag}` : `# 태그 ${allTags.length}`}
+              <svg
+                viewBox="0 0 24 24"
+                width="10"
+                height="10"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.6"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className={`transition-transform ${tagsExpanded ? "rotate-180" : ""}`}
+              >
+                <path d="M6 9l6 6 6-6" />
+              </svg>
+            </button>
+          )}
+          </div>
+
+          {tagsExpanded && (
+            <div className={`${styles.filters} mt-2 flex flex-wrap gap-1.5`}>
           {allTags.map((tag) => (
             <button
               key={tag}
@@ -400,32 +403,6 @@ export function RecipeList({
               {tag}
             </button>
           ))}
-          {tagsExpanded && tagsOverflowing && (
-            <button
-              onClick={() => setTagsExpanded(false)}
-              aria-expanded={true}
-              className="rounded-full bg-surface px-2.5 py-1.5 text-[12px] font-semibold text-ink-faint"
-            >
-              {dict.recipes.collapseTags}
-            </button>
-          )}
-          </div>
-
-          {/* Floating, not a flex child — guaranteed to stay clear of the
-              clipped-away line below instead of risking getting wrapped onto
-              it itself. Sits bottom-right of the two visible rows (the row's
-              own bottom padding above clears space for it); the gradient
-              behind it fades whatever chip it overlaps rather than cutting
-              it off with a hard edge. */}
-          {!tagsExpanded && tagsOverflowing && (
-            <div className="pointer-events-none absolute bottom-0 right-0 flex h-[34px] items-center bg-gradient-to-r from-transparent via-cream to-cream pl-6">
-              <button
-                onClick={() => setTagsExpanded(true)}
-                aria-expanded={false}
-                className="pointer-events-auto rounded-full bg-surface px-2.5 py-1.5 text-[12px] font-semibold text-ink-faint"
-              >
-                {dict.components.more}
-              </button>
             </div>
           )}
         </div>

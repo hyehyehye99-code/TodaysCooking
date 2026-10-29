@@ -19,7 +19,20 @@ if (VAPID_PUBLIC_KEY && VAPID_PRIVATE_KEY) {
 // web and native members gets notified on both.
 const FIREBASE_PROJECT_ID = process.env.FIREBASE_PROJECT_ID;
 const FIREBASE_CLIENT_EMAIL = process.env.FIREBASE_CLIENT_EMAIL;
-const FIREBASE_PRIVATE_KEY = process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, "\n");
+// The key arrives through an env var, where it's pasted in different shapes:
+// real newlines, literal "\n" sequences, CRLFs, or wrapped in quotes. Any of
+// those leaves OpenSSL unable to decode it, so normalise all of them.
+function normalizePrivateKey(raw: string | undefined) {
+  if (!raw) return undefined;
+  return raw
+    .trim()
+    .replace(/^["']|["']$/g, "")
+    .replace(/\\r\\n|\\n/g, "\n")
+    .replace(/\r\n/g, "\n")
+    .trim();
+}
+
+const FIREBASE_PRIVATE_KEY = normalizePrivateKey(process.env.FIREBASE_PRIVATE_KEY);
 
 // A malformed credential must never throw at module load: this file is
 // imported from server pages, and an uncaught throw here fails the whole
