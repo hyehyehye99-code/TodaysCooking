@@ -19,6 +19,7 @@ const en: Dictionary = {
     shopping: "Shopping",
     explore: "Meal Plans",
     mypage: "My Page",
+    assistant: "AI Chef",
   },
   landing: {
     login: "Log in",

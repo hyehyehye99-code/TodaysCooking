@@ -17,6 +17,7 @@ const ko = {
     shopping: "장보기",
     explore: "메뉴판",
     mypage: "마이페이지",
+    assistant: "AI 비서",
   },
   landing: {
     login: "로그인",

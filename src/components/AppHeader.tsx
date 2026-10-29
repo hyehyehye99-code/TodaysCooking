@@ -31,6 +31,7 @@ export function AppHeader({
 
   if (
     pathname.startsWith("/mypage") ||
+    pathname === "/assistant" ||
     pathname.startsWith("/recipes/") ||
     pathname.startsWith("/timer/") ||
     pathname.startsWith("/explore/")

@@ -19,6 +19,7 @@ const ja: Dictionary = {
     shopping: "買い物",
     explore: "メニュー表",
     mypage: "マイページ",
+    assistant: "AIシェフ",
   },
   landing: {
     login: "ログイン",

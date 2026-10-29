@@ -48,6 +48,20 @@ const TABS: {
     ),
   },
   {
+    href: "/assistant",
+    labelKey: "assistant",
+    cx: 12,
+    cy: 12,
+    scale: 0.9,
+    icon: (
+      <>
+        <path d="M12 3l1.6 4.4L18 9l-4.4 1.6L12 15l-1.6-4.4L6 9l4.4-1.6z" />
+        <path d="M19 15l.7 1.8 1.8.7-1.8.7-.7 1.8-.7-1.8-1.8-.7 1.8-.7z" />
+        <path d="M5.5 16l.5 1.3 1.3.5-1.3.5-.5 1.3-.5-1.3-1.3-.5 1.3-.5z" />
+      </>
+    ),
+  },
+  {
     href: "/shopping",
     labelKey: "shopping",
     cx: 12.25,
@@ -118,6 +132,7 @@ export function TabBar() {
               viewBox="0 0 24 24"
               width="23"
               height="23"
+              className={`transition-transform duration-200 ${active ? "scale-110" : ""}`}
               fill="none"
               stroke="currentColor"
               strokeLinecap="round"
