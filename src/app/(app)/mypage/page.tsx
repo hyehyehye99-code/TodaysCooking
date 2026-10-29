@@ -70,30 +70,28 @@ export default async function MyPage() {
       <GlassCard className="mb-8 bg-white p-4">
         <ProfileEditButton nickname={myNickname} iconEmoji={myIconEmoji} />
 
-        <div className="mt-4 border-t border-border pt-4">
-          <p className="flex items-center gap-2 text-sm font-semibold text-ink">
-            <Mascot name="sparkle" size={38} />
-            {dict.mypage.aiUsageLabel}
-          </p>
-          {bonusRemaining > 0 ? (
-            // While a bonus grant is active, every generation draws from it
-            // first (see ai-recipe.ts) — the weekly free count stays frozen
-            // in the meantime, so showing its bar here would read as "all
-            // used up" right when the opposite is true.
-            <p className="mt-1 text-xs font-semibold text-accent-ink">
-              {dict.mypage.bonusRemainingTemplate.replace("{count}", String(bonusRemaining))}
+        <Link href="/mypage/usage" className="mt-4 block border-t border-border pt-4">
+          <div className="flex items-center gap-2">
+            <Mascot name="sparkle" size={34} />
+            <p className="flex-1 text-sm font-bold text-ink">{dict.mypage.aiUsageLabel}</p>
+            <p className="text-xs text-ink-soft">
+              {bonusRemaining > 0
+                ? dict.mypage.bonusRemainingTemplate.replace("{count}", String(bonusRemaining))
+                : dict.mypage.usagePercentTemplate.replace("{percent}", String(planPercent))}
             </p>
-          ) : (
-            <>
-              <p className="mt-1 text-xs text-ink-soft">
-                {dict.mypage.usagePercentTemplate.replace("{percent}", String(planPercent))}
-              </p>
-              <div className="mt-3">
-                <ProgressBar percent={planPercent} colorClass={planPercent >= 80 ? "bg-accent" : "bg-positive"} />
-              </div>
-            </>
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--color-ink-faint)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M9 6l6 6-6 6" />
+            </svg>
+          </div>
+          {/* While a bonus grant is active every generation draws from it first
+              (see ai-quota.ts) and the weekly count stays frozen, so the bar
+              would read as "all used up" right when the opposite is true. */}
+          {bonusRemaining === 0 && (
+            <div className="mt-3">
+              <ProgressBar percent={planPercent} colorClass={planPercent >= 80 ? "bg-accent" : "bg-ink"} />
+            </div>
           )}
-        </div>
+        </Link>
       </GlassCard>
 
       <div className="mb-3 flex items-center justify-between">

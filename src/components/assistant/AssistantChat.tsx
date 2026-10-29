@@ -76,7 +76,7 @@ export function AssistantChat({ initialUsage }: { initialUsage: AssistantUsage }
   return (
     // Fills the area under the page padding that (app)/layout.tsx adds, so the
     // input bar stays pinned above the tab bar while only the list scrolls.
-    <div className="relative -mx-5 -mt-4 -mb-[max(env(safe-area-inset-bottom),40px)] flex h-[calc(100dvh-var(--app-tab-bar-height)-max(env(safe-area-inset-top),24px))] flex-col overflow-hidden bg-[#FBFBFA]">
+    <div className="relative -mx-5 -mt-4 -mb-[max(env(safe-area-inset-bottom),40px)] flex h-[calc(100dvh-var(--app-tab-bar-height)-max(env(safe-area-inset-top),24px))] flex-col overflow-hidden bg-background">
       <div
         aria-hidden
         className="pointer-events-none absolute inset-x-0 top-0 h-56 bg-[radial-gradient(ellipse_at_top,rgba(232,96,60,0.14),transparent_70%)]"
@@ -120,8 +120,8 @@ export function AssistantChat({ initialUsage }: { initialUsage: AssistantUsage }
         className="relative flex-1 overflow-y-auto overscroll-contain px-5 pb-4 pt-2"
       >
         {empty ? (
-          <div className="flex min-h-full flex-col items-center justify-center pb-4 text-center">
-            <div className="relative">
+          <div className="flex min-h-full flex-col items-center py-4 text-center">
+            <div className="relative mt-auto">
               <span aria-hidden className="absolute inset-x-2 bottom-0 top-6 rounded-full bg-accent/10 blur-2xl" />
               <Mascot name="chef-greeting" size={124} className="relative" />
             </div>
@@ -129,7 +129,7 @@ export function AssistantChat({ initialUsage }: { initialUsage: AssistantUsage }
             <p className="mt-2 max-w-[19rem] text-[14px] leading-relaxed text-stone-500">
               어떤 요리를 혜콩이네 주방에 채워볼까요? 유튜브·인스타 링크를 보내주시거나, 냉장고에 있는 재료를 알려주세요!
             </p>
-            <div className="mt-6 flex w-full flex-col gap-2.5">
+            <div className="mb-auto mt-6 flex w-full flex-col gap-2.5">
               {QUICK_STARTS.map((q) => (
                 <button
                   key={q.title}

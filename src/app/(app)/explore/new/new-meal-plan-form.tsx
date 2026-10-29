@@ -72,7 +72,7 @@ export function NewMealPlanForm({ recipes }: { recipes: PickableRecipe[] }) {
             name="title"
             aria-label={dict.mealPlan.titleLabel}
             placeholder={dict.mealPlan.titlePlaceholder}
-            className="w-full rounded-xl border border-transparent bg-surface px-3.5 py-3 text-base font-bold outline-none focus:border-accent"
+            className="w-full rounded-xl border border-transparent bg-white px-3.5 py-3 text-base font-bold outline-none focus:border-accent"
           />
         </div>
 

@@ -1,12 +1,9 @@
-import { BackButton } from "@/components/ui";
+import { SubPageHeader } from "@/components/ui";
 
 export default function SupportPage() {
   return (
     <div className="mx-auto w-full max-w-[520px] px-6 pb-16 pt-[max(env(safe-area-inset-top),24px)]">
-      <div className="mb-5 flex items-center gap-3">
-        <BackButton href="/mypage" />
-        <h1 className="text-lg font-bold text-ink">고객 지원</h1>
-      </div>
+      <SubPageHeader href="/mypage" title="고객 지원" />
 
       <div className="flex flex-col gap-6 text-sm leading-relaxed text-ink-soft">
         <section>

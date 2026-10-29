@@ -1,4 +1,4 @@
-import { BackButton, GlassCard } from "@/components/ui";
+import { SubPageHeader, GlassCard } from "@/components/ui";
 import { signOut } from "@/lib/actions/auth";
 import { createClient } from "@/lib/supabase/server";
 import { getDictionary } from "@/lib/i18n/server";
@@ -23,10 +23,7 @@ export default async function AccountPage() {
 
   return (
     <div className="pt-2">
-      <div className="mb-5 flex items-center gap-3">
-        <BackButton href="/mypage" />
-        <h1 className="text-[22px] font-bold">{dict.mypage.accountManagement}</h1>
-      </div>
+      <SubPageHeader href="/mypage" title={dict.mypage.accountManagement} />
 
       {providerLabel && (
         <>

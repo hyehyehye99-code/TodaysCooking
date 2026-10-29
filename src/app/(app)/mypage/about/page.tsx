@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { BackButton, GlassCard } from "@/components/ui";
+import { SubPageHeader, GlassCard } from "@/components/ui";
 import { Mascot } from "@/components/Mascot";
 import { getDictionary } from "@/lib/i18n/server";
 
@@ -11,10 +11,7 @@ export default async function AboutPage() {
 
   return (
     <div className="pt-2">
-      <div className="mb-5 flex items-center gap-3">
-        <BackButton href="/mypage" />
-        <h1 className="text-[22px] font-bold">{dict.mypage.about}</h1>
-      </div>
+      <SubPageHeader href="/mypage" title={dict.mypage.about} />
 
       <div className="mb-8 flex flex-col items-center text-center">
         <Mascot name="main" size={132} className="mb-3" />

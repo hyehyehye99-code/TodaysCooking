@@ -1,12 +1,9 @@
-import { BackButton } from "@/components/ui";
+import { SubPageHeader } from "@/components/ui";
 
 export default function TermsPage() {
   return (
     <div className="mx-auto h-dvh w-full max-w-[520px] overflow-y-auto overscroll-contain px-6 pb-16 pt-[max(env(safe-area-inset-top),24px)]">
-      <div className="mb-5 flex items-center gap-3">
-        <BackButton href="/mypage" />
-        <h1 className="text-lg font-bold text-ink">이용약관</h1>
-      </div>
+      <SubPageHeader href="/mypage" title="이용약관" />
 
       <p className="mb-6 text-xs text-ink-faint">시행일자: 2026년 9월 2일</p>
 

@@ -112,7 +112,7 @@ export function NewRecipeForm({ existingTags, guest = false }: { existingTags: s
             name="title"
             aria-label={dict.welcome.dishName}
             placeholder={dict.recipes.dishNameOptionalPlaceholder}
-            className="w-full rounded-xl border border-transparent bg-surface px-3.5 py-3 text-base font-bold outline-none focus:border-accent"
+            className="w-full rounded-xl border border-transparent bg-white px-3.5 py-3 text-base font-bold outline-none focus:border-accent"
           />
         </div>
 

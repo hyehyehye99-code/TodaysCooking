@@ -91,7 +91,7 @@ export function TabBar() {
     // Floating pill: the nav keeps its full-width slot (pages size against
     // --app-tab-bar-height) but is transparent; the rounded glass bar sits inside it.
     <nav style={{ height: "var(--app-tab-bar-height)" }} className="sticky bottom-0 z-10 shrink-0 px-4 pb-[max(env(safe-area-inset-bottom),16px)] pt-1.5">
-      <div className="flex h-full gap-0.5 rounded-full border border-black/5 bg-white/85 p-1 shadow-[0_6px_24px_rgba(25,31,40,0.12)] backdrop-blur-xl">
+      <div className="flex h-full gap-0.5 rounded-full border border-black/5 bg-white/90 p-1.5 shadow-[0_8px_30px_rgba(25,31,40,0.14)] backdrop-blur-xl">
       {TABS.map((tab) => {
         // 메뉴판/타이머 live under the 마이페이지 tab now, so they keep it lit.
         const active =
@@ -102,13 +102,14 @@ export function TabBar() {
             key={tab.href}
             href={tab.href}
             aria-current={active ? "page" : undefined}
+            aria-label={dict.tabBar[tab.labelKey]}
             prefetch
-            className={`flex min-w-0 flex-1 flex-col items-center justify-center gap-0.5 rounded-full outline-none transition-colors duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-accent ${active ? "bg-accent/10 text-accent" : "text-ink-soft"}`}
+            className={`flex min-w-0 flex-1 items-center justify-center rounded-full outline-none transition-colors duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-accent ${active ? "bg-black/[0.06] text-accent" : "text-ink-soft"}`}
           >
             <svg
               viewBox="0 0 24 24"
-              width="22"
-              height="22"
+              width="26"
+              height="26"
               className={`transition-transform duration-200 ${active ? "scale-110" : ""}`}
               fill="none"
               stroke="currentColor"
@@ -122,9 +123,6 @@ export function TabBar() {
                 {tab.icon}
               </g>
             </svg>
-            <span className={`text-[11px] ${active ? "font-bold" : "font-medium"}`}>
-              {dict.tabBar[tab.labelKey]}
-            </span>
           </Link>
         );
       })}

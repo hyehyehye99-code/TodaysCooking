@@ -1,4 +1,4 @@
-import { BackButton, GlassCard } from "@/components/ui";
+import { SubPageHeader, GlassCard } from "@/components/ui";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentHousehold } from "@/lib/household";
 import { LoginPrompt } from "@/components/LoginPrompt";
@@ -33,10 +33,7 @@ export default async function TagManagementPage() {
 
   return (
     <div className="pt-2">
-      <div className="mb-5 flex items-center gap-3">
-        <BackButton href="/mypage" />
-        <h1 className="text-[22px] font-bold">{dict.mypage.tagManagement}</h1>
-      </div>
+      <SubPageHeader href="/mypage" title={dict.mypage.tagManagement} />
       <p className="mb-5 text-sm text-ink-soft">{dict.mypage.tagManagementDesc}</p>
 
       {tags.length === 0 ? (

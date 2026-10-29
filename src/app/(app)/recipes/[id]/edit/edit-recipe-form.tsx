@@ -132,7 +132,7 @@ export function EditRecipeForm({
             aria-label={dict.welcome.dishName}
             defaultValue={recipe.title ?? ""}
             placeholder={dict.recipes.dishNameOptionalPlaceholder}
-            className="w-full rounded-xl border border-transparent bg-surface px-3.5 py-3 text-base font-bold outline-none focus:border-accent"
+            className="w-full rounded-xl border border-transparent bg-white px-3.5 py-3 text-base font-bold outline-none focus:border-accent"
           />
         </div>
 

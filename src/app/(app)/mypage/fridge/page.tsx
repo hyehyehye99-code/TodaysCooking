@@ -4,7 +4,7 @@ import { buildFridgeCategories } from "@/lib/fridgeCategories";
 import { FridgeEditor } from "./fridge-editor";
 import { GuestFridge } from "./guest-fridge";
 import type { FridgeItem } from "@/lib/types";
-import { BackButton } from "@/components/ui";
+import { SubPageHeader } from "@/components/ui";
 import { getDictionary } from "@/lib/i18n/server";
 
 export default async function FridgePage() {
@@ -22,10 +22,7 @@ export default async function FridgePage() {
 
   return (
     <div className="pt-2">
-      <div className="mb-5 flex items-center gap-3">
-        <BackButton href="/mypage" />
-        <h1 className="text-[22px] font-bold">{dict.mypage.fridge}</h1>
-      </div>
+      <SubPageHeader href="/mypage" title={dict.mypage.fridge} />
       {body}
     </div>
   );

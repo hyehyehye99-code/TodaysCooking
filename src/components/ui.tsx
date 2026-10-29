@@ -19,7 +19,7 @@ export function BackButton({
       <path d="M15 6l-6 6 6 6" />
     </svg>
   );
-  const classes = `flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-surface text-ink ${className}`;
+  const classes = `flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-black/5 bg-white text-ink shadow-[0_2px_10px_rgba(25,31,40,0.08)] ${className}`;
 
   if (href) {
     return (
@@ -43,16 +43,16 @@ export function GlassCard({
   children: ReactNode;
   className?: string;
 }) {
-  return <div className={`rounded-[22px] border border-border shadow-[0_2px_10px_rgba(69,40,24,0.025)] ${className}`}>{children}</div>;
+  return <div className={`rounded-[28px] ${className}`}>{children}</div>;
 }
 
 export function PageHeader({ title, right }: { title: string; right?: ReactNode }) {
   if (!right) {
-    return <h1 className="mb-4 text-[22px] font-bold tracking-tight">{title}</h1>;
+    return <h1 className="mb-5 text-[28px] font-bold tracking-tight">{title}</h1>;
   }
   return (
-    <div className="mb-4 flex items-center justify-between gap-3">
-      <h1 className="text-[22px] font-bold tracking-tight">{title}</h1>
+    <div className="mb-5 flex items-center justify-between gap-3">
+      <h1 className="text-[28px] font-bold tracking-tight">{title}</h1>
       {right}
     </div>
   );
@@ -67,4 +67,20 @@ export function ProgressBar({ percent, colorClass = "bg-positive" }: { percent: 
       />
     </div>
   );
+}
+
+// Detail-page header: round back button on the left, title centered.
+export function SubPageHeader({ href, title, right }: { href: string; title: string; right?: ReactNode }) {
+  return (
+    <div className="mb-5 grid grid-cols-[44px_1fr_44px] items-center gap-2">
+      <BackButton href={href} />
+      <h1 className="truncate text-center text-[17px] font-bold">{title}</h1>
+      <div className="flex justify-end">{right}</div>
+    </div>
+  );
+}
+
+// Small grey label above a group of cards.
+export function SectionLabel({ children }: { children: ReactNode }) {
+  return <p className="mb-2.5 px-2 text-[13px] font-semibold text-ink-soft">{children}</p>;
 }

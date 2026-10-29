@@ -29,7 +29,7 @@ export function ShoppingItemRow({ item, guest = false }: { item: ShoppingItem; g
   }
 
   return (
-    <div className="flex items-center gap-3 border-b border-border bg-white py-3.5">
+    <div className="flex items-center gap-3 border-b border-border bg-white px-4 py-3.5 last:border-b-0">
       <button
         type="button"
         onClick={toggleChecked}

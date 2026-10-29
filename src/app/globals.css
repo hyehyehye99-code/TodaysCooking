@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
+  --background: #f6f6f6;
   --foreground: #191f28;
   --app-tab-bar-height: calc(67px + max(env(safe-area-inset-bottom), 16px));
 }
@@ -19,8 +19,8 @@
   --text-xs--line-height: 1.35;
 
   --color-cream: #ffffff;
-  --color-surface: #fbfbfb;
-  --color-border: #ebebeb;
+  --color-surface: #f2f2f2;
+  --color-border: #ececec;
   --color-ink: #191f28;
   --color-ink-soft: #6b7684;
   --color-ink-faint: #717171;
@@ -31,6 +31,12 @@
   --color-positive-ink: #92400e;
   --color-warn: #f50b0b;
   --color-warn-ink: #f50b0b;
+
+  /* Rounder corners app-wide: big soft cards and pill-ish controls. */
+  --radius-lg: 0.875rem;
+  --radius-xl: 1.125rem;
+  --radius-2xl: 1.5rem;
+  --radius-3xl: 1.875rem;
 
   --font-sans: var(--font-suit);
   --font-display: var(--font-suit);

@@ -87,7 +87,7 @@ export function GuestShopping() {
       ) : (
         <>
           <ShoppingBulkActions doneCount={doneCount} allChecked={allChecked} guest />
-          <div className="mb-6 flex flex-col">
+          <div className="mb-6 flex flex-col overflow-hidden rounded-3xl bg-white">
             {items.map((item) => (
               <ShoppingItemRow key={item.id} item={item} guest />
             ))}
