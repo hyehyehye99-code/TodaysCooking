@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { Mascot } from "@/components/Mascot";
 import { useAssistantChat } from "@/lib/assistant/useAssistantChat";
 import { MessageBubble } from "@/components/assistant/MessageBubble";
@@ -9,25 +9,29 @@ import { ChefAvatar } from "@/components/assistant/ChefAvatar";
 import { UsageChip, UsageNudge } from "@/components/assistant/UsageMeter";
 import type { AssistantUsage } from "@/lib/assistant/types";
 
-const QUICK_STARTS = [
+type QuickStart = {
+  mascot: "reading-recipe" | "fridge-open";
+  title: string;
+  desc: string;
+  fill?: string;
+  hint?: string;
+  send?: string;
+};
+
+const QUICK_STARTS: QuickStart[] = [
   {
-    mascot: "reading-recipe" as const,
+    mascot: "reading-recipe",
     title: "링크로 레시피 등록",
     desc: "유튜브·인스타 링크만 붙여넣으면 끝",
     fill: "",
     hint: "유튜브·인스타 링크를 붙여넣어 주세요",
   },
   {
-    mascot: "fridge-open" as const,
+    mascot: "fridge-open",
     title: "냉장고 파먹기",
-    desc: "있는 재료로 만들 요리 찾기",
-    fill: "냉장고에 있는 재료로 만들 수 있는 요리 추천해줘. 재료는: ",
-  },
-  {
-    mascot: "frying-egg" as const,
-    title: "15분 초간단 야식",
-    desc: "지금 바로 만들 수 있는 메뉴",
-    fill: "15분 안에 만들 수 있는 초간단 야식 추천해줘",
+    desc: "유통기한 임박한 재료부터 활용해요",
+    // The assistant already sees the fridge, so this sends straight away.
+    send: "냉장고에 있는 재료로, 유통기한 임박한 것부터 써서 만들 수 있는 요리 추천해줘",
   },
 ];
 
@@ -35,18 +39,40 @@ export function AssistantChat({ initialUsage }: { initialUsage: AssistantUsage }
   const { usage, limitReached, messages, pending, notice, clearNotice, send, addShopping, saveIdea, reset } = useAssistantChat(initialUsage);
   const [input, setInput] = useState("");
   const [hint, setHint] = useState<string | null>(null);
+  const [focused, setFocused] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
+    // Nothing to follow while the welcome screen is showing — scrolling it to
+    // the bottom on mount cut the mascot off the top on short windows.
+    if (messages.length === 0 && !pending) return;
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
-  }, [messages.length, pending?.step]);
+  }, [messages.length, pending]);
 
   useEffect(() => {
     if (!notice) return;
     const t = setTimeout(clearNotice, 2800);
     return () => clearTimeout(t);
   }, [notice, clearNotice]);
+
+  // Tells the rest of the app (tab bar) the keyboard is up; always cleared on leave.
+  useEffect(() => {
+    const root = document.documentElement;
+    if (focused) root.dataset.keyboard = "open";
+    else delete root.dataset.keyboard;
+    return () => {
+      delete root.dataset.keyboard;
+    };
+  }, [focused]);
+
+  // Grow with the text (up to ~4 lines) instead of clipping a wrapped second line.
+  useLayoutEffect(() => {
+    const el = inputRef.current;
+    if (!el) return;
+    el.style.height = "auto";
+    el.style.height = `${Math.min(el.scrollHeight, 112)}px`;
+  }, [input]);
 
   function submit() {
     if (!input.trim() || pending) return;
@@ -72,16 +98,13 @@ export function AssistantChat({ initialUsage }: { initialUsage: AssistantUsage }
 
   const lastAssistantId = [...messages].reverse().find((m) => m.role === "assistant")?.id;
   const empty = messages.length === 0 && !pending;
+  // Short viewport while typing: drop the hero so the quick-start cards stay in view.
+  const compactEmpty = empty && focused;
 
   return (
     // Fills the area under the page padding that (app)/layout.tsx adds, so the
     // input bar stays pinned above the tab bar while only the list scrolls.
     <div className="relative -mx-5 -mt-4 -mb-[max(env(safe-area-inset-bottom),40px)] flex h-[calc(100dvh-var(--app-tab-bar-height)-max(env(safe-area-inset-top),24px))] flex-col overflow-hidden bg-background">
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-x-0 top-0 h-56 bg-[radial-gradient(ellipse_at_top,rgba(232,96,60,0.14),transparent_70%)]"
-      />
-
       <header className="relative z-10 flex shrink-0 items-center gap-3 px-5 pb-3 pt-3">
         <ChefAvatar size={40} />
         <div className="min-w-0 flex-1">
@@ -121,20 +144,24 @@ export function AssistantChat({ initialUsage }: { initialUsage: AssistantUsage }
       >
         {empty ? (
           <div className="flex min-h-full flex-col items-center py-4 text-center">
-            <div className="relative mt-auto">
-              <span aria-hidden className="absolute inset-x-2 bottom-0 top-6 rounded-full bg-accent/10 blur-2xl" />
-              <Mascot name="chef-greeting" size={124} className="relative" />
-            </div>
-            <h2 className="mt-4 text-xl font-bold tracking-tight text-stone-800">오늘은 뭘 채워볼까요?</h2>
-            <p className="mt-2 max-w-[19rem] text-[14px] leading-relaxed text-stone-500">
-              어떤 요리를 혜콩이네 주방에 채워볼까요? 유튜브·인스타 링크를 보내주시거나, 냉장고에 있는 재료를 알려주세요!
-            </p>
-            <div className="mb-auto mt-6 flex w-full flex-col gap-2.5">
+            {!compactEmpty && (
+              <>
+                <div className="relative mt-auto">
+                  <span aria-hidden className="absolute inset-x-2 bottom-0 top-6 rounded-full bg-accent/10 blur-2xl" />
+                  <Mascot name="chef-greeting" size={124} className="relative" />
+                </div>
+                <h2 className="mt-4 text-xl font-bold tracking-tight text-stone-800">오늘은 뭘 채워볼까요?</h2>
+                <p className="mt-2 max-w-[19rem] text-[14px] leading-relaxed text-stone-500">
+                  어떤 요리를 혜콩이네 주방에 채워볼까요? 유튜브·인스타 링크를 보내주시거나, 냉장고에 있는 재료를 알려주세요!
+                </p>
+              </>
+            )}
+            <div className={`mb-auto flex w-full flex-col gap-2.5 ${compactEmpty ? "mt-auto" : "mt-6"}`}>
               {QUICK_STARTS.map((q) => (
                 <button
                   key={q.title}
                   type="button"
-                  onClick={() => fill(q.fill, q.hint)}
+                  onClick={() => (q.send ? send(q.send) : fill(q.fill ?? "", q.hint))}
                   className="flex items-center gap-3 rounded-2xl border border-stone-200/70 bg-white p-3 text-left shadow-sm transition active:scale-[0.98]"
                 >
                   <span className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-accent/10">
@@ -202,6 +229,8 @@ export function AssistantChat({ initialUsage }: { initialUsage: AssistantUsage }
             ref={inputRef}
             value={input}
             rows={1}
+            onFocus={() => setFocused(true)}
+            onBlur={() => setFocused(false)}
             maxLength={600}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => {
@@ -211,7 +240,7 @@ export function AssistantChat({ initialUsage }: { initialUsage: AssistantUsage }
               }
             }}
             placeholder={hint ?? "링크, 재료, 궁금한 점을 적어주세요"}
-            className="max-h-28 min-h-10 flex-1 resize-none bg-transparent px-1 py-2.5 text-base leading-snug text-stone-800 outline-none placeholder:text-stone-400"
+            className="max-h-28 min-h-10 flex-1 resize-none bg-transparent px-1 py-2.5 text-base leading-snug text-stone-800 no-focus-ring outline-none placeholder:text-stone-400"
           />
           <button
             type="submit"

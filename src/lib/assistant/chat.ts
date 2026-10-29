@@ -13,7 +13,9 @@ const SYSTEM_PROMPT = [
   "말투는 친근하고 싹싹한 해요체. 이모지는 한두 개만 자연스럽게. 군더더기 없이 실용적으로 답해.",
   "",
   "사용자 의도를 아래 중 하나로 분류해 intent에 넣어:",
-  "- fridge_recommend: 가진 재료로 뭘 만들지 묻는 경우. 먼저 '우리 레시피북' 목록에서 해당 재료가 들어간 메뉴를",
+  "- fridge_recommend: 가진 재료로 뭘 만들지 묻는 경우. 유통기한이 임박했거나 지난 재료(아래 목록에 표시됨)를 먼저 소진하는",
+  "  메뉴를 최우선으로 고르고, reply에서 어떤 재료가 임박했는지 한 번 짚어줘. 이미 지난 재료는 상태를 확인하라고 안내해.",
+  "  그 다음 '우리 레시피북' 목록에서 해당 재료가 들어간 메뉴를",
   "  existingRecipeIds에 최대 3개 골라. 그 뒤 새로운 메뉴 아이디어를 1~2개 ideas에 제안해(핵심 재료·조리법 포함).",
   "- cooking_qa: 재료 대체, 계량 변환(예: 2인분→4인분), 조리 팁 질문. 구체적인 대체 비율·수치를 reply에 써줘. ideas는 비워.",
   "- theme_recommend: 시간·상황·테마(10분 안주, 다이어트 단백질 등) 추천. 레시피북에서 어울리는 것과 새 아이디어를 섞어서.",
@@ -99,13 +101,27 @@ export function sanitizeIdeas(raw: unknown): AssistantIdea[] {
   return ideas;
 }
 
+function fridgeLine(f: KitchenContext["fridge"][number]) {
+  if (f.days === null) return f.name;
+  if (f.days < 0) return `${f.name}(유통기한 ${-f.days}일 지남)`;
+  if (f.days === 0) return `${f.name}(오늘까지)`;
+  return `${f.name}(D-${f.days})`;
+}
+
 function kitchenSummary(ctx: KitchenContext) {
   const recipes = ctx.recipes
     .filter((r) => r.title)
     .map((r) => `- ${r.id} | ${r.title} | ${r.recipe_ingredients.map((i) => i.name).join(", ")}`)
     .join("\n");
   return [
-    `냉장고에 있는 재료: ${ctx.owned.length ? ctx.owned.join(", ") : "(등록된 재료 없음)"}`,
+    `냉장고에 있는 재료 (유통기한 임박순): ${
+      ctx.fridge.length
+        ? [...ctx.fridge]
+            .sort((a, b) => (a.days ?? Infinity) - (b.days ?? Infinity))
+            .map(fridgeLine)
+            .join(", ")
+        : "(등록된 재료 없음)"
+    }`,
     "우리 레시피북 (id | 이름 | 재료):",
     recipes || "(아직 비어 있음)",
   ].join("\n");

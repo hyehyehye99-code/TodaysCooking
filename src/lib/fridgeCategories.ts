@@ -1,6 +1,6 @@
 import { INGREDIENT_CATEGORIES, ALL_KNOWN_INGREDIENTS } from "@/lib/ingredients";
 
-type FridgeRow = { name: string; category: string | null; in_stock: boolean };
+type FridgeRow = { name: string; category: string | null; in_stock: boolean; expires_on?: string | null };
 
 function bySelectedFirst<T extends { selected: boolean }>(items: T[]) {
   return [...items].sort((a, b) => Number(b.selected) - Number(a.selected));
@@ -11,6 +11,8 @@ function bySelectedFirst<T extends { selected: boolean }>(items: T[]) {
 // ingredients / categories the user has added.
 export function buildFridgeCategories(fridgeItems: FridgeRow[]) {
   const stock = new Map(fridgeItems.map((i) => [i.name, i.in_stock]));
+  // A date only means something while the item is in stock.
+  const expiry = new Map(fridgeItems.map((i) => [i.name, i.in_stock ? i.expires_on ?? null : null]));
 
   const customItems = fridgeItems.filter((i) => !ALL_KNOWN_INGREDIENTS.has(i.name));
   const staticNames = new Set(INGREDIENT_CATEGORIES.map((c) => c.name));
@@ -18,10 +20,10 @@ export function buildFridgeCategories(fridgeItems: FridgeRow[]) {
   const staticCategories = INGREDIENT_CATEGORIES.map((cat) => ({
     name: cat.name,
     items: bySelectedFirst([
-      ...cat.items.map((name) => ({ name, selected: !!stock.get(name), custom: false })),
+      ...cat.items.map((name) => ({ name, selected: !!stock.get(name), custom: false, expiresOn: expiry.get(name) ?? null })),
       ...customItems
         .filter((i) => (i.category ?? "미분류") === cat.name)
-        .map((i) => ({ name: i.name, selected: i.in_stock, custom: true })),
+        .map((i) => ({ name: i.name, selected: i.in_stock, custom: true, expiresOn: expiry.get(i.name) ?? null })),
     ]),
   }));
 
@@ -41,7 +43,7 @@ export function buildFridgeCategories(fridgeItems: FridgeRow[]) {
       items: bySelectedFirst(
         customItems
           .filter((i) => (i.category ?? "미분류") === name)
-          .map((i) => ({ name: i.name, selected: i.in_stock, custom: true }))
+          .map((i) => ({ name: i.name, selected: i.in_stock, custom: true, expiresOn: expiry.get(i.name) ?? null }))
       ),
     })),
     ...staticCategories,

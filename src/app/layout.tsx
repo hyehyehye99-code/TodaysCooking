@@ -25,7 +25,8 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#ffffff",
+  // Matches --background in globals.css so the status bar blends into the page.
+  themeColor: "#f6f6f6",
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,

@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { fetchLinkPreview } from "@/lib/actions/link-preview";
 import { loadCustomIngredientRules, parseIngredients } from "@/lib/ingredientParsing";
+import { daysUntil } from "@/lib/expiry";
 import { pickDishEmoji } from "@/lib/assistant/dish-emoji";
 import type { AssistantIdea, AssistantRecipeCard } from "@/lib/assistant/types";
 
@@ -18,6 +19,8 @@ export type HouseholdRecipe = {
 export type KitchenContext = {
   recipes: HouseholdRecipe[];
   owned: string[];
+  // In-stock ingredients with days until their best-before date (null = no date).
+  fridge: { name: string; days: number | null }[];
 };
 
 export async function loadKitchenContext(supabase: Supabase, householdId: string): Promise<KitchenContext> {
@@ -28,11 +31,15 @@ export async function loadKitchenContext(supabase: Supabase, householdId: string
       .eq("household_id", householdId)
       .order("created_at", { ascending: false })
       .limit(120),
-    supabase.from("fridge_items").select("name").eq("household_id", householdId).eq("in_stock", true),
+    supabase.from("fridge_items").select("name, expires_on").eq("household_id", householdId).eq("in_stock", true),
   ]);
   return {
     recipes: (recipes as HouseholdRecipe[] | null) ?? [],
     owned: (fridge ?? []).map((f) => f.name),
+    fridge: (fridge ?? []).map((f) => ({
+      name: f.name,
+      days: f.expires_on ? daysUntil(f.expires_on) : null,
+    })),
   };
 }
 

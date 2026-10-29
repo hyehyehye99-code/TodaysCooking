@@ -1,22 +1,20 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { saveFridge, type FridgeSaveItem } from "@/lib/actions/fridge";
 import { saveFridge as saveGuestFridge } from "@/lib/guest/store";
 import { GlassCard } from "@/components/ui";
+import { Modal } from "@/components/Modal";
 import { Mascot, type MascotName } from "@/components/Mascot";
 import { ClearableInput } from "@/components/ClearableInput";
 import { useDict } from "@/lib/i18n/client";
+import { addDays, daysUntil, EXPIRING_SOON_DAYS, expiryLabel, expiryTone, todayKst } from "@/lib/expiry";
 
-type Item = { name: string; selected: boolean; custom: boolean };
+type Item = { name: string; selected: boolean; custom: boolean; expiresOn: string | null };
 type Category = { name: string; items: Item[] };
 
-// Purely a visual scan-aid for the category cards below — not tied to any
-// data, so an unmatched (custom) category name just falls back to a plain
-// box.
-// Mascot icon per category where there's a clean visual match — categories
-// without one (두부·콩류, 김치·젓갈·장아찌, 장류·오일, 미분류) fall back to a
-// plain emoji, same as before.
+// Mascot icon per category where there's a clean visual match — the rest fall
+// back to a plain emoji.
 const CATEGORY_MASCOT: Record<string, MascotName> = {
   "채소": "food-carrot",
   "해산물": "food-salmon",
@@ -32,13 +30,17 @@ const CATEGORY_EMOJI: Record<string, string> = {
   "미분류": "📦",
 };
 
-const LONG_PRESS_MS = 350;
-const MOVE_CANCEL_PX = 10;
-// How close to the scrollable page's top/bottom edge (in px) a drag has to
-// get before it starts auto-scrolling, and how fast it scrolls right at
-// the edge (tapering to 0 at AUTO_SCROLL_EDGE away from it).
-const AUTO_SCROLL_EDGE = 70;
-const AUTO_SCROLL_MAX_SPEED = 16;
+function CategoryIcon({ name }: { name: string }) {
+  return CATEGORY_MASCOT[name] ? <Mascot name={CATEGORY_MASCOT[name]} size={22} /> : <span>{CATEGORY_EMOJI[name] ?? "🍽️"}</span>;
+}
+
+// Soonest expiry first, undated last, then by name.
+function byExpiry(a: Item, b: Item) {
+  if (a.expiresOn && b.expiresOn) return a.expiresOn.localeCompare(b.expiresOn) || a.name.localeCompare(b.name);
+  if (a.expiresOn) return -1;
+  if (b.expiresOn) return 1;
+  return a.name.localeCompare(b.name);
+}
 
 export function FridgeEditor({ categories, guest = false }: { categories: Category[]; guest?: boolean }) {
   const dict = useDict();
@@ -48,364 +50,317 @@ export function FridgeEditor({ categories, guest = false }: { categories: Catego
     else await saveFridge(items, toDelete);
   };
   const [local, setLocal] = useState<Category[]>(categories);
-  const [customInputs, setCustomInputs] = useState<Record<string, string>>({});
-  const [search, setSearch] = useState("");
+  const [expanded, setExpanded] = useState<string | null>(null);
+  const [adding, setAdding] = useState(false);
+  const today = todayKst();
 
-  // Long-press-then-drag a chip into a different category. The press timer
-  // is what separates this from a normal tap — pointer capture is deferred
-  // until the timer actually fires (not on every pointerdown), otherwise
-  // capturing retargets the click and swallows plain taps.
-  const [dragging, setDragging] = useState<{ catName: string; itemName: string; x: number; y: number } | null>(null);
-  const [dropTarget, setDropTarget] = useState<string | null>(null);
-  const pressRef = useRef<{ catName: string; itemName: string; x: number; y: number; timer: ReturnType<typeof setTimeout> } | null>(null);
-  const catRefs = useRef<Map<string, HTMLElement>>(new Map());
+  const owned = local
+    .map((c) => ({ ...c, items: c.items.filter((i) => i.selected).sort(byExpiry) }))
+    .filter((c) => c.items.length > 0);
+  const ownedCount = owned.reduce((n, c) => n + c.items.length, 0);
+  const soon = owned
+    .flatMap((c) => c.items)
+    .filter((i) => i.expiresOn && daysUntil(i.expiresOn, today) <= EXPIRING_SOON_DAYS)
+    .sort(byExpiry);
 
-  // Mirrors the live drag position/target for the auto-scroll rAF loop
-  // below, which runs on frames scheduled while the pointer sits still near
-  // an edge — a plain closure over `dragging` state would go stale between
-  // the pointermove that started the hold and the next animation frame.
-  const dragPosRef = useRef<{ catName: string; x: number; y: number } | null>(null);
-  const scrollElRef = useRef<HTMLElement | null>(null);
-  const rafRef = useRef<number | null>(null);
-
-  function registerCatRef(name: string) {
-    return (el: HTMLElement | null) => {
-      if (el) catRefs.current.set(name, el);
-      else catRefs.current.delete(name);
-    };
+  function patchItem(catName: string, itemName: string, patch: Partial<Item>) {
+    setLocal((prev) =>
+      prev.map((c) =>
+        c.name !== catName ? c : { ...c, items: c.items.map((i) => (i.name === itemName ? { ...i, ...patch } : i)) }
+      )
+    );
   }
 
-  function findDropTarget(x: number, y: number, excludeCat: string) {
-    for (const [name, el] of catRefs.current) {
-      if (name === excludeCat) continue;
-      const r = el.getBoundingClientRect();
-      if (x >= r.left && x <= r.right && y >= r.top && y <= r.bottom) return name;
-    }
-    return null;
+  function setExpiry(catName: string, item: Item, expiresOn: string | null) {
+    patchItem(catName, item.name, { expiresOn });
+    void persist([{ name: item.name, category: catName, inStock: true, expiresOn }]);
   }
 
-  // The page's scroll container lives in PullToRefresh, a couple of levels
-  // up in the (app) layout — nothing here holds a ref to it, so it's found
-  // at drag-start time via the DOM instead of threading one down.
-  function autoScrollStep() {
-    const scrollEl = scrollElRef.current;
-    const drag = dragPosRef.current;
-    if (scrollEl && drag) {
-      const rect = scrollEl.getBoundingClientRect();
-      const distTop = drag.y - rect.top;
-      const distBottom = rect.bottom - drag.y;
-      let dy = 0;
-      if (distTop < AUTO_SCROLL_EDGE) {
-        dy = -AUTO_SCROLL_MAX_SPEED * (1 - Math.max(distTop, 0) / AUTO_SCROLL_EDGE);
-      } else if (distBottom < AUTO_SCROLL_EDGE) {
-        dy = AUTO_SCROLL_MAX_SPEED * (1 - Math.max(distBottom, 0) / AUTO_SCROLL_EDGE);
-      }
-      if (dy !== 0) {
-        scrollEl.scrollTop += dy;
-        // Category positions just shifted under a pointer that may not
-        // have moved at all — re-run the hit test so the highlighted drop
-        // target stays correct while auto-scrolling holds it still.
-        setDropTarget(findDropTarget(drag.x, drag.y, drag.catName));
-      }
-    }
-    rafRef.current = requestAnimationFrame(autoScrollStep);
-  }
-
-  useEffect(() => {
-    return () => {
-      if (rafRef.current) cancelAnimationFrame(rafRef.current);
-    };
-  }, []);
-
-  function handleChipPointerDown(e: React.PointerEvent<HTMLButtonElement>, catName: string, itemName: string) {
-    const startX = e.clientX;
-    const startY = e.clientY;
-    const target = e.currentTarget;
-    const pointerId = e.pointerId;
-    const timer = setTimeout(() => {
-      target.setPointerCapture(pointerId);
-      setDragging({ catName, itemName, x: startX, y: startY });
-      dragPosRef.current = { catName, x: startX, y: startY };
-      scrollElRef.current = target.closest<HTMLElement>(".overflow-y-auto");
-      if (rafRef.current == null) rafRef.current = requestAnimationFrame(autoScrollStep);
-      pressRef.current = null;
-    }, LONG_PRESS_MS);
-    pressRef.current = { catName, itemName, x: startX, y: startY, timer };
-  }
-
-  function handleChipPointerMove(e: React.PointerEvent<HTMLButtonElement>) {
-    if (dragging) {
-      const x = e.clientX;
-      const y = e.clientY;
-      setDragging((d) => (d ? { ...d, x, y } : d));
-      dragPosRef.current = { catName: dragging.catName, x, y };
-      setDropTarget(findDropTarget(x, y, dragging.catName));
+  // Taking something out clears its date; a custom item has nothing left to
+  // remember, so it goes entirely.
+  function removeItem(catName: string, item: Item) {
+    setExpanded(null);
+    if (item.custom) {
+      setLocal((prev) => prev.map((c) => (c.name !== catName ? c : { ...c, items: c.items.filter((i) => i.name !== item.name) })));
+      void persist([], [item.name]);
       return;
     }
-    const press = pressRef.current;
-    if (!press) return;
-    if (Math.hypot(e.clientX - press.x, e.clientY - press.y) > MOVE_CANCEL_PX) {
-      clearTimeout(press.timer);
-      pressRef.current = null;
-    }
+    patchItem(catName, item.name, { selected: false, expiresOn: null });
+    void persist([{ name: item.name, category: catName, inStock: false, expiresOn: null }]);
   }
 
-  function endDrag() {
-    if (rafRef.current != null) {
-      cancelAnimationFrame(rafRef.current);
-      rafRef.current = null;
-    }
-    dragPosRef.current = null;
-    scrollElRef.current = null;
-  }
-
-  function handleChipPointerUp(e: React.PointerEvent<HTMLButtonElement>) {
-    if (pressRef.current) {
-      clearTimeout(pressRef.current.timer);
-      pressRef.current = null;
-    }
-    if (dragging) {
-      if (dropTarget && dropTarget !== dragging.catName) {
-        moveItem(dragging.catName, dropTarget, dragging.itemName);
-      }
-      try {
-        e.currentTarget.releasePointerCapture(e.pointerId);
-      } catch {
-        // already released
-      }
-      endDrag();
-      setDragging(null);
-      setDropTarget(null);
-    }
-  }
-
-  function moveItem(fromCat: string, toCat: string, itemName: string) {
-    const item = local.find((c) => c.name === fromCat)?.items.find((i) => i.name === itemName);
-    if (!item || fromCat === toCat) return;
-
+  function moveCustom(fromCat: string, toCat: string, item: Item) {
+    if (fromCat === toCat) return;
     setLocal((prev) =>
       prev.map((c) => {
-        if (c.name === fromCat) return { ...c, items: c.items.filter((i) => i.name !== itemName) };
+        if (c.name === fromCat) return { ...c, items: c.items.filter((i) => i.name !== item.name) };
         if (c.name === toCat) return { ...c, items: [...c.items, item] };
         return c;
       })
     );
-    void persist([{ name: itemName, category: toCat, inStock: item.selected }]);
+    void persist([{ name: item.name, category: toCat, inStock: true }]);
   }
 
-  const ownedCount = local.reduce((n, c) => n + c.items.filter((i) => i.selected).length, 0);
-  const q = search.trim().toLowerCase();
-  const matchesSearch = (name: string) => !q || name.toLowerCase().includes(q);
+  function toggleOwned(catName: string, item: Item) {
+    const selected = !item.selected;
+    patchItem(catName, item.name, { selected, ...(selected ? {} : { expiresOn: null }) });
+    void persist([{ name: item.name, category: catName, inStock: selected, ...(selected ? {} : { expiresOn: null }) }]);
+  }
 
-  function toggle(catName: string, itemName: string) {
-    const item = local.find((c) => c.name === catName)?.items.find((i) => i.name === itemName);
-    if (!item) return;
-    const nextSelected = !item.selected;
-
+  function addCustom(catName: string, rawName: string) {
+    const name = rawName.trim();
+    if (!name || local.some((c) => c.items.some((i) => i.name === name))) return;
     setLocal((prev) =>
       prev.map((c) =>
-        c.name !== catName
-          ? c
-          : {
-              ...c,
-              items: c.items.map((i) =>
-                i.name === itemName ? { ...i, selected: nextSelected } : i
-              ),
-            }
+        c.name !== catName ? c : { ...c, items: [...c.items, { name, selected: true, custom: true, expiresOn: null }] }
       )
     );
-    void persist([{ name: itemName, category: catName, inStock: nextSelected }]);
+    void persist([{ name, category: catName, inStock: true }]);
   }
-
-  function removeCustom(catName: string, itemName: string) {
-    setLocal((prev) =>
-      prev.map((c) =>
-        c.name !== catName ? c : { ...c, items: c.items.filter((i) => i.name !== itemName) }
-      )
-    );
-    void persist([], [itemName]);
-  }
-
-  function addCustomNamed(catName: string, rawValue: string) {
-    const value = rawValue.trim();
-    if (!value) return;
-    const category = local.find((c) => c.name === catName);
-    if (!category || category.items.some((i) => i.name === value)) return;
-
-    setLocal((prev) =>
-      prev.map((c) =>
-        c.name !== catName
-          ? c
-          : { ...c, items: [...c.items, { name: value, selected: true, custom: true }] }
-      )
-    );
-    void persist([{ name: value, category: catName, inStock: true }]);
-  }
-
-  function addCustom(catName: string) {
-    addCustomNamed(catName, customInputs[catName] ?? "");
-    setCustomInputs((prev) => ({ ...prev, [catName]: "" }));
-  }
-
-  function addSearchTermToCategory(catName: string) {
-    addCustomNamed(catName, search);
-    setSearch("");
-  }
-
-  const noMatches = !!q && local.every((cat) => cat.items.every((i) => !matchesSearch(i.name)));
 
   return (
     <div>
-      <p className="mb-5 text-sm text-ink-soft">
-        {dict.fridge.summaryTemplate.replace("{count}", String(ownedCount))}
-      </p>
+      <div className="mb-5 flex items-center justify-between gap-3">
+        <p className="text-sm text-ink-soft">
+          {ownedCount > 0 ? `${ownedCount}개 재료 보유 중` : "아직 담은 재료가 없어요"}
+        </p>
+        <button
+          type="button"
+          onClick={() => setAdding(true)}
+          className="shrink-0 rounded-full bg-accent px-4 py-2.5 text-sm font-bold text-white shadow-sm"
+        >
+          + 재료 추가
+        </button>
+      </div>
 
-      <ClearableInput
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        placeholder={dict.fridge.searchPlaceholder}
-        className="mb-5 w-full rounded-xl border border-transparent bg-surface px-3.5 py-2.5 text-sm outline-none focus:border-accent"
-      />
-
-      {noMatches && (
-        <GlassCard className="mb-5 border-transparent bg-surface p-4">
-          <p className="mb-3 text-sm text-ink-soft">
-            {dict.fridge.noMatchesTemplate.replace("{term}", search.trim())}
+      {soon.length > 0 && (
+        <GlassCard className="mb-5 bg-accent/10 p-4">
+          <p className="text-[13px] font-bold text-accent-ink">⏰ 유통기한 임박 {soon.length}개</p>
+          <p className="mt-1 text-sm text-ink">
+            {soon.map((i) => `${i.name}(${expiryLabel(daysUntil(i.expiresOn!, today))})`).join(", ")}
           </p>
-          <div className="flex flex-wrap gap-2">
-            {local.map((cat) => (
-              <button
-                key={cat.name}
-                type="button"
-                onClick={() => addSearchTermToCategory(cat.name)}
-                className="rounded-full bg-accent/10 px-3 py-1.5 text-xs font-semibold text-accent"
-              >
-                + {cat.name}
-              </button>
-            ))}
-          </div>
+          <p className="mt-1.5 text-xs text-ink-soft">AI 셰프의 &lsquo;냉장고 파먹기&rsquo;가 이 재료부터 써서 추천해줘요.</p>
+        </GlassCard>
+      )}
+
+      {owned.length === 0 && (
+        <GlassCard className="bg-white px-6 py-10 text-center">
+          <Mascot name="fridge-open" size={88} className="mx-auto" />
+          <p className="mt-3 text-sm text-ink-soft">+ 재료 추가로 냉장고에 있는 재료를 담아보세요.</p>
         </GlassCard>
       )}
 
       <div className="flex flex-col gap-3">
-        {local
-          .map((cat) => ({ ...cat, items: cat.items.filter((i) => matchesSearch(i.name)) }))
-          .filter((cat) => cat.items.length > 0 || !q)
-          .map((cat) => {
-            const isDropTarget = dropTarget === cat.name;
-            const ownedInCat = cat.items.filter((i) => i.selected).length;
-            return (
-              <GlassCard key={cat.name} className="bg-white p-4">
-                <p className="flex items-center gap-1.5 text-[13px] font-bold text-ink">
-                  {CATEGORY_MASCOT[cat.name] ? (
-                    <Mascot name={CATEGORY_MASCOT[cat.name]} size={20} />
-                  ) : (
-                    <span>{CATEGORY_EMOJI[cat.name] ?? "🍽️"}</span>
-                  )}
-                  {cat.name}
-                  {ownedInCat > 0 && (
-                    <span className="text-xs font-semibold text-ink-faint">
-                      {ownedInCat}/{cat.items.length}
-                    </span>
-                  )}
-                </p>
-
-                <div
-                  ref={registerCatRef(cat.name)}
-                  className={`mt-3 flex flex-wrap items-center gap-2 rounded-2xl border-2 p-1.5 transition-colors ${
-                    isDropTarget ? "border-dashed border-accent bg-accent/5" : "border-transparent"
-                  }`}
-                >
-                  {cat.items.map((item) => {
-                    const chipClass = item.selected
-                      ? "bg-accent text-white border-accent"
-                      : "bg-surface text-ink-soft border-border";
-                    const isBeingDragged = dragging?.catName === cat.name && dragging.itemName === item.name;
-
-                    if (item.custom) {
-                      return (
-                        <span
-                          key={item.name}
-                          className={`inline-flex items-center rounded-full border ${chipClass} ${
-                            isBeingDragged ? "opacity-40" : ""
-                          }`}
-                        >
-                          <button
-                            type="button"
-                            onClick={() => toggle(cat.name, item.name)}
-                            onPointerDown={(e) => handleChipPointerDown(e, cat.name, item.name)}
-                            onPointerMove={handleChipPointerMove}
-                            onPointerUp={handleChipPointerUp}
-                            className="touch-none py-2 pl-3.5 pr-1.5 text-[13px] font-semibold"
-                          >
-                            {item.name}
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => removeCustom(cat.name, item.name)}
-                            aria-label={dict.common.delete}
-                            className="flex h-5 w-5 items-center justify-center pr-2.5 text-xs opacity-70"
-                          >
-                            ×
-                          </button>
-                        </span>
-                      );
-                    }
-
-                    return (
-                      <button
-                        key={item.name}
-                        type="button"
-                        onClick={() => toggle(cat.name, item.name)}
-                        onPointerDown={(e) => handleChipPointerDown(e, cat.name, item.name)}
-                        onPointerMove={handleChipPointerMove}
-                        onPointerUp={handleChipPointerUp}
-                        className={`touch-none rounded-full border px-3.5 py-2 text-[13px] font-semibold ${chipClass} ${
-                          isBeingDragged ? "opacity-40" : ""
-                        }`}
-                      >
-                        {item.name}
-                      </button>
-                    );
-                  })}
-
-                  <span className="inline-flex items-center gap-1 rounded-full border border-transparent bg-surface py-1 pl-3 pr-1.5">
-                    <input
-                      value={customInputs[cat.name] ?? ""}
-                      onChange={(e) =>
-                        setCustomInputs((prev) => ({ ...prev, [cat.name]: e.target.value }))
-                      }
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter") {
-                          e.preventDefault();
-                          addCustom(cat.name);
-                        }
-                      }}
-                      placeholder={dict.fridge.addCustomPlaceholder}
-                      className="w-16 bg-transparent text-[13px] outline-none placeholder:text-ink-faint"
-                    />
+        {owned.map((cat) => (
+          <GlassCard key={cat.name} className="overflow-hidden bg-white">
+            <p className="flex items-center gap-1.5 px-5 pb-1 pt-4 text-[13px] font-bold text-ink">
+              <CategoryIcon name={cat.name} />
+              {cat.name}
+              <span className="text-xs font-semibold text-ink-faint">{cat.items.length}</span>
+            </p>
+            <div className="divide-y divide-border px-5">
+              {cat.items.map((item) => {
+                const key = `${cat.name}/${item.name}`;
+                const open = expanded === key;
+                const days = item.expiresOn ? daysUntil(item.expiresOn, today) : null;
+                return (
+                  <div key={item.name}>
                     <button
                       type="button"
-                      onClick={() => addCustom(cat.name)}
-                      className="flex h-6 w-6 items-center justify-center rounded-full bg-accent text-xs font-bold text-white"
+                      onClick={() => setExpanded(open ? null : key)}
+                      aria-expanded={open}
+                      className="flex w-full items-center justify-between gap-3 py-3.5 text-left"
                     >
-                      +
+                      <span className="min-w-0 truncate text-[15px] font-semibold text-ink">{item.name}</span>
+                      {days !== null ? (
+                        <span className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-bold ${expiryTone(days)}`}>
+                          {expiryLabel(days)}
+                        </span>
+                      ) : (
+                        <span className="shrink-0 text-xs text-ink-faint">유통기한 입력</span>
+                      )}
                     </button>
-                  </span>
-                </div>
-              </GlassCard>
-            );
-          })}
+
+                    {open && (
+                      <div className="mb-3.5 rounded-2xl bg-surface p-3.5">
+                        <label className="flex items-center justify-between gap-3 text-[13px] font-semibold text-ink-soft">
+                          유통기한
+                          <input
+                            type="date"
+                            value={item.expiresOn ?? ""}
+                            onChange={(e) => setExpiry(cat.name, item, e.target.value || null)}
+                            className="rounded-xl border border-transparent bg-white px-3 py-2 text-sm text-ink outline-none focus:border-accent"
+                          />
+                        </label>
+                        <div className="mt-2.5 flex flex-wrap gap-1.5">
+                          {[3, 7, 14, 30].map((d) => (
+                            <button
+                              key={d}
+                              type="button"
+                              onClick={() => setExpiry(cat.name, item, addDays(today, d))}
+                              className="rounded-full bg-white px-3 py-1.5 text-xs font-semibold text-ink-soft"
+                            >
+                              {d === 7 ? "1주" : d === 14 ? "2주" : d === 30 ? "1달" : `${d}일`} 후
+                            </button>
+                          ))}
+                          {item.expiresOn && (
+                            <button
+                              type="button"
+                              onClick={() => setExpiry(cat.name, item, null)}
+                              className="rounded-full bg-white px-3 py-1.5 text-xs font-semibold text-ink-faint"
+                            >
+                              날짜 지우기
+                            </button>
+                          )}
+                        </div>
+                        {item.custom && (
+                          <label className="mt-3 flex items-center justify-between gap-3 text-[13px] font-semibold text-ink-soft">
+                            분류
+                            <select
+                              value={cat.name}
+                              onChange={(e) => moveCustom(cat.name, e.target.value, item)}
+                              className="rounded-xl bg-white px-3 py-2 text-sm text-ink outline-none"
+                            >
+                              {local.map((c) => (
+                                <option key={c.name} value={c.name}>
+                                  {c.name}
+                                </option>
+                              ))}
+                            </select>
+                          </label>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => removeItem(cat.name, item)}
+                          className="mt-3 w-full rounded-xl bg-white py-2.5 text-sm font-bold text-warn-ink"
+                        >
+                          냉장고에서 빼기
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </GlassCard>
+        ))}
       </div>
 
-      {dragging && (
-        <div
-          className="pointer-events-none fixed z-50 -translate-x-1/2 -translate-y-1/2 rounded-full bg-accent px-3.5 py-2 text-[13px] font-semibold text-white shadow-lg"
-          style={{ left: dragging.x, top: dragging.y }}
-        >
-          {dragging.itemName}
-        </div>
-      )}
+      <AddSheet
+        open={adding}
+        onClose={() => setAdding(false)}
+        categories={local}
+        onToggle={toggleOwned}
+        onAddCustom={addCustom}
+        dict={dict}
+      />
     </div>
+  );
+}
+
+// Pick what's in the fridge: every known ingredient by category as a checklist,
+// plus a way to add something that isn't listed.
+function AddSheet({
+  open,
+  onClose,
+  categories,
+  onToggle,
+  onAddCustom,
+  dict,
+}: {
+  open: boolean;
+  onClose: () => void;
+  categories: Category[];
+  onToggle: (catName: string, item: Item) => void;
+  onAddCustom: (catName: string, name: string) => void;
+  dict: ReturnType<typeof useDict>;
+}) {
+  const [search, setSearch] = useState("");
+  const [customCat, setCustomCat] = useState("미분류");
+  const q = search.trim().toLowerCase();
+  const filtered = categories
+    .map((c) => ({ ...c, items: c.items.filter((i) => !q || i.name.toLowerCase().includes(q)) }))
+    .filter((c) => c.items.length > 0);
+  const exact = categories.some((c) => c.items.some((i) => i.name.toLowerCase() === q));
+
+  return (
+    <Modal open={open} onClose={onClose} variant="sheet">
+      <div className="mx-auto flex max-h-[85dvh] w-full max-w-[420px] flex-col rounded-t-3xl bg-white pb-[max(env(safe-area-inset-bottom),16px)]">
+        <div className="shrink-0 px-5 pb-3 pt-5">
+          <div className="mb-3 flex items-center justify-between">
+            <p className="text-[17px] font-bold text-ink">재료 추가</p>
+            <button type="button" onClick={onClose} className="rounded-full bg-surface px-3.5 py-1.5 text-sm font-bold text-ink-soft">
+              완료
+            </button>
+          </div>
+          <ClearableInput
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder={dict.fridge.searchPlaceholder}
+            className="w-full rounded-xl border border-transparent bg-surface px-3.5 py-2.5 text-sm outline-none focus:border-accent"
+          />
+        </div>
+
+        <div className="overflow-y-auto overscroll-contain px-5 pb-2">
+          {q && !exact && (
+            <div className="mb-3 flex items-center gap-2 rounded-2xl bg-accent/10 p-3">
+              <p className="min-w-0 flex-1 truncate text-sm font-semibold text-accent-ink">&lsquo;{search.trim()}&rsquo; 직접 추가</p>
+              <select
+                value={customCat}
+                onChange={(e) => setCustomCat(e.target.value)}
+                className="rounded-xl bg-white px-2.5 py-2 text-xs font-semibold text-ink outline-none"
+              >
+                {categories.map((c) => (
+                  <option key={c.name} value={c.name}>
+                    {c.name}
+                  </option>
+                ))}
+              </select>
+              <button
+                type="button"
+                onClick={() => {
+                  onAddCustom(customCat, search);
+                  setSearch("");
+                }}
+                className="rounded-xl bg-accent px-3.5 py-2 text-xs font-bold text-white"
+              >
+                추가
+              </button>
+            </div>
+          )}
+
+          {filtered.map((cat) => (
+            <div key={cat.name} className="mb-3">
+              <p className="flex items-center gap-1.5 py-2 text-[13px] font-bold text-ink-soft">
+                <CategoryIcon name={cat.name} />
+                {cat.name}
+              </p>
+              <div className="divide-y divide-border">
+                {cat.items.map((item) => (
+                  <button
+                    key={item.name}
+                    type="button"
+                    onClick={() => onToggle(cat.name, item)}
+                    aria-pressed={item.selected}
+                    className="flex w-full items-center justify-between py-3 text-left"
+                  >
+                    <span className={`text-[15px] ${item.selected ? "font-bold text-ink" : "font-medium text-ink-soft"}`}>
+                      {item.name}
+                    </span>
+                    <span
+                      className={`flex h-6 w-6 items-center justify-center rounded-full border-2 text-xs font-bold text-white ${
+                        item.selected ? "border-accent bg-accent" : "border-border bg-white"
+                      }`}
+                    >
+                      {item.selected && "✓"}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </Modal>
   );
 }

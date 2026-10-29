@@ -39,6 +39,7 @@ export type FridgeItem = {
   name: string;
   category: string | null;
   in_stock: boolean;
+  expires_on: string | null;
   updated_at: string;
 };
 

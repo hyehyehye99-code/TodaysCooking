@@ -6,6 +6,15 @@
   --app-tab-bar-height: calc(67px + max(env(safe-area-inset-bottom), 16px));
 }
 
+/* While a text field has the on-screen keyboard up, the floating tab bar only
+   eats into the little height that's left — AssistantChat sets this flag. */
+html[data-keyboard="open"] {
+  --app-tab-bar-height: 0px;
+}
+html[data-keyboard="open"] [data-tabbar] {
+  display: none;
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -72,6 +81,12 @@ a {
 :where(button, a, input, textarea, select):focus-visible {
   outline: 2px solid var(--color-accent);
   outline-offset: 3px;
+}
+
+/* The rule above is unlayered, so it beats Tailwind's layered `outline-none`
+   utilities; `.no-focus-ring` opts a control out (it draws its own focus state). */
+.no-focus-ring:focus-visible {
+  outline: none;
 }
 
 /* Shared by the create/edit flows; 16px fields also avoid iOS focus zoom. */

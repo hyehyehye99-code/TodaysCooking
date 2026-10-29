@@ -26,6 +26,10 @@ export async function GET(request: NextRequest) {
     return new Response("Unauthorized", { status: 401 });
   }
 
+  // ?dry=1 reports what would change without writing anything.
+  const dry = request.nextUrl.searchParams.get("dry") === "1";
+  const changes: { url: string; from: string | null; to: string }[] = [];
+
   const supabase = createAdminClient();
   const { data: bookmarks, error } = await supabase
     .from("bookmarks")
@@ -47,6 +51,10 @@ export async function GET(request: NextRequest) {
           failed++;
           return;
         }
+        if (dry) {
+          changes.push({ url: b.url, from: b.thumbnail_url, to: preview.thumbnailUrl });
+          return;
+        }
         const { error: updateError } = await supabase
           .from("bookmarks")
           .update({ thumbnail_url: preview.thumbnailUrl })
@@ -57,5 +65,5 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  return Response.json({ checked: bookmarks?.length ?? 0, due: due.length, refreshed, failed });
+  return Response.json({ checked: bookmarks?.length ?? 0, due: due.length, refreshed, failed, ...(dry ? { changes } : {}) });
 }

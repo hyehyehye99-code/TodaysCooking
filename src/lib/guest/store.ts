@@ -39,7 +39,7 @@ export type GuestShoppingItem = {
   source_recipe_title: string | null;
   created_at: string;
 };
-export type GuestFridgeItem = { name: string; category: string; in_stock: boolean };
+export type GuestFridgeItem = { name: string; category: string; in_stock: boolean; expires_on?: string | null };
 
 export type GuestData = {
   v: 1;
@@ -365,15 +365,19 @@ export function finishShoppingTrip() {
 
 // ---------- fridge ----------
 
-export function saveFridge(items: { name: string; category: string; inStock: boolean }[], toDelete: string[] = []) {
+export function saveFridge(
+  items: { name: string; category: string; inStock: boolean; expiresOn?: string | null }[],
+  toDelete: string[] = []
+) {
   const d = read();
   const removed = new Set(toDelete);
   let fridge = d.fridge.filter((f) => !removed.has(f.name));
   for (const item of items) {
-    const next = { name: item.name, category: item.category, in_stock: item.inStock };
-    fridge = fridge.some((f) => f.name === item.name)
-      ? fridge.map((f) => (f.name === item.name ? next : f))
-      : [...fridge, next];
+    const prev = fridge.find((f) => f.name === item.name);
+    // expiresOn undefined = leave the stored date alone (toggles and moves don't carry one).
+    const expires_on = item.expiresOn === undefined ? prev?.expires_on ?? null : item.expiresOn;
+    const next = { name: item.name, category: item.category, in_stock: item.inStock, expires_on };
+    fridge = prev ? fridge.map((f) => (f.name === item.name ? next : f)) : [...fridge, next];
   }
   commit({ ...d, fridge });
 }

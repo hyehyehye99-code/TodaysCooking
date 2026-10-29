@@ -142,7 +142,7 @@ export async function importGuestRecipe(formData: FormData): Promise<{ ok: true 
 // exactly as it is rather than overwritten by stale local data.
 export async function importGuestLists(payload: {
   shopping: { name: string; checked: boolean; source_recipe_title: string | null }[];
-  fridge: { name: string; category: string; in_stock: boolean }[];
+  fridge: { name: string; category: string; in_stock: boolean; expires_on?: string | null }[];
 }): Promise<{ ok: true } | { error: string }> {
   const { user, household } = await getCurrentHousehold();
   if (!user || !household) return { error: "로그인이 필요해요." };
@@ -160,8 +160,9 @@ export async function importGuestLists(payload: {
       name: str(f?.name, 100),
       category: str(f?.category, 50) ?? "미분류",
       in_stock: f?.in_stock === true,
+      expires_on: typeof f?.expires_on === "string" && /^\d{4}-\d{2}-\d{2}$/.test(f.expires_on) ? f.expires_on : null,
     }))
-    .filter((f): f is { name: string; category: string; in_stock: boolean } => !!f.name);
+    .filter((f): f is { name: string; category: string; in_stock: boolean; expires_on: string | null } => !!f.name);
 
   if (shopping.length > 0) {
     const { data: existing } = await supabase.from("shopping_items").select("name").eq("household_id", household.id);
@@ -187,6 +188,7 @@ export async function importGuestLists(payload: {
         name: f.name,
         category: f.category || CATEGORY_BY_INGREDIENT_NAME.get(f.name) || "미분류",
         in_stock: f.in_stock,
+        expires_on: f.expires_on,
         updated_at: new Date().toISOString(),
       })),
       { onConflict: "household_id,name", ignoreDuplicates: true }
