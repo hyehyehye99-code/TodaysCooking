@@ -1,6 +1,6 @@
 import { cache } from "react";
-import { cookies } from "next/headers";
-import { createClient } from "@/lib/supabase/server";
+import { cookies, headers } from "next/headers";
+import { createClient, getBearerToken } from "@/lib/supabase/server";
 
 const ACTIVE_HOUSEHOLD_COOKIE = "active_household_id";
 
@@ -22,12 +22,14 @@ const getAuthUser = cache(async () => {
   // guard in lib/supabase/proxy.ts, the middleware's own copy of this check).
   const cookieStore = await cookies();
   const hasAuthCookie = cookieStore.getAll().some((c) => c.name.startsWith("sb-"));
-  if (!hasAuthCookie) return null;
+  // The native app has no cookie at all — it sends a bearer token instead.
+  const bearer = await getBearerToken();
+  if (!hasAuthCookie && !bearer) return null;
 
   const supabase = await createClient();
   const {
     data: { user },
-  } = await supabase.auth.getUser();
+  } = bearer ? await supabase.auth.getUser(bearer) : await supabase.auth.getUser();
   return user;
 });
 
@@ -57,7 +59,10 @@ export const getCurrentHousehold = cache(async () => {
   if (!user) return { user: null, household: null, previousHouseholdMissing: false };
 
   const cookieStore = await cookies();
-  const activeId = cookieStore.get(ACTIVE_HOUSEHOLD_COOKIE)?.value;
+  // The native app can't set cookies, so it names its active household in a
+  // header instead (it falls back to the first membership if unset/stale).
+  const activeId =
+    cookieStore.get(ACTIVE_HOUSEHOLD_COOKIE)?.value ?? (await headers()).get("x-active-household-id") ?? undefined;
   const memberships = await getMyMemberships();
 
   const active = activeId ? memberships.find((m) => m.household.id === activeId) : undefined;
