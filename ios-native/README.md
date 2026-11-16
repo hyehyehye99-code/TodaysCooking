@@ -1,6 +1,6 @@
 # 우리집 레시피 — 네이티브 iOS 앱 (SwiftUI)
 
-기존 Capacitor 앱(`../ios/`)을 대체하는 네이티브 앱이에요. 같은 Supabase 백엔드와 같은 번들 ID(`com.hyeji.ourmenu`)를 써서
+기존 Capacitor 앱(`../ios/`)을 대체하는 네이티브 앱이에요. 같은 Supabase 백엔드와 같은 번들 ID(`ourhomemenu`)를 써서
 기존 사용자의 계정·데이터가 그대로 이어져요.
 
 ## 처음 한 번만

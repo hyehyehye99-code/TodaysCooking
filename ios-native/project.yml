@@ -7,7 +7,8 @@ options:
 settings:
   base:
     SWIFT_VERSION: "5.0"
-    # 기존 App Store 앱(Capacitor 1.2 / build 26)을 대체하는 네이티브 앱이라 번들 ID·팀을 그대로 쓴다
+    # 기존 App Store 앱(Capacitor 1.2 / build 26)을 대체하는 네이티브 앱이라 번들 ID·팀을 그대로 쓴다.
+    # 주의: 실제 번들 ID 는 `ourhomemenu` 이다 (capacitor.config.ts 의 com.hyeji.ourmenu 는 URL 스킴/appId 표기일 뿐)
     DEVELOPMENT_TEAM: 6NTUXY85FS
     MARKETING_VERSION: "2.0.0"
     CURRENT_PROJECT_VERSION: "27"
@@ -51,7 +52,7 @@ targets:
           - remote-notification
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.hyeji.ourmenu
+        PRODUCT_BUNDLE_IDENTIFIER: ourhomemenu
         PRODUCT_NAME: 우리집 레시피
         PRODUCT_MODULE_NAME: OurRecipe
         GENERATE_INFOPLIST_FILE: YES
@@ -71,7 +72,7 @@ targets:
     settings:
       base:
         GENERATE_INFOPLIST_FILE: YES
-        PRODUCT_BUNDLE_IDENTIFIER: com.hyeji.ourmenu.tests
+        PRODUCT_BUNDLE_IDENTIFIER: ourhomemenu.tests
         # 앱의 PRODUCT_NAME 이 한글("우리집 레시피")이라 호스트 경로를 직접 지정한다
         TEST_HOST: "$(BUILT_PRODUCTS_DIR)/우리집 레시피.app/우리집 레시피"
         BUNDLE_LOADER: "$(TEST_HOST)"

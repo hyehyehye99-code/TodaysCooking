@@ -1,13 +1,13 @@
 # 배포 체크리스트 (네이티브 앱 → App Store)
 
-기존 App Store 앱(Capacitor, v1.2 / build 26)을 **같은 번들 ID 로 업데이트**하는 방식이에요.
+기존 App Store 앱(Capacitor, v1.2 / build 26)을 **같은 번들 ID(`ourhomemenu`)로 업데이트**하는 방식이에요.
 버전은 `2.0.0` (build `27`) 로 시작해요 (`project.yml` 의 `MARKETING_VERSION`, `CURRENT_PROJECT_VERSION`).
 
 ## 0. 배포 전에 꼭 해야 하는 것 (코드로 할 수 없는 것)
 
 - [ ] **웹 서버(Vercel)에 Bearer 토큰 지원 배포** — `src/lib/supabase/server.ts`, `src/lib/household.ts` 변경(커밋 `1cbf9fc`)이 배포돼야 앱에서 AI 가 동작해요. 배포 전에는 앱의 AI 요청이 401 이에요.
 - [ ] **실제 계정으로 로그인 → 레시피/냉장고/장보기 → AI 한 바퀴 직접 확인** (이 저장소의 테스트는 서버 없이 도는 단위 테스트라, 실서버 왕복은 로그인이 필요해서 자동으로 검증하지 못했어요).
-- [ ] Apple Developer 에서 App ID `com.hyeji.ourmenu` 에 **Push Notifications**, **Associated Domains** 가 켜져 있는지 확인 (기존 앱과 같은 App ID 라 이미 돼 있을 거예요).
+- [ ] Apple Developer 에서 App ID `ourhomemenu` 에 **Push Notifications**, **Associated Domains** 가 켜져 있는지 확인 (기존 앱과 같은 App ID 라 이미 돼 있을 거예요).
 - [ ] 심사용 **테스트 계정** 준비 + App Store Connect "심사 메모"에 안내 (로그인 없이도 쓸 수 있는 게스트 모드가 있다는 점 포함).
 
 ## 1. 빌드 · 업로드
