@@ -23,7 +23,7 @@ final class ShareViewController: UIViewController {
 
         Task { @MainActor in
             await model.run(context: extensionContext)
-            if case .done = model.phase { try? await Task.sleep(for: .seconds(1.4)); close() }
+            if case .done = model.phase { try? await Task.sleep(for: .seconds(0.9)); close() }
         }
     }
 

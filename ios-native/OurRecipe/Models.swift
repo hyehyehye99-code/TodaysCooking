@@ -121,6 +121,8 @@ struct Member: Identifiable, Hashable, Codable {
     var role: String
     var tintHex: UInt32
     var isMe = false
+    /// 프로필 아이콘 ("mascot:이름" / 이모지 / nil = 기본 캐릭터)
+    var icon: String? = nil
 
     var tint: Color { Color(hex: tintHex) }
 }
@@ -163,7 +165,7 @@ struct SavedTimer: Identifiable, Hashable, Codable {
 }
 
 enum MyRoute: Hashable {
-    case profile, usage, mealboard, timers, fridge, account, tags, activity, about
+    case profile, usage, mealboard, timers, fridge, account, tags, activity, about, notifications
     case mealboardForm(UUID?)      // nil이면 새 메뉴판, 아니면 수정할 메뉴판
     case mealboardDetail(UUID)
     /// 메뉴판에서 레시피를 눌렀을 때: 레시피 탭으로 건너가지 않고 이 화면 위에 쌓아서, 뒤로가기가 메뉴판으로 돌아온다

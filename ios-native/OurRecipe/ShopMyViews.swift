@@ -83,6 +83,7 @@ struct ShopView: View {
             }
         }
         .listStyle(.plain)
+        .refreshable { await store.refreshAll() }
         .scrollContentBackground(.hidden)
         .scrollDismissesKeyboard(.interactively)
     }

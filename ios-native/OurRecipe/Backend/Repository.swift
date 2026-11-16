@@ -45,8 +45,8 @@ enum Repository {
         try await db.rpc("get_household_members", ["target_household_id": .string(household)])
     }
 
-    static func upsertProfile(nickname: String) async throws {
-        try await db.rpcVoid("upsert_my_profile", ["new_nickname": .string(nickname), "new_icon_emoji": .null])
+    static func upsertProfile(nickname: String, icon: String? = nil) async throws {
+        try await db.rpcVoid("upsert_my_profile", ["new_nickname": .string(nickname), "new_icon_emoji": icon.map(JSONValue.string) ?? .null])
     }
 
     // MARK: 가족 대화

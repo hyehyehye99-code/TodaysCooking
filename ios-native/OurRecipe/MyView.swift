@@ -1,4 +1,5 @@
 import SwiftUI
+import UserNotifications
 
 // MARK: - 마이페이지 (기존 우리집 레시피 웹 구조를 따라 단순화)
 
@@ -24,6 +25,7 @@ struct MyView: View {
                             }
                             group { navRow("보유중인 재료", icon: "tool-fridge", route: .fridge) }
                             group {
+                                navRow("알림 설정", route: .notifications); divider
                                 navRow("계정 관리", route: .account); divider
                                 navRow("태그 관리", route: .tags); divider
                                 navRow("활동 로그", route: .activity)
@@ -37,6 +39,7 @@ struct MyView: View {
                         }
                         .padding(.horizontal, 16).padding(.top, 8).padding(.bottom, 32)
                     }
+                    .refreshable { await store.refreshAll() }
                 }
             }
             .toolbar(.hidden, for: .navigationBar)
@@ -55,6 +58,7 @@ struct MyView: View {
                 case .tags: TagsPage()
                 case .activity: ActivityPage()
                 case .about: AboutPage()
+                case .notifications: NotificationSettingsPage()
                 }
             }
         }
@@ -66,8 +70,7 @@ struct MyView: View {
         VStack(spacing: 0) {
             NavigationLink(value: MyRoute.profile) {
                 HStack(spacing: 12) {
-                    Circle().fill(Theme.surface).frame(width: 52, height: 52)
-                        .overlay(Image("food-tomato").resizable().scaledToFit().frame(width: 40, height: 40))
+                    ProfileIconView(icon: me?.icon, name: me?.name ?? "", size: 52)
                     Text("\(me?.name ?? "")셰프").font(.suit(17, .bold)).foregroundStyle(Theme.ink)
                     Spacer()
                     chevron
@@ -204,14 +207,13 @@ struct SubPage<Content: View>: View {
 struct ProfilePage: View {
     @Environment(Store.self) private var store
     @State private var name = ""
+    @State private var icon: String?
     @State private var loaded = false
 
     var body: some View {
         SubPage(title: "프로필") {
-            VStack(spacing: 14) {
-                Circle().fill(Theme.surface).frame(width: 92, height: 92)
-                    .overlay(Image("food-tomato").resizable().scaledToFit().frame(width: 70, height: 70))
-                    .frame(maxWidth: .infinity)
+            VStack(spacing: 18) {
+                ProfileIconView(icon: icon, name: name, size: 92).frame(maxWidth: .infinity)
                 VStack(alignment: .leading, spacing: 8) {
                     SectionLabel("닉네임")
                     TextField("예) 영공", text: $name).font(.suit(16))
@@ -219,10 +221,19 @@ struct ProfilePage: View {
                     Text("우리집 안에서 “\(name.trimmingCharacters(in: .whitespaces))셰프”로 불려요")
                         .font(.suit(12.5)).foregroundStyle(Theme.sub).padding(.horizontal, 8)
                 }
-                PrimaryButton(title: "저장", disabled: name.trimmingCharacters(in: .whitespaces).isEmpty) { store.renameMe(name) }
+                VStack(alignment: .leading, spacing: 10) {
+                    SectionLabel("아이콘")
+                    ProfileIconPicker(icon: $icon)
+                }
+                PrimaryButton(title: "저장", disabled: name.trimmingCharacters(in: .whitespaces).isEmpty) { store.renameMe(name, icon: icon) }
             }
         }
-        .onAppear { if !loaded { loaded = true; name = store.members.first(where: \.isMe)?.name ?? "" } }
+        .onAppear {
+            guard !loaded else { return }
+            loaded = true
+            let me = store.members.first(where: \.isMe)
+            name = me?.name ?? ""; icon = me?.icon
+        }
     }
 }
 
@@ -470,6 +481,7 @@ struct LoginSheet: View {
 struct SetupView: View {
     @Environment(Store.self) private var store
     @State private var myName = ""
+    @State private var icon: String?
     @State private var kitchenName = "우리집"
     @FocusState private var focus: Field?
     private enum Field { case me, kitchen }
@@ -483,7 +495,7 @@ struct SetupView: View {
                 Spacer()
                 Button("취소") { Task { await store.cancelSetup() } }.font(.suit(14, .semibold)).foregroundStyle(Theme.sub)
             }
-            MascotImage(name: "chef-greeting", size: 72)
+            ProfileIconView(icon: icon, name: myName, size: 72)
             VStack(alignment: .leading, spacing: 6) {
                 Text("만나서 반가워요!").font(.suit(26, .bold)).tracking(-0.4)
                 Text(invited ? "가족에게 보여질 내 이름을 알려주세요." : "내 이름과 우리집 이름을 정해주세요.\n나중에 마이페이지에서 바꿀 수 있어요.")
@@ -493,10 +505,26 @@ struct SetupView: View {
                 field("내 이름", text: $myName, placeholder: "예: 혜지, 엄마", focus: .me)
                 if !invited { field("우리집 이름", text: $kitchenName, placeholder: "예: 우리집, 혜지네 주방", focus: .kitchen) }
             }
+            VStack(alignment: .leading, spacing: 8) {
+                Text("아이콘").font(.suit(13, .semibold)).foregroundStyle(Theme.sub)
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 10) {
+                        ForEach(ProfileIcon.mascots.prefix(24), id: \.self) { m in
+                            let token = ProfileIcon.token(m)
+                            Button { icon = token } label: {
+                                Image("pf-\(m)").resizable().scaledToFit().padding(7).frame(width: 52, height: 52)
+                                    .background(icon == token ? Theme.accentSoft : Theme.surface, in: Circle())
+                                    .overlay(Circle().strokeBorder(icon == token ? Theme.accent : .clear, lineWidth: 2))
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    }
+                }
+            }
             Spacer(minLength: 0)
             Button {
                 focus = nil
-                Task { await store.completeSetup(myName: myName.trimmingCharacters(in: .whitespaces),
+                Task { await store.completeSetup(myName: myName.trimmingCharacters(in: .whitespaces), icon: icon,
                                                  kitchenName: kitchenName.trimmingCharacters(in: .whitespaces)) }
             } label: {
                 Group {
@@ -642,5 +670,92 @@ struct AboutPage: View {
                 .padding(.horizontal, 16).paperCard()
             }
         }
+    }
+}
+
+
+// MARK: - 알림 설정
+
+struct NotificationSettingsPage: View {
+    @Environment(Store.self) private var store
+    @Environment(\.scenePhase) private var scenePhase
+    @State private var status: UNAuthorizationStatus = .notDetermined
+    @State private var on = PushManager.shared.isEnabled
+
+    private var allowedByIOS: Bool { status == .authorized || status == .provisional || status == .ephemeral }
+
+    var body: some View {
+        SubPage(title: "알림 설정") {
+            VStack(alignment: .leading, spacing: 14) {
+                HStack(spacing: 12) {
+                    VStack(alignment: .leading, spacing: 3) {
+                        Text("우리집 알림 받기").font(.suit(15.5, .bold))
+                        Text("가족이 메시지를 보내거나 장보기·요리를 제안하면 알려줘요").font(.suit(12.5)).foregroundStyle(Theme.sub).lineSpacing(2)
+                    }
+                    Spacer(minLength: 8)
+                    Toggle("", isOn: Binding(get: { on && allowedByIOS }, set: { v in
+                        on = v
+                        Task {
+                            if v {
+                                let ok = await PushManager.shared.enable()
+                                on = ok
+                                if !ok { store.showToast("iOS 설정에서 알림을 허용해주세요") }
+                            } else { await PushManager.shared.disable() }
+                            await refresh()
+                        }
+                    })).labelsHidden().tint(Theme.accent)
+                }
+                .padding(16).paperCard()
+
+                VStack(alignment: .leading, spacing: 10) {
+                    SectionLabel("이 기기의 상태")
+                    HStack(spacing: 8) {
+                        Circle().fill(allowedByIOS ? Color(hex: 0x34C38F) : Theme.warn).frame(width: 8, height: 8)
+                        Text(statusText).font(.suit(14, .semibold))
+                    }
+                    if !allowedByIOS && status != .notDetermined {
+                        Button { if let url = URL(string: UIApplication.openSettingsURLString) { UIApplication.shared.open(url) } } label: {
+                            Text("iOS 설정에서 알림 허용하기").font(.suit(14, .bold)).foregroundStyle(.white)
+                                .frame(maxWidth: .infinity).padding(.vertical, 13)
+                                .background(Theme.accent, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+                        }
+                        .buttonStyle(PressStyle())
+                    }
+                    Button { Task { await sendTest() } } label: {
+                        Text("테스트 알림 받아보기").font(.suit(14, .bold)).foregroundStyle(Theme.accent)
+                            .frame(maxWidth: .infinity).padding(.vertical, 13)
+                            .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous).strokeBorder(Theme.accent, lineWidth: 1.2))
+                    }
+                    .buttonStyle(PressStyle()).disabled(!allowedByIOS)
+                    Text("테스트 알림은 이 기기에서 3초 뒤에 떠요. 보이면 기기 설정은 정상이에요.").font(.suit(12)).foregroundStyle(Theme.faint)
+                }
+                .padding(16).frame(maxWidth: .infinity, alignment: .leading).paperCard()
+            }
+        }
+        .task { await refresh() }
+        .onChange(of: scenePhase) { _, p in if p == .active { Task { await refresh() } } }
+    }
+
+    private var statusText: String {
+        switch status {
+        case .authorized, .provisional, .ephemeral: return on ? "알림을 받고 있어요" : "알림을 꺼 두었어요"
+        case .denied: return "iOS 설정에서 알림이 꺼져 있어요"
+        default: return "아직 알림 권한을 묻지 않았어요"
+        }
+    }
+
+    private func refresh() async {
+        status = await UNUserNotificationCenter.current().notificationSettings().authorizationStatus
+        on = PushManager.shared.isEnabled
+    }
+
+    private func sendTest() async {
+        let content = UNMutableNotificationContent()
+        content.title = "알림 테스트"
+        content.body = "이 알림이 보이면 이 기기의 알림 설정은 정상이에요 🙂"
+        content.sound = .default
+        let req = UNNotificationRequest(identifier: "notification-test", content: content, trigger: UNTimeIntervalNotificationTrigger(timeInterval: 3, repeats: false))
+        try? await UNUserNotificationCenter.current().add(req)
+        store.showToast("3초 뒤에 알림이 떠요")
     }
 }

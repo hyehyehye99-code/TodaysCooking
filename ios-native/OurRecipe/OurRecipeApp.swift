@@ -17,6 +17,7 @@ struct OurRecipeApp: App {
                 .tint(Theme.accent)
                 .font(.suit(15))
                 .onOpenURL { store.handleURL($0) }
+                .onAppear { KeyboardDismisser.install() }
                 .onChange(of: scenePhase) { _, phase in
                     if phase == .active { Task { await store.refreshIfNeeded() } }
                 }

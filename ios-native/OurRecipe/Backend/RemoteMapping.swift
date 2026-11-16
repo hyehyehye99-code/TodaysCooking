@@ -87,6 +87,7 @@ extension Member {
         let isMe = m.user_id == myUserId
         let name = (m.nickname?.isEmpty == false ? m.nickname : nil) ?? fallback
         self.init(userId: m.user_id, name: name, role: (m.role == "owner" ? "대장" : "참여자") + (isMe ? " (나)" : ""),
-                  tintHex: Recipe.tints[Recipe.stableIndex(m.user_id, Recipe.tints.count)], isMe: isMe)
+                  tintHex: Recipe.tints[Recipe.stableIndex(m.user_id, Recipe.tints.count)], isMe: isMe,
+                  icon: (m.icon_emoji?.isEmpty == false) ? m.icon_emoji : nil)
     }
 }

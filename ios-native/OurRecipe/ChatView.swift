@@ -75,9 +75,7 @@ struct MateAvatar: View {
     let name: String
     var size: CGFloat = 32
     var body: some View {
-        let tint = store.members.first { $0.name == name }?.tint ?? Theme.surface
-        Circle().fill(tint).frame(width: size, height: size)
-            .overlay(Text(String(name.prefix(1))).font(.suit(size * 0.42, .heavy)).foregroundStyle(Theme.ink.opacity(0.75)))
+        ProfileIconView(icon: store.members.first { $0.name == name }?.icon, name: name, size: size)
     }
 }
 
@@ -89,6 +87,8 @@ struct ChatView: View {
     @State private var linkMode = false
     @State private var askReset = false
     @State private var clipHasLink = false
+    /// X 로 닫은 클립보드(내용이 바뀌기 전까지 다시 띄우지 않는다)
+    @AppStorage("clipDismissedCount") private var clipDismissedCount = -1
     @Environment(\.scenePhase) private var scenePhase
     @FocusState private var focused: Bool
 
@@ -106,7 +106,7 @@ struct ChatView: View {
         .task {
             while !Task.isCancelled {
                 await store.pollMessages()
-                try? await Task.sleep(for: .seconds(3))
+                try? await Task.sleep(for: .seconds(8))
             }
         }
         .onChange(of: store.draft) { _, v in if let v { input = v; store.draft = nil; focused = true } }
@@ -252,6 +252,7 @@ struct ChatView: View {
                 .padding(.horizontal, 14).padding(.vertical, 8)
             }
             .scrollDismissesKeyboard(.interactively)
+            .refreshable { await store.refreshAll() }
             .onChange(of: store.msgs.count) { scroll(proxy) }
             .onChange(of: store.typing) { scroll(proxy) }
             .onAppear { proxy.scrollTo("end") }
@@ -358,7 +359,7 @@ struct ChatView: View {
 
     private var composer: some View {
         VStack(spacing: 8) {
-            if clipHasLink && input.isEmpty {
+            if clipHasLink && input.isEmpty && UIPasteboard.general.changeCount != clipDismissedCount {
                 // 시스템 붙여넣기 버튼은 "붙여넣기 허용" 알림 없이 한 번 누르면 바로 읽어 온다
                 HStack(spacing: 10) {
                     Image(systemName: "link").font(.system(size: 13, weight: .bold)).foregroundStyle(Theme.accent)
@@ -370,7 +371,12 @@ struct ChatView: View {
                         hint = nil
                         if text.contains("http") { store.submit(text, ai: true) } else { input = text; focused = true }
                     }
-                    .labelStyle(.titleOnly).buttonBorderShape(.capsule).tint(Theme.accent)
+                    .labelStyle(.titleOnly).buttonBorderShape(.capsule).tint(Theme.accent).controlSize(.small)
+                    Button { clipDismissedCount = UIPasteboard.general.changeCount } label: {
+                        Image(systemName: "xmark").font(.system(size: 11, weight: .bold)).foregroundStyle(Theme.sub)
+                            .frame(width: 26, height: 26)
+                    }
+                    .buttonStyle(.plain).accessibilityLabel("닫기")
                 }
                 .padding(.leading, 14).padding(.trailing, 8).padding(.vertical, 6)
                 .background(Theme.accentSoft, in: RoundedRectangle(cornerRadius: 16, style: .continuous))

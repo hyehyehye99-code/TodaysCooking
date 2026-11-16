@@ -54,8 +54,7 @@ struct FamilySection: View {
     @ViewBuilder
     private func row(_ m: Member) -> some View {
         let content = HStack(spacing: 12) {
-            Circle().fill(m.tint).frame(width: 38, height: 38)
-                .overlay(Text(String(m.name.prefix(1))).font(.suit(15, .heavy)).foregroundStyle(m.isMe ? Theme.accent : Theme.ink))
+            ProfileIconView(icon: m.icon, name: m.name, size: 40)
             VStack(alignment: .leading, spacing: 1) {
                 Text(m.name).font(.suit(15, .semibold)).foregroundStyle(Theme.ink)
                 Text(m.role).font(.suit(12.5)).foregroundStyle(Theme.sub)
@@ -79,8 +78,7 @@ struct MemberSheet: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             HStack(spacing: 14) {
-                Circle().fill(member.tint).frame(width: 56, height: 56)
-                    .overlay(Text(String(member.name.prefix(1))).font(.suit(22, .heavy)))
+                ProfileIconView(icon: member.icon, name: member.name, size: 56)
                 VStack(alignment: .leading, spacing: 3) {
                     Text("\(member.name)셰프").font(.suit(20, .bold)).tracking(-0.3)
                     Text(member.role).font(.suit(13)).foregroundStyle(Theme.sub)

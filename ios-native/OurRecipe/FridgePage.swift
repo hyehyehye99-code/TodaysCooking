@@ -177,6 +177,7 @@ struct FridgePage: View {
             }
         }
         .listStyle(.plain)
+        .refreshable { await store.refreshAll() }
         .scrollContentBackground(.hidden)
         .scrollDismissesKeyboard(.interactively)
     }
@@ -206,7 +207,6 @@ struct FridgePage: View {
         let content = HStack(spacing: 10) {
             VStack(alignment: .leading, spacing: 2) {
                 Text(f.name).font(.suit(16, .semibold)).foregroundStyle(Theme.ink)
-                Text(f.amt).font(.suit(12.5)).foregroundStyle(Theme.sub)
             }
             Spacer(minLength: 8)
             if let d = f.ddayText {
@@ -349,11 +349,6 @@ struct FridgeEditSheet: View {
                 TextField("재료 이름", text: $name).font(.suit(16))
                     .padding(.horizontal, 14).frame(height: 48)
                     .background(Theme.surface, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
-                if !store.isRemote {
-                    TextField("수량", text: $amt).font(.suit(16))
-                        .padding(.horizontal, 14).frame(width: 96, height: 48)
-                        .background(Theme.surface, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
-                }
             }
             VStack(alignment: .leading, spacing: 8) {
                 Text("유통기한").font(.suit(13, .semibold)).foregroundStyle(Theme.sub)

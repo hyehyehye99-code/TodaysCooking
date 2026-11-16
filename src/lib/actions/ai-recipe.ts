@@ -1,6 +1,6 @@
 "use server";
 
-import { GoogleGenAI, Type } from "@google/genai";
+import { GoogleGenAI, Type, ThinkingLevel } from "@google/genai";
 import { createClient } from "@/lib/supabase/server";
 import { fetchLinkPreview } from "@/lib/actions/link-preview";
 import { resolveAiQuota, spendAiQuota, FREE_WEEKLY_LIMIT } from "@/lib/ai-quota";
@@ -141,7 +141,13 @@ type RecipeContentResult =
 // Deliberately not itself charging any per-user quota: that's the caller's
 // job.
 async function generateRecipeContent(url: string): Promise<RecipeContentResult> {
-  const preview = await fetchLinkPreview(url);
+  // The preview and the YouTube details don't depend on each other, so fetch
+  // them together instead of one after the other.
+  const videoId = extractYoutubeVideoId(url);
+  const [preview, videoDetails] = await Promise.all([
+    fetchLinkPreview(url),
+    videoId ? fetchYoutubeVideoDetails(videoId) : Promise.resolve(null),
+  ]);
   if (!preview.ok) return { ok: false, error: preview.error };
   if (!preview.title) {
     return { ok: false, error: "링크에서 정보를 가져오지 못했어요." };
@@ -151,9 +157,6 @@ async function generateRecipeContent(url: string): Promise<RecipeContentResult> 
   // description or comments — but that's frequently exactly where a creator
   // pastes the actual written recipe. Pull it via the YouTube Data API when
   // configured, so the model can extract the real thing instead of guessing.
-  const videoId = extractYoutubeVideoId(url);
-  const videoDetails = videoId ? await fetchYoutubeVideoDetails(videoId) : null;
-
   const contextLines = [`링크: ${preview.url}`, `제목: ${preview.title}`];
   if (videoDetails?.description) {
     contextLines.push(`영상 설명란:\n${videoDetails.description}`);
@@ -201,6 +204,9 @@ async function generateRecipeContent(url: string): Promise<RecipeContentResult> 
       config: {
         responseMimeType: "application/json",
         responseSchema: RECIPE_SCHEMA,
+        // Extraction from given text doesn't need deep reasoning; measured
+        // ~7-9s at the default level vs ~2s at LOW.
+        thinkingConfig: { thinkingLevel: ThinkingLevel.LOW },
       },
     });
 

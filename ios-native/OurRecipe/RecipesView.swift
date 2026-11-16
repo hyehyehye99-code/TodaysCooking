@@ -168,6 +168,7 @@ struct RecipesView: View {
                         }
                     }
                 }
+                .refreshable { await store.refreshAll() }
             }
         }
     }

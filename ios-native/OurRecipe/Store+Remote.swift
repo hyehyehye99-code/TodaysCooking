@@ -272,12 +272,12 @@ extension Store {
     }
 
     /// 가입 설정 화면에서 "시작하기": 내 이름 저장 → (초대받았다면 그 우리집에 참여, 아니면) 새 우리집 만들기
-    func completeSetup(myName: String, kitchenName: String) async {
+    func completeSetup(myName: String, icon: String? = nil, kitchenName: String) async {
         guard let uid = userId, !setupBusy else { return }
         setupBusy = true
         defer { setupBusy = false }
         do {
-            try await Repository.upsertProfile(nickname: myName)
+            try await Repository.upsertProfile(nickname: myName, icon: icon)
             var joined = false
             if let code = pendingInviteCode {
                 pendingInviteCode = nil
@@ -304,6 +304,7 @@ extension Store {
     }
 
     private func leaveRemote() {
+        stopRealtime()
         isRemote = false
         userId = nil
         userEmail = nil
@@ -371,6 +372,7 @@ extension Store {
             kitchens[currentKitchen].members = people
             recipes = newRecipes; fridge = newFridge; shop = newShop
             Task { await PushManager.shared.syncToken() }
+            startRealtime(hid)
         } catch {
             reportSyncFailure(error)
         }
@@ -393,6 +395,25 @@ extension Store {
     /// 앱이 다시 앞으로 올 때: 가족이 바꾼 내용을 받아온다 (내가 보낼 변경이 남아 있으면 건너뛴다)
     func refreshIfNeeded() async {
         guard isRemote, !sync.pushing, !(saveTask.map { !$0.isCancelled } ?? false) else { return }
+        await loadHousehold()
+        await pollMessages()
+    }
+
+    /// 지금 우리집의 새 대화를 실시간으로 받는다 (이미 같은 우리집이면 그대로 둔다)
+    func startRealtime(_ household: String) {
+        if realtime == nil { realtime = RealtimeListener { [weak self] in await self?.pollMessages() } }
+        guard realtimeHousehold != household else { return }
+        realtimeHousehold = household
+        realtime?.start(household: household)
+    }
+
+    func stopRealtime() {
+        realtime?.stop(); realtimeHousehold = nil
+    }
+
+    /// 아래로 당겨 새로고침: 우리집 데이터와 가족 대화를 다시 읽는다
+    func refreshAll() async {
+        guard isRemote else { return }
         await loadHousehold()
         await pollMessages()
     }
@@ -512,7 +533,9 @@ extension Store {
             }
         }
         for idea in reply.ideas { push(Msg(fromMe: false, card: .idea(idea), mood: "idea")) }
-        if !reply.actions.isEmpty { push(Msg(fromMe: false, actions: reply.actions)) }
+        // 시키지 않은 "어울리는 국 추천받기" 같은 이어서 묻기 제안은 보여 주지 않고, 장보기 담기만 남긴다
+        let actions = reply.actions.filter { if case .addShopping = $0 { return true } else { return false } }
+        if !actions.isEmpty { push(Msg(fromMe: false, actions: actions)) }
     }
 
     /// 새 메뉴 폼의 "AI로 재료·레시피 자동 작성": 서버가 링크를 분석해 레시피북에 저장한다. 저장되면 true

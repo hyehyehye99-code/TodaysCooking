@@ -51,6 +51,8 @@ final class Store {
     var pendingInviteCode: String?
     /// 처음 가입한 사람이 이름과 우리집 이름을 정하는 화면을 띄운다 (로그인은 됐지만 속한 우리집이 아직 없을 때)
     var needsSetup = false
+    @ObservationIgnored var realtime: RealtimeListener?
+    @ObservationIgnored var realtimeHousehold: String?
     var setupBusy = false
     /// 로그인 화면에서 막 열린 시트를 로그인 성공 후 닫기 위한 신호
     var showLogin = false
@@ -227,7 +229,7 @@ final class Store {
         } else if inShop {                // 구매 필요 → 보유 중
             shop.removeAll { $0.name == name }
             if !have {
-                fridge.append(FridgeItem(name: name, amt: ing.amt.isEmpty ? "1개" : ing.amt, days: nil))
+                fridge.append(FridgeItem(name: name, amt: "", days: nil))
                 recipes[ri].chipFridge.insert(name)
                 showToast("냉장고에 재료를 추가했어요")
             }
@@ -379,7 +381,7 @@ final class Store {
         let bought = shop.filter(\.checked)
         guard !bought.isEmpty else { return }
         for b in bought where !inFridge(b.name) {
-            fridge.append(FridgeItem(name: b.name, amt: b.amt, days: nil))
+            fridge.append(FridgeItem(name: b.name, amt: "", days: nil))
         }
         shop.removeAll { $0.checked }
         showToast("냉장고에 재료 \(bought.count)개를 추가했어요")
@@ -395,7 +397,7 @@ final class Store {
         guard !n.isEmpty else { return false }
         guard !inFridge(n) else { showToast("이미 냉장고에 있어요"); return false }
         let a = amt.trimmingCharacters(in: .whitespaces)
-        fridge.append(FridgeItem(name: n, amt: a.isEmpty ? "1개" : a, expiry: expiry))
+        fridge.append(FridgeItem(name: n, amt: a, expiry: expiry))
         showToast("냉장고에 재료를 추가했어요")
         return true
     }
@@ -471,13 +473,14 @@ final class Store {
         return base.appendingPathComponent("join").absoluteString + "?code=\(inviteCode)"
     }
 
-    func renameMe(_ name: String) {
+    func renameMe(_ name: String, icon: String? = nil) {
         let n = name.trimmingCharacters(in: .whitespaces)
         guard !n.isEmpty, let i = members.firstIndex(where: \.isMe) else { return }
         members[i].name = n
+        members[i].icon = icon
         if isRemote {
             Task {
-                do { try await Repository.upsertProfile(nickname: n) }
+                do { try await Repository.upsertProfile(nickname: n, icon: icon) }
                 catch { reportSyncFailure(error) }
             }
         }

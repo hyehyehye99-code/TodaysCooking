@@ -1,4 +1,4 @@
-import { GoogleGenAI, Type } from "@google/genai";
+import { GoogleGenAI, ThinkingLevel, Type } from "@google/genai";
 import { pickDishEmoji } from "@/lib/assistant/dish-emoji";
 import { missingIngredients, toRecipeCard, type KitchenContext } from "@/lib/assistant/household-data";
 import type { AssistantAction, AssistantIdea, AssistantReply } from "@/lib/assistant/types";
@@ -157,6 +157,7 @@ export async function runAssistantChat(
         systemInstruction: `${SYSTEM_PROMPT}${options.recipesOnly ? RECIPES_ONLY_PROMPT : ""}\n\n${kitchenSummary(ctx)}`,
         responseMimeType: "application/json",
         responseSchema: RESPONSE_SCHEMA,
+        thinkingConfig: { thinkingLevel: ThinkingLevel.LOW },
       },
     });
     const data = JSON.parse(response.text ?? "");
