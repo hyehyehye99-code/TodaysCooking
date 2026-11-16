@@ -87,8 +87,6 @@ struct ChatView: View {
     @State private var hint: String?
     /// "링크로 레시피 등록"을 눌렀을 때만 true: 다음에 보내는 말은 가족이 아니라 AI 셰프가 처리한다
     @State private var linkMode = false
-    /// 대화 상대: false = 가족, true = AI 셰프
-    @State private var toChef = false
     @State private var askReset = false
     @State private var clipHasLink = false
     @Environment(\.scenePhase) private var scenePhase
@@ -193,7 +191,7 @@ struct ChatView: View {
                 MascotImage(name: "chef-greeting", size: 176, breathing: true)
                 Text(store.greetingName)
                     .font(.suit(22, .bold)).tracking(-0.3).foregroundStyle(Theme.ink).padding(.top, 14)
-                Text("가족과도, \(store.chefName)와도 이야기할 수 있어요").font(.suit(13.5)).foregroundStyle(Theme.sub).padding(.top, 6)
+                Text("가족과 이야기하고, \(store.chefName)에게 링크 정리와 냉장고 추천을 맡겨요").font(.suit(13.5)).foregroundStyle(Theme.sub).padding(.top, 6)
                 VStack(spacing: 10) {
                     quickStart(image: "reading-recipe", title: "링크로 레시피 등록", desc: "유튜브·인스타 링크만 붙여넣으면 끝") {
                         startLinkMode()
@@ -378,16 +376,10 @@ struct ChatView: View {
                 .background(Theme.accentSoft, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
                 .transition(.opacity)
             }
-            // 누구에게 말할지 고른다: 가족(기본) 또는 AI 셰프
-            HStack(spacing: 0) {
-                targetTab("가족", icon: "person.2.fill", on: !toChef && !linkMode) { toChef = false; linkMode = false; hint = nil }
-                targetTab(store.chefName, icon: "sparkle", on: toChef || linkMode) { toChef = true }
-                Spacer(minLength: 0)
-            }
             // 첫 대화 이후에도 AI 기능은 입력창 바로 위에서 계속 고를 수 있다
-            if !store.msgs.isEmpty && !focused {
+            if !focused {
                 HStack(spacing: 8) {
-                    optionChip(image: "reading-recipe", title: "링크로 레시피 등록", on: linkMode) { startLinkMode() }
+                    optionChip(image: "reading-recipe", title: "링크로 레시피 등록", on: linkMode) { if linkMode { linkMode = false; hint = nil } else { startLinkMode() } }
                     optionChip(image: "fridge-open", title: "냉장고 파먹기", on: false) { linkMode = false; hint = nil; store.askFridge() }
                     Spacer(minLength: 0)
                 }
@@ -406,7 +398,7 @@ struct ChatView: View {
                 }
                 .buttonStyle(PressStyle()).accessibilityLabel("링크 입력")
 
-                TextField(linkMode ? "유튜브·인스타 링크를 붙여넣어 주세요" : (toChef ? "\(store.chefName)에게 물어보기" : (store.isRemote ? "가족에게 메시지 보내기" : "메시지 보내기")), text: $input)
+                TextField(linkMode ? "유튜브·인스타 링크를 붙여넣어 주세요" : (store.isRemote ? "가족에게 메시지 보내기" : "메시지 보내기"), text: $input)
                     .focused($focused).font(.suit(16)).submitLabel(.send).onSubmit(send)
                     .textInputAutocapitalization(.never).autocorrectionDisabled()
 
@@ -444,30 +436,17 @@ struct ChatView: View {
     private func send() {
         guard canSend else { return }
         let t = input
+        if linkMode && !t.contains("http") { hint = "링크(https://...)를 붙여넣어 주세요"; return }   // AI 는 링크 정리·냉장고 추천만 맡는다
         input = ""
         hint = nil
-        store.submit(t, ai: linkMode || toChef)
+        store.submit(t, ai: linkMode)
         linkMode = false
     }
 
     private func startLinkMode() {
         linkMode = true
-        toChef = true
         hint = "유튜브·인스타 링크를 붙여넣어 주세요"
         focused = true
-    }
-
-    private func targetTab(_ title: String, icon: String, on: Bool, run: @escaping () -> Void) -> some View {
-        Button(action: run) {
-            HStack(spacing: 5) {
-                Image(systemName: icon).font(.system(size: 11, weight: .bold))
-                Text(title).font(.suit(12.5, .bold)).lineLimit(1)
-            }
-            .foregroundStyle(on ? .white : Theme.sub)
-            .padding(.horizontal, 12).padding(.vertical, 6)
-            .background(on ? Theme.accent : Color.clear, in: Capsule())
-        }
-        .buttonStyle(.plain)
     }
 
     private func optionChip(image: String, title: String, on: Bool, run: @escaping () -> Void) -> some View {
