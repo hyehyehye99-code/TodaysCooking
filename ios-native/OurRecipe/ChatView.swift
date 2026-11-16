@@ -52,6 +52,13 @@ struct ChatCard: View {
                 actions: picks.map { r in CardAction(label: r.title) { store.openRecipe(r.id) } }
                     + [CardAction(label: "냉장고 수정") { store.showFridge = true }])
 
+        case .idea(let idea):
+            let saved = store.savedIdeas.contains(idea)
+            InlineCard(
+                icon: "tool-recipebook", title: "\(idea.emoji) \(idea.title)", sub: idea.summary,
+                table: idea.ingredients.map { TableRow(name: $0.name, amt: $0.amount) },
+                actions: [saved ? CardAction(label: "저장됨", disabled: true) {} : CardAction(label: "레시피북에 저장", kind: .primary) { store.saveIdea(idea) }])
+
         case .shop:
             let open = store.shop.filter { !$0.checked }
             InlineCard(
@@ -93,8 +100,11 @@ struct ChatView: View {
         .background(Color.white.ignoresSafeArea())
         .safeAreaInset(edge: .bottom, spacing: 0) { composer }
         .task { refreshClipboard() }
+        .onChange(of: store.draft) { _, v in if let v { input = v; store.draft = nil; focused = true } }
         .onChange(of: scenePhase) { _, phase in if phase == .active { refreshClipboard() } }
+        #if DEBUG
         .task { if UserDefaults.standard.bool(forKey: "askreset") { try? await Task.sleep(for: .seconds(2)); askReset = true } }
+        #endif
         // 화면 가운데에 뜨는 알림 창 (확인 창은 입력창 쪽에 팝오버로 붙어서 위치가 어색했다)
         .alert("대화를 초기화할까요?", isPresented: $askReset) {
             Button("취소", role: .cancel) {}
@@ -113,9 +123,11 @@ struct ChatView: View {
                     HStack(spacing: 12) {
                         ZStack(alignment: .bottomTrailing) {
                             Avatar(name: "chef-greeting", size: 44)
-                            MateAvatar(name: "민준", size: 22)
-                                .overlay(Circle().strokeBorder(.white, lineWidth: 2))
-                                .offset(x: 5, y: 3)
+                            if let other = store.members.first(where: { !$0.isMe }) {
+                                MateAvatar(name: other.name, size: 22)
+                                    .overlay(Circle().strokeBorder(.white, lineWidth: 2))
+                                    .offset(x: 5, y: 3)
+                            }
                         }
                         .frame(width: 48, height: 46, alignment: .topLeading)
                         VStack(alignment: .leading, spacing: 2) {
@@ -168,7 +180,7 @@ struct ChatView: View {
             VStack(spacing: 0) {
                 Spacer(minLength: 12)
                 MascotImage(name: "chef-greeting", size: 176, breathing: true)
-                Text("안녕하세요 \(store.members.first(where: \.isMe)?.name ?? "")셰프님")
+                Text(store.greetingName)
                     .font(.suit(22, .bold)).tracking(-0.3).foregroundStyle(Theme.ink).padding(.top, 14)
                 VStack(spacing: 10) {
                     quickStart(image: "reading-recipe", title: "링크로 레시피 등록", desc: "유튜브·인스타 링크만 붙여넣으면 끝") {
@@ -297,6 +309,13 @@ struct ChatView: View {
                             .background(Theme.surface, in: bubbleShape(mine: false, first: first, last: last && m.card == nil))
                     }
                     if let c = m.card { ChatCard(kind: c).frame(maxWidth: 340) }
+                    if !m.actions.isEmpty && isLastMsg {
+                        FlowLayout(spacing: 6) {
+                            ForEach(Array(m.actions.enumerated()), id: \.offset) { _, a in
+                                Chip(label: a.label) { store.perform(a) }
+                            }
+                        }
+                    }
                 }
                 Spacer(minLength: 24)
             }
@@ -306,16 +325,24 @@ struct ChatView: View {
     private var typingBubble: some View {
         HStack(alignment: .bottom, spacing: 8) {
             Avatar(name: "chef-greeting", size: 32)
-            HStack(spacing: 4) {
-                ForEach(0..<3) { i in
-                    Circle().fill(Theme.faint).frame(width: 6, height: 6)
-                        .phaseAnimator([0.3, 1.0]) { v, p in v.opacity(p) } animation: { _ in .easeInOut(duration: 0.55).delay(Double(i) * 0.15) }
+            if let text = store.progress {
+                Text(text).font(.suit(14)).foregroundStyle(Theme.ink)
+                    .padding(.horizontal, 14).padding(.vertical, 10)
+                    .background(Theme.surface, in: Capsule())
+                    .transition(.opacity)
+            } else {
+                HStack(spacing: 4) {
+                    ForEach(0..<3) { i in
+                        Circle().fill(Theme.faint).frame(width: 6, height: 6)
+                            .phaseAnimator([0.3, 1.0]) { v, p in v.opacity(p) } animation: { _ in .easeInOut(duration: 0.55).delay(Double(i) * 0.15) }
+                    }
                 }
+                .padding(.horizontal, 16).padding(.vertical, 15)
+                .background(Theme.surface, in: Capsule())
             }
-            .padding(.horizontal, 16).padding(.vertical, 15)
-            .background(Theme.surface, in: Capsule())
             Spacer()
         }
+        .animation(.easeOut(duration: 0.2), value: store.progress)
     }
 
     // MARK: 입력창
@@ -379,10 +406,10 @@ struct ChatView: View {
 
     /// 클립보드에 링크가 있는지만 확인한다 (내용을 읽지 않으므로 iOS 붙여넣기 알림이 뜨지 않는다)
     private func refreshClipboard() {
-        UIPasteboard.general.detectPatterns(for: [.probableWebURL]) { result in
-            let found: Bool
-            if case .success(let set) = result { found = set.contains(.probableWebURL) } else { found = false }
-            DispatchQueue.main.async { clipHasLink = found }
+        Task {
+            let key: PartialKeyPath<UIPasteboard.DetectedValues> = \.probableWebURL
+            let found = try? await UIPasteboard.general.detectedPatterns(for: [key])
+            clipHasLink = found?.contains(key) ?? false
         }
     }
 

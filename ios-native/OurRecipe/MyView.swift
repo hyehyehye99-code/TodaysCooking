@@ -15,7 +15,7 @@ struct MyView: View {
                     PageHeader(title: "마이페이지", showKitchen: false)
                     ScrollView {
                         VStack(spacing: 12) {
-                            profileCard
+                            if store.auth.isSignedIn || !store.auth.isAvailable { profileCard } else { LoginCard() }
                             householdHeader
                             kitchenCard
                             group {
@@ -95,7 +95,7 @@ struct MyView: View {
         HStack {
             SectionLabel("우리집 관리")
             Spacer()
-            Button("+ 우리집 추가") { store.showToast("목업이라 연결되어 있지 않아요") }
+            Button("+ 우리집 추가") { store.showKitchenSettings = true }
                 .font(.suit(13, .semibold)).foregroundStyle(Theme.sub).padding(.horizontal, 8)
         }
         .padding(.top, 6)
@@ -119,7 +119,7 @@ struct MyView: View {
                     Text("초대하기").font(.suit(13, .bold)).foregroundStyle(.white)
                         .padding(.horizontal, 14).padding(.vertical, 9)
                         .background(Theme.accent, in: Capsule())
-                        .onTapGesture { store.copy(Sample.inviteLink, done: "링크를 복사했어요!") }
+                        .onTapGesture { if store.inviteLink.isEmpty { store.showToast("로그인하면 가족을 초대할 수 있어요") } else { store.copy(store.inviteLink, done: "링크를 복사했어요!") } }
                 }
             }
             .padding(16).frame(maxWidth: .infinity, alignment: .leading)
@@ -235,14 +235,14 @@ struct UsagePage: View {
                     HStack(spacing: 10) {
                         Image("idea").resizable().scaledToFit().frame(width: 40, height: 40)
                         VStack(alignment: .leading, spacing: 2) {
-                            Text("이번 주 AI 자동 정리 \(store.aiUsed)/\(store.aiLimit)회 사용").font(.suit(15, .bold))
+                            Text(store.aiUnlimited ? "AI 자동 정리를 마음껏 쓸 수 있어요" : "이번 주 AI 사용량 \(Int(store.aiPercent))%").font(.suit(15, .bold))
                             Text("프로모션 보너스 \(store.aiBonus)회 남음").font(.suit(12.5)).foregroundStyle(Theme.sub)
                         }
                     }
                     GeometryReader { g in
                         ZStack(alignment: .leading) {
                             Capsule().fill(Theme.surface)
-                            Capsule().fill(Theme.accent).frame(width: g.size.width * CGFloat(store.aiUsed) / CGFloat(store.aiLimit))
+                            Capsule().fill(Theme.accent).frame(width: g.size.width * CGFloat(min(max(store.aiPercent, 0), 100) / 100))
                         }
                     }
                     .frame(height: 8)
@@ -336,39 +336,103 @@ struct TimersPage: View {
 struct AccountPage: View {
     @Environment(Store.self) private var store
     @State private var askDelete = false
+    @State private var typed = ""
 
     var body: some View {
         SubPage(title: "계정 관리") {
-            VStack(alignment: .leading, spacing: 8) {
-                SectionLabel("연결된 계정")
-                HStack(spacing: 12) {
-                    Image(systemName: "apple.logo").font(.system(size: 20)).frame(width: 38, height: 38)
-                        .background(Theme.surface, in: Circle())
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text("Apple로 가입했어요").font(.suit(15, .semibold))
-                        Text("hello@example.com").font(.suit(12.5)).foregroundStyle(Theme.sub)
+            if !store.auth.isSignedIn {
+                LoginCard()
+            } else {
+                VStack(alignment: .leading, spacing: 8) {
+                    SectionLabel("연결된 계정")
+                    HStack(spacing: 12) {
+                        Image(systemName: "person.crop.circle.fill").font(.system(size: 22)).foregroundStyle(Theme.accent)
+                            .frame(width: 38, height: 38).background(Theme.accentSoft, in: Circle())
+                        Text(store.userEmail ?? "로그인됨").font(.suit(15, .semibold))
+                        Spacer()
                     }
-                    Spacer()
+                    .padding(14).paperCard()
                 }
-                .padding(14).paperCard()
+                Button { Task { await store.signOut() } } label: {
+                    Text("로그아웃").font(.suit(15, .semibold)).foregroundStyle(Theme.ink)
+                        .frame(maxWidth: .infinity).padding(.vertical, 15).paperCard()
+                }
+                .buttonStyle(PressStyle())
+                Button { typed = ""; askDelete = true } label: {
+                    Text("회원 탈퇴").font(.suit(15, .semibold)).foregroundStyle(Theme.warn)
+                        .frame(maxWidth: .infinity).padding(.vertical, 15).paperCard()
+                }
+                .buttonStyle(PressStyle())
             }
-            Button { store.showToast("목업이라 로그아웃은 없어요") } label: {
-                Text("로그아웃").font(.suit(15, .semibold)).foregroundStyle(Theme.ink)
-                    .frame(maxWidth: .infinity).padding(.vertical, 15).paperCard()
-            }
-            .buttonStyle(PressStyle())
-            Button { askDelete = true } label: {
-                Text("회원 탈퇴").font(.suit(15, .semibold)).foregroundStyle(Theme.warn)
-                    .frame(maxWidth: .infinity).padding(.vertical, 15).paperCard()
-            }
-            .buttonStyle(PressStyle())
         }
-        .confirmationDialog("탈퇴하면 계정이 완전히 삭제돼요", isPresented: $askDelete, titleVisibility: .visible) {
-            Button("탈퇴하기", role: .destructive) { store.showToast("목업이라 탈퇴는 되지 않아요") }
-            Button("취소", role: .cancel) {}
-        } message: {
-            Text("내가 대장인 우리집은 가장 먼저 들어온 다른 참여자에게 넘어가고, 나 혼자 있는 우리집은 함께 삭제돼요. 되돌릴 수 없어요.")
+        .sheet(isPresented: $askDelete) {
+            VStack(alignment: .leading, spacing: 14) {
+                Text("탈퇴하면 계정이 완전히 삭제돼요").font(.suit(20, .bold)).tracking(-0.3)
+                Text("내가 대장인 우리집은 가장 먼저 들어온 다른 참여자에게 넘어가고, 나 혼자 있는 우리집은 함께 삭제돼요. 되돌릴 수 없어요.")
+                    .font(.suit(13.5)).foregroundStyle(Theme.sub).lineSpacing(3)
+                Text("확인을 위해 탈퇴를 입력해주세요.").font(.suit(13, .semibold))
+                TextField("탈퇴", text: $typed).font(.suit(16)).padding(.horizontal, 16).frame(height: 52)
+                    .background(Theme.surface, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+                HStack(spacing: 8) {
+                    Button { askDelete = false } label: {
+                        Text("취소").font(.suit(15, .bold)).foregroundStyle(Theme.ink)
+                            .frame(maxWidth: .infinity).padding(.vertical, 14)
+                            .background(Theme.surface, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+                    }
+                    Button { askDelete = false; Task { await store.deleteAccount() } } label: {
+                        Text("탈퇴하기").font(.suit(15, .bold)).foregroundStyle(typed == "탈퇴" ? .white : Theme.faint)
+                            .frame(maxWidth: .infinity).padding(.vertical, 14)
+                            .background(typed == "탈퇴" ? Theme.warn : Theme.surface, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+                    }
+                    .disabled(typed != "탈퇴")
+                }
+                .buttonStyle(PressStyle())
+                Spacer(minLength: 0)
+            }
+            .padding(.horizontal, 20).padding(.top, 26)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+            .presentationBackground(Theme.background)
+            .presentationDetents([.height(440)])
+            .presentationDragIndicator(.visible)
+            .presentationCornerRadius(28)
         }
+    }
+}
+
+/// 로그인하지 않은 사용자에게 보여 주는 카드 (게스트 모드: 레시피가 이 기기에만 저장돼요)
+struct LoginCard: View {
+    @Environment(Store.self) private var store
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            HStack(spacing: 12) {
+                MascotImage(name: "chef-greeting", size: 56)
+                VStack(alignment: .leading, spacing: 3) {
+                    Text("로그인하고 더 편하게 써요").font(.suit(17, .bold))
+                    Text("가족과 레시피를 함께 쓰고, AI로 레시피를 정리할 수 있어요.")
+                        .font(.suit(12.5)).foregroundStyle(Theme.sub).lineSpacing(2)
+                }
+            }
+            if store.auth.isAvailable {
+                VStack(spacing: 8) {
+                    ForEach(AuthManager.Provider.allCases) { p in
+                        Button { Task { await store.auth.signIn(p) } } label: {
+                            Text(p.label).font(.suit(15, .bold))
+                                .foregroundStyle(p == .apple ? .white : (p == .kakao ? Color(hex: 0x191600) : Theme.ink))
+                                .frame(maxWidth: .infinity).padding(.vertical, 14)
+                                .background(p == .apple ? Color.black : (p == .kakao ? Color(hex: 0xFEE500) : Theme.surface),
+                                            in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+                        }
+                        .buttonStyle(PressStyle()).disabled(store.auth.isWorking)
+                    }
+                }
+                if let error = store.auth.errorMessage {
+                    Text(error).font(.suit(12.5, .semibold)).foregroundStyle(Theme.warn)
+                }
+            }
+            Text("로그인하지 않으면 레시피가 이 기기에만 저장돼요.").font(.suit(12)).foregroundStyle(Theme.faint)
+        }
+        .padding(16).frame(maxWidth: .infinity, alignment: .leading).paperCard()
     }
 }
 
@@ -376,23 +440,29 @@ struct AccountPage: View {
 
 struct TagsPage: View {
     @Environment(Store.self) private var store
+    private var tags: [String] { Array(Set(store.savedRecipes.flatMap(\.tags))).sorted() }
+
     var body: some View {
         SubPage(title: "태그 관리") {
             Text("레시피와 북마크에 쓴 태그 이름을 한 번에 바꿀 수 있어요.").font(.suit(13.5)).foregroundStyle(Theme.sub)
-            VStack(spacing: 0) {
-                ForEach(Array(RecipeCategory.allCases.enumerated()), id: \.element.id) { i, c in
-                    HStack {
-                        Text("# \(c.rawValue)").font(.suit(15, .semibold))
-                        Text("\(store.savedRecipes.filter { $0.cat == c }.count)개").font(.suit(12.5)).foregroundStyle(Theme.sub)
-                        Spacer()
-                        Button("이름 바꾸기") { store.showToast("목업이라 연결되어 있지 않아요") }
-                            .font(.suit(13, .semibold)).foregroundStyle(Theme.accent)
+            if tags.isEmpty {
+                Text("아직 만든 태그가 없어요.").font(.suit(13.5)).foregroundStyle(Theme.faint).frame(maxWidth: .infinity).padding(.top, 20)
+            } else {
+                VStack(spacing: 0) {
+                    ForEach(Array(tags.enumerated()), id: \.element) { i, t in
+                        HStack {
+                            Text("# \(t)").font(.suit(15, .semibold))
+                            Text("\(store.savedRecipes.filter { $0.tags.contains(t) }.count)개").font(.suit(12.5)).foregroundStyle(Theme.sub)
+                            Spacer()
+                            Button("이름 바꾸기") { store.showToast("곧 지원할 예정이에요") }
+                                .font(.suit(13, .semibold)).foregroundStyle(Theme.accent)
+                        }
+                        .padding(.vertical, 14)
+                        if i < tags.count - 1 { Divider().overlay(Theme.border) }
                     }
-                    .padding(.vertical, 14)
-                    if i < RecipeCategory.allCases.count - 1 { Divider().overlay(Theme.border) }
                 }
+                .padding(.horizontal, 16).paperCard()
             }
-            .padding(.horizontal, 16).paperCard()
         }
     }
 }

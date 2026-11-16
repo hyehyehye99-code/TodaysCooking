@@ -5,17 +5,22 @@ import SwiftUI
 struct InviteCard: View {
     @Environment(Store.self) private var store
     var body: some View {
-        InlineCard(
-            icon: "happy", title: "우리집 레시피 초대", sub: "링크를 보내면 상대방이 눌러서 바로 참여할 수 있어요",
-            meta: [("초대 코드", Sample.inviteCode), ("유효 기간", "7일")],
-            actions: [
-                CardAction(label: "코드 복사", kind: .primary) { store.copy(Sample.inviteCode, done: "복사했어요!") },
-                CardAction(label: "링크 복사") { store.copy(Sample.inviteLink, done: "링크를 복사했어요!") },
-            ]
-        ) {
-            Text(Sample.inviteCode).font(.suit(26, .heavy)).tracking(3).foregroundStyle(Theme.ink)
-                .frame(maxWidth: .infinity).padding(.vertical, 14)
-                .background(Theme.surface, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+        if store.inviteCode.isEmpty {
+            InlineCard(icon: "happy", title: "우리집 레시피 초대", sub: "로그인하면 가족을 초대할 수 있어요",
+                       actions: [CardAction(label: "로그인하러 가기", kind: .primary) { store.showKitchenSettings = false; store.tab = .my }])
+        } else {
+            InlineCard(
+                icon: "happy", title: "우리집 레시피 초대", sub: "링크를 보내면 상대방이 눌러서 바로 참여할 수 있어요",
+                meta: [("초대 코드", store.inviteCode)],
+                actions: [
+                    CardAction(label: "코드 복사", kind: .primary) { store.copy(store.inviteCode, done: "복사했어요!") },
+                    CardAction(label: "링크 복사") { store.copy(store.inviteLink, done: "링크를 복사했어요!") },
+                ]
+            ) {
+                Text(store.inviteCode).font(.suit(26, .heavy)).tracking(3).foregroundStyle(Theme.ink)
+                    .frame(maxWidth: .infinity).padding(.vertical, 14)
+                    .background(Theme.surface, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+            }
         }
     }
 }
@@ -39,8 +44,10 @@ struct FamilySection: View {
         .sheet(item: $selected) { m in MemberSheet(member: m) }
         .task {
             // 화면 확인용 실행 인자 (-membersheet)
+            #if DEBUG
             try? await Task.sleep(for: .seconds(1.5))
             if UserDefaults.standard.bool(forKey: "membersheet") { selected = store.members.first { !$0.isMe } }
+            #endif
         }
     }
 
@@ -130,7 +137,7 @@ struct KitchenSettingsView: View {
                     currentCard
 
                     VStack(spacing: 0) {
-                        valueRow("주방 이름", value: "\(store.kitchenName) 주방") { sheet = .renameKitchen }
+                        valueRow("주방 이름", value: store.kitchenTitle) { sheet = .renameKitchen }
                         Divider().overlay(Theme.border)
                         valueRow("AI 셰프 이름", value: store.chefName) { sheet = .renameChef }
                         Divider().overlay(Theme.border)
@@ -160,6 +167,7 @@ struct KitchenSettingsView: View {
         .gesture(DragGesture(minimumDistance: 24).onEnded { if $0.translation.width < -80 { store.showKitchenSettings = false } })
         .task {
             // 화면 확인용 실행 인자 (-kitchensheet rename|chef|invite|switch|leave)
+            #if DEBUG
             try? await Task.sleep(for: .seconds(1.5))
             switch UserDefaults.standard.string(forKey: "kitchensheet") {
             case "rename": sheet = .renameKitchen
@@ -169,6 +177,7 @@ struct KitchenSettingsView: View {
             case "leave": sheet = .leave
             default: break
             }
+            #endif
         }
         .sheet(item: $sheet) { which in
             switch which {
@@ -220,7 +229,7 @@ struct KitchenSettingsView: View {
             HStack(spacing: 12) {
                 Avatar(name: "chef-greeting", size: 48)
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("\(store.kitchenName) 주방").font(.suit(18, .bold)).foregroundStyle(Theme.ink)
+                    Text(store.kitchenTitle).font(.suit(18, .bold)).foregroundStyle(Theme.ink)
                     Text("참여 인원 \(store.members.count)명").font(.suit(13)).foregroundStyle(Theme.sub)
                 }
                 Spacer()

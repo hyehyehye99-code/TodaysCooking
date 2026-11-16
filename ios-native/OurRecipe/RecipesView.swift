@@ -31,19 +31,37 @@ struct FilterChip: View {
     }
 }
 
-/// 레시피 썸네일 (링크가 있으면 재생 아이콘이 얹힌다)
+/// 레시피 썸네일 (서버에 사진이 있으면 사진, 없으면 마스코트 음식 그림. 링크가 있으면 재생 아이콘)
 struct RecipeThumb: View {
     let recipe: Recipe
     var size: CGFloat = 56
+
     var body: some View {
         RoundedRectangle(cornerRadius: size * 0.24, style: .continuous).fill(recipe.tint).frame(width: size, height: size)
-            .overlay(Image(recipe.photo).resizable().scaledToFit().frame(width: size * 0.72, height: size * 0.72))
+            .overlay {
+                if let s = recipe.photoURL, let url = URL(string: s) {
+                    AsyncImage(url: url) { phase in
+                        switch phase {
+                        case .success(let image): image.resizable().scaledToFill()
+                        default: fallback
+                        }
+                    }
+                    .frame(width: size, height: size)
+                    .clipShape(RoundedRectangle(cornerRadius: size * 0.24, style: .continuous))
+                } else {
+                    fallback
+                }
+            }
             .overlay {
                 if recipe.link != nil {
                     Circle().fill(.black.opacity(0.45)).frame(width: size * 0.38, height: size * 0.38)
                         .overlay(Image(systemName: "play.fill").font(.system(size: size * 0.15)).foregroundStyle(.white))
                 }
             }
+    }
+
+    private var fallback: some View {
+        Image(recipe.photo).resizable().scaledToFit().frame(width: size * 0.72, height: size * 0.72)
     }
 }
 
@@ -54,8 +72,10 @@ struct RecipesView: View {
 
     @State private var query = ""
     @State private var quick: Quick = .all
-    @State private var tag: RecipeCategory?
+    @State private var tag: String?
     @State private var sort: Sort = .newest
+
+    private var allTags: [String] { Array(Set(store.savedRecipes.flatMap(\.tags))).sorted() }
 
     private func makeable(_ r: Recipe) -> Bool { !r.hideIngredients && !r.ings.isEmpty && store.missing(r).isEmpty }
 
@@ -69,12 +89,12 @@ struct RecipesView: View {
             case .makeable: okQuick = makeable(r)
             case .linkOnly: okQuick = r.isLinkOnly
             }
-            let okTag = tag == nil || r.cat == tag
+            let okTag = tag == nil || r.tags.contains(tag!)
             let okQuery = q.isEmpty || r.title.contains(q) || (r.linkTitle ?? "").contains(q) || r.ings.contains { $0.name.contains(q) }
             return okQuick && okTag && okQuery
         }
         switch sort {
-        case .newest: items.reverse()
+        case .newest: break   // 서버/저장 순서가 이미 최신순이다
         case .name: items.sort { $0.displayTitle < $1.displayTitle }
         }
         return items
@@ -120,9 +140,9 @@ struct RecipesView: View {
                             chip("링크만", icon: "link", on: quick == .linkOnly) { quick = quick == .linkOnly ? .all : .linkOnly }
                             Menu {
                                 Button("전체 태그") { tag = nil }
-                                ForEach(RecipeCategory.allCases) { c in Button("# \(c.rawValue)") { tag = c } }
+                                ForEach(allTags, id: \.self) { c in Button("# \(c)") { tag = c } }
                             } label: {
-                                FilterChip(label: tag.map { "# \($0.rawValue)" } ?? "# 태그 \(RecipeCategory.allCases.count)", chevron: true, on: tag != nil)
+                                FilterChip(label: tag.map { "# \($0)" } ?? "# 태그 \(allTags.count)", chevron: true, on: tag != nil)
                             }
                         }
                         .padding(.horizontal, 16).padding(.top, 12).padding(.bottom, 14)

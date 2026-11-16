@@ -4,6 +4,7 @@ import UserNotifications
 @main
 struct OurRecipeApp: App {
     @State private var store = Store()
+    @Environment(\.scenePhase) private var scenePhase
 
     init() {
         SUIT.register()
@@ -16,6 +17,10 @@ struct OurRecipeApp: App {
                 .environment(store)
                 .tint(Theme.accent)
                 .font(.suit(15))
+                .onOpenURL { store.handleURL($0) }
+                .onChange(of: scenePhase) { _, phase in
+                    if phase == .active { Task { await store.refreshIfNeeded() } }
+                }
         }
     }
 }

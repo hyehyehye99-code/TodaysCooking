@@ -124,9 +124,11 @@ struct FridgePage: View {
         .toolbar(.hidden, for: .tabBar)
         .task {
             // 화면 확인용 실행 인자 (-fridgebell / -fridgeedit)
+            #if DEBUG
             try? await Task.sleep(for: .seconds(1.5))
             if UserDefaults.standard.bool(forKey: "fridgebell") { showReminder = true }
             if UserDefaults.standard.bool(forKey: "fridgeedit") { editing = byDate(store.fridge).first }
+            #endif
         }
     }
 
@@ -309,6 +311,7 @@ struct FridgePage: View {
 // MARK: - 재료 수정 (행을 누르면 열리는 작은 창)
 
 struct FridgeEditSheet: View {
+    @Environment(Store.self) private var store
     @Environment(\.dismiss) private var dismiss
     let item: FridgeItem
     let onSave: (String, String, Date?) -> Void
@@ -332,9 +335,11 @@ struct FridgeEditSheet: View {
                 TextField("재료 이름", text: $name).font(.suit(16))
                     .padding(.horizontal, 14).frame(height: 48)
                     .background(Theme.surface, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
-                TextField("수량", text: $amt).font(.suit(16))
-                    .padding(.horizontal, 14).frame(width: 96, height: 48)
-                    .background(Theme.surface, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+                if !store.isRemote {
+                    TextField("수량", text: $amt).font(.suit(16))
+                        .padding(.horizontal, 14).frame(width: 96, height: 48)
+                        .background(Theme.surface, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+                }
             }
             VStack(alignment: .leading, spacing: 8) {
                 Text("유통기한").font(.suit(13, .semibold)).foregroundStyle(Theme.sub)

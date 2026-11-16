@@ -1,19 +1,17 @@
 import SwiftUI
 import UIKit
 
-/// 목업 전용 인메모리 스토어. 네트워크·DB 없음.
+/// 앱 전체 상태. 게스트는 기기에만 저장하고, 로그인하면 Supabase 와 동기화한다 (Store+Remote.swift).
 @Observable
 @MainActor
 final class Store {
     var tab: AppTab = .chat
-    var recipes: [Recipe] = Sample.recipes
-    var fridge: [FridgeItem] = Sample.fridge
-    var shop: [ShopItem] = Sample.shop
-    /// 내가 속한 주방들과 지금 쓰는 주방
-    var kitchens: [Kitchen] = [
-        Kitchen(name: "영공이네", members: Sample.members),
-        Kitchen(name: "캠핑 레시피", members: [Member(name: "영공", role: "대장 (나)", tint: Theme.accentSoft, isMe: true)]),
-    ]
+    var recipes: [Recipe] = []
+    var fridge: [FridgeItem] = []
+    var shop: [ShopItem] = []
+    /// 내가 속한 주방들과 지금 쓰는 주방 (게스트는 "나의 주방" 하나)
+    var kitchens: [Kitchen] = [Store.guestKitchen]
+
     var currentKitchen = 0
     var members: [Member] {
         get { kitchens[currentKitchen].members }
@@ -33,20 +31,56 @@ final class Store {
     var timers: [SavedTimer] = []
     var mealboards: [Mealboard] = []
     var myPath: [MyRoute] = []
-    /// AI 자동 정리: 이번 주 사용 횟수 / 무료 한도 / 프로모션 보너스
-    var aiUsed = 6
-    let aiLimit = 20
-    var aiBonus = 31
+    /// AI 사용량 (서버 응답): 이번 주 사용 비율 / 프로모션 보너스 남은 횟수 / 무제한 여부
+    var aiPercent: Double = 0
+    var aiBonus = 0
+    var aiUnlimited = false
+
+    /// 로그인 · 서버 연동 상태
+    let auth = AuthManager()
+    var isRemote = false
+    var loading = false
+    var userId: String?
+    var userEmail: String?
+    /// AI 가 링크를 분석하는 동안 보여 줄 진행 문구
+    var progress: String?
+    /// AI 가 제안한 레시피 중 이미 저장한 것 / AI 가 입력창에 채워 달라고 한 문장
+    var savedIdeas: Set<AssistantIdea> = []
+    /// 초대 링크로 앱을 열었는데 아직 로그인 전이면, 로그인 직후에 이 코드로 참여한다
+    var pendingInviteCode: String?
+    var draft: String?
+    /// 화면 확인용 샘플 데이터 모드 (DEBUG 의 -sample 인자). 가짜 가족 대화/답장은 이 모드에서만 나온다
+    var demoMode = false
+
+    @ObservationIgnored var sync = SyncState()
+    @ObservationIgnored var saveTask: Task<Void, Never>?
+    @ObservationIgnored var lastSyncToastAt = Date.distantPast
 
     var msgs: [Msg] = []
     /// 대화를 초기화하면 올라가서, 진행 중이던 셰프의 답장이 뒤늦게 끼어들지 않게 한다
-    private var chatGen = 0
+    var chatGen = 0
     var typing = false
 
     private var toastTask: Task<Void, Never>?
     private var chimed = false
 
+    static var guestKitchen: Kitchen {
+        Kitchen(name: "나의 주방", members: [Member(name: "나", role: "대장 (나)", tintHex: 0xFDECE7, isMe: true)])
+    }
+
     init() {
+        restoreLocal()
+        #if DEBUG
+        applyDebugLaunchArguments()
+        #endif
+        observeChanges()
+        Task { await bindAuth() }
+    }
+
+    #if DEBUG
+    /// 화면 확인용 실행 인자(-tab, -fridge, -mealdemo …). 릴리스 빌드에는 포함되지 않는다.
+    private func applyDebugLaunchArguments() {
+        if UserDefaults.standard.bool(forKey: "sample") { loadSamples() }
         // 디버그용: `-tab recipes|shop|my` 로 시작 탭 지정
         switch UserDefaults.standard.string(forKey: "tab") {
         case "recipes": tab = .recipes
@@ -71,8 +105,18 @@ final class Store {
         }
         if UserDefaults.standard.bool(forKey: "demolink") { Task { try? await Task.sleep(for: .milliseconds(300)); submit("https://youtu.be/demo") } }
     }
+    #endif
 
     // MARK: 파생
+
+    /// "안녕하세요 영공셰프님" — 이름이 아직 없는 게스트는 그냥 "셰프님"
+    var greetingName: String {
+        let me = members.first(where: \.isMe)?.name ?? ""
+        return me.isEmpty || me == "나" ? "안녕하세요 셰프님" : "안녕하세요 \(me)셰프님"
+    }
+
+    /// 화면에 보이는 주방 이름: "영공이네" → "영공이네 주방", "나의 주방" 은 그대로
+    var kitchenTitle: String { kitchenName.hasSuffix("주방") ? kitchenName : "\(kitchenName) 주방" }
 
     var savedRecipes: [Recipe] { recipes.filter(\.saved) }
     var openShopCount: Int { shop.filter { !$0.checked }.count }
@@ -180,6 +224,8 @@ final class Store {
         recipePath = []
         myPath = []
         push(msg)
+        // 가짜 가족 반응은 화면 확인용 샘플 모드에서만 보여 준다. 실제 가족에게는 아직 알림이 가지 않는다
+        guard demoMode else { return }
         let gen = chatGen
         Task {
             try? await Task.sleep(for: .milliseconds(900))
@@ -197,7 +243,7 @@ final class Store {
     // MARK: 새 메뉴 등록 / 수정
 
     /// "파마산 치즈 80g" → (파마산 치즈, 80g). 마지막 토막에 숫자가 있으면 계량으로 본다
-    static func parseIngredients(_ text: String) -> [Ingredient] {
+    nonisolated static func parseIngredients(_ text: String) -> [Ingredient] {
         text.split(whereSeparator: \.isNewline).compactMap { line in
             let t = line.trimmingCharacters(in: .whitespaces)
             guard !t.isEmpty else { return nil }
@@ -210,7 +256,7 @@ final class Store {
     }
 
     /// "1. 오일을 두르고…" 같은 번호는 떼고, "3분" 같은 시간이 있으면 타이머를 붙인다
-    static func parseSteps(_ text: String) -> [Step] {
+    nonisolated static func parseSteps(_ text: String) -> [Step] {
         text.split(whereSeparator: \.isNewline).compactMap { line in
             var t = line.trimmingCharacters(in: .whitespaces)
             if let r = t.range(of: #"^\d+[.)]\s*"#, options: .regularExpression) { t.removeSubrange(r) }
@@ -236,15 +282,15 @@ final class Store {
             recipes[i].steps = parsedSteps
             recipes[i].hideIngredients = hide
         } else {
-            let tints: [UInt32] = [0xFDE7D9, 0xF3E3C6, 0xFBF0B8, 0xFAD9D5, 0xDDEFD2, 0xE6DDF5]
+            let id = UUID().uuidString.lowercased()
             let host = URL(string: l)?.host?.replacingOccurrences(of: "www.", with: "") ?? l
-            recipes.append(Recipe(
-                id: UUID().uuidString, emoji: "🍽️", photo: ["plated-dish", "food-soup", "food-ricebowl", "food-spaghetti"].randomElement()!,
-                title: t, sub: "", cat: .easy, time: "", serving: "",
-                tint: Color(hex: tints.randomElement()!), ings: parsedIngs, steps: parsedSteps,
+            recipes.insert(Recipe(
+                id: id, emoji: "🍽️", photo: Recipe.fallbackPhotos[Recipe.stableIndex(id, Recipe.fallbackPhotos.count)],
+                title: t, sub: "", tags: [], time: "", serving: "",
+                tintHex: Recipe.tints[Recipe.stableIndex(id, Recipe.tints.count)], ings: parsedIngs, steps: parsedSteps,
                 link: l.isEmpty ? nil : l,
                 linkTitle: l.isEmpty ? nil : (linkTitle ?? "저장한 링크 · \(host)"),
-                author: members.first(where: \.isMe)?.name ?? "영공", hideIngredients: hide))
+                author: members.first(where: \.isMe)?.name ?? "", hideIngredients: hide), at: 0)
         }
         showToast("저장했어요")
         return true
@@ -362,10 +408,24 @@ final class Store {
         showToast("삭제했어요")
     }
 
+    var currentHouseholdId: String? { kitchens[currentKitchen].householdId }
+    /// 지금 우리집의 초대 코드와 링크 (게스트는 코드가 없다)
+    var inviteCode: String { kitchens[currentKitchen].inviteCode ?? "" }
+    var inviteLink: String {
+        guard !inviteCode.isEmpty, let base = Config.apiBaseURL else { return "" }
+        return base.appendingPathComponent("join").absoluteString + "?code=\(inviteCode)"
+    }
+
     func renameMe(_ name: String) {
         let n = name.trimmingCharacters(in: .whitespaces)
         guard !n.isEmpty, let i = members.firstIndex(where: \.isMe) else { return }
         members[i].name = n
+        if isRemote {
+            Task {
+                do { try await Repository.upsertProfile(nickname: n) }
+                catch { reportSyncFailure(error) }
+            }
+        }
         showToast("프로필을 저장했어요.")
     }
 
@@ -375,6 +435,12 @@ final class Store {
         let n = name.trimmingCharacters(in: .whitespaces)
         guard !n.isEmpty else { return }
         kitchenName = n
+        if isRemote, let hid = currentHouseholdId {
+            Task {
+                do { try await Repository.renameHousehold(hid, name: n) }
+                catch { reportSyncFailure(error); await reloadKitchens(select: hid) }
+            }
+        }
         showToast("이름을 저장했어요.")
     }
 
@@ -389,28 +455,45 @@ final class Store {
         guard kitchens.indices.contains(index), index != currentKitchen else { return }
         currentKitchen = index
         showToast("\(kitchenName)(으)로 바꿨어요")
+        if isRemote {
+            if let hid = currentHouseholdId { UserDefaults.standard.set(hid, forKey: Store.activeHouseholdKey) }
+            Task { await loadHousehold() }
+        }
     }
 
     func createKitchen(named name: String) {
         let n = name.trimmingCharacters(in: .whitespaces)
         guard !n.isEmpty else { return }
-        kitchens.append(Kitchen(name: n, members: [Member(name: members.first(where: \.isMe)?.name ?? "영공", role: "대장 (나)", tint: Theme.accentSoft, isMe: true)]))
+        if isRemote {
+            Task {
+                do {
+                    let id = try await Repository.createHousehold(name: n)
+                    await reloadKitchens(select: id)
+                    showToast("\(n)을(를) 만들었어요")
+                } catch { reportSyncFailure(error) }
+            }
+            return
+        }
+        kitchens.append(Kitchen(name: n, members: [Member(name: members.first(where: \.isMe)?.name ?? "나", role: "대장 (나)", tintHex: 0xFDECE7, isMe: true)]))
         currentKitchen = kitchens.count - 1
         showToast("\(n)을(를) 만들었어요")
     }
 
-    /// 초대 코드로 참여 (목업: 어떤 코드든 "친구네" 주방에 참여한 것으로 본다)
+    /// 초대 코드로 참여. 로그인이 필요하다
     func joinKitchen(code: String) {
-        guard !code.trimmingCharacters(in: .whitespaces).isEmpty else { return }
-        kitchens.append(Kitchen(name: "친구네", members: [
-            Member(name: "영공", role: "참여자", tint: Theme.accentSoft, isMe: true),
-            Member(name: "하늘", role: "대장", tint: Color(hex: 0xDDEFD2)),
-        ]))
-        currentKitchen = kitchens.count - 1
-        showToast("친구네에 참여했어요")
+        let c = code.trimmingCharacters(in: .whitespaces)
+        guard !c.isEmpty else { return }
+        guard isRemote else { showToast("로그인하면 초대 코드로 참여할 수 있어요"); return }
+        Task {
+            do {
+                guard let id = try await Repository.joinHousehold(code: c) else { showToast("초대 코드를 찾을 수 없어요"); return }
+                await reloadKitchens(select: id)
+                showToast("\(kitchenName)에 참여했어요")
+            } catch { showToast("초대 코드를 찾을 수 없어요") }
+        }
     }
 
-    /// 마지막 남은 주방은 나갈 수 없다
+    /// 마지막 남은 주방은 나갈 수 없다 (나갈 수 있으면 true, 서버 처리는 뒤에서 이어진다)
     @discardableResult
     func leaveKitchen() -> Bool {
         guard kitchens.count > 1 else {
@@ -418,15 +501,28 @@ final class Store {
             return false
         }
         let left = kitchenName
+        let leftId = currentHouseholdId
         kitchens.remove(at: currentKitchen)
         currentKitchen = 0
         showToast("\(left)에서 나왔어요")
+        if isRemote, let leftId {
+            Task {
+                do { try await Repository.leaveHousehold(leftId) } catch { reportSyncFailure(error) }
+                await reloadKitchens(select: nil)
+            }
+        }
         return true
     }
 
     func removeMember(_ m: Member) {
         members.removeAll { $0.id == m.id }
         showToast("\(m.name)셰프를 내보냈어요")
+        if isRemote, let hid = currentHouseholdId, let uid = m.userId {
+            Task {
+                do { try await Repository.removeMember(household: hid, user: uid) }
+                catch { reportSyncFailure(error); await loadHousehold() }
+            }
+        }
     }
 
     // MARK: 대화
@@ -446,7 +542,7 @@ final class Store {
                 if i == parts.count - 1 { typing = false }
             }
             // 같은 주방 메이트도 대화를 보고 한마디 거드는 연출 (한 번만)
-            if !chimed, parts.contains(where: { if case .recipe = $0.card { return true } else { return false } }) {
+            if demoMode, !chimed, parts.contains(where: { if case .recipe = $0.card { return true } else { return false } }) {
                 chimed = true
                 try? await Task.sleep(for: .milliseconds(1400))
                 guard gen == chatGen else { return }
@@ -469,33 +565,37 @@ final class Store {
         push(Msg(fromMe: false, text: "\(label) 타이머 시작할게요.", card: .timer(label: label, sec: sec)))
     }
 
+    /// 로컬 냉장고 기준 추천 (게스트/샘플). 로그인하면 AI 가 서버의 냉장고를 보고 추천한다
     func recommend() {
+        let soon = fridge.filter { $0.days != nil }.sorted { ($0.days ?? 0) < ($1.days ?? 0) }.prefix(2).map(\.name)
+        let line = soon.isEmpty ? "냉장고에 있는 재료로 골라봤어요." : "\(soon.joined(separator: "랑 ")) 곧 끝나요. 이걸로 골랐어요."
         say([
             Msg(fromMe: false, text: "🧊 냉장고를 열어 봤어요!", mood: "fridge-open"),
-            Msg(fromMe: false, text: "두부랑 대파가 곧 끝나요. 이걸로 골랐어요.", card: .fridge, mood: "idea"),
+            Msg(fromMe: false, text: line, card: .fridge, mood: "idea"),
         ])
     }
 
     /// 빠른 시작 카드 "냉장고 파먹기"
     func askFridge() {
-        push(Msg(fromMe: true, text: "냉장고에 있는 재료로, 소비기한 임박한 것부터 써서 만들 수 있는 요리 추천해줘"))
-        recommend()
+        submit("냉장고에 있는 재료로, 소비기한 임박한 것부터 써서 만들 수 있는 요리 추천해줘")
     }
 
-    /// 링크를 보내면 바로 레시피로 저장해 주는 흐름 (목업이라 항상 같은 레시피가 만들어진다)
-    func saveLink(_ link: String) {
-        if let i = recipes.firstIndex(where: { $0.id == Sample.generated.id }), recipes[i].saved {
-            say([Msg(fromMe: false, text: "이미 레시피북에 있어요!", card: .recipe(Sample.generated.id))])
+    /// 로그인 없이 링크만 레시피북에 저장 (재료·만드는 법 자동 정리는 로그인 후 AI 로)
+    func saveLinkOnly(_ text: String) {
+        let link = text.split(whereSeparator: \.isWhitespace).map(String.init).first { $0.hasPrefix("http") } ?? text
+        if let existing = recipes.first(where: { $0.link == link }) {
+            say([Msg(fromMe: false, text: "이미 레시피북에 있어요!", card: .recipe(existing.id))])
             return
         }
-        var r = Sample.generated
-        r.saved = true
-        if let i = recipes.firstIndex(where: { $0.id == r.id }) { recipes[i] = r } else { recipes.append(r) }
+        let id = UUID().uuidString.lowercased()
+        let host = URL(string: link)?.host?.replacingOccurrences(of: "www.", with: "") ?? link
+        recipes.insert(Recipe(id: id, emoji: "🍽️", photo: Recipe.fallbackPhotos[Recipe.stableIndex(id, Recipe.fallbackPhotos.count)],
+                              title: "", sub: "", tags: [], time: "", serving: "",
+                              tintHex: Recipe.tints[Recipe.stableIndex(id, Recipe.tints.count)], ings: [], steps: [],
+                              link: link, linkTitle: "저장한 링크 · \(host)", author: members.first(where: \.isMe)?.name ?? ""), at: 0)
         say([
-            Msg(fromMe: false, text: "📹 영상 정보와 조리 과정을 읽고 있어요...", mood: "reading-recipe"),
-            Msg(fromMe: false, text: "🥕 재료와 정확한 계량을 정리하는 중이에요...", mood: "chopping"),
-            Msg(fromMe: false, text: "🍳 \(kitchenName) 레시피북에 예쁘게 저장 중이에요...", mood: "stirring-pot"),
-            Msg(fromMe: false, text: "저장했어요!", card: .recipe(r.id), mood: "excited"),
+            Msg(fromMe: false, text: "링크를 레시피북에 저장했어요!", card: .recipe(id), mood: "excited"),
+            Msg(fromMe: false, text: "재료와 만드는 법을 AI가 자동으로 정리하는 건 로그인하면 쓸 수 있어요.", mood: "idea"),
         ])
     }
 
@@ -503,12 +603,14 @@ final class Store {
         let t = raw.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !t.isEmpty else { return }
         push(Msg(fromMe: true, text: t))
-        if t.contains("http") {
-            saveLink(t)
-        } else if t.contains("냉장고") || t.contains("추천") || t.contains("재료") || t.contains("해 먹") || t.contains("해먹") {
+        if isRemote {
+            Task { await askAI() }
+        } else if t.contains("http") {
+            saveLinkOnly(t)
+        } else if t.contains("냉장고") || t.contains("추천") || t.contains("해 먹") || t.contains("해먹") {
             recommend()
         } else {
-            say([Msg(fromMe: false, text: "🧑‍🍳 그건 아직 배우는 중이에요! 링크를 보내주시거나 냉장고 파먹기를 시켜주세요.", mood: "puzzled")])
+            say([Msg(fromMe: false, text: "AI 셰프와 대화하려면 로그인이 필요해요. 링크는 로그인 없이도 저장할 수 있어요!", mood: "idea")])
         }
     }
 

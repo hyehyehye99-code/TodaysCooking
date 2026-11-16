@@ -307,7 +307,9 @@ struct MealboardDetailPage: View {
                 }
                 .sheet(isPresented: $showCard) { MealboardCardSheet(original: cardData(b), shareTitle: b.title) }
                 .task {
+                    #if DEBUG
                     if UserDefaults.standard.bool(forKey: "boardcard") { try? await Task.sleep(for: .seconds(1.2)); showCard = true }
+                    #endif
                 }
                 .confirmationDialog("메뉴판을 삭제할까요?", isPresented: $askDelete, titleVisibility: .visible) {
                     Button("메뉴판 삭제", role: .destructive) { store.deleteMealboard(b.id); dismiss() }
@@ -362,7 +364,7 @@ struct MealboardDetailPage: View {
             RecipeThumb(recipe: r, size: 50)
             VStack(alignment: .leading, spacing: 3) {
                 Text(r.displayTitle).font(.suit(15, .bold)).foregroundStyle(Theme.ink).lineLimit(2).multilineTextAlignment(.leading)
-                if !r.title.isEmpty { Text("#\(r.cat.rawValue)").font(.suit(11.5, .bold)).foregroundStyle(Theme.accent) }
+                if let t = r.tags.first, !r.title.isEmpty { Text("#\(t)").font(.suit(11.5, .bold)).foregroundStyle(Theme.accent) }
             }
             Spacer()
             Image(systemName: "chevron.right").font(.system(size: 12, weight: .semibold)).foregroundStyle(Theme.faint)

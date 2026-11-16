@@ -118,7 +118,9 @@ struct MealboardCardSheet: View {
         self.original = original
         self.shareTitle = shareTitle
         _data = State(initialValue: original)
+        #if DEBUG
         _templateIndex = State(initialValue: UserDefaults.standard.integer(forKey: "boardfont"))
+        #endif
     }
 
     private var edited: Bool { data != original }
@@ -141,7 +143,9 @@ struct MealboardCardSheet: View {
         .presentationDragIndicator(.visible)
         .presentationCornerRadius(28)
         .onAppear {
+            #if DEBUG
             if UserDefaults.standard.bool(forKey: "boardedited") { data.title += " · 수정" }
+            #endif
             render()
         }
         .onChange(of: data) { render() }

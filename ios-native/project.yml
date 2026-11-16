@@ -7,8 +7,10 @@ options:
 settings:
   base:
     SWIFT_VERSION: "5.0"
-    MARKETING_VERSION: "0.1.0"
-    CURRENT_PROJECT_VERSION: "1"
+    # 기존 App Store 앱(Capacitor 1.2 / build 26)을 대체하는 네이티브 앱이라 번들 ID·팀을 그대로 쓴다
+    DEVELOPMENT_TEAM: 6NTUXY85FS
+    MARKETING_VERSION: "2.0.0"
+    CURRENT_PROJECT_VERSION: "27"
 targets:
   OurRecipe:
     type: application
@@ -24,14 +26,59 @@ targets:
           - chosun-gs.ttf
           - chosun-sm.ttf
         buildPhase: resources
+    configFiles:
+      Debug: Config/Debug.xcconfig
+      Release: Config/Release.xcconfig
+    entitlements:
+      path: OurRecipe/OurRecipe.entitlements
+      properties:
+        aps-environment: development
+        com.apple.developer.associated-domains:
+          - applinks:ourhomemenu.vercel.app
+    info:
+      path: OurRecipe/Info.plist
+      properties:
+        CFBundleURLTypes:
+          - CFBundleURLName: com.hyeji.ourmenu.auth
+            CFBundleURLSchemes:
+              - com.hyeji.ourmenu
+        # Config/*.xcconfig 의 값이 들어온다 (비어 있으면 앱은 게스트(로컬) 모드로만 동작)
+        SupabaseURL: $(SUPABASE_URL)
+        SupabaseAnonKey: $(SUPABASE_ANON_KEY)
+        ApiBaseURL: $(API_BASE_URL)
+        ITSAppUsesNonExemptEncryption: false
+        UIBackgroundModes:
+          - remote-notification
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.hyeji.ourrecipe.native
+        PRODUCT_BUNDLE_IDENTIFIER: com.hyeji.ourmenu
         PRODUCT_NAME: 우리집 레시피
+        PRODUCT_MODULE_NAME: OurRecipe
         GENERATE_INFOPLIST_FILE: YES
         INFOPLIST_KEY_UILaunchScreen_Generation: YES
         INFOPLIST_KEY_CFBundleDisplayName: 우리집 레시피
         INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription: 메뉴판 이미지를 사진에 저장해요
         INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone: UIInterfaceOrientationPortrait
+        INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.food-and-drink
         ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS: NO
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+  OurRecipeTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources: [OurRecipeTests]
+    dependencies:
+      - target: OurRecipe
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+        PRODUCT_BUNDLE_IDENTIFIER: com.hyeji.ourmenu.tests
+        # 앱의 PRODUCT_NAME 이 한글("우리집 레시피")이라 호스트 경로를 직접 지정한다
+        TEST_HOST: "$(BUILT_PRODUCTS_DIR)/우리집 레시피.app/우리집 레시피"
+        BUNDLE_LOADER: "$(TEST_HOST)"
+schemes:
+  OurRecipe:
+    build:
+      targets:
+        OurRecipe: all
+    test:
+      targets: [OurRecipeTests]

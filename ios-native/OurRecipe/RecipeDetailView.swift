@@ -90,7 +90,9 @@ struct RecipeDetailView: View {
         .background(Theme.background.ignoresSafeArea())
         .toolbar(.hidden, for: .navigationBar)
         .toolbar(.hidden, for: .tabBar)
+        #if DEBUG
         .onAppear { if UserDefaults.standard.bool(forKey: "proposesheet") { propose = true } }
+        #endif
     }
 
     private func header(_ r: Recipe) -> some View {
@@ -373,7 +375,7 @@ struct NewRecipeView: View {
         hide = r.hideIngredients
     }
 
-    /// 목업: 링크가 유튜브·인스타일 때만 동작하고, 항상 같은 내용을 채운다
+    /// 서버의 AI 가 링크를 분석해 레시피북에 바로 저장한다 (로그인 필요, 유튜브·인스타그램 링크)
     private func runAI() {
         let l = link.trimmingCharacters(in: .whitespaces)
         guard !l.isEmpty else { store.showToast("링크를 먼저 넣어주세요"); return }
@@ -383,13 +385,9 @@ struct NewRecipeView: View {
         }
         ai = .loading
         Task {
-            try? await Task.sleep(for: .milliseconds(1300))
-            let g = Sample.generated
-            if title.trimmingCharacters(in: .whitespaces).isEmpty { title = g.title }
-            ings = g.ings.map { "\($0.name) \($0.amt)" }.joined(separator: "\n")
-            steps = g.steps.enumerated().map { "\($0.offset + 1). \($0.element.text)" }.joined(separator: "\n")
-            linkTitle = "\(g.title) 만들기 • " + (l.contains("instagram") ? "Instagram reel" : "YouTube")
-            ai = .done
+            let saved = await store.aiSaveLink(l)
+            ai = saved ? .done : .idle
+            if saved { dismiss() }
         }
     }
 
