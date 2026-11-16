@@ -95,24 +95,36 @@ struct RecipeDetailView: View {
         #endif
     }
 
+    /// 위에는 뒤로가기·더보기만 두고, 긴 이름이 잘리지 않게 제목과 즐겨찾기는 아래 영역에 깐다
     private func header(_ r: Recipe) -> some View {
-        HStack(spacing: 10) {
-            roundButton("chevron.left", tint: Theme.ink, label: "뒤로") { dismiss() }
-            Circle().fill(Theme.surface).frame(width: 44, height: 44)
-                .overlay(Image("reading-recipe").resizable().scaledToFit().frame(width: 38, height: 38))
-            Text(r.displayTitle).font(.suit(20, .bold)).tracking(-0.4).foregroundStyle(Theme.ink).lineLimit(2)
-            Spacer(minLength: 4)
-            roundButton(r.fav ? "star.fill" : "star", tint: r.fav ? Theme.positive : Theme.sub, label: "즐겨찾기") { store.toggleFav(r.id) }
-            Menu {
-                Button("수정", systemImage: "pencil") { if let onEdit { onEdit(r.id) } else { store.recipePath.append(.form(r.id)) } }
-                Button("삭제", systemImage: "trash", role: .destructive) { askDelete = true }
-            } label: {
-                Image(systemName: "ellipsis").font(.system(size: 14, weight: .bold)).foregroundStyle(Theme.sub)
-                    .frame(width: 36, height: 36).background(Theme.surface, in: Circle())
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(spacing: 10) {
+                roundButton("chevron.left", tint: Theme.ink, label: "뒤로") { dismiss() }
+                Spacer(minLength: 4)
+                Menu {
+                    Button("수정", systemImage: "pencil") { if let onEdit { onEdit(r.id) } else { store.recipePath.append(.form(r.id)) } }
+                    Button("삭제", systemImage: "trash", role: .destructive) { askDelete = true }
+                } label: {
+                    Image(systemName: "ellipsis").font(.system(size: 14, weight: .bold)).foregroundStyle(Theme.sub)
+                        .frame(width: 36, height: 36).background(Theme.surface, in: Circle())
+                }
+                .accessibilityLabel("더보기")
             }
-            .accessibilityLabel("더보기")
+            HStack(alignment: .top, spacing: 10) {
+                Text(r.displayTitle).font(.suit(22, .bold)).tracking(-0.4).foregroundStyle(Theme.ink)
+                    .fixedSize(horizontal: false, vertical: true).frame(maxWidth: .infinity, alignment: .leading)
+                roundButton(r.fav ? "star.fill" : "star", tint: r.fav ? Theme.positive : Theme.sub, label: "즐겨찾기") { store.toggleFav(r.id) }
+            }
+            if !r.tags.isEmpty {
+                FlowLayout(spacing: 6) {
+                    ForEach(r.tags, id: \.self) { t in
+                        Text("# \(t)").font(.suit(12.5, .semibold)).foregroundStyle(Theme.accent)
+                            .padding(.horizontal, 10).padding(.vertical, 5).background(Theme.accentSoft, in: Capsule())
+                    }
+                }
+            }
         }
-        .padding(.horizontal, 16).padding(.top, 8).padding(.bottom, 14)
+        .padding(.horizontal, 16).padding(.top, 8).padding(.bottom, 12)
     }
 
     private func roundButton(_ icon: String, tint: Color, label: String, run: @escaping () -> Void) -> some View {
@@ -246,6 +258,7 @@ struct NewRecipeView: View {
     @State private var ings = ""
     @State private var steps = ""
     @State private var hide = false
+    @State private var tags: [String] = []
     @State private var linkTitle: String?
     @State private var loaded = false
     @State private var ai: AIState = .idle
@@ -303,6 +316,13 @@ struct NewRecipeView: View {
                             .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous).strokeBorder(Theme.accent, lineWidth: 1.2))
                         }
                         .buttonStyle(PressStyle()).disabled(ai == .loading)
+                    }
+                    .padding(16).frame(maxWidth: .infinity, alignment: .leading).paperCard(radius: 22)
+
+                    VStack(alignment: .leading, spacing: 10) {
+                        Text("태그").font(.suit(15, .bold))
+                        Text("음식 종류나 상황으로 묶어두면 레시피 목록에서 골라볼 수 있어요").font(.suit(12.5)).foregroundStyle(Theme.sub)
+                        TagEditor(tags: $tags, suggestions: Array(Set(store.savedRecipes.flatMap(\.tags))).sorted())
                     }
                     .padding(16).frame(maxWidth: .infinity, alignment: .leading).paperCard(radius: 22)
 
@@ -373,6 +393,7 @@ struct NewRecipeView: View {
         ings = r.ings.map { $0.amt.isEmpty ? $0.name : "\($0.name) \($0.amt)" }.joined(separator: "\n")
         steps = r.steps.enumerated().map { "\($0.offset + 1). \($0.element.text)" }.joined(separator: "\n")
         hide = r.hideIngredients
+        tags = r.tags
     }
 
     /// 서버의 AI 가 링크를 분석해 레시피북에 바로 저장한다 (로그인 필요, 유튜브·인스타그램 링크)
@@ -392,10 +413,67 @@ struct NewRecipeView: View {
     }
 
     private func save() {
-        if store.saveRecipe(editing: editing, title: title, link: link, ings: ings, steps: steps, hide: hide, linkTitle: linkTitle) {
+        if store.saveRecipe(editing: editing, title: title, link: link, ings: ings, steps: steps, hide: hide, linkTitle: linkTitle, tags: tags) {
             dismiss()
         } else {
             error = "요리 이름이나 링크를 입력해주세요."
         }
+    }
+}
+
+
+/// 태그 입력: 쓴 태그는 칩으로 쌓이고(누르면 삭제), 이미 쓴 태그는 눌러서 바로 추가할 수 있다
+struct TagEditor: View {
+    @Binding var tags: [String]
+    let suggestions: [String]
+    @State private var input = ""
+
+    private var rest: [String] { suggestions.filter { !tags.contains($0) } }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            if !tags.isEmpty {
+                FlowLayout(spacing: 6) {
+                    ForEach(tags, id: \.self) { t in
+                        Button { tags.removeAll { $0 == t } } label: {
+                            HStack(spacing: 4) {
+                                Text("# \(t)").font(.suit(13, .semibold))
+                                Image(systemName: "xmark").font(.system(size: 9, weight: .bold))
+                            }
+                            .foregroundStyle(Theme.accent).padding(.horizontal, 10).padding(.vertical, 6)
+                            .background(Theme.accentSoft, in: Capsule())
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
+            }
+            HStack(spacing: 8) {
+                TextField("태그 입력 (예: 한식, 간편)", text: $input).font(.suit(16)).submitLabel(.done).onSubmit(add)
+                    .textInputAutocapitalization(.never).autocorrectionDisabled()
+                Button("추가", action: add).font(.suit(14, .bold)).foregroundStyle(input.trimmingCharacters(in: .whitespaces).isEmpty ? Theme.faint : Theme.accent)
+                    .disabled(input.trimmingCharacters(in: .whitespaces).isEmpty)
+            }
+            .padding(.horizontal, 16).frame(height: 50)
+            .background(Theme.surface, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+            if !rest.isEmpty {
+                FlowLayout(spacing: 6) {
+                    ForEach(rest.prefix(12), id: \.self) { t in
+                        Button { tags.append(t) } label: {
+                            Text("# \(t)").font(.suit(12.5, .semibold)).foregroundStyle(Theme.sub)
+                                .padding(.horizontal, 10).padding(.vertical, 5)
+                                .overlay(Capsule().strokeBorder(Theme.border, lineWidth: 1))
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
+            }
+        }
+    }
+
+    private func add() {
+        let t = input.trimmingCharacters(in: .whitespaces).replacingOccurrences(of: "#", with: "")
+        input = ""
+        guard !t.isEmpty, !tags.contains(t) else { return }
+        tags.append(t)
     }
 }

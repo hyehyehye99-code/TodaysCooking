@@ -52,6 +52,8 @@ struct InlineCard<Extra: View>: View {
     let title: String
     var sub: String? = nil
     var thumb: (tint: Color, photo: String)? = nil
+    /// 있으면 마스코트 대신 실제 링크 썸네일을 보여 준다
+    var thumbURL: String? = nil
     var meta: [(String, String)] = []
     var table: [TableRow] = []
     var actions: [CardAction] = []
@@ -68,7 +70,17 @@ struct InlineCard<Extra: View>: View {
             }
             if let thumb {
                 RoundedRectangle(cornerRadius: 14, style: .continuous).fill(thumb.tint).frame(height: 118)
-                    .overlay(Image(thumb.photo).resizable().scaledToFit().frame(height: 92))
+                    .overlay {
+                        if let s = thumbURL, let url = URL(string: s) {
+                            AsyncImage(url: url) { phase in
+                                if case .success(let image) = phase { image.resizable().scaledToFill() }
+                                else { Image(thumb.photo).resizable().scaledToFit().frame(height: 92) }
+                            }
+                        } else {
+                            Image(thumb.photo).resizable().scaledToFit().frame(height: 92)
+                        }
+                    }
+                    .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
             }
             if !meta.isEmpty {
                 VStack(spacing: 7) {
@@ -117,9 +129,9 @@ struct InlineCard<Extra: View>: View {
 }
 
 extension InlineCard where Extra == EmptyView {
-    init(icon: String? = nil, title: String, sub: String? = nil, thumb: (tint: Color, photo: String)? = nil,
+    init(icon: String? = nil, title: String, sub: String? = nil, thumb: (tint: Color, photo: String)? = nil, thumbURL: String? = nil,
          meta: [(String, String)] = [], table: [TableRow] = [], actions: [CardAction] = []) {
-        self.init(icon: icon, title: title, sub: sub, thumb: thumb, meta: meta, table: table, actions: actions) { EmptyView() }
+        self.init(icon: icon, title: title, sub: sub, thumb: thumb, thumbURL: thumbURL, meta: meta, table: table, actions: actions) { EmptyView() }
     }
 }
 

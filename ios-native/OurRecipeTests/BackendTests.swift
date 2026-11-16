@@ -191,6 +191,14 @@ final class SharedLinkTests: XCTestCase {
         XCTAssertFalse(SharedLink.isAISupported("https://notyoutube.com/x"))
     }
 
+    func testYouTubeThumbnails() {
+        XCTAssertEqual(SharedLink.thumbnailURL(for: "https://www.youtube.com/watch?v=abc123&t=5"), "https://i.ytimg.com/vi/abc123/hqdefault.jpg")
+        XCTAssertEqual(SharedLink.thumbnailURL(for: "https://youtu.be/abc123?si=x"), "https://i.ytimg.com/vi/abc123/hqdefault.jpg")
+        XCTAssertEqual(SharedLink.thumbnailURL(for: "https://youtube.com/shorts/abc123"), "https://i.ytimg.com/vi/abc123/hqdefault.jpg")
+        XCTAssertNil(SharedLink.thumbnailURL(for: "https://www.instagram.com/reel/x"))
+        XCTAssertNil(SharedLink.thumbnailURL(for: "https://youtube.com/feed"))
+    }
+
     func testHostStripsWww() {
         XCTAssertEqual(SharedLink.host(of: "https://www.instagram.com/p/1"), "instagram.com")
     }

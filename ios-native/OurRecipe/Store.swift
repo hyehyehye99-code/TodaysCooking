@@ -296,7 +296,7 @@ final class Store {
 
     /// 저장에 성공하면 true
     @discardableResult
-    func saveRecipe(editing id: String?, title: String, link: String, ings: String, steps: String, hide: Bool, linkTitle: String?) -> Bool {
+    func saveRecipe(editing id: String?, title: String, link: String, ings: String, steps: String, hide: Bool, linkTitle: String?, tags: [String] = []) -> Bool {
         let t = title.trimmingCharacters(in: .whitespaces)
         let l = link.trimmingCharacters(in: .whitespaces)
         guard !t.isEmpty || !l.isEmpty else { return false }
@@ -305,23 +305,43 @@ final class Store {
         if let id, let i = recipes.firstIndex(where: { $0.id == id }) {
             recipes[i].title = t
             recipes[i].link = l.isEmpty ? nil : l
+            if recipes[i].photoURL == nil || recipes[i].photoURL?.contains("ytimg.com") == true { recipes[i].photoURL = SharedLink.thumbnailURL(for: l) }
             recipes[i].linkTitle = l.isEmpty ? nil : (linkTitle ?? recipes[i].linkTitle)
             recipes[i].ings = parsedIngs
             recipes[i].steps = parsedSteps
             recipes[i].hideIngredients = hide
+            recipes[i].tags = tags
         } else {
             let id = UUID().uuidString.lowercased()
             let host = URL(string: l)?.host?.replacingOccurrences(of: "www.", with: "") ?? l
             recipes.insert(Recipe(
                 id: id, emoji: "🍽️", photo: Recipe.fallbackPhotos[Recipe.stableIndex(id, Recipe.fallbackPhotos.count)],
-                title: t, sub: "", tags: [], time: "", serving: "",
+                title: t, sub: "", tags: tags, time: "", serving: "",
                 tintHex: Recipe.tints[Recipe.stableIndex(id, Recipe.tints.count)], ings: parsedIngs, steps: parsedSteps,
                 link: l.isEmpty ? nil : l,
                 linkTitle: l.isEmpty ? nil : (linkTitle ?? "저장한 링크 · \(host)"),
                 author: members.first(where: \.isMe)?.name ?? "", hideIngredients: hide), at: 0)
+            recipes[0].photoURL = SharedLink.thumbnailURL(for: l)
         }
         showToast("저장했어요")
         return true
+    }
+
+    /// 모든 레시피에서 태그 이름을 한 번에 바꾼다 (이미 있는 태그로 바꾸면 합쳐진다)
+    func renameTag(_ old: String, to new: String) {
+        let n = new.trimmingCharacters(in: .whitespaces).replacingOccurrences(of: "#", with: "")
+        guard !n.isEmpty, n != old else { return }
+        for i in recipes.indices where recipes[i].tags.contains(old) {
+            var seen = Set<String>()
+            recipes[i].tags = recipes[i].tags.map { $0 == old ? n : $0 }.filter { seen.insert($0).inserted }
+        }
+        showToast("태그 이름을 바꿨어요")
+    }
+
+    /// 모든 레시피에서 태그를 뺀다 (레시피는 그대로)
+    func deleteTag(_ name: String) {
+        for i in recipes.indices { recipes[i].tags.removeAll { $0 == name } }
+        showToast("태그를 지웠어요")
     }
 
     func toggle(_ item: ShopItem) {
@@ -622,6 +642,7 @@ final class Store {
                               title: "", sub: "", tags: [], time: "", serving: "",
                               tintHex: Recipe.tints[Recipe.stableIndex(id, Recipe.tints.count)], ings: [], steps: [],
                               link: link, linkTitle: "저장한 링크 · \(host)", author: members.first(where: \.isMe)?.name ?? ""), at: 0)
+        recipes[0].photoURL = SharedLink.thumbnailURL(for: link)
         say([
             Msg(fromMe: false, text: "링크를 레시피북에 저장했어요!", card: .recipe(id), mood: "excited"),
             Msg(fromMe: false, text: "재료와 만드는 법을 AI가 자동으로 정리하는 건 로그인하면 쓸 수 있어요.", mood: "idea"),

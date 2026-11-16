@@ -112,6 +112,7 @@ final class ShareModel: ObservableObject {
             _ = try await Backend.shared.insert("bookmarks", rows: [[
                 "household_id": .string(household), "recipe_id": .string(id), "created_by": .string(uid),
                 "url": .string(shared.url), "title": shared.title.json, "domain": SharedLink.host(of: shared.url).json,
+                "thumbnail_url": SharedLink.thumbnailURL(for: shared.url).json,
             ]], select: "id") as [Row]
         } catch {
             try? await Backend.shared.delete("recipes", filters: ["id": "eq.\(id)"])   // 링크 없이 빈 레시피만 남지 않게

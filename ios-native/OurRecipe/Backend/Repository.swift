@@ -80,7 +80,8 @@ enum Repository {
             if !existing.isEmpty { try await db.delete("bookmarks", filters: ["recipe_id": "eq.\(r.id)"]) }
             return
         }
-        let values: [String: JSONValue] = ["url": .string(link), "title": r.linkTitle.json, "domain": r.host.json]
+        var values: [String: JSONValue] = ["url": .string(link), "title": r.linkTitle.json, "domain": r.host.json]
+        if let thumb = SharedLink.thumbnailURL(for: link) { values["thumbnail_url"] = .string(thumb) }
         if let row = existing.first {
             try await db.update("bookmarks", filters: ["id": "eq.\(row.id)"], values: values)
         } else {

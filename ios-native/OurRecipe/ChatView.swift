@@ -15,7 +15,7 @@ struct ChatCard: View {
             if let r = store.recipe(id) {
                 let lack = store.missing(r).count
                 InlineCard(
-                    icon: "tool-recipebook", title: r.title, sub: r.sub, thumb: (r.tint, r.photo),
+                    icon: "tool-recipebook", title: r.displayTitle, sub: r.sub, thumb: (r.tint, r.photo), thumbURL: r.photoURL,
                     meta: [("소요시간", r.time), ("분량", r.serving), ("부족한 재료", lack > 0 ? "\(lack)개" : "없음")],
                     actions: [
                         CardAction(label: "자세히") { store.openRecipe(r.id) },

@@ -15,6 +15,19 @@ enum SharedLink {
         return url
     }
 
+    /// 링크의 대표 이미지 주소. 유튜브는 영상 id 만으로 만들 수 있다 (인스타그램 등은 서버가 가져올 때까지 없음)
+    static func thumbnailURL(for url: String) -> String? {
+        guard let u = URL(string: url), let h = u.host?.lowercased() else { return nil }
+        var id: String?
+        if h == "youtu.be" { id = u.pathComponents.dropFirst().first }
+        else if h == "youtube.com" || h.hasSuffix(".youtube.com") {
+            if u.path.hasPrefix("/shorts/") || u.path.hasPrefix("/embed/") || u.path.hasPrefix("/live/") { id = u.pathComponents.dropFirst(2).first }
+            else { id = URLComponents(url: u, resolvingAgainstBaseURL: false)?.queryItems?.first { $0.name == "v" }?.value }
+        }
+        guard let id, !id.isEmpty else { return nil }
+        return "https://i.ytimg.com/vi/\(id)/hqdefault.jpg"
+    }
+
     static func host(of url: String) -> String? {
         URL(string: url)?.host?.replacingOccurrences(of: "www.", with: "")
     }

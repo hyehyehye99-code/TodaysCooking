@@ -526,22 +526,32 @@ struct SetupView: View {
 
 struct TagsPage: View {
     @Environment(Store.self) private var store
+    @State private var renaming: String?
+    @State private var newName = ""
+    @State private var deleting: String?
     private var tags: [String] { Array(Set(store.savedRecipes.flatMap(\.tags))).sorted() }
 
     var body: some View {
         SubPage(title: "태그 관리") {
-            Text("레시피와 북마크에 쓴 태그 이름을 한 번에 바꿀 수 있어요.").font(.suit(13.5)).foregroundStyle(Theme.sub)
+            Text("태그는 레시피를 만들거나 수정할 때 붙일 수 있어요. 여기서는 이름을 한 번에 바꾸거나 지울 수 있어요.")
+                .font(.suit(13.5)).foregroundStyle(Theme.sub).lineSpacing(3)
             if tags.isEmpty {
-                Text("아직 만든 태그가 없어요.").font(.suit(13.5)).foregroundStyle(Theme.faint).frame(maxWidth: .infinity).padding(.top, 20)
+                VStack(spacing: 6) {
+                    Text("아직 만든 태그가 없어요.").font(.suit(14, .semibold)).foregroundStyle(Theme.sub)
+                    Text("레시피 수정 화면의 \"태그\"에서 추가해보세요.").font(.suit(12.5)).foregroundStyle(Theme.faint)
+                }
+                .frame(maxWidth: .infinity).padding(.top, 20)
             } else {
                 VStack(spacing: 0) {
                     ForEach(Array(tags.enumerated()), id: \.element) { i, t in
-                        HStack {
+                        HStack(spacing: 12) {
                             Text("# \(t)").font(.suit(15, .semibold))
                             Text("\(store.savedRecipes.filter { $0.tags.contains(t) }.count)개").font(.suit(12.5)).foregroundStyle(Theme.sub)
                             Spacer()
-                            Button("이름 바꾸기") { store.showToast("곧 지원할 예정이에요") }
+                            Button("이름 바꾸기") { newName = t; renaming = t }
                                 .font(.suit(13, .semibold)).foregroundStyle(Theme.accent)
+                            Button("삭제") { deleting = t }
+                                .font(.suit(13, .semibold)).foregroundStyle(Theme.warn)
                         }
                         .padding(.vertical, 14)
                         if i < tags.count - 1 { Divider().overlay(Theme.border) }
@@ -550,6 +560,15 @@ struct TagsPage: View {
                 .padding(.horizontal, 16).paperCard()
             }
         }
+        .alert("태그 이름 바꾸기", isPresented: Binding(get: { renaming != nil }, set: { if !$0 { renaming = nil } })) {
+            TextField("새 이름", text: $newName)
+            Button("취소", role: .cancel) {}
+            Button("바꾸기") { if let old = renaming { store.renameTag(old, to: newName) } }
+        } message: { Text("이 태그가 붙은 모든 레시피에 적용돼요.") }
+        .alert("태그를 지울까요?", isPresented: Binding(get: { deleting != nil }, set: { if !$0 { deleting = nil } })) {
+            Button("취소", role: .cancel) {}
+            Button("지우기", role: .destructive) { if let t = deleting { store.deleteTag(t) } }
+        } message: { Text("레시피는 그대로 남고 태그만 빠져요.") }
     }
 }
 
