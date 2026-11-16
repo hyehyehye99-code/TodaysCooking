@@ -10,15 +10,42 @@
 - [ ] Apple Developer 에서 App ID `ourhomemenu` 에 **Push Notifications**, **Associated Domains** 가 켜져 있는지 확인 (기존 앱과 같은 App ID 라 이미 돼 있을 거예요).
 - [ ] 심사용 **테스트 계정** 준비 + App Store Connect "심사 메모"에 안내 (로그인 없이도 쓸 수 있는 게스트 모드가 있다는 점 포함).
 
-## 1. 빌드 · 업로드
+## 1. 빌드 · 업로드 (터미널에서 그대로 성공한 절차)
 
-1. `Config/Secrets.xcconfig` 에 **운영** Supabase URL/anon key, `API_BASE_URL=https://ourhomemenu.vercel.app` 확인.
-2. `xcodegen generate` → Xcode 에서 `OurRecipe` 스킴, 대상 `Any iOS Device (arm64)`.
-3. Signing & Capabilities: Team `6NTUXY85FS`, Automatic signing.
-4. **Product → Archive → Distribute App → App Store Connect (Upload)**.
-5. TestFlight 내부 테스트로 먼저 확인 후 심사 제출.
+2.0.0 (build 27) 을 이 방법으로 TestFlight 에 올렸어요 (2026-11-17).
 
-(터미널 확인용: `xcodebuild -scheme OurRecipe -destination 'generic/platform=iOS' -configuration Release build` 는 서명 없이도 통과해요.)
+```bash
+cd ios-native
+xcodegen generate
+
+# 1) 아카이브 — 팀 6NTUXY85FS, 자동 서명
+xcodebuild archive -project OurRecipe.xcodeproj -scheme OurRecipe -configuration Release \
+  -destination 'generic/platform=iOS' -archivePath build-archive/OurRecipe.xcarchive \
+  -derivedDataPath build-archive/dd -allowProvisioningUpdates
+
+# 2) App Store Connect 로 바로 업로드 (Xcode 에 로그인된 Apple 계정의 클라우드 배포 인증서를 사용)
+xcodebuild -exportArchive -archivePath build-archive/OurRecipe.xcarchive \
+  -exportOptionsPlist build-archive/ExportOptions.plist -exportPath build-archive/upload -allowProvisioningUpdates
+```
+
+`build-archive/ExportOptions.plist`: `method=app-store-connect`, `destination=upload`, `teamID=6NTUXY85FS`, `signingStyle=automatic`, `uploadSymbols=true`.
+(파일로만 내보려면 `destination` 을 `export` 로 바꾸고, 서명은 `codesign -dvv` 로 `Authority=Apple Distribution` 인지 확인해요.)
+
+업로드 후 App Store Connect → TestFlight 에서 처리(수 분~수십 분)가 끝나면 빌드가 나타나요. **수출 규정/암호화 질문은 `ITSAppUsesNonExemptEncryption=false` 라 자동 통과**예요.
+버전/빌드 번호를 올릴 땐 `project.yml` 의 `MARKETING_VERSION`, `CURRENT_PROJECT_VERSION` 을 고쳐요(같은 버전 안에서 빌드 번호는 매번 커야 해요).
+
+### 배포하다 겪은 문제 (다시 만나지 않도록)
+
+| 증상 | 원인 | 해결 |
+|---|---|---|
+| `90034 not signed using an Apple submission certificate` | `.app` 파일 이름이 한글(`우리집 레시피.app`)이라 클라우드 서명이 제대로 붙지 않았어요 | `PRODUCT_NAME=OurRecipe` (ASCII). 홈 화면 이름은 `CFBundleDisplayName` 이 정해서 그대로 "우리집 레시피" |
+| `90474 No orientations were specified` | 유니버설 앱인데 아이패드 방향이 없었어요 | 아이패드 네 방향 지정 (`INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad`) |
+
+### 기존 앱과 달라지는 점 (출시 전에 꼭 확인)
+
+- **최소 iOS**: 기존 앱은 iOS 15 부터, 새 앱은 **iOS 17 부터**예요. 업데이트하면 iOS 15·16 사용자는 새 버전을 받지 못하고 기존 버전에 남아요. (낮추려면 `@Observable`·`SwiftData` 대체 등 코드 수정이 필요해요.)
+- **위젯(TimerWidgetExtension)이 사라져요** — 아직 이식 전이라 새 버전을 설치하면 홈 화면의 타이머 위젯이 없어져요.
+- **아이패드**: 아이폰 화면을 그대로 넓힌 모양이에요(전용 레이아웃 없음).
 
 ## 2. 이미 준비된 것
 
