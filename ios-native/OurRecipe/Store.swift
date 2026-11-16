@@ -48,6 +48,13 @@ final class Store {
     var savedIdeas: Set<AssistantIdea> = []
     /// 초대 링크로 앱을 열었는데 아직 로그인 전이면, 로그인 직후에 이 코드로 참여한다
     var pendingInviteCode: String?
+    /// 처음 가입한 사람이 이름과 우리집 이름을 정하는 화면을 띄운다 (로그인은 됐지만 속한 우리집이 아직 없을 때)
+    var needsSetup = false
+    var setupBusy = false
+    /// 로그인 화면에서 막 열린 시트를 로그인 성공 후 닫기 위한 신호
+    var showLogin = false
+    /// 가입 설정이 끝나기 전까지 들고 있는 게스트 데이터 (끝나면 서버로 옮긴다)
+    var setupGuest: ([Recipe], [FridgeItem], [ShopItem]) = ([], [], [])
     var draft: String?
     /// 화면 확인용 샘플 데이터 모드 (DEBUG 의 -sample 인자). 가짜 가족 대화/답장은 이 모드에서만 나온다
     var demoMode = false

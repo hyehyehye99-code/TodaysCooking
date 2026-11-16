@@ -44,6 +44,8 @@ struct RootView: View {
                 .tabItem { Image("tab-mypage").accessibilityLabel("마이페이지") }
                 .tag(AppTab.my)
         }
+        .sheet(isPresented: $store.showLogin) { LoginSheet().environment(store) }
+        .fullScreenCover(isPresented: $store.needsSetup) { SetupView().environment(store) }
         .fullScreenCover(isPresented: $store.showFridge) {
             FridgePage()
                 .environment(store)

@@ -244,24 +244,63 @@ extension Store {
         userId = s.userId
         userEmail = s.email
         do {
-            var memberships = try await Repository.memberships(userId: s.userId)
+            let memberships = try await Repository.memberships(userId: s.userId)
             if memberships.compactMap(\.households).isEmpty {
-                _ = try await Repository.createHousehold(name: "나의 주방")
-                let nick = s.email?.split(separator: "@").first.map(String.init) ?? "나"
-                try? await Repository.upsertProfile(nickname: nick)
-                memberships = try await Repository.memberships(userId: s.userId)
+                // 처음 가입: 이름과 우리집 이름을 직접 정하는 화면을 먼저 보여 준다
+                setupGuest = guest
+                showLogin = false
+                try? await Task.sleep(for: .milliseconds(600))   // 로그인 시트가 내려간 뒤에 띄워야 화면이 겹치지 않는다
+                needsSetup = true
+                return
             }
-            applyMemberships(memberships, select: UserDefaults.standard.string(forKey: Store.activeHouseholdKey))
-            isRemote = true
-            await loadHousehold()
-            importGuest(guest.0, guest.1, guest.2)
-            if let code = pendingInviteCode { pendingInviteCode = nil; joinKitchen(code: code) }
-            persistLocal()
-            await PushManager.shared.onSignedIn()
+            try await finishEnter(memberships, guest: guest)
         } catch {
             isRemote = false
             showToast("계정 정보를 불러오지 못했어요. 잠시 후 다시 시도해주세요")
         }
+    }
+
+    private func finishEnter(_ memberships: [RemoteMembership], guest: ([Recipe], [FridgeItem], [ShopItem])) async throws {
+        applyMemberships(memberships, select: UserDefaults.standard.string(forKey: Store.activeHouseholdKey))
+        isRemote = true
+        showLogin = false
+        await loadHousehold()
+        importGuest(guest.0, guest.1, guest.2)
+        if let code = pendingInviteCode { pendingInviteCode = nil; joinKitchen(code: code) }
+        persistLocal()
+        await PushManager.shared.onSignedIn()
+    }
+
+    /// 가입 설정 화면에서 "시작하기": 내 이름 저장 → (초대받았다면 그 우리집에 참여, 아니면) 새 우리집 만들기
+    func completeSetup(myName: String, kitchenName: String) async {
+        guard let uid = userId, !setupBusy else { return }
+        setupBusy = true
+        defer { setupBusy = false }
+        do {
+            try await Repository.upsertProfile(nickname: myName)
+            var joined = false
+            if let code = pendingInviteCode {
+                pendingInviteCode = nil
+                joined = (try? await Repository.joinHousehold(code: code)) != nil
+            }
+            if !joined { _ = try await Repository.createHousehold(name: kitchenName) }
+            let memberships = try await Repository.memberships(userId: uid)
+            needsSetup = false
+            let guest = setupGuest
+            setupGuest = ([], [], [])
+            try await finishEnter(memberships, guest: guest)
+        } catch {
+            showToast("저장하지 못했어요. 잠시 후 다시 시도해주세요")
+        }
+    }
+
+    /// 가입 설정을 하지 않고 나가기: 로그아웃해서 게스트 상태로 돌아간다 (게스트 레시피는 그대로 둔다)
+    func cancelSetup() async {
+        needsSetup = false
+        setupGuest = ([], [], [])
+        userId = nil          // handleSession(nil) 이 서버 모드 정리(= 화면 데이터 비우기)를 하지 않도록 먼저 비운다
+        userEmail = nil
+        await auth.signOut()
     }
 
     private func leaveRemote() {

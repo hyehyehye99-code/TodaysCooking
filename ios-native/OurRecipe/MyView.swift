@@ -404,35 +404,121 @@ struct LoginCard: View {
     @Environment(Store.self) private var store
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            HStack(spacing: 12) {
-                MascotImage(name: "chef-greeting", size: 56)
-                VStack(alignment: .leading, spacing: 3) {
-                    Text("로그인하고 더 편하게 써요").font(.suit(17, .bold))
-                    Text("가족과 레시피를 함께 쓰고, AI로 레시피를 정리할 수 있어요.")
-                        .font(.suit(12.5)).foregroundStyle(Theme.sub).lineSpacing(2)
-                }
+        HStack(spacing: 12) {
+            MascotImage(name: "chef-greeting", size: 52)
+            VStack(alignment: .leading, spacing: 3) {
+                Text("로그인하고 가족과 함께 써요").font(.suit(16, .bold))
+                Text("레시피가 이 기기에만 저장되고 있어요").font(.suit(12.5)).foregroundStyle(Theme.sub)
             }
-            if store.auth.isAvailable {
-                VStack(spacing: 8) {
-                    ForEach(AuthManager.Provider.allCases) { p in
-                        Button { Task { await store.auth.signIn(p) } } label: {
-                            Text(p.label).font(.suit(15, .bold))
-                                .foregroundStyle(p == .apple ? .white : (p == .kakao ? Color(hex: 0x191600) : Theme.ink))
-                                .frame(maxWidth: .infinity).padding(.vertical, 14)
-                                .background(p == .apple ? Color.black : (p == .kakao ? Color(hex: 0xFEE500) : Theme.surface),
-                                            in: RoundedRectangle(cornerRadius: 14, style: .continuous))
-                        }
-                        .buttonStyle(PressStyle()).disabled(store.auth.isWorking)
-                    }
-                }
-                if let error = store.auth.errorMessage {
-                    Text(error).font(.suit(12.5, .semibold)).foregroundStyle(Theme.warn)
-                }
+            Spacer(minLength: 6)
+            Button { store.showLogin = true } label: {
+                Text("로그인").font(.suit(14, .bold)).foregroundStyle(.white)
+                    .padding(.horizontal, 16).padding(.vertical, 10)
+                    .background(Theme.accent, in: Capsule())
             }
-            Text("로그인하지 않으면 레시피가 이 기기에만 저장돼요.").font(.suit(12)).foregroundStyle(Theme.faint)
+            .buttonStyle(PressStyle())
         }
         .padding(16).frame(maxWidth: .infinity, alignment: .leading).paperCard()
+    }
+}
+
+/// 로그인 / 가입 시트: 처음이면 로그인 직후 이름·우리집 이름을 정하는 화면이 이어진다
+struct LoginSheet: View {
+    @Environment(Store.self) private var store
+
+    var body: some View {
+        VStack(spacing: 18) {
+            MascotImage(name: "chef-greeting", size: 84).padding(.top, 8)
+            VStack(spacing: 6) {
+                Text("우리집 레시피 시작하기").font(.suit(22, .bold)).tracking(-0.3)
+                Text("로그인하면 가족과 레시피·냉장고·장보기를 함께 쓰고\nAI로 영상 레시피를 정리할 수 있어요.")
+                    .font(.suit(13.5)).foregroundStyle(Theme.sub).multilineTextAlignment(.center).lineSpacing(3)
+            }
+            VStack(spacing: 10) {
+                ForEach(AuthManager.Provider.allCases) { p in
+                    Button { Task { await store.auth.signIn(p) } } label: {
+                        Text(p.label).font(.suit(15.5, .bold))
+                            .foregroundStyle(p == .apple ? .white : (p == .kakao ? Color(hex: 0x191600) : Theme.ink))
+                            .frame(maxWidth: .infinity).padding(.vertical, 15)
+                            .background(p == .apple ? Color.black : (p == .kakao ? Color(hex: 0xFEE500) : Theme.surface),
+                                        in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+                    }
+                    .buttonStyle(PressStyle()).disabled(store.auth.isWorking)
+                }
+            }
+            if store.auth.isWorking { ProgressView() }
+            if let error = store.auth.errorMessage {
+                Text(error).font(.suit(12.5, .semibold)).foregroundStyle(Theme.warn).multilineTextAlignment(.center)
+            }
+            Text("계속하면 이용약관과 개인정보처리방침에 동의하게 돼요.").font(.suit(11.5)).foregroundStyle(Theme.faint)
+            Spacer(minLength: 0)
+        }
+        .padding(.horizontal, 22).padding(.top, 24)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        .background(Theme.background)
+        .presentationDetents([.height(500)])
+        .presentationDragIndicator(.visible)
+        .presentationCornerRadius(28)
+        .onAppear { store.auth.errorMessage = nil }
+    }
+}
+
+/// 처음 가입한 사람이 내 이름과 우리집 이름을 정하는 화면
+struct SetupView: View {
+    @Environment(Store.self) private var store
+    @State private var myName = ""
+    @State private var kitchenName = "우리집"
+    @FocusState private var focus: Field?
+    private enum Field { case me, kitchen }
+
+    private var invited: Bool { store.pendingInviteCode != nil }
+    private var ready: Bool { !myName.trimmingCharacters(in: .whitespaces).isEmpty && (invited || !kitchenName.trimmingCharacters(in: .whitespaces).isEmpty) }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 22) {
+            HStack {
+                Spacer()
+                Button("취소") { Task { await store.cancelSetup() } }.font(.suit(14, .semibold)).foregroundStyle(Theme.sub)
+            }
+            MascotImage(name: "chef-greeting", size: 72)
+            VStack(alignment: .leading, spacing: 6) {
+                Text("만나서 반가워요!").font(.suit(26, .bold)).tracking(-0.4)
+                Text(invited ? "가족에게 보여질 내 이름을 알려주세요." : "내 이름과 우리집 이름을 정해주세요.\n나중에 마이페이지에서 바꿀 수 있어요.")
+                    .font(.suit(14)).foregroundStyle(Theme.sub).lineSpacing(3)
+            }
+            VStack(alignment: .leading, spacing: 16) {
+                field("내 이름", text: $myName, placeholder: "예: 혜지, 엄마", focus: .me)
+                if !invited { field("우리집 이름", text: $kitchenName, placeholder: "예: 우리집, 혜지네 주방", focus: .kitchen) }
+            }
+            Spacer(minLength: 0)
+            Button {
+                focus = nil
+                Task { await store.completeSetup(myName: myName.trimmingCharacters(in: .whitespaces),
+                                                 kitchenName: kitchenName.trimmingCharacters(in: .whitespaces)) }
+            } label: {
+                Group {
+                    if store.setupBusy { ProgressView().tint(.white) } else { Text("시작하기").font(.suit(16, .bold)) }
+                }
+                .foregroundStyle(.white).frame(maxWidth: .infinity).padding(.vertical, 16)
+                .background(ready ? Theme.accent : Theme.faint, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+            }
+            .buttonStyle(PressStyle()).disabled(!ready || store.setupBusy)
+        }
+        .padding(.horizontal, 24).padding(.vertical, 20)
+        .background(Theme.background.ignoresSafeArea())
+        .onAppear { focus = .me }
+        .interactiveDismissDisabled()
+    }
+
+    private func field(_ title: String, text: Binding<String>, placeholder: String, focus f: Field) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(title).font(.suit(13, .semibold)).foregroundStyle(Theme.sub)
+            TextField(placeholder, text: text).font(.suit(17)).focused($focus, equals: f)
+                .submitLabel(f == .me && !invited ? .next : .done)
+                .onSubmit { if f == .me && !invited { focus = .kitchen } else { focus = nil } }
+                .padding(.horizontal, 16).frame(height: 54)
+                .background(Theme.surface, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+        }
     }
 }
 

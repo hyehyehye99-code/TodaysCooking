@@ -291,6 +291,20 @@ struct FridgePage: View {
     private var selectBar: some View {
         VStack(spacing: 0) {
             Divider().overlay(Theme.border)
+            let allIds = Set(filtered.map(\.id))
+            let allSelected = !allIds.isEmpty && allIds.isSubset(of: selection)
+            HStack {
+                Button { selection = allSelected ? [] : allIds } label: {
+                    HStack(spacing: 8) {
+                        Image(systemName: allSelected ? "checkmark.circle.fill" : "circle")
+                            .font(.system(size: 20)).foregroundStyle(allSelected ? Theme.accent : Theme.faint)
+                        Text(allSelected ? "전체 해제" : "전체 선택").font(.suit(14.5, .semibold)).foregroundStyle(Theme.ink)
+                    }
+                }
+                Spacer()
+                Text("\(filtered.count)개 중 \(selection.count)개 선택").font(.suit(12.5)).foregroundStyle(Theme.sub)
+            }
+            .padding(.horizontal, 18).padding(.top, 10)
             Button {
                 store.removeFridge(selection)
                 store.showToast("\(selection.count)개를 뺐어요")
