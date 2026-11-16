@@ -7,3 +7,4 @@ xcuserdata/
 Config/Secrets.xcconfig
 OurRecipe/Info.plist
 build-release/
+ShareExtension/Info.plist

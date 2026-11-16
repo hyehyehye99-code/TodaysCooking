@@ -127,7 +127,7 @@ private enum KitchenSheet: Identifiable {
 struct KitchenSettingsView: View {
     @Environment(Store.self) private var store
     @State private var sheet: KitchenSheet?
-    @State private var alarm = true
+    @State private var alarm = PushManager.shared.isEnabled
 
     var body: some View {
         VStack(spacing: 0) {
@@ -149,7 +149,17 @@ struct KitchenSettingsView: View {
 
                     VStack(alignment: .leading, spacing: 8) {
                         SectionLabel("알림")
-                        Toggle(isOn: $alarm) {
+                        Toggle(isOn: Binding(get: { alarm }, set: { on in
+                            alarm = on
+                            Task {
+                                if on {
+                                    if await !PushManager.shared.enable() {
+                                        alarm = false
+                                        store.showToast("설정에서 알림 권한을 허용해주세요.")
+                                    }
+                                } else { await PushManager.shared.disable() }
+                            }
+                        })) {
                             VStack(alignment: .leading, spacing: 2) {
                                 Text("알림").font(.suit(15, .semibold))
                                 Text("다른 가족이 장보기에 항목을 추가하면 알려드려요.").font(.suit(12.5)).foregroundStyle(Theme.sub)

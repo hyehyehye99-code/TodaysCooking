@@ -1,14 +1,13 @@
 import SwiftUI
-import UserNotifications
 
 @main
 struct OurRecipeApp: App {
+    @UIApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
     @State private var store = Store()
     @Environment(\.scenePhase) private var scenePhase
 
     init() {
         SUIT.register()
-        UNUserNotificationCenter.current().delegate = NotificationDelegate.shared
     }
 
     var body: some Scene {

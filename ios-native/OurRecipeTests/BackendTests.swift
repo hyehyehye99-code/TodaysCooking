@@ -161,3 +161,69 @@ final class FridgeItemTests: XCTestCase {
         XCTAssertFalse(FridgeItem(name: "a", amt: "", days: 10).isSoon)
     }
 }
+
+final class SharedLinkTests: XCTestCase {
+    func testPlainURL() {
+        XCTAssertEqual(SharedLink.firstURL(in: "https://youtu.be/abc123"), "https://youtu.be/abc123")
+    }
+
+    func testInstagramTextWithCaption() {
+        let text = "이 릴스 대박 https://www.instagram.com/reel/Cxyz/?igsh=MWx1 꼭 봐"
+        XCTAssertEqual(SharedLink.firstURL(in: text), "https://www.instagram.com/reel/Cxyz/?igsh=MWx1")
+    }
+
+    func testTrailingPunctuationIsTrimmed() {
+        XCTAssertEqual(SharedLink.firstURL(in: "보세요 (https://youtu.be/abc)."), "https://youtu.be/abc")
+        XCTAssertEqual(SharedLink.firstURL(in: "https://a.com/x」"), "https://a.com/x")
+    }
+
+    func testNoLink() {
+        XCTAssertNil(SharedLink.firstURL(in: "링크 없는 글"))
+        XCTAssertNil(SharedLink.firstURL(in: ""))
+    }
+
+    func testAISupportedHostsMatchTheWeb() {
+        XCTAssertTrue(SharedLink.isAISupported("https://www.youtube.com/watch?v=1"))
+        XCTAssertTrue(SharedLink.isAISupported("https://m.youtube.com/watch?v=1"))
+        XCTAssertTrue(SharedLink.isAISupported("https://youtu.be/1"))
+        XCTAssertTrue(SharedLink.isAISupported("https://www.instagram.com/reel/x"))
+        XCTAssertFalse(SharedLink.isAISupported("https://blog.naver.com/x"))
+        XCTAssertFalse(SharedLink.isAISupported("https://notyoutube.com/x"))
+    }
+
+    func testHostStripsWww() {
+        XCTAssertEqual(SharedLink.host(of: "https://www.instagram.com/p/1"), "instagram.com")
+    }
+}
+
+final class PushAPITests: XCTestCase {
+    func testRequestBodiesMatchTheServerRoute() {
+        XCTAssertEqual(PushAPI.Event.shoppingAdded(["우유", "식빵"]).body["kind"] as? String, "shopping_added")
+        XCTAssertEqual(PushAPI.Event.shoppingAdded(["우유", "식빵"]).body["names"] as? [String], ["우유", "식빵"])
+        XCTAssertEqual(PushAPI.Event.shoppingCompleted(3).body["count"] as? Int, 3)
+        let p = PushAPI.Event.recipeProposed(id: "abc", title: "된장찌개", note: "")
+        XCTAssertEqual(p.body["kind"] as? String, "recipe_proposed")
+        XCTAssertNil(p.body["note"], "빈 메모는 보내지 않는다")
+        XCTAssertEqual(PushAPI.Event.recipeProposed(id: "a", title: "t", note: "오늘 저녁").body["note"] as? String, "오늘 저녁")
+    }
+}
+
+@MainActor
+final class NotificationRoutingTests: XCTestCase {
+    func testNotificationPathsOpenTheRightScreen() {
+        let store = Store()
+        store.routeNotification("/shopping")
+        XCTAssertEqual(store.tab, .shop)
+
+        store.routeNotification("/mypage/fridge")
+        XCTAssertEqual(store.tab, .chat)
+        XCTAssertTrue(store.showFridge)
+
+        store.routeNotification("/recipes/ABC-123")
+        XCTAssertEqual(store.tab, .recipes)
+        XCTAssertEqual(store.recipePath, [.detail("abc-123")])
+
+        store.routeNotification("/")
+        XCTAssertEqual(store.tab, .chat)
+    }
+}

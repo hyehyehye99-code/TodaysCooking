@@ -69,6 +69,7 @@ final class Store {
     }
 
     init() {
+        PushManager.shared.store = self
         restoreLocal()
         #if DEBUG
         applyDebugLaunchArguments()
@@ -124,6 +125,21 @@ final class Store {
     func recipe(_ id: String) -> Recipe? { recipes.first { $0.id == id } }
     func inFridge(_ name: String) -> Bool { fridge.contains { $0.name == name } }
     func missing(_ r: Recipe) -> [Ingredient] { r.ings.filter { !inFridge($0.name) && !r.skipped.contains($0.name) } }
+
+    /// 알림을 눌렀을 때: 알림 payload 의 url 로 해당 화면을 연다
+    func routeNotification(_ path: String) {
+        if path.hasPrefix("/shopping") {
+            tab = .shop
+        } else if path.hasPrefix("/mypage/fridge") {
+            tab = .chat
+            showFridge = true
+        } else if path.hasPrefix("/recipes/"), let id = path.split(separator: "/").last {
+            openRecipe(String(id).lowercased())
+        } else {
+            tab = .chat
+        }
+        Task { await refreshIfNeeded() }   // 가족이 방금 바꾼 내용을 바로 보이게
+    }
 
     /// 어디서든 레시피 상세를 전체 페이지로 연다 (대화 카드의 "자세히" 등)
     func openRecipe(_ id: String) {
@@ -224,7 +240,12 @@ final class Store {
         recipePath = []
         myPath = []
         push(msg)
-        // 가짜 가족 반응은 화면 확인용 샘플 모드에서만 보여 준다. 실제 가족에게는 아직 알림이 가지 않는다
+        // 진짜 가족에게는 푸시 알림(+활동 로그)으로 제안이 전달된다
+        if isRemote, let hid = currentHouseholdId {
+            Task { await PushAPI.notify(.recipeProposed(id: id, title: r.displayTitle, note: text), householdId: hid) }
+            showToast("가족에게 알림을 보냈어요")
+        }
+        // 가짜 가족 반응은 화면 확인용 샘플 모드에서만 보여 준다
         guard demoMode else { return }
         let gen = chatGen
         Task {
@@ -329,6 +350,7 @@ final class Store {
         }
         shop.removeAll { $0.checked }
         showToast("냉장고에 재료 \(bought.count)개를 추가했어요")
+        if isRemote, let hid = currentHouseholdId { Task { await PushAPI.notify(.shoppingCompleted(bought.count), householdId: hid) } }
     }
 
     var soonCount: Int { fridge.filter(\.isSoon).count }
@@ -456,7 +478,7 @@ final class Store {
         currentKitchen = index
         showToast("\(kitchenName)(으)로 바꿨어요")
         if isRemote {
-            if let hid = currentHouseholdId { UserDefaults.standard.set(hid, forKey: Store.activeHouseholdKey) }
+            if let hid = currentHouseholdId { UserDefaults.standard.set(hid, forKey: Store.activeHouseholdKey); Keychain.set(Data(hid.utf8), for: SharedKeys.activeHousehold) }
             Task { await loadHousehold() }
         }
     }

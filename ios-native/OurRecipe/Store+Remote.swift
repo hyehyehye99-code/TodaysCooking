@@ -12,6 +12,8 @@ struct SyncState {
     var topPosition = 0
     var pushing = false
     var dirty = false
+    /// 게스트 데이터를 옮기는 첫 로그인 때는 가족에게 알림이 쏟아지지 않게 한다
+    var suppressNotify = false
 }
 
 /// 기기에 저장하는 내용. 게스트는 레시피·냉장고·장보기까지, 로그인하면 서버에 없는 것(메뉴판·타이머·셰프 이름)만 저장한다.
@@ -182,10 +184,12 @@ extension Store {
 
     private func pushShop(_ hid: String) async throws {
         let ids = Set(shop.map(\.id))
+        var added: [String] = []
         for item in shop {
             guard let old = sync.shop[item.id] else {
                 try await Repository.insertShopping(item, household: hid)
                 sync.shop[item.id] = item
+                added.append(item.name)
                 continue
             }
             if old.checked != item.checked {
@@ -197,6 +201,9 @@ extension Store {
             try await Repository.deleteShopping(id)
             sync.shop[id] = nil
         }
+        // 새로 담은 항목이 있으면 가족에게 한 번만 알린다 (웹의 장보기 추가 알림과 같은 문구)
+        if !added.isEmpty, !sync.suppressNotify { Task { await PushAPI.notify(.shoppingAdded(added), householdId: hid) } }
+        sync.suppressNotify = false
     }
 }
 
@@ -250,6 +257,7 @@ extension Store {
             importGuest(guest.0, guest.1, guest.2)
             if let code = pendingInviteCode { pendingInviteCode = nil; joinKitchen(code: code) }
             persistLocal()
+            await PushManager.shared.onSignedIn()
         } catch {
             isRemote = false
             showToast("계정 정보를 불러오지 못했어요. 잠시 후 다시 시도해주세요")
@@ -276,7 +284,7 @@ extension Store {
         guard !list.isEmpty else { return }
         kitchens = list
         currentKitchen = preferred.flatMap { id in list.firstIndex { $0.householdId == id.lowercased() } } ?? 0
-        if let hid = list[currentKitchen].householdId { UserDefaults.standard.set(hid, forKey: Store.activeHouseholdKey) }
+        if let hid = list[currentKitchen].householdId { UserDefaults.standard.set(hid, forKey: Store.activeHouseholdKey); Keychain.set(Data(hid.utf8), for: SharedKeys.activeHousehold) }
     }
 
     /// 우리집 목록을 다시 읽고 select 에 해당하는 우리집으로 이동
@@ -313,6 +321,7 @@ extension Store {
                              topPosition: min(0, rr.compactMap(\.position).min() ?? 0))
             kitchens[currentKitchen].members = people
             recipes = newRecipes; fridge = newFridge; shop = newShop
+            Task { await PushManager.shared.syncToken() }
         } catch {
             reportSyncFailure(error)
         }
@@ -320,6 +329,7 @@ extension Store {
 
     private func importGuest(_ r: [Recipe], _ f: [FridgeItem], _ s: [ShopItem]) {
         guard !(r.isEmpty && f.isEmpty && s.isEmpty) else { return }
+        sync.suppressNotify = true
         let valid = r.filter { UUID(uuidString: $0.id) != nil }
         let myName = members.first(where: \.isMe)?.name ?? ""
         for var rec in valid.reversed() where !recipes.contains(where: { $0.id == rec.id }) {
@@ -377,6 +387,7 @@ extension Store {
     /// 회원 탈퇴 (서버의 delete_my_account RPC). App Store 규정상 앱 안에서 계정을 지울 수 있어야 한다
     func deleteAccount() async {
         do {
+            await PushManager.shared.unregisterToken()
             try await Backend.shared.rpcVoid("delete_my_account")
             await auth.signOut()
             showToast("탈퇴했어요. 그동안 이용해 주셔서 감사해요")
@@ -386,6 +397,7 @@ extension Store {
     }
 
     func signOut() async {
+        await PushManager.shared.unregisterToken()
         await auth.signOut()
         showToast("로그아웃했어요")
     }

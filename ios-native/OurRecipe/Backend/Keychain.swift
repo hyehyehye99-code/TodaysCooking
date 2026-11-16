@@ -3,7 +3,8 @@ import Security
 
 /// 로그인 세션 같은 민감한 값은 UserDefaults 가 아니라 키체인에 둔다.
 enum Keychain {
-    private static let service = Bundle.main.bundleIdentifier ?? "com.hyeji.ourmenu"
+    /// 앱(ourhomemenu)과 공유 확장(ourhomemenu.ShareExtension)이 같은 항목을 보도록 번들 ID 가 아니라 고정 값을 쓴다
+    private static let service = "ourhomemenu"
 
     private static func query(_ key: String) -> [String: Any] {
         [kSecClass as String: kSecClassGenericPassword, kSecAttrService as String: service, kSecAttrAccount as String: key]

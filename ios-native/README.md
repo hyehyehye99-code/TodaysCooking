@@ -27,6 +27,8 @@ open OurRecipe.xcodeproj
 | `OurRecipe/*.swift` | 화면(SwiftUI) · `Store.swift` 앱 상태 |
 | `OurRecipe/Backend/` | Supabase 클라이언트(`Backend`), 로그인(`AuthManager`, OAuth PKCE), 테이블 접근(`Repository`), AI(`AssistantAPI`), 서버 행 ↔ 화면 모델 변환(`RemoteMapping`) |
 | `OurRecipe/Store+Remote.swift` | 로컬 저장, 변경 감지 동기화(diff), 로그인/게스트 데이터 이전, AI 대화 처리 |
+| `OurRecipe/Push/` | 푸시(FCM) 등록·알림 탭 이동 (`PushManager`, `AppDelegate`) |
+| `ShareExtension/` | 공유 시트 → 바로 레시피 생성 (앱의 `Backend/` 코드를 그대로 공유) |
 | `OurRecipeTests/` | 단위 테스트 (`xcodebuild test`) |
 | `Config/` | 빌드 설정 (`Secrets.xcconfig` 는 git 제외) |
 | `project.yml` | XcodeGen 설정 — 번들 ID·권한·버전의 원본 |

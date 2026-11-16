@@ -48,11 +48,3 @@ enum Reminders {
         try? await center.add(UNNotificationRequest(identifier: previewId, content: content(), trigger: trigger))
     }
 }
-
-/// 앱이 열려 있을 때도 알림 배너를 보여 준다 (미리 받아보기용)
-final class NotificationDelegate: NSObject, UNUserNotificationCenterDelegate {
-    static let shared = NotificationDelegate()
-    func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification) async -> UNNotificationPresentationOptions {
-        [.banner, .sound]
-    }
-}
