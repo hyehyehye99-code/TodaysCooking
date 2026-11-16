@@ -14,7 +14,7 @@ struct MyView: View {
                 VStack(spacing: 0) {
                     PageHeader(title: "마이페이지", showKitchen: false)
                     ScrollView {
-                        VStack(spacing: 12) {
+                        VStack(spacing: 20) {
                             if store.auth.isSignedIn || !store.auth.isAvailable { profileCard } else { LoginCard() }
                             householdHeader
                             kitchenCard
@@ -35,7 +35,7 @@ struct MyView: View {
                                 linkRow("개인정보처리방침", path: "/privacy")
                             }
                         }
-                        .padding(.horizontal, 16).padding(.bottom, 24)
+                        .padding(.horizontal, 16).padding(.top, 8).padding(.bottom, 32)
                     }
                 }
             }
@@ -98,12 +98,12 @@ struct MyView: View {
             Button("+ 우리집 추가") { store.showKitchenSettings = true }
                 .font(.suit(13, .semibold)).foregroundStyle(Theme.sub).padding(.horizontal, 8)
         }
-        .padding(.top, 6)
+        .padding(.top, 4).padding(.bottom, -8)   // 라벨은 바로 아래 카드에 붙여서 한 묶음으로 보이게
     }
 
     private var kitchenCard: some View {
         Button { store.showKitchenSettings = true } label: {
-            VStack(alignment: .leading, spacing: 14) {
+            VStack(alignment: .leading, spacing: 18) {
                 HStack {
                     HStack(spacing: 4) {
                         Text(store.kitchenName).font(.suit(16, .bold)).foregroundStyle(Theme.ink)
@@ -116,13 +116,16 @@ struct MyView: View {
                 HStack {
                     Text("참여 인원 \(store.members.count)명").font(.suit(13)).foregroundStyle(Theme.sub)
                     Spacer()
-                    Text("초대하기").font(.suit(13, .bold)).foregroundStyle(.white)
-                        .padding(.horizontal, 14).padding(.vertical, 9)
-                        .background(Theme.accent, in: Capsule())
-                        .onTapGesture { if store.inviteLink.isEmpty { store.showToast("로그인하면 가족을 초대할 수 있어요") } else { store.copy(store.inviteLink, done: "링크를 복사했어요!") } }
+                    // 로그인 전에는 초대할 가족이 없으므로 버튼을 숨겨 화면을 덜 복잡하게 한다
+                    if store.isRemote {
+                        Text("초대하기").font(.suit(13, .bold)).foregroundStyle(.white)
+                            .padding(.horizontal, 14).padding(.vertical, 9)
+                            .background(Theme.accent, in: Capsule())
+                            .onTapGesture { if store.inviteLink.isEmpty { store.showToast("초대 링크를 만들 수 없어요") } else { store.copy(store.inviteLink, done: "링크를 복사했어요!") } }
+                    }
                 }
             }
-            .padding(16).frame(maxWidth: .infinity, alignment: .leading)
+            .padding(18).frame(maxWidth: .infinity, alignment: .leading)
             .background(Theme.card, in: RoundedRectangle(cornerRadius: Theme.radius, style: .continuous))
             .overlay(RoundedRectangle(cornerRadius: Theme.radius, style: .continuous).strokeBorder(Theme.accent, lineWidth: 1.5))
         }
