@@ -19,8 +19,9 @@ export type HouseholdRecipe = {
 export type KitchenContext = {
   recipes: HouseholdRecipe[];
   owned: string[];
-  // In-stock ingredients with days until their best-before date (null = no date).
-  fridge: { name: string; days: number | null }[];
+  // In-stock ingredients with days until their deadline (null = no date). The
+  // deadline is 소비기한 when entered, else 유통기한 — `kind` says which.
+  fridge: { name: string; days: number | null; kind: "consume" | "sell" | null }[];
 };
 
 export async function loadKitchenContext(supabase: Supabase, householdId: string): Promise<KitchenContext> {
@@ -31,15 +32,19 @@ export async function loadKitchenContext(supabase: Supabase, householdId: string
       .eq("household_id", householdId)
       .order("created_at", { ascending: false })
       .limit(120),
-    supabase.from("fridge_items").select("name, expires_on").eq("household_id", householdId).eq("in_stock", true),
+    supabase.from("fridge_items").select("name, expires_on, consume_by").eq("household_id", householdId).eq("in_stock", true),
   ]);
   return {
     recipes: (recipes as HouseholdRecipe[] | null) ?? [],
     owned: (fridge ?? []).map((f) => f.name),
-    fridge: (fridge ?? []).map((f) => ({
-      name: f.name,
-      days: f.expires_on ? daysUntil(f.expires_on) : null,
-    })),
+    fridge: (fridge ?? []).map((f) => {
+      const date = f.consume_by ?? f.expires_on;
+      return {
+        name: f.name,
+        days: date ? daysUntil(date) : null,
+        kind: f.consume_by ? ("consume" as const) : f.expires_on ? ("sell" as const) : null,
+      };
+    }),
   };
 }
 

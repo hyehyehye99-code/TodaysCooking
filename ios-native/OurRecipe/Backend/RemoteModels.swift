@@ -6,6 +6,8 @@ struct RemoteHousehold: Decodable, Equatable {
     let id: String
     let name: String
     let invite_code: String
+    /// 우리집 AI 셰프 이름 (정하지 않았다면 nil)
+    let chef_name: String?
 }
 
 /// household_members + households(id,name,invite_code) 조인 결과
@@ -79,3 +81,11 @@ struct RemoteMember: Decodable, Equatable {
 }
 
 struct RemoteIdRow: Decodable { let id: String }
+
+struct RemoteMessage: Decodable {
+    let id: String
+    let user_id: String
+    let body: String
+    let recipe_id: String?
+    let created_at: String
+}

@@ -154,7 +154,7 @@ export async function POST(request: NextRequest) {
           return;
         }
         const kitchen = await loadKitchenContext(supabase, household.id);
-        const result = await runAssistantChat(body.messages, kitchen);
+        const result = await runAssistantChat(body.messages, kitchen, { recipesOnly: body.recipesOnly === true });
         if (!result.ok) {
           send({ type: "error", error: result.error, usage: toUsage(quota) });
           return;

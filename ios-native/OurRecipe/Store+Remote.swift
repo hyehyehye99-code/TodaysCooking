@@ -318,11 +318,12 @@ extension Store {
 
     private func applyMemberships(_ ms: [RemoteMembership], select preferred: String?) {
         let list = ms.compactMap { m in
-            m.households.map { Kitchen(householdId: $0.id.lowercased(), name: $0.name, members: [], inviteCode: $0.invite_code) }
+            m.households.map { Kitchen(householdId: $0.id.lowercased(), name: $0.name, members: [], inviteCode: $0.invite_code, chefName: $0.chef_name) }
         }
         guard !list.isEmpty else { return }
         kitchens = list
         currentKitchen = preferred.flatMap { id in list.firstIndex { $0.householdId == id.lowercased() } } ?? 0
+        chefName = list[currentKitchen].chefName ?? Store.defaultChefName
         if let hid = list[currentKitchen].householdId { UserDefaults.standard.set(hid, forKey: Store.activeHouseholdKey); Keychain.set(Data(hid.utf8), for: SharedKeys.activeHousehold) }
     }
 
@@ -345,6 +346,15 @@ extension Store {
             async let remoteFridge = Repository.fridge(household: hid)
             async let remoteShop = Repository.shopping(household: hid)
             let (rm, rr, rf, rs) = try await (remoteMembers, remoteRecipes, remoteFridge, remoteShop)
+            if let h = try? await Repository.household(hid) {
+                kitchens[currentKitchen].name = h.name
+                if let c = h.chef_name { kitchens[currentKitchen].chefName = c; chefName = c }
+                else if chefName != Store.defaultChefName {
+                    // 서버에 아직 셰프 이름이 없으면, 이 기기에서 정해 둔 이름을 우리집에 올려 가족에게도 같게 보이게 한다
+                    kitchens[currentKitchen].chefName = chefName
+                    try? await Repository.setChefName(hid, name: chefName)
+                } else { chefName = Store.defaultChefName }
+            }
 
             let people = rm.map { Member(remote: $0, myUserId: uid) }
             let names = Dictionary(people.compactMap { m in m.userId.map { ($0, m.name) } }, uniquingKeysWith: { a, _ in a })
@@ -384,6 +394,7 @@ extension Store {
     func refreshIfNeeded() async {
         guard isRemote, !sync.pushing, !(saveTask.map { !$0.isCancelled } ?? false) else { return }
         await loadHousehold()
+        await pollMessages()
     }
 
     /// AI 가 레시피를 저장한 뒤: 서버에 새로 생긴 레시피만 목록 맨 위에 추가한다
@@ -454,7 +465,7 @@ extension Store {
         let gen = chatGen
         // 지금까지의 대화(나와 AI 셰프의 말)를 서버에 같이 보낸다
         let history: [(role: String, text: String)] = msgs.suffix(20).compactMap { m in
-            guard m.separator == nil, let t = m.text, !t.isEmpty else { return nil }
+            guard m.separator == nil, m.serverId == nil, let t = m.text, !t.isEmpty else { return nil }
             if m.fromMe { return ("user", t) }
             return m.mate == nil ? ("assistant", t) : nil
         }
@@ -557,6 +568,60 @@ extension Store {
             }
         case .prompt(_, let prompt, let mode):
             if mode == "fill" { draft = prompt } else { submit(prompt) }
+        }
+    }
+}
+
+
+// MARK: - 가족 대화 (사람끼리, 서버 household_messages)
+
+extension Store {
+    static func chatClearedKey(_ household: String) -> String { "chatClearedAt.\(household)" }
+
+    nonisolated static func timestamp(_ iso: String) -> TimeInterval {
+        let f = ISO8601DateFormatter()
+        f.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        if let d = f.date(from: iso) { return d.timeIntervalSince1970 }
+        f.formatOptions = [.withInternetDateTime]
+        return f.date(from: iso)?.timeIntervalSince1970 ?? 0
+    }
+
+    private func familyMsg(_ r: RemoteMessage) -> Msg {
+        let id = r.id.lowercased()
+        let mine = r.user_id.lowercased() == userId?.lowercased()
+        let name = members.first { $0.userId?.lowercased() == r.user_id.lowercased() }?.name ?? "가족"
+        let card: CardKind? = r.recipe_id.map { .recipe($0.lowercased()) }
+        return Msg(fromMe: mine, text: r.body, card: card, mate: mine ? nil : name, serverId: id)
+    }
+
+    /// 서버의 가족 대화를 가져와 아직 없는 것만 맨 아래에 붙인다
+    func pollMessages() async {
+        guard isRemote, let hid = currentHouseholdId else { return }
+        guard let remote = try? await Repository.messages(household: hid) else { return }
+        guard hid == currentHouseholdId else { return }
+        let known = Set(msgs.compactMap(\.serverId))
+        let cleared = UserDefaults.standard.double(forKey: Store.chatClearedKey(hid))   // "대화 초기화" 이전의 메시지는 다시 보이지 않게
+        let fresh = remote.filter { !known.contains($0.id.lowercased()) && Store.timestamp($0.created_at) > cleared }
+        guard !fresh.isEmpty else { return }
+        // 처음 불러올 때는 AI 와 나눈 로컬 대화보다 앞에 둔다
+        if known.isEmpty { msgs.insert(contentsOf: fresh.map(familyMsg), at: 0) }
+        else { msgs.append(contentsOf: fresh.map(familyMsg)) }
+    }
+
+    /// 가족에게 메시지 보내기 (레시피 카드를 함께 보낼 수도 있다)
+    func sendFamilyMessage(_ text: String, recipeId: String? = nil, notify: Bool = true) {
+        let t = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !t.isEmpty, let hid = currentHouseholdId, let uid = userId else { return }
+        let id = UUID().uuidString.lowercased()
+        push(Msg(fromMe: true, text: t, card: recipeId.map { .recipe($0) }, serverId: id))
+        Task {
+            do {
+                try await Repository.sendMessage(id: id, household: hid, user: uid, body: t, recipeId: recipeId)
+                if notify { await PushAPI.notify(.chatMessage(t), householdId: hid) }
+            } catch {
+                msgs.removeAll { $0.serverId == id }
+                showToast("메시지를 보내지 못했어요. 잠시 후 다시 시도해주세요")
+            }
         }
     }
 }

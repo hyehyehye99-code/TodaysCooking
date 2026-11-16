@@ -7,11 +7,13 @@ enum PushAPI {
         case shoppingAdded([String])
         case shoppingCompleted(Int)
         case recipeProposed(id: String, title: String, note: String)
+        case chatMessage(String)
 
         var body: [String: Any] {
             switch self {
             case .shoppingAdded(let names): return ["kind": "shopping_added", "names": names]
             case .shoppingCompleted(let count): return ["kind": "shopping_completed", "count": count]
+            case .chatMessage(let text): return ["kind": "chat_message", "text": text]
             case .recipeProposed(let id, let title, let note):
                 var b: [String: Any] = ["kind": "recipe_proposed", "recipeId": id, "title": title]
                 if !note.isEmpty { b["note"] = note }

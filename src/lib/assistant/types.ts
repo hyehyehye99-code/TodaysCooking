@@ -37,7 +37,7 @@ export type ChatMessage =
   | { id: string; role: "assistant"; reply: AssistantReply; error?: boolean };
 
 export type AssistantRequest =
-  | { kind: "chat"; messages: { role: "user" | "assistant"; text: string }[] }
+  | { kind: "chat"; messages: { role: "user" | "assistant"; text: string }[]; recipesOnly?: boolean }
   | { kind: "save_idea"; idea: AssistantIdea }
   | { kind: "add_shopping"; items: string[] };
 

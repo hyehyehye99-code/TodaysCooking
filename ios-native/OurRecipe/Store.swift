@@ -25,7 +25,8 @@ final class Store {
         set { kitchens[currentKitchen].name = newValue }
     }
     /// 대화방에서 부르는 AI 셰프의 이름 (주방 설정에서 바꿀 수 있다)
-    var chefName = "AI 셰프"
+    static let defaultChefName = "AI 셰프"
+    var chefName = Store.defaultChefName
     var showKitchenSettings = false
     var showFridge = false
     var timers: [SavedTimer] = []
@@ -242,16 +243,21 @@ final class Store {
     func proposeRecipe(_ id: String, note: String) {
         guard let r = recipe(id) else { return }
         let text = note.trimmingCharacters(in: .whitespacesAndNewlines)
-        let msg = Msg(fromMe: true, text: text.isEmpty ? "오늘은 \(r.displayTitle) 어때?" : text, card: .recipe(id))
+        let body = text.isEmpty ? "오늘은 \(r.displayTitle) 어때?" : text
+        let msg = Msg(fromMe: true, text: body, card: .recipe(id))
         tab = .chat
         recipePath = []
         myPath = []
-        push(msg)
-        // 진짜 가족에게는 푸시 알림(+활동 로그)으로 제안이 전달된다
-        if isRemote, let hid = currentHouseholdId {
-            Task { await PushAPI.notify(.recipeProposed(id: id, title: r.displayTitle, note: text), householdId: hid) }
-            showToast("가족에게 알림을 보냈어요")
+        if isRemote {
+            // 진짜 가족에게는 대화로 레시피 카드가 가고, 푸시 알림(+활동 로그)도 간다
+            sendFamilyMessage(body, recipeId: id, notify: false)
+            if let hid = currentHouseholdId {
+                Task { await PushAPI.notify(.recipeProposed(id: id, title: r.displayTitle, note: text), householdId: hid) }
+            }
+            showToast("가족에게 제안을 보냈어요")
+            return
         }
+        push(msg)
         // 가짜 가족 반응은 화면 확인용 샘플 모드에서만 보여 준다
         guard demoMode else { return }
         let gen = chatGen
@@ -497,7 +503,13 @@ final class Store {
         let n = name.trimmingCharacters(in: .whitespaces)
         guard !n.isEmpty else { return }
         chefName = n
-        showToast("셰프 이름을 저장했어요.")
+        kitchens[currentKitchen].chefName = n
+        if isRemote, let hid = currentHouseholdId {
+            Task {
+                do { try await Repository.setChefName(hid, name: n); showToast("셰프 이름을 저장했어요. 가족에게도 같게 보여요") }
+                catch { showToast("셰프 이름을 저장하지 못했어요") }
+            }
+        } else { showToast("셰프 이름을 저장했어요.") }
     }
 
     func switchKitchen(to index: Int) {
@@ -605,6 +617,7 @@ final class Store {
         chatGen += 1
         typing = false
         msgs = []
+        if let hid = currentHouseholdId { UserDefaults.standard.set(Date().timeIntervalSince1970, forKey: Store.chatClearedKey(hid)) }
     }
 
     func startTimer(sec: Int, label: String) {
@@ -626,7 +639,7 @@ final class Store {
 
     /// 빠른 시작 카드 "냉장고 파먹기"
     func askFridge() {
-        submit("냉장고에 있는 재료로, 소비기한 임박한 것부터 써서 만들 수 있는 요리 추천해줘")
+        submit("냉장고에 있는 재료로, 소비기한 임박한 것부터 써서 만들 수 있는 요리 추천해줘", ai: true)
     }
 
     /// 로그인 없이 링크만 레시피북에 저장 (재료·만드는 법 자동 정리는 로그인 후 AI 로)
@@ -649,9 +662,17 @@ final class Store {
         ])
     }
 
-    func submit(_ raw: String) {
+    /// 입력창에서 보낸 말. 기본은 가족에게 보내는 대화이고, `ai` 가 true 일 때만(링크 등록·냉장고 파먹기) AI 셰프가 답한다
+    func submit(_ raw: String, ai: Bool = false) {
         let t = raw.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !t.isEmpty else { return }
+        if !ai {
+            if isRemote { sendFamilyMessage(t); return }
+            // 로그인 전: 링크는 그대로 저장해 주고, 그 밖의 말은 로그인을 안내한다
+            if t.contains("http") { push(Msg(fromMe: true, text: t)); saveLinkOnly(t) }
+            else { showToast("가족과 대화하려면 로그인이 필요해요"); showLogin = true }
+            return
+        }
         push(Msg(fromMe: true, text: t))
         if isRemote {
             Task { await askAI() }

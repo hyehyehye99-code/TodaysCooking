@@ -2,6 +2,7 @@ import type { NextRequest } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentHousehold } from "@/lib/household";
 import { notifyHousehold } from "@/lib/actions/activity";
+import { sendPushToHousehold } from "@/lib/actions/push";
 
 // Lets the native iOS app trigger the same household notifications the web's
 // server actions send. The app writes to Supabase directly (shopping items,
@@ -12,7 +13,9 @@ import { notifyHousehold } from "@/lib/actions/activity";
 type NotifyRequest =
   | { kind: "shopping_added"; names: string[] }
   | { kind: "shopping_completed"; count: number }
-  | { kind: "recipe_proposed"; recipeId: string; title: string; note?: string };
+  | { kind: "recipe_proposed"; recipeId: string; title: string; note?: string }
+  // Family chat message (native app). Push only: chatting shouldn't flood the activity log.
+  | { kind: "chat_message"; text: string };
 
 const json = (body: unknown, status = 200) => Response.json(body, { status });
 const clean = (s: unknown, max: number) => (typeof s === "string" ? s.trim().slice(0, max) : "");
@@ -71,6 +74,18 @@ export async function POST(request: NextRequest) {
       body: note ? `${nickname}님이 "${title}"을(를) 제안했어요: ${note}` : `${nickname}님이 "${title}"을(를) 해 먹자고 제안했어요`,
       url: `/recipes/${recipeId}`,
     };
+  }
+
+  if (body.kind === "chat_message") {
+    const text = clean(body.text, 200);
+    if (!text) return json({ error: "잘못된 요청이에요." }, 400);
+    try {
+      await sendPushToHousehold(household.id, user.id, { title: nickname, body: text, url: "/" });
+      return json({ ok: true });
+    } catch (err) {
+      console.error("[push/notify] chat failed:", err);
+      return json({ error: "알림을 보내지 못했어요." }, 502);
+    }
   }
 
   if (!notification) return json({ error: "잘못된 요청이에요." }, 400);

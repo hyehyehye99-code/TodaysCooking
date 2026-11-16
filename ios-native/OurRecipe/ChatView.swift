@@ -85,6 +85,10 @@ struct ChatView: View {
     @Environment(Store.self) private var store
     @State private var input = ""
     @State private var hint: String?
+    /// "링크로 레시피 등록"을 눌렀을 때만 true: 다음에 보내는 말은 가족이 아니라 AI 셰프가 처리한다
+    @State private var linkMode = false
+    /// 대화 상대: false = 가족, true = AI 셰프
+    @State private var toChef = false
     @State private var askReset = false
     @State private var clipHasLink = false
     @Environment(\.scenePhase) private var scenePhase
@@ -100,6 +104,13 @@ struct ChatView: View {
         .background(Color.white.ignoresSafeArea())
         .safeAreaInset(edge: .bottom, spacing: 0) { composer }
         .task { refreshClipboard() }
+        // 가족이 보낸 메시지를 몇 초마다 가져온다 (이 화면이 열려 있는 동안만)
+        .task {
+            while !Task.isCancelled {
+                await store.pollMessages()
+                try? await Task.sleep(for: .seconds(3))
+            }
+        }
         .onChange(of: store.draft) { _, v in if let v { input = v; store.draft = nil; focused = true } }
         .onChange(of: scenePhase) { _, phase in if phase == .active { refreshClipboard() } }
         #if DEBUG
@@ -132,12 +143,12 @@ struct ChatView: View {
                         .frame(width: 48, height: 46, alignment: .topLeading)
                         VStack(alignment: .leading, spacing: 2) {
                             HStack(spacing: 4) {
-                                Text("\(store.kitchenName) \(store.chefName)").font(.suit(17, .bold)).foregroundStyle(Theme.ink).lineLimit(1)
+                                Text(store.kitchenTitle).font(.suit(17, .bold)).foregroundStyle(Theme.ink).lineLimit(1)
                                 Image(systemName: "chevron.right").font(.system(size: 11, weight: .bold)).foregroundStyle(Theme.faint)
                             }
                             HStack(spacing: 5) {
                                 Circle().fill(green).frame(width: 6, height: 6)
-                                Text("주방에서 대기 중 · \(store.members.count)명").font(.suit(12.5)).foregroundStyle(Theme.sub).lineLimit(1)
+                                Text("\(store.chefName)와 가족 \(max(store.members.count, 1))명").font(.suit(12.5)).foregroundStyle(Theme.sub).lineLimit(1)
                             }
                         }
                     }
@@ -182,10 +193,10 @@ struct ChatView: View {
                 MascotImage(name: "chef-greeting", size: 176, breathing: true)
                 Text(store.greetingName)
                     .font(.suit(22, .bold)).tracking(-0.3).foregroundStyle(Theme.ink).padding(.top, 14)
+                Text("가족과도, \(store.chefName)와도 이야기할 수 있어요").font(.suit(13.5)).foregroundStyle(Theme.sub).padding(.top, 6)
                 VStack(spacing: 10) {
                     quickStart(image: "reading-recipe", title: "링크로 레시피 등록", desc: "유튜브·인스타 링크만 붙여넣으면 끝") {
-                        hint = "유튜브·인스타 링크를 붙여넣어 주세요"
-                        focused = true
+                        startLinkMode()
                     }
                     quickStart(image: "fridge-open", title: "냉장고 파먹기", desc: "소비기한 임박한 재료부터 활용해요") {
                         store.askFridge()
@@ -359,12 +370,27 @@ struct ChatView: View {
                         let text = strings.joined(separator: " ")
                         clipHasLink = false
                         hint = nil
-                        if text.contains("http") { store.submit(text) } else { input = text; focused = true }
+                        if text.contains("http") { store.submit(text, ai: true) } else { input = text; focused = true }
                     }
                     .labelStyle(.titleOnly).buttonBorderShape(.capsule).tint(Theme.accent)
                 }
                 .padding(.leading, 14).padding(.trailing, 8).padding(.vertical, 6)
                 .background(Theme.accentSoft, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+                .transition(.opacity)
+            }
+            // 누구에게 말할지 고른다: 가족(기본) 또는 AI 셰프
+            HStack(spacing: 0) {
+                targetTab("가족", icon: "person.2.fill", on: !toChef && !linkMode) { toChef = false; linkMode = false; hint = nil }
+                targetTab(store.chefName, icon: "sparkle", on: toChef || linkMode) { toChef = true }
+                Spacer(minLength: 0)
+            }
+            // 첫 대화 이후에도 AI 기능은 입력창 바로 위에서 계속 고를 수 있다
+            if !store.msgs.isEmpty && !focused {
+                HStack(spacing: 8) {
+                    optionChip(image: "reading-recipe", title: "링크로 레시피 등록", on: linkMode) { startLinkMode() }
+                    optionChip(image: "fridge-open", title: "냉장고 파먹기", on: false) { linkMode = false; hint = nil; store.askFridge() }
+                    Spacer(minLength: 0)
+                }
                 .transition(.opacity)
             }
             if let hint {
@@ -374,13 +400,13 @@ struct ChatView: View {
                     .transition(.opacity)
             }
             HStack(spacing: 8) {
-                Button { focused = true } label: {
-                    Image(systemName: "link").font(.system(size: 17, weight: .medium)).foregroundStyle(Theme.faint)
+                Button { startLinkMode() } label: {
+                    Image(systemName: "link").font(.system(size: 17, weight: .medium)).foregroundStyle(linkMode ? Theme.accent : Theme.faint)
                         .frame(width: 30, height: 36)
                 }
                 .buttonStyle(PressStyle()).accessibilityLabel("링크 입력")
 
-                TextField("링크, 재료, 궁금한 점을 적어주세요", text: $input)
+                TextField(linkMode ? "유튜브·인스타 링크를 붙여넣어 주세요" : (toChef ? "\(store.chefName)에게 물어보기" : (store.isRemote ? "가족에게 메시지 보내기" : "메시지 보내기")), text: $input)
                     .focused($focused).font(.suit(16)).submitLabel(.send).onSubmit(send)
                     .textInputAutocapitalization(.never).autocorrectionDisabled()
 
@@ -420,7 +446,40 @@ struct ChatView: View {
         let t = input
         input = ""
         hint = nil
-        store.submit(t)
+        store.submit(t, ai: linkMode || toChef)
+        linkMode = false
+    }
+
+    private func startLinkMode() {
+        linkMode = true
+        toChef = true
+        hint = "유튜브·인스타 링크를 붙여넣어 주세요"
+        focused = true
+    }
+
+    private func targetTab(_ title: String, icon: String, on: Bool, run: @escaping () -> Void) -> some View {
+        Button(action: run) {
+            HStack(spacing: 5) {
+                Image(systemName: icon).font(.system(size: 11, weight: .bold))
+                Text(title).font(.suit(12.5, .bold)).lineLimit(1)
+            }
+            .foregroundStyle(on ? .white : Theme.sub)
+            .padding(.horizontal, 12).padding(.vertical, 6)
+            .background(on ? Theme.accent : Color.clear, in: Capsule())
+        }
+        .buttonStyle(.plain)
+    }
+
+    private func optionChip(image: String, title: String, on: Bool, run: @escaping () -> Void) -> some View {
+        Button(action: run) {
+            HStack(spacing: 6) {
+                Image(image).resizable().scaledToFit().frame(width: 22, height: 22)
+                Text(title).font(.suit(13, .bold)).foregroundStyle(on ? Theme.accent : Theme.ink)
+            }
+            .padding(.leading, 8).padding(.trailing, 12).padding(.vertical, 6)
+            .background(on ? Theme.accentSoft : Theme.surface, in: Capsule())
+        }
+        .buttonStyle(PressStyle())
     }
 }
 

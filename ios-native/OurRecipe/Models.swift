@@ -149,6 +149,8 @@ struct Msg: Identifiable {
     var separator: String? = nil
     /// AI 가 이어서 할 수 있다고 제안한 동작 (장보기 담기 / 이어서 묻기)
     var actions: [AssistantAction] = []
+    /// 가족과 주고받은 대화라면 서버 메시지 id (AI 와의 대화는 nil)
+    var serverId: String? = nil
 }
 
 enum AppTab: Hashable { case chat, recipes, shop, my }
@@ -193,4 +195,6 @@ struct Kitchen: Identifiable, Codable {
     var name: String
     var members: [Member]
     var inviteCode: String? = nil
+    /// 우리집 AI 셰프 이름 (서버 households.chef_name)
+    var chefName: String? = nil
 }

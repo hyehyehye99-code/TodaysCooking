@@ -13,7 +13,7 @@ const SYSTEM_PROMPT = [
   "말투는 친근하고 싹싹한 해요체. 이모지는 한두 개만 자연스럽게. 군더더기 없이 실용적으로 답해.",
   "",
   "사용자 의도를 아래 중 하나로 분류해 intent에 넣어:",
-  "- fridge_recommend: 가진 재료로 뭘 만들지 묻는 경우. 유통기한이 임박했거나 지난 재료(아래 목록에 표시됨)를 먼저 소진하는",
+  "- fridge_recommend: 가진 재료로 뭘 만들지 묻는 경우. 소비기한(없으면 유통기한)이 임박했거나 지난 재료(아래 목록에 표시됨)를 먼저 소진하는",
   "  메뉴를 최우선으로 고르고, reply에서 어떤 재료가 임박했는지 한 번 짚어줘. 이미 지난 재료는 상태를 확인하라고 안내해.",
   "  그 다음 '우리 레시피북' 목록에서 해당 재료가 들어간 메뉴를",
   "  existingRecipeIds에 최대 3개 골라. 그 뒤 새로운 메뉴 아이디어를 1~2개 ideas에 제안해(핵심 재료·조리법 포함).",
@@ -28,6 +28,14 @@ const SYSTEM_PROMPT = [
   "- ideas.instructions는 줄바꿈(\\n)으로 단계를 나눈 한국어 텍스트.",
   "- reply는 1~4문장. 카드로 보여줄 메뉴 내용을 reply에 다시 길게 풀어 쓰지 마.",
   "- followUps에는 다음에 누를 만한 짧은 제안 문구(이모지 포함, 20자 이내)를 2~3개.",
+].join("\n");
+
+// Native app chat: recommend only what the household has already saved.
+const RECIPES_ONLY_PROMPT = [
+  "",
+  "추가 규칙(매우 중요): 메뉴 추천은 반드시 위 '우리 레시피북' 목록에 있는 메뉴 중에서만 해.",
+  "새로운 메뉴·레시피 아이디어를 만들어 제안하지 마. ideas는 항상 빈 배열이야.",
+  "레시피북에 어울리는 메뉴가 없으면 억지로 지어내지 말고, 없다고 솔직히 말한 뒤 마음에 드는 영상 링크를 붙여넣어 레시피를 등록해보라고 안내해.",
 ].join("\n");
 
 const RESPONSE_SCHEMA = {
@@ -103,9 +111,10 @@ export function sanitizeIdeas(raw: unknown): AssistantIdea[] {
 
 function fridgeLine(f: KitchenContext["fridge"][number]) {
   if (f.days === null) return f.name;
-  if (f.days < 0) return `${f.name}(유통기한 ${-f.days}일 지남)`;
-  if (f.days === 0) return `${f.name}(오늘까지)`;
-  return `${f.name}(D-${f.days})`;
+  const label = f.kind === "consume" ? "소비기한" : "유통기한";
+  if (f.days < 0) return `${f.name}(${label} ${-f.days}일 지남)`;
+  if (f.days === 0) return `${f.name}(${label} 오늘까지)`;
+  return `${f.name}(${label} D-${f.days})`;
 }
 
 function kitchenSummary(ctx: KitchenContext) {
@@ -114,7 +123,7 @@ function kitchenSummary(ctx: KitchenContext) {
     .map((r) => `- ${r.id} | ${r.title} | ${r.recipe_ingredients.map((i) => i.name).join(", ")}`)
     .join("\n");
   return [
-    `냉장고에 있는 재료 (유통기한 임박순): ${
+    `냉장고에 있는 재료 (기한 임박순): ${
       ctx.fridge.length
         ? [...ctx.fridge]
             .sort((a, b) => (a.days ?? Infinity) - (b.days ?? Infinity))
@@ -129,7 +138,8 @@ function kitchenSummary(ctx: KitchenContext) {
 
 export async function runAssistantChat(
   messages: { role: "user" | "assistant"; text: string }[],
-  ctx: KitchenContext
+  ctx: KitchenContext,
+  options: { recipesOnly?: boolean } = {}
 ): Promise<{ ok: true; reply: AssistantReply } | { ok: false; error: string }> {
   const history = messages.slice(-MAX_HISTORY).map((m) => ({
     role: m.role === "user" ? "user" : "model",
@@ -144,7 +154,7 @@ export async function runAssistantChat(
       model: "gemini-3.6-flash",
       contents: history,
       config: {
-        systemInstruction: `${SYSTEM_PROMPT}\n\n${kitchenSummary(ctx)}`,
+        systemInstruction: `${SYSTEM_PROMPT}${options.recipesOnly ? RECIPES_ONLY_PROMPT : ""}\n\n${kitchenSummary(ctx)}`,
         responseMimeType: "application/json",
         responseSchema: RESPONSE_SCHEMA,
       },
@@ -158,7 +168,7 @@ export async function runAssistantChat(
       .filter((r): r is NonNullable<typeof r> => !!r)
       .slice(0, 3)
       .map((r) => toRecipeCard(r, ctx.owned));
-    const ideas = sanitizeIdeas(data.ideas);
+    const ideas = options.recipesOnly ? [] : sanitizeIdeas(data.ideas);
 
     const actions: AssistantAction[] = [];
     const missing = [

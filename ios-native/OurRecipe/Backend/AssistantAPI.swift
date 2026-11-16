@@ -103,7 +103,8 @@ enum AssistantAPI {
         AsyncThrowingStream { continuation in
             let task = Task {
                 do {
-                    let body: [String: Any] = ["kind": "chat", "messages": messages.map { ["role": $0.role, "text": $0.text] }]
+                    // 앱에서는 새 메뉴를 지어내지 않고, 내가 등록한 레시피 안에서만 추천한다
+                    let body: [String: Any] = ["kind": "chat", "messages": messages.map { ["role": $0.role, "text": $0.text] }, "recipesOnly": true]
                     let req = try await request(householdId: householdId, body: body)
                     let (bytes, response) = try await URLSession.shared.bytes(for: req)
                     guard let http = response as? HTTPURLResponse else { throw BackendError.http(0, "") }

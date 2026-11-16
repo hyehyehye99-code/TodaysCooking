@@ -7,7 +7,7 @@ enum Repository {
     // MARK: 우리집 (households)
 
     static func memberships(userId: String) async throws -> [RemoteMembership] {
-        try await db.select("household_members", select: "role,households(id,name,invite_code)",
+        try await db.select("household_members", select: "role,households(id,name,invite_code,chef_name)",
                             filters: ["user_id": "eq.\(userId)"], order: "joined_at.asc")
     }
 
@@ -32,12 +32,37 @@ enum Repository {
         try await db.update("households", filters: ["id": "eq.\(id)"], values: ["name": .string(name)])
     }
 
+    static func household(_ id: String) async throws -> RemoteHousehold? {
+        let rows: [RemoteHousehold] = try await db.select("households", select: "id,name,invite_code,chef_name", filters: ["id": "eq.\(id)"], limit: 1)
+        return rows.first
+    }
+
+    static func setChefName(_ id: String, name: String) async throws {
+        try await db.update("households", filters: ["id": "eq.\(id)"], values: ["chef_name": .string(name)])
+    }
+
     static func members(of household: String) async throws -> [RemoteMember] {
         try await db.rpc("get_household_members", ["target_household_id": .string(household)])
     }
 
     static func upsertProfile(nickname: String) async throws {
         try await db.rpcVoid("upsert_my_profile", ["new_nickname": .string(nickname), "new_icon_emoji": .null])
+    }
+
+    // MARK: 가족 대화
+
+    /// 최근 메시지 (오래된 것이 앞)
+    static func messages(household: String, limit: Int = 80) async throws -> [RemoteMessage] {
+        let rows: [RemoteMessage] = try await db.select("household_messages", select: "id,user_id,body,recipe_id,created_at",
+                                                        filters: ["household_id": "eq.\(household)"], order: "created_at.desc", limit: limit)
+        return rows.reversed()
+    }
+
+    static func sendMessage(id: String, household: String, user: String, body: String, recipeId: String?) async throws {
+        _ = try await db.insert("household_messages", rows: [[
+            "id": .string(id), "household_id": .string(household), "user_id": .string(user),
+            "body": .string(body), "recipe_id": recipeId.map(JSONValue.string) ?? .null,
+        ]], select: "id") as [RemoteIdRow]
     }
 
     // MARK: 레시피
