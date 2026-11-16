@@ -191,7 +191,7 @@ struct ChatView: View {
                 MascotImage(name: "chef-greeting", size: 176, breathing: true)
                 Text(store.greetingName)
                     .font(.suit(22, .bold)).tracking(-0.3).foregroundStyle(Theme.ink).padding(.top, 14)
-                Text("가족과 대화하고, \(store.chefName)에게 맡겨보세요").font(.suit(13.5)).foregroundStyle(Theme.sub).padding(.top, 6)
+                Text("가족과 이야기하고,\n\(store.chefName)에게 링크 정리와 냉장고 추천을 맡겨요").font(.suit(13.5)).foregroundStyle(Theme.sub).multilineTextAlignment(.center).lineSpacing(3).padding(.top, 6)
                 VStack(spacing: 10) {
                     quickStart(image: "reading-recipe", title: "링크로 레시피 등록", desc: "유튜브·인스타 링크만 붙여넣으면 끝") {
                         startLinkMode()
