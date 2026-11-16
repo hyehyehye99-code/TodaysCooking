@@ -407,8 +407,8 @@ struct LoginCard: View {
         HStack(spacing: 12) {
             MascotImage(name: "chef-greeting", size: 52)
             VStack(alignment: .leading, spacing: 3) {
-                Text("로그인하고 가족과 함께 써요").font(.suit(16, .bold))
-                Text("레시피가 이 기기에만 저장되고 있어요").font(.suit(12.5)).foregroundStyle(Theme.sub)
+                Text("로그인하고 함께 써요").font(.suit(16, .bold)).lineLimit(1).minimumScaleFactor(0.85)
+                Text("지금은 이 기기에만 저장돼요").font(.suit(12.5)).foregroundStyle(Theme.sub).lineLimit(1).minimumScaleFactor(0.85)
             }
             Spacer(minLength: 6)
             Button { store.showLogin = true } label: {
