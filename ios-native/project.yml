@@ -11,7 +11,7 @@ settings:
     # 주의: 실제 번들 ID 는 `ourhomemenu` 이다 (capacitor.config.ts 의 com.hyeji.ourmenu 는 URL 스킴/appId 표기일 뿐)
     DEVELOPMENT_TEAM: 6NTUXY85FS
     MARKETING_VERSION: "2.0.0"
-    CURRENT_PROJECT_VERSION: "28"
+    CURRENT_PROJECT_VERSION: "29"
 packages:
   Firebase:
     url: https://github.com/firebase/firebase-ios-sdk
