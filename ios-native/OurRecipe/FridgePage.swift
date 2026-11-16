@@ -157,7 +157,7 @@ struct FridgePage: View {
                 .font(.suit(15, .bold)).foregroundStyle(Theme.accent).padding(.leading, 4)
             }
         }
-        .padding(.horizontal, 16).padding(.top, 8).padding(.bottom, 10)
+        .padding(.horizontal, 16).padding(.top, 18).padding(.bottom, 10)
     }
 
     private var searchRow: some View {

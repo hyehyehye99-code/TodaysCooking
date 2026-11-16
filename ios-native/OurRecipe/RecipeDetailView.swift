@@ -124,7 +124,7 @@ struct RecipeDetailView: View {
                 }
             }
         }
-        .padding(.horizontal, 16).padding(.top, 8).padding(.bottom, 12)
+        .padding(.horizontal, 16).padding(.top, 18).padding(.bottom, 12)
     }
 
     private func roundButton(_ icon: String, tint: Color, label: String, run: @escaping () -> Void) -> some View {
@@ -278,7 +278,7 @@ struct NewRecipeView: View {
                 Text(editing == nil ? "새 메뉴" : "메뉴 수정").font(.suit(24, .bold)).tracking(-0.4)
                 Spacer()
             }
-            .padding(.horizontal, 16).padding(.top, 8).padding(.bottom, 12)
+            .padding(.horizontal, 16).padding(.top, 18).padding(.bottom, 12)
 
             ScrollView {
                 VStack(alignment: .leading, spacing: 14) {

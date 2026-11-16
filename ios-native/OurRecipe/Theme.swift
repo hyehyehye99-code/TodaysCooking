@@ -84,7 +84,7 @@ struct PageHeader<Right: View>: View {
             Spacer()
             right()
         }
-        .padding(.horizontal, 20).padding(.top, 8).padding(.bottom, 12)
+        .padding(.horizontal, 20).padding(.top, 18).padding(.bottom, 12)
     }
 }
 extension PageHeader where Right == EmptyView {

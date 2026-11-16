@@ -187,7 +187,7 @@ struct RecipesView: View {
             }
             .buttonStyle(PressStyle())
         }
-        .padding(.horizontal, 20).padding(.top, 8).padding(.bottom, 14)
+        .padding(.horizontal, 20).padding(.top, 18).padding(.bottom, 14)
     }
 
     private func chip(_ label: String, icon: String? = nil, on: Bool, run: @escaping () -> Void) -> some View {

@@ -161,7 +161,7 @@ struct MealboardFormPage: View {
             Text(editingId == nil ? "새 메뉴판" : "메뉴판 수정").font(.suit(24, .bold)).tracking(-0.4)
             Spacer()
         }
-        .padding(.horizontal, 16).padding(.top, 8).padding(.bottom, 12)
+        .padding(.horizontal, 16).padding(.top, 18).padding(.bottom, 12)
     }
 
     private func field<C: View>(_ label: String, @ViewBuilder _ content: () -> C) -> some View {
@@ -343,7 +343,7 @@ struct MealboardDetailPage: View {
             }
             .accessibilityLabel("더보기")
         }
-        .padding(.horizontal, 16).padding(.top, 8).padding(.bottom, 14)
+        .padding(.horizontal, 16).padding(.top, 18).padding(.bottom, 14)
     }
 
     private func info(_ b: Mealboard, count: Int) -> some View {

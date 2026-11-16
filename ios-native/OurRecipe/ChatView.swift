@@ -177,7 +177,7 @@ struct ChatView: View {
                 }
                 .buttonStyle(PressStyle()).accessibilityLabel("냉장고 설정")
             }
-            .padding(.horizontal, 16).padding(.vertical, 10)
+            .padding(.horizontal, 16).padding(.top, 18).padding(.bottom, 10)
             .animation(.easeOut(duration: 0.2), value: store.msgs.isEmpty)
         }
     }
@@ -191,7 +191,7 @@ struct ChatView: View {
                 MascotImage(name: "chef-greeting", size: 176, breathing: true)
                 Text(store.greetingName)
                     .font(.suit(22, .bold)).tracking(-0.3).foregroundStyle(Theme.ink).padding(.top, 14)
-                Text("가족과 이야기하고, \(store.chefName)에게 링크 정리와 냉장고 추천을 맡겨요").font(.suit(13.5)).foregroundStyle(Theme.sub).padding(.top, 6)
+                Text("가족과 대화하고, \(store.chefName)에게 맡겨보세요").font(.suit(13.5)).foregroundStyle(Theme.sub).padding(.top, 6)
                 VStack(spacing: 10) {
                     quickStart(image: "reading-recipe", title: "링크로 레시피 등록", desc: "유튜브·인스타 링크만 붙여넣으면 끝") {
                         startLinkMode()
@@ -377,7 +377,7 @@ struct ChatView: View {
                 .transition(.opacity)
             }
             // 첫 대화 이후에도 AI 기능은 입력창 바로 위에서 계속 고를 수 있다
-            if !focused {
+            if !store.msgs.isEmpty && !focused {
                 HStack(spacing: 8) {
                     optionChip(image: "reading-recipe", title: "링크로 레시피 등록", on: linkMode) { if linkMode { linkMode = false; hint = nil } else { startLinkMode() } }
                     optionChip(image: "fridge-open", title: "냉장고 파먹기", on: false) { linkMode = false; hint = nil; store.askFridge() }

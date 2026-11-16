@@ -64,7 +64,7 @@ struct ShopView: View {
                 .accessibilityLabel("더보기")
             }
         }
-        .padding(.horizontal, 20).padding(.top, 8).padding(.bottom, 10)
+        .padding(.horizontal, 20).padding(.top, 18).padding(.bottom, 10)
     }
 
     // MARK: 목록

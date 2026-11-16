@@ -186,7 +186,7 @@ struct SubPage<Content: View>: View {
                 Text(title).font(.suit(22, .bold)).tracking(-0.4)
                 Spacer()
             }
-            .padding(.horizontal, 16).padding(.top, 8).padding(.bottom, 12)
+            .padding(.horizontal, 16).padding(.top, 18).padding(.bottom, 12)
             ScrollView {
                 VStack(alignment: .leading, spacing: 14) { content() }
                     .padding(.horizontal, 16).padding(.bottom, 24)
